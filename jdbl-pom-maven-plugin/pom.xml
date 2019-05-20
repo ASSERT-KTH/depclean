@@ -10,7 +10,7 @@
     <packaging>maven-plugin</packaging>
 
     <name>jdbl-pom-maven-plugin</name>
-    <description>Debloat Maven pom files</description>
+    <description>A plugin for debloating Maven pom files</description>
     <url>https://github.com/castor-software/royal-debloat/jdbl-pom</url>
 
     <!-- License statement -->
@@ -69,7 +69,7 @@
                 <version>3.6.0</version>
                 <configuration>
                     <goalPrefix>pom-debloat</goalPrefix>
-                    <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
+                    <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                 </configuration>
                 <executions>
                     <execution>
@@ -156,5 +156,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>

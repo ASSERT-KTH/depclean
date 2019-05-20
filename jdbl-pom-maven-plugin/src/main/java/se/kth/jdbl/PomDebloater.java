@@ -8,6 +8,7 @@ import spoon.MavenLauncher;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +20,6 @@ public class PomDebloater {
     public static void main(String[] args) throws IOException, MavenInvocationException, XmlPullParserException {
         String pathToDependencies = "./target/dependency";
         String debloatedPomPath = "./jdbl-pom.xml";
-
         debloatPom(pathToDependencies, debloatedPomPath);
     }
 
@@ -81,8 +81,15 @@ public class PomDebloater {
             }
         }
 
+        FileUtils.deleteDirectory(new File("./spooned"));
+
         System.out.println("\nRemoved dependencies:");
         System.out.println(unusedDependencies);
+
+        PrintWriter printWriter = new PrintWriter("removed_dependencies.txt");
+        System.out.println("writing file...");
+        printWriter.print(unusedDependencies.toString());
+        printWriter.close();
 
     }
 
