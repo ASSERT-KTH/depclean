@@ -5,7 +5,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>se.kth.jdbl</groupId>
-    <artifactId>jdbl-pom</artifactId>
+    <artifactId>dummy-project</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -21,50 +21,45 @@
         <maven.coveralls.plugin.version>4.3.0</maven.coveralls.plugin.version>
     </properties>
 
-    <!-- Project description-->
-    <description>JDbl(pom) is a Maven plugin to automatically debloat Maven projects</description>
-    <url>https://github.com/castor-software/royal-debloat/jdbl-pom</url>
-
-    <issueManagement>
-        <system>GitHub Issues</system>
-        <url>https://github.com/castor-software/royal-debloat/jdbl-pom/issues</url>
-    </issueManagement>
-
-    <scm>
-        <url>https://github.com/castor-software/royal-debloat/jdbl-pom</url>
-        <connection>scm:git:git:github.com/castor-software/royal-debloat/jdbl-pom.git</connection>
-        <developerConnection>scm:git:git@github.com:castor-software/royal-debloat/jdbl-pom.git
-        </developerConnection>
-    </scm>
-
-    <!-- License statement -->
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <!-- List of developers -->
-    <developers>
-        <developer>
-            <id>cesarsotovalero</id>
-            <name>César Soto Valero</name>
-            <email>cesarsv@kth.se</email>
-        </developer>
-    </developers>
-
     <!-- List of modules -->
     <modules>
-        <module>jdbl-pom-main</module>
-        <module>jdbl-pom-maven-plugin</module>
-        <module>maven-dependency-analyzer-modified</module>
+        <module>module-one</module>
+        <module>module-two</module>
     </modules>
 
     <!-- Build options -->
     <build>
         <plugins>
+
+            <plugin>
+                <groupId>com.github.marschall</groupId>
+                <artifactId>jdeps-maven-plugin</artifactId>
+                <version>0.5.1</version>
+                <!-- optionally any configuration -->
+                <configuration>
+                    <filter>package</filter>
+                    <filter>archive</filter>
+                    <!--<apionly>true</apionly>-->
+                    <profile>true</profile>
+                    <!--<recursive>true</recursive>-->
+                </configuration>
+            </plugin>
+
+
+            <!--<plugin>-->
+            <!--<groupId>se.kth.jdbl</groupId>-->
+            <!--<artifactId>jdbl-pom-maven-plugin</artifactId>-->
+            <!--<version>0.1.0-SNAPSHOT</version>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<goals>-->
+            <!--<goal>pom-debloat</goal>-->
+            <!--</goals>-->
+            <!--</execution>-->
+            <!--</executions>-->
+            <!--</plugin>-->
+
+
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>3.0.0</version>
@@ -90,38 +85,6 @@
                 </configuration>
             </plugin>
 
-            <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-javadoc-plugin</artifactId>-->
-            <!--<version>2.9.1</version>-->
-            <!--<configuration>-->
-            <!--<additionalparam>-Xdoclint:none</additionalparam>-->
-            <!--</configuration>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>attach-javadoc</id>-->
-            <!--<goals>-->
-            <!--<goal>jar</goal>-->
-            <!--</goals>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
-
-
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
 
             <!--Surefire plugin-->
             <plugin>
@@ -134,26 +97,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-
-            <!--Checkstyle plugin-->
-            <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-checkstyle-plugin</artifactId>-->
-            <!--<version>3.0.0</version>-->
-            <!--<configuration>-->
-            <!--<failsOnError>true</failsOnError>-->
-            <!--<configLocation>checkstyle.xml</configLocation>-->
-            <!--<consoleOutput>true</consoleOutput>-->
-            <!--</configuration>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<phase>verify</phase>-->
-            <!--<goals>-->
-            <!--<goal>checkstyle</goal>-->
-            <!--</goals>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
 
             <!--JaCoCo plugin-->
             <plugin>
@@ -180,6 +123,20 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>com.github.marschall</groupId>
+                    <artifactId>jdeps-maven-plugin</artifactId>
+                    <version>0.5.1</version>
+                    <!-- optionally any configuration -->
+                    <configuration>
+                        <filter>package</filter>
+                        <filter>archive</filter>
+                        <!--<apionly>true</apionly>-->
+                        <profile>true</profile>
+                        <!--<recursive>true</recursive>-->
+                    </configuration>
+                </plugin>
+
+                <plugin>
                     <groupId>org.eluder.coveralls</groupId>
                     <artifactId>coveralls-maven-plugin</artifactId>
                     <version>${maven.coveralls.plugin.version}</version>
@@ -187,6 +144,16 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>com.github.marschall</groupId>
+                <artifactId>jdeps-maven-plugin</artifactId>
+                <version>0.5.1</version>
+            </plugin>
+        </plugins>
+    </reporting>
 
     <!-- List of dependencies -->
     <dependencies>
