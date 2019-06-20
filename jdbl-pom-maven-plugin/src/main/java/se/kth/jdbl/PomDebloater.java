@@ -18,6 +18,7 @@ import java.util.Set;
 public class PomDebloater {
 
     public static void main(String[] args) throws IOException, MavenInvocationException, XmlPullParserException {
+
         String pathToDependencies = "./target/dependency";
         String debloatedPomPath = "./jdbl-pom.xml";
         debloatPom(pathToDependencies, debloatedPomPath);
@@ -110,6 +111,4 @@ public class PomDebloater {
         }
         return unusedJars;
     }
-
-
 }

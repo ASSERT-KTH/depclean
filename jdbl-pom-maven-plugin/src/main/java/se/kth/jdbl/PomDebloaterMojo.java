@@ -13,9 +13,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import java.io.IOException;
 
 /**
- * <p>
- * This Maven mojo creates a debloated pom free or unused dependencies.
- * </p>
+ * This Maven mojo creates a debloated pom file that do not have any unused dependencies.
  */
 @Mojo(name = "pom-debloat", defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
 public class PomDebloaterMojo extends AbstractMojo {
@@ -43,7 +41,5 @@ public class PomDebloaterMojo extends AbstractMojo {
         }
 
         System.out.println("POM DEBLOAT FINISHED");
-
-
     }
 }

@@ -59,7 +59,7 @@ public class Main extends PlexusTestCase {
         properties.forEach((k, v) -> System.out.println(k + ":" + v));
     }
 
-    public void testJarWithTestDependency() throws TestToolsException, ProjectDependencyAnalyzerException, IOException {
+    public void testJarWithTestDependency() throws TestToolsException, ProjectDependencyAnalyzerException, IOException, CloneNotSupportedException {
 
         // directories to put the artifact and its dependencies
         String artifactDir = "/home/cesarsv/Documents/tmp/artifact/";
@@ -70,9 +70,9 @@ public class Main extends PlexusTestCase {
         FileUtils.cleanDirectory(new File(dependenciesDir));
 
         // artifact separated coordinates
-        String groupId = "org.xwiki.commons";
-        String artifactId = "xwiki-commons-component-api";
-        String version = "11.4";
+        String groupId = "org.apache.ws.commons.axiom";
+        String artifactId = "axiom-api";
+        String version = "1.2.20";
         String coordinates = groupId + ":" + artifactId + ":" + version;
 
         // download the artifact pom
@@ -96,36 +96,60 @@ public class Main extends PlexusTestCase {
         build.setDirectory(artifactDir);
         mavenProject.setBuild(build);
 
-        // output direct and transitive dependencies
+        // output direct, transitive, and all dependencies
         System.out.println("Direct dependencies");
-        List<Dependency> directDependencies = mavenProject.getDependencies();
-        directDependencies.forEach(x -> System.out.println("\t" + x.getGroupId() + ":" + x.getArtifactId() + ":" + x.getType() + ":" + x.getVersion() + ":" + x.getScope()));
+        Set<Dependency> tmp = new HashSet(mavenProject.getDependencies());
+        Set<String> directDependencies = new HashSet<>();
+        for (Dependency d : tmp) {
+            directDependencies.add(d.getGroupId() + ":" + d.getArtifactId() + ":" + d.getType() + ":" + d.getVersion() + ":" + d.getScope());
+        }
 
-        System.out.println("Transitive dependencies");
+        System.out.println("All dependencies");
         listAllDependencies(artifactDir + "pom.xml", coordinates, dependenciesDir + "allDependencies.txt");
         // read the list of dependencies from the file
         List<String> allLines = Files.readAllLines(Paths.get(dependenciesDir + "allDependencies.txt"));
+        ArrayList<String> allDependenciesList = new ArrayList<>();
         for (int i = 2; i < allLines.size(); i++) {
             if (!allLines.get(i).isEmpty()) {
-                System.out.println("\t" + allLines.get(i).split("\\u001b")[0].trim());
+                String transDep = allLines.get(i).split("\\u001b")[0].trim();
+                System.out.println("\t" + transDep);
+                allDependenciesList.add(transDep);
             }
         }
+        Set<String> allDependencies = new HashSet(allDependenciesList);
+
+        System.out.println("Transitive dependencies");
+        HashSet<String> allDependenciesSet = new HashSet(allDependenciesList);
+        HashSet<String> transitiveDependencies = allDependenciesSet;
+        transitiveDependencies.removeAll(directDependencies);
 
         // output the analysis of dependencies
         ProjectDependencyAnalysis actualAnalysis = analyzer.analyze(mavenProject);
         actualAnalysis.ignoreNonCompile();
-        System.out.println("Used and declared dependencies");
-        actualAnalysis.getUsedDeclaredArtifacts().forEach(x -> System.out.println("\t" + x));
-        System.out.println("Used but undeclared dependencies");
-        actualAnalysis.getUsedUndeclaredArtifacts().forEach(x -> System.out.println("\t" + x));
-        System.out.println("Unused but declared dependencies");
-        actualAnalysis.getUnusedDeclaredArtifacts().forEach(x -> System.out.println("\t" + x));
-        System.out.println("Unused and undeclared dependencies");
 
-        writeResults("/home/cesarsv/Documents/" + "results.csv", coordinates,
-                actualAnalysis.getUsedDeclaredArtifacts(),
-                actualAnalysis.getUsedUndeclaredArtifacts(),
-                actualAnalysis.getUnusedDeclaredArtifacts());
+        System.out.println("Used and declared dependencies");
+        Set<Artifact> usedDeclaredDependencies = actualAnalysis.getUsedDeclaredArtifacts();
+        usedDeclaredDependencies.forEach(x -> System.out.println("\t" + x));
+
+        System.out.println("Used but undeclared dependencies");
+        Set<Artifact> usedUndeclaredDependencies = actualAnalysis.getUsedUndeclaredArtifacts();
+        usedUndeclaredDependencies.forEach(x -> System.out.println("\t" + x));
+
+        System.out.println("Unused but declared dependencies");
+        Set<Artifact> unusedDeclaredDependencies = actualAnalysis.getUnusedDeclaredArtifacts();
+        unusedDeclaredDependencies.forEach(x -> System.out.println("\t" + x));
+
+//        System.out.println("Unused and undeclared dependencies");
+
+        // save results to file
+        writeResults("/home/cesarsv/Documents/" + "results.csv",
+                coordinates,
+                usedDeclaredDependencies,
+                usedUndeclaredDependencies,
+                unusedDeclaredDependencies,
+                directDependencies,
+                transitiveDependencies,
+                allDependencies);
     }
 
     /**
@@ -284,17 +308,23 @@ public class Main extends PlexusTestCase {
                               String artifact,
                               Set<Artifact> usedDeclared,
                               Set<Artifact> usedButUndeclared,
-                              Set<Artifact> unusedButDeclared) throws IOException {
+                              Set<Artifact> unusedButDeclared,
+                              Set<String> directDependencies,
+                              Set<String> transitiveDependencies,
+                              Set<String> allDependencies) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
 
-        int max = Math.max(unusedButDeclared.size(), Math.max(usedDeclared.size(), usedButUndeclared.size()));
+        int max = allDependencies.size();
 
         List<Artifact> usedDeclaredList = new ArrayList(usedDeclared);
         List<Artifact> usedButUndeclaredList = new ArrayList(usedButUndeclared);
         List<Artifact> unusedButDeclaredList = new ArrayList(unusedButDeclared);
+        List<Artifact> directDependenciesList = new ArrayList(directDependencies);
+        List<Artifact> transitiveDependenciesList = new ArrayList(transitiveDependencies);
+        List<Artifact> allDependenciesList = new ArrayList(allDependencies);
 
         // write header
-        writer.write("Artifact,UsedDeclared,UsedButUndeclared,UnusetButDeclared" + "\n");
+        writer.write("Artifact,UsedDeclared,UsedButUndeclared,UnusetButDeclared,DirectDep,TransDep,AllDep" + "\n");
 
         for (int i = 0; i < max; i++) {
             // write artifact coordinates
@@ -316,7 +346,28 @@ public class Main extends PlexusTestCase {
 
             // write unusedButDeclared dependencies
             if (unusedButDeclaredList.size() > i) {
-                writer.append(unusedButDeclaredList.get(i).toString() + "\n");
+                writer.append(unusedButDeclaredList.get(i).toString() + ",");
+            } else {
+                writer.append("NA,");
+            }
+
+            // write direct dependencies
+            if (directDependencies.size() > i) {
+                writer.append(directDependenciesList.get(i) + ",");
+            } else {
+                writer.append("NA,");
+            }
+
+            // write transitive dependencies
+            if (transitiveDependencies.size() > i) {
+                writer.append(transitiveDependenciesList.get(i) + ",");
+            } else {
+                writer.append("NA,");
+            }
+
+            // write transitive dependencies
+            if (allDependencies.size() > i) {
+                writer.append(allDependenciesList.get(i) + "\n");
             } else {
                 writer.append("NA," + "\n");
             }
