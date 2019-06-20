@@ -6,6 +6,7 @@ import analyzer.ProjectDependencyAnalyzerException;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Build;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.test.plugin.BuildTool;
@@ -16,6 +17,8 @@ import org.codehaus.plexus.PlexusTestCase;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -40,8 +43,6 @@ public class Main extends PlexusTestCase {
         if (localRepo == null) {
             RepositoryTool repositoryTool = (RepositoryTool) lookup(RepositoryTool.ROLE);
             localRepo = repositoryTool.findLocalRepositoryDirectory();
-
-
 
             // set a custom local maven repository
             localRepo = new File("/home/cesarsv/Documents/tmp/dependencies");
@@ -95,6 +96,21 @@ public class Main extends PlexusTestCase {
         build.setDirectory(artifactDir);
         mavenProject.setBuild(build);
 
+        // output direct and transitive dependencies
+        System.out.println("Direct dependencies");
+        List<Dependency> directDependencies = mavenProject.getDependencies();
+        directDependencies.forEach(x -> System.out.println("\t" + x.getGroupId() + ":" + x.getArtifactId() + ":" + x.getType() + ":" + x.getVersion() + ":" + x.getScope()));
+
+        System.out.println("Transitive dependencies");
+        listAllDependencies(artifactDir + "pom.xml", coordinates, dependenciesDir + "allDependencies.txt");
+        // read the list of dependencies from the file
+        List<String> allLines = Files.readAllLines(Paths.get(dependenciesDir + "allDependencies.txt"));
+        for (int i = 2; i < allLines.size(); i++) {
+            if (!allLines.get(i).isEmpty()) {
+                System.out.println("\t" + allLines.get(i).split("\\u001b")[0].trim());
+            }
+        }
+
         // output the analysis of dependencies
         ProjectDependencyAnalysis actualAnalysis = analyzer.analyze(mavenProject);
         actualAnalysis.ignoreNonCompile();
@@ -104,6 +120,7 @@ public class Main extends PlexusTestCase {
         actualAnalysis.getUsedUndeclaredArtifacts().forEach(x -> System.out.println("\t" + x));
         System.out.println("Unused but declared dependencies");
         actualAnalysis.getUnusedDeclaredArtifacts().forEach(x -> System.out.println("\t" + x));
+        System.out.println("Unused and undeclared dependencies");
 
         writeResults("/home/cesarsv/Documents/" + "results.csv", coordinates,
                 actualAnalysis.getUsedDeclaredArtifacts(),
@@ -166,6 +183,27 @@ public class Main extends PlexusTestCase {
     private void copyDependencies(String pomPath, String coordinates, String outputDirectoryPath, Properties properties) throws TestToolsException {
         File pom = new File(pomPath);
         List<String> goals = Arrays.asList("dependency:copy-dependencies", "-DoutputDirectory=" + outputDirectoryPath, "-Dartifact=" + coordinates);
+        File log = new File(pom.getParentFile(), "build.log");
+        InvocationRequest request = buildTool.createBasicInvocationRequest(pom, properties, goals, log);
+        request.setLocalRepositoryDirectory(localRepo);
+        request.setPomFile(pom);
+        buildTool.executeMaven(request);
+    }
+
+    /**
+     * This method returns a list of transitive dependencies of an artifact from Maven Central.
+     *
+     * @param pomPath
+     * @param coordinates
+     * @throws TestToolsException
+     */
+    private void listAllDependencies(String pomPath, String coordinates, String dependenciesDir) throws TestToolsException {
+        listAllDependencies(pomPath, coordinates, dependenciesDir, new Properties());
+    }
+
+    private void listAllDependencies(String pomPath, String coordinates, String dependenciesDir, Properties properties) throws TestToolsException {
+        File pom = new File(pomPath);
+        List<String> goals = Arrays.asList("dependency:list", "-DoutputFile=" + dependenciesDir, "-Dartifact=" + coordinates);
         File log = new File(pom.getParentFile(), "build.log");
         InvocationRequest request = buildTool.createBasicInvocationRequest(pom, properties, goals, log);
         request.setLocalRepositoryDirectory(localRepo);
