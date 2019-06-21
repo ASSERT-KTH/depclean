@@ -149,5 +149,12 @@
             <version>1.5.3</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.whitesource/maven-dependency-tree-parser -->
+        <dependency>
+            <groupId>org.whitesource</groupId>
+            <artifactId>maven-dependency-tree-parser</artifactId>
+            <version>1.0.5</version>
+        </dependency>
+
     </dependencies>
 </project>
