@@ -1,4 +1,4 @@
-package se.kth.jdbl.pom.main;
+package se.kth.jdbl.pom;
 
 import org.apache.commons.io.FileUtils;
 
@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.net.URL;
 
 public class PomDownloader {
-
-
 
     /**
      * Download pom file from the Maven Central repository.
@@ -23,7 +21,7 @@ public class PomDownloader {
         FileUtils.copyURLToFile(
                 new URL("http://central.maven.org/maven2/" +
                         groupId.replace('.', '/') + "/" +
-                        artifactId.replace('.', '/') + "/" +
+                        artifactId + "/" +
                         version + "/" +
                         artifactId + "-" + version + ".pom"),
                 new File(artifactDir + "pom.xml"));

@@ -1,4 +1,4 @@
-package se.kth.jdbl.pom.main;
+package se.kth.jdbl.pom;
 
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.test.plugin.TestToolsException;
@@ -26,11 +26,7 @@ public class MavenPluginInvoker {
         File pom = new File(pomPath);
         List<String> goals = Arrays.asList("dependency:get", "-Dartifact=" + coordinates);
         File log = new File(pom.getParentFile(), "build.log");
-        InvocationRequest request = Main.getBuildTool().createBasicInvocationRequest(pom, properties, goals, log);
-        request.setLocalRepositoryDirectory(Main.getLocalRepo());
-        request.setPomFile(pom);
-
-        Main.getBuildTool().executeMaven(request);
+        executeRequest(properties, pom, goals, log);
     }
 
     /**
@@ -48,10 +44,7 @@ public class MavenPluginInvoker {
         File pom = new File(pomPath);
         List<String> goals = Arrays.asList("dependency:copy-dependencies", "-DoutputDirectory=" + outputDirectoryPath, "-Dartifact=" + coordinates);
         File log = new File(pom.getParentFile(), "build.log");
-        InvocationRequest request =  Main.getBuildTool().createBasicInvocationRequest(pom, properties, goals, log);
-        request.setLocalRepositoryDirectory(Main.getLocalRepo());
-        request.setPomFile(pom);
-        Main.getBuildTool().executeMaven(request);
+        executeRequest(properties, pom, goals, log);
     }
 
     public void copyDependencyTree(String pomPath, String coordinates, String dependenciesDir) throws TestToolsException {
@@ -60,12 +53,9 @@ public class MavenPluginInvoker {
 
     private void copyDependencyTree(String pomPath, String coordinates, String dependenciesDir, Properties properties) throws TestToolsException {
         File pom = new File(pomPath);
-        List<String> goals = Arrays.asList("dependency:tree", "-DoutputFile=" + dependenciesDir, "-DoutputType=text", "-Dartifact=" + coordinates);
+        List<String> goals = Arrays.asList("dependency:tree", "-Dverbose", "-DoutputFile=" + dependenciesDir, "-DoutputType=text", "-Dartifact=" + coordinates);
         File log = new File(pom.getParentFile(), "build.log");
-        InvocationRequest request =  Main.getBuildTool().createBasicInvocationRequest(pom, properties, goals, log);
-        request.setLocalRepositoryDirectory(Main.getLocalRepo());
-        request.setPomFile(pom);
-        Main.getBuildTool().executeMaven(request);
+        executeRequest(properties, pom, goals, log);
     }
 
     /**
@@ -83,9 +73,13 @@ public class MavenPluginInvoker {
         File pom = new File(pomPath);
         List<String> goals = Arrays.asList("dependency:copy", "-DoutputDirectory=" + outputDirectoryPath, "-Dartifact=" + coordinates);
         File log = new File(pom.getParentFile(), "build.log");
-        InvocationRequest request =  Main.getBuildTool().createBasicInvocationRequest(pom, properties, goals, log);
-        request.setLocalRepositoryDirectory(Main.getLocalRepo());
+        executeRequest(properties, pom, goals, log);
+    }
+
+    private void executeRequest(Properties properties, File pom, List<String> goals, File log) throws TestToolsException {
+        InvocationRequest request = App.getBuildTool().createBasicInvocationRequest(pom, properties, goals, log);
+        request.setLocalRepositoryDirectory(App.getLocalRepo());
         request.setPomFile(pom);
-        Main.getBuildTool().executeMaven(request);
+        App.getBuildTool().executeMaven(request);
     }
 }

@@ -1,4 +1,4 @@
-package se.kth.jdbl.pom.main;
+package se.kth.jdbl.pom;
 
 import fr.dutra.tools.maven.deptree.core.InputType;
 import fr.dutra.tools.maven.deptree.core.Node;
@@ -44,10 +44,6 @@ public class DependencyTreeAnalyzer {
             }
         }
         return listOfChildrensCanonical;
-    }
-
-    public String getArtifactCanonicalName() {
-        return artifact.getArtifactCanonicalForm();
     }
 
     public ArrayList<String> getDirectDependencies() {
