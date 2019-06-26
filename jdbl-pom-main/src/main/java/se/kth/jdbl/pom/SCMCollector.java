@@ -5,7 +5,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.*;
 
-public class ArtifactSelector {
+public class SCMCollector {
 
     public static void main(String[] args) throws IOException, XmlPullParserException {
         selectArtifacts(new File("/home/cesarsv/Documents/artifacts.csv"));

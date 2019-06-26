@@ -1,6 +1,5 @@
 package se.kth.jdbl.pom;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.*;
 
 import java.io.BufferedWriter;
@@ -8,7 +7,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class CustomFileWriter {
 
@@ -78,81 +76,19 @@ public class CustomFileWriter {
      *
      * @param resultsPath
      * @param artifact
-     * @param usedDeclared
-     * @param usedUndeclared
-     * @param unusedDeclared
+     * @param dependencies
      * @throws IOException
      */
     public static void writeDependencyResults(String resultsPath,
                                               String artifact,
-                                              Set<Artifact> usedDeclared,
-                                              Set<Artifact> usedUndeclared,
-                                              Set<Artifact> unusedDeclared,
-                                              ArrayList<String> unusedUndeclared,
-                                              ArrayList<String> directDependencies,
-                                              ArrayList<String> transitiveDependencies,
-                                              ArrayList<String> allDependencies) throws IOException {
+                                              ArrayList<MavenDependency> dependencies) throws IOException {
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(resultsPath, true));
 
-        int max = allDependencies.size();
-
-        List<Artifact> usedDeclaredList = new ArrayList(usedDeclared);
-        List<Artifact> usedButUndeclaredList = new ArrayList(usedUndeclared);
-        List<Artifact> unusedButDeclaredList = new ArrayList(unusedDeclared);
-
-        for (int i = 0; i < max; i++) {
+        for (MavenDependency dependency : dependencies) {
             // write artifact coordinates
             bw.write(artifact + ",");
-
-            // write usedDeclared dependencies
-            if (usedDeclaredList.size() > i) {
-                bw.write(usedDeclaredList.get(i).toString() + ",");
-            } else {
-                bw.write("NA,");
-            }
-
-            // write usedButUndeclared dependencies
-            if (usedButUndeclaredList.size() > i) {
-                bw.write(usedButUndeclaredList.get(i).toString() + ",");
-            } else {
-                bw.write("NA,");
-            }
-
-            // write unusedButDeclared dependencies
-            if (unusedButDeclaredList.size() > i) {
-                bw.write(unusedButDeclaredList.get(i).toString() + ",");
-            } else {
-                bw.write("NA,");
-            }
-
-            // write unusedButDeclared dependencies
-            if (unusedUndeclared.size() > i) {
-                bw.write(unusedUndeclared.get(i) + ",");
-            } else {
-                bw.write("NA,");
-            }
-
-            // write direct dependencies
-            if (directDependencies.size() > i) {
-                bw.write(directDependencies.get(i) + ",");
-            } else {
-                bw.write("NA,");
-            }
-
-            // write transitive dependencies
-            if (transitiveDependencies.size() > i) {
-                bw.write(transitiveDependencies.get(i) + ",");
-            } else {
-                bw.write("NA,");
-            }
-
-            // write transitive dependencies
-            if (allDependencies.size() > i) {
-                bw.write(allDependencies.get(i) + "\n");
-            } else {
-                bw.write("NA," + "\n");
-            }
+            bw.write(dependency.toString() );
         }
         bw.close();
     }

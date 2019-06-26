@@ -153,7 +153,7 @@ public final class PomManipulator {
                 final String version = findVersion(dm, dependency);
                 if (version == null) {
                     throw new IllegalStateException(
-                            "Dependency version not set for '"
+                            "MavenDependency version not set for '"
                                     + dependency.getGroupId() + ":"
                                     + dependency.getArtifactId() + "' in '"
                                     + model.getGroupId() + ":"
@@ -231,10 +231,7 @@ public final class PomManipulator {
                         .withoutTransitivity();
                 return formatStage.asSingleFile();
             }
-        } catch (final NoResolvedResultException ex) {
-            throw new IllegalStateException("Couldn't resolve '"
-                    + canonicalForm + "'", ex);
-        } catch (final IOException ex) {
+        } catch (final NoResolvedResultException | IOException ex) {
             throw new IllegalStateException("Couldn't resolve '"
                     + canonicalForm + "'", ex);
         }
@@ -260,7 +257,7 @@ public final class PomManipulator {
     }
 
     /**
-     * Return the Maven coordinates of the dependencies. Looks at the properties in case versions d
+     * Return the Maven coordinates of the dependencies. Looks at the properties in case version number declared as properties.
      *
      * @param model
      * @return

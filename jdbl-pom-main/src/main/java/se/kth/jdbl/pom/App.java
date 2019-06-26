@@ -18,6 +18,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -34,18 +35,18 @@ public class App extends PlexusTestCase {
         app.setUp();
 
         // read the list of artifacts
-        BufferedReader br = new BufferedReader(new FileReader(new File("/home/cesarsv/Documents/xperiments/artifacts_ten_usages.csv")));
+        BufferedReader br = new BufferedReader(new FileReader(new File("/home/cesarsv/Documents/xperiments/test.csv")));
 
         // report results files
-        String resultsPath = "/home/cesarsv/Documents/xperiments/" + "results.csv";
-        String descriptionPath = "/home/cesarsv/Documents/xperiments/" + "description.csv";
+        String resultsPath = "/home/cesarsv/Documents/xperiments/results/" + "results.csv";
+        String descriptionPath = "/home/cesarsv/Documents/xperiments/results/" + "description.csv";
 
         BufferedWriter bwResults = new BufferedWriter(new FileWriter(resultsPath, true));
         BufferedWriter bwDescription = new BufferedWriter(new FileWriter(descriptionPath, true));
 
         // write csv report headers
         bwDescription.write("Artifact,Organization,Scm,Ci,License,Description" + "\n");
-        bwResults.write("Artifact,UsedDeclared,UsedUndeclared,UnusetDeclared,UnusedUndeclared,DirectDep,TransDep,AllDep" + "\n");
+        bwResults.write("Artifact,AllDeps,Type,Scope,Optional,Direct,Transitive,UsedDeclared,UsedUndeclared,UnusedDeclared,UnusedUndeclared,InConflict" + "\n");
 
         bwResults.close();
         bwDescription.close();
@@ -53,7 +54,7 @@ public class App extends PlexusTestCase {
         String artifact = br.readLine();
 
         while (artifact != null) {
-            artifact = artifact.substring(1, artifact.length() - 1);
+//            artifact = artifact.substring(1, artifact.length() - 1);
             String[] split = artifact.split(":");
             String groupId = split[0];
             String artifactId = split[1];
@@ -67,9 +68,7 @@ public class App extends PlexusTestCase {
             }
             artifact = br.readLine();
         }
-
         br.close();
-
     }
 
     protected void setUp() throws Exception {
@@ -84,8 +83,9 @@ public class App extends PlexusTestCase {
             localRepo = repositoryTool.findLocalRepositoryDirectory();
 
             // set a custom local maven repository
-            localRepo = new File("/home/cesarsv/Documents/tmp/dependencies");
-            System.setProperty("maven.home", "/home/cesarsv/Documents/tmp/dependencies");
+
+            localRepo = new File("/home/cesarsv/Documents/xperiments/dependencies");
+            System.setProperty("maven.home", "/home/cesarsv/Documents/xperiments/dependencies");
 
             LOGGER.info("Local repository: " + localRepo);
         }
@@ -98,8 +98,8 @@ public class App extends PlexusTestCase {
         MavenPluginInvoker mavenPluginInvoker = new MavenPluginInvoker();
 
         // directories to put the artifact and its dependencies
-        String artifactDir = "/home/cesarsv/Documents/tmp/artifact/";
-        String dependenciesDir = "/home/cesarsv/Documents/tmp/dependencies/";
+        String artifactDir = "/home/cesarsv/Documents/xperiments/artifact/";
+        String dependenciesDir = "/home/cesarsv/Documents/xperiments/dependencies/";
 
         // remove the content of local directories
         FileUtils.cleanDirectory(new File(artifactDir));
@@ -114,6 +114,7 @@ public class App extends PlexusTestCase {
 
         LOGGER.info("------------------------------------------------");
         LOGGER.info("Processing: " + coordinates);
+        LOGGER.info("------------------------------------------------");
 
         // download the artifact pom
         LOGGER.info("downloading pom");
@@ -127,71 +128,154 @@ public class App extends PlexusTestCase {
         File jarFile = new File(artifactDir + artifactId + "-" + version + ".jar");
         if (jarFile.exists()) {
 
-            // resolve all the dependencies
-            LOGGER.info("resolving dependencies");
-            mavenPluginInvoker.resolveDependencies(artifactDir + "pom.xml", coordinates);
-
-            // copy all the dependencies locally
-            LOGGER.info("copying dependencies");
-            mavenPluginInvoker.copyDependencies(artifactDir + "pom.xml", coordinates, dependenciesDir);
-
-            LOGGER.info("decompressing jar");
-            JarUtils.decompressJarFile(artifactDir, artifactDir + artifactId + "-" + version + ".jar");
-
-            // build the maven project with its dependencies from the local repository
-            MavenProject mavenProject = projectTool.readProjectWithDependencies(new File(artifactDir + "pom.xml"), localRepo);
-            Build build = new Build();
-            build.setDirectory(artifactDir);
-            mavenProject.setBuild(build);
-
             // get basic dependency info from the dependency tree
-            String dependencyTreePath = dependenciesDir + "dependencyTree.txt";
+            LOGGER.info("getting dependency tree");
+            String dependencyTreePath = artifactDir + "dependencyTree.txt";
             mavenPluginInvoker.copyDependencyTree(artifactDir + "pom.xml", coordinates, dependencyTreePath);
-            DependencyTreeAnalyzer dta = new DependencyTreeAnalyzer(dependencyTreePath);
-            ArrayList<String> directDependencies = dta.getDirectDependencies();
-            ArrayList<String> transitiveDependencies = dta.getTransitiveDependencies();
-            ArrayList<String> allDependencies = dta.getAllDependencies();
+            if (new File(dependencyTreePath).exists()) {
 
-            // output the analysis of dependencies
-            ProjectDependencyAnalysis actualAnalysis = analyzer.analyze(mavenProject);
-            actualAnalysis.ignoreNonCompile();
+                // resolve all the dependencies
+                LOGGER.info("resolving dependencies");
+                mavenPluginInvoker.resolveDependencies(artifactDir + "pom.xml", coordinates);
 
-            // Used and declared dependencies"
-            Set<Artifact> usedDeclaredDependencies = actualAnalysis.getUsedDeclaredArtifacts();
+                // copy all the dependencies locally
+                LOGGER.info("copying dependencies");
+                mavenPluginInvoker.copyDependencies(artifactDir + "pom.xml", coordinates, dependenciesDir);
 
-            // Used but undeclared dependencies
-            Set<Artifact> usedUndeclaredDependencies = actualAnalysis.getUsedUndeclaredArtifacts();
+                LOGGER.info("decompressing jar");
+                JarUtils.decompressJarFile(artifactDir + "target/classes/", artifactDir + artifactId + "-" + version + ".jar");
 
-            // Unused but declared dependencies
-            Set<Artifact> unusedDeclaredDependencies = actualAnalysis.getUnusedDeclaredArtifacts();
+                // build the maven project with its dependencies from the local repository
+                LOGGER.info("building maven project");
+                MavenProject mavenProject = projectTool.readProjectWithDependencies(new File(artifactDir + "pom.xml"), localRepo);
+                Build build = new Build();
+                build.setDirectory(artifactDir);
+                mavenProject.setBuild(build);
 
-            // Unused and undeclared dependencies
-            ArrayList<String> ud = new ArrayList<>();
-            for (Artifact unusedDeclaredDependency : unusedDeclaredDependencies) {
-                ud.add(unusedDeclaredDependency.toString());
+                DependencyTreeAnalyzer dta = new DependencyTreeAnalyzer(dependencyTreePath);
+
+                ArrayList<String> directDependencies = dta.getDirectDependencies();
+                ArrayList<String> transitiveDependencies = dta.getTransitiveDependencies();
+                ArrayList<String> allDependencies = dta.getAllDependencies();
+
+                // analysis of dependencies
+                ProjectDependencyAnalysis actualAnalysis = analyzer.analyze(mavenProject);
+                actualAnalysis.ignoreNonCompile();
+
+                // used and declared dependencies"
+                Set<Artifact> usedDeclaredDependencies = actualAnalysis.getUsedDeclaredArtifacts();
+
+                // used but undeclared dependencies
+                Set<Artifact> usedUndeclaredDependencies = actualAnalysis.getUsedUndeclaredArtifacts();
+
+                // unused but declared dependencies
+                Set<Artifact> unusedDeclaredDependencies = actualAnalysis.getUnusedDeclaredArtifacts();
+
+//                // unused and undeclared dependencies
+//                ArrayList<String> ud = new ArrayList<>();
+//                for (Artifact unusedDeclaredDependency : unusedDeclaredDependencies) {
+//                    ud.add(unusedDeclaredDependency.toString());
+//                }
+//                ArrayList<String> unusedUndeclaredDependencies = dta.getArtifactsAllDependencies(ud);
+//                // now remove the used and undeclared dependencies from the unused undeclared set
+//                removeUsedUndeclared(usedUndeclaredDependencies, unusedUndeclaredDependencies);
+
+                LOGGER.info("dependency analysis finished");
+
+                // manipulation of the pom file
+                LOGGER.info("writing artifact description");
+                Model model = PomManipulator.readModel(new File(artifactDir + "pom.xml"));
+                CustomFileWriter.writeArtifactProperties(descriptionPath, model);
+
+                ArrayList<MavenDependency> dependencies = new ArrayList<>();
+                for (String dep : allDependencies) {
+
+                    String inConflict = "NO";
+
+                    if(dep.startsWith("(")){
+                        dep = dep.substring(1, dep.length()-1);
+                        String[] tmpSplit = dep.split(" - ");
+                        dep = tmpSplit[0];
+                        inConflict = tmpSplit[1].replace(",", "[comma] ");
+                    }
+
+                    String[] split = dep.split(":");
+                    String g = split[0];
+                    String a = split[1];
+                    String t = split[2];
+                    String v = split[3];
+                    String s = split[4];
+
+                    boolean isOptional = false;
+                    boolean isUsedDeclared = false;
+                    boolean isUsedUndeclared = false;
+                    boolean isUnusedDeclared = false;
+
+                    for (Artifact usedDeclaredDependency : usedDeclaredDependencies) {
+                        if (usedDeclaredDependency.toString().equals(dep)) {
+                            isUsedDeclared = true;
+                            isOptional = usedDeclaredDependency.isOptional();
+                            break;
+                        }
+                    }
+
+                    for (Artifact usedUndeclaredDependency : usedUndeclaredDependencies) {
+                        if (usedUndeclaredDependency.toString().equals(dep)) {
+                            isUsedUndeclared = true;
+                            isOptional = usedUndeclaredDependency.isOptional();
+                            break;
+                        }
+                    }
+
+                    for (Artifact unusedDeclaredDependency : unusedDeclaredDependencies) {
+                        if (unusedDeclaredDependency.toString().equals(dep)) {
+                            isUnusedDeclared = true;
+                            isOptional = unusedDeclaredDependency.isOptional();
+                            break;
+                        }
+                    }
+
+                    MavenDependency dependency = new MavenDependency();
+                    dependency
+                            .setCoordinates(g + ":" + a + ":" + v)
+                            .setType(t)
+                            .setScope(s)
+                            .isOptional(isOptional)
+                            .isDirect(directDependencies.contains(dep))
+                            .isTransitive(transitiveDependencies.contains(dep))
+                            .isUsedDeclared(isUsedDeclared)
+                            .isUsedUndeclared(isUsedUndeclared)
+                            .isUnusedDeclared(isUnusedDeclared)
+                            .isUnusedUndeclared((!isUsedDeclared && !isUsedUndeclared  && !isUnusedDeclared ))
+                            .inConflict(inConflict);
+                    dependencies.add(dependency);
+                }
+
+                // save results to file
+                LOGGER.info("writing artifact dependencies info ");
+                CustomFileWriter.writeDependencyResults(resultsPath,
+                        coordinates,
+                        dependencies);
             }
-            ArrayList<String> unusedUndeclaredDependencies = dta.getArtifactsAllDependencies(ud);
-
-            LOGGER.info("dependency analysis finished");
-
-            // manipulation of the pom file
-            LOGGER.info("writing artifact description");
-            Model model = PomManipulator.readModel(new File(artifactDir + "pom.xml"));
-            CustomFileWriter.writeArtifactProperties(descriptionPath, model);
-
-            // save results to file
-            LOGGER.info("writing artifact dependencies info ");
-            CustomFileWriter.writeDependencyResults(resultsPath,
-                    coordinates,
-                    usedDeclaredDependencies,
-                    usedUndeclaredDependencies,
-                    unusedDeclaredDependencies,
-                    unusedUndeclaredDependencies,
-                    directDependencies,
-                    transitiveDependencies,
-                    allDependencies);
         }
     }
+
+//    private void removeUsedUndeclared(Set<Artifact> usedUndeclaredDependencies, ArrayList<String> unusedUndeclaredDependencies) {
+//        for (Iterator<String> iterator = unusedUndeclaredDependencies.iterator(); iterator.hasNext(); ) {
+//            String unusedUndeclaredDependency = iterator.next();
+//            for (Artifact usedUndeclaredDependency : usedUndeclaredDependencies) {
+//                String tmp = usedUndeclaredDependency.getGroupId() + ":" +
+//                        usedUndeclaredDependency.getArtifactId() + ":" +
+//                        usedUndeclaredDependency.getType() + ":" +
+//                        usedUndeclaredDependency.getVersion() + ":" +
+//                        usedUndeclaredDependency.getScope();
+//                if (unusedUndeclaredDependency.equals(tmp)) {
+//                    iterator.remove();
+//                    break;
+//                }
+//            }
+//        }
+//    }
 
     public static BuildTool getBuildTool() {
         return buildTool;

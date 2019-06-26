@@ -30,7 +30,7 @@ public class MavenPluginInvoker {
     }
 
     /**
-     * This method resolves all the direct and transitive dependencies of an artifact from Maven Central.
+     * This method copies all the direct and transitive dependencies of an artifact from Maven Central.
      *
      * @param pomPath
      * @param coordinates
@@ -42,7 +42,7 @@ public class MavenPluginInvoker {
 
     private void copyDependencies(String pomPath, String coordinates, String outputDirectoryPath, Properties properties) throws TestToolsException {
         File pom = new File(pomPath);
-        List<String> goals = Arrays.asList("dependency:copy-dependencies", "-DoutputDirectory=" + outputDirectoryPath, "-Dartifact=" + coordinates);
+        List<String> goals = Arrays.asList("dependency:copy-dependencies", "-DaddParentPoms=true", "-DuseRepositoryLayout=true", "-DoutputDirectory=" + outputDirectoryPath, "-Dartifact=" + coordinates);
         File log = new File(pom.getParentFile(), "build.log");
         executeRequest(properties, pom, goals, log);
     }
