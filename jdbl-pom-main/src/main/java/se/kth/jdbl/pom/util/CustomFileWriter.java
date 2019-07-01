@@ -1,6 +1,7 @@
-package se.kth.jdbl.pom;
+package se.kth.jdbl.pom.util;
 
 import org.apache.maven.model.*;
+import se.kth.jdbl.pom.MavenDependency;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -17,13 +18,12 @@ public class CustomFileWriter {
      * @param model
      * @throws IOException
      */
-    public static void writeArtifactProperties(String descriptionPath, Model model) throws IOException {
+    public static void writeArtifactProperties(String descriptionPath, Model model, String coordinates) throws IOException {
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(descriptionPath, true));
 
         // write coordinates
-        String artifact = model.getGroupId() + ":" + model.getArtifactId() + ":" + model.getPackaging() + ":" + model.getVersion();
-        bw.write(artifact + ",");
+        bw.write(coordinates + ",");
 
         // write organization
         Organization organization = model.getOrganization();

@@ -1,5 +1,5 @@
 ### IntelliJ
-.idea
+*.idea
 
 ### Maven template
 target/
@@ -9,4 +9,4 @@ target/
 .gitattributes
 
 ### Project
-spoon*
+#spoon*

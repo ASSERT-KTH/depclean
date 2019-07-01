@@ -71,6 +71,19 @@ public class DependencyTreeAnalyzer {
         return allDependenciesCanonical;
     }
 
+    public int getNumberOfDependenciesOfNode(String groupId, String artifactId, String version) {
+        List<Node> allDependenciesNodes = returnAllNodes(artifact);
+        allDependenciesNodes.remove(artifact);
+
+        for (Node node : allDependenciesNodes) {
+            if (node.getGroupId().equals(groupId) && node.getArtifactId().equals(artifactId) && node.getVersion().equals(version)) {
+                return node.getChildNodes().size();
+            }
+        }
+
+        return 0; // should never happen
+    }
+
     private List<Node> returnAllNodes(Node node) {
         List<Node> listOfNodes = new ArrayList<>();
         addAllNodes(node, listOfNodes);
@@ -87,5 +100,27 @@ public class DependencyTreeAnalyzer {
                 }
             }
         }
+    }
+
+
+    public int getLevel(String groupId, String artifactId, String version) {
+        List<Node> allDependenciesNodes = returnAllNodes(artifact);
+
+        for (Node node : allDependenciesNodes) {
+            if (node.getGroupId().equals(groupId) && node.getArtifactId().equals(artifactId) && node.getVersion().equals(version)) {
+                return distanceFromRoot(node);
+            }
+        }
+
+        return 0; // should never happen
+    }
+
+    private int distanceFromRoot(Node node) {
+        int d = 0;
+        while (node.getParent() != null) {
+            d++;
+            node = node.getParent();
+        }
+        return d;
     }
 }

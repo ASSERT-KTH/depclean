@@ -1,7 +1,8 @@
-package se.kth.jdbl.pom;
+package se.kth.jdbl.pom.util;
 
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.test.plugin.TestToolsException;
+import se.kth.jdbl.pom.App;
 
 import java.io.File;
 import java.util.Arrays;

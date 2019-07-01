@@ -5,19 +5,15 @@ public class MavenDependency {
     private String coordinates;
     private String type;
     private String scope;
+    private String dependencyType;
+    private String inConflict;
+
+    private int nbDependencies;
+    private int treeLevel;
 
     private boolean isOptional;
-
-    private boolean isDirect;
-    private boolean isTransitive;
-
-    private boolean isUsedDeclared;
-    private boolean isUsedUndeclared;
-
-    private boolean isUnusedDeclared;
-    private boolean isUnusedUndeclared;
-
-    private String inConflict;
+    private boolean isUsed;
+    private boolean isDeclared;
 
     public MavenDependency() {
     }
@@ -42,33 +38,28 @@ public class MavenDependency {
         return this;
     }
 
-    public MavenDependency isDirect(boolean isDirect) {
-        this.isDirect = isDirect;
+    public MavenDependency isDeclared(boolean isDeclared) {
+        this.isDeclared = isDeclared;
         return this;
     }
 
-    public MavenDependency isTransitive(boolean isTransitive) {
-        this.isTransitive = isTransitive;
+    public MavenDependency isUsed(boolean isUsed) {
+        this.isUsed = isUsed;
         return this;
     }
 
-    public MavenDependency isUsedDeclared(boolean isUsedDeclared) {
-        this.isUsedDeclared = isUsedDeclared;
+    public MavenDependency setNbDependencies(int nbDependencies) {
+        this.nbDependencies = nbDependencies;
         return this;
     }
 
-    public MavenDependency isUsedUndeclared(boolean isUsedUndeclared) {
-        this.isUsedUndeclared = isUsedUndeclared;
+    public MavenDependency setTreeLevel(int treeLevel) {
+        this.treeLevel = treeLevel;
         return this;
     }
 
-    public MavenDependency isUnusedDeclared(boolean isUnusedDeclared) {
-        this.isUnusedDeclared = isUnusedDeclared;
-        return this;
-    }
-
-    public MavenDependency isUnusedUndeclared(boolean isUnusedUndeclared) {
-        this.isUnusedUndeclared = isUnusedUndeclared;
+    public MavenDependency setDependencyType(String dependencyType) {
+        this.dependencyType = dependencyType;
         return this;
     }
 
@@ -79,7 +70,7 @@ public class MavenDependency {
 
     @Override
     public String toString() {
-        return coordinates + "," + type + "," + scope + "," + isOptional + "," + isDirect + "," + isTransitive + "," + isUsedDeclared + "," +
-                isUsedUndeclared + "," + isUnusedDeclared + "," + isUnusedUndeclared + "," + inConflict + "\n";
+        return coordinates + "," + type + "," + scope + "," + isOptional + "," + dependencyType + "," + isUsed + "," + isDeclared + "," +
+                nbDependencies + "," + treeLevel + "," + inConflict + "\n";
     }
 }

@@ -2,6 +2,8 @@ package se.kth.jdbl.pom;
 
 import org.apache.maven.model.Model;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import se.kth.jdbl.pom.util.PomDownloader;
+import se.kth.jdbl.pom.util.PomManipulator;
 
 import java.io.*;
 

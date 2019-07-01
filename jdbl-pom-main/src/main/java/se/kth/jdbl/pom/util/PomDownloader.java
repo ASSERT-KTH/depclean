@@ -1,4 +1,4 @@
-package se.kth.jdbl.pom;
+package se.kth.jdbl.pom.util;
 
 import org.apache.commons.io.FileUtils;
 

@@ -60,6 +60,9 @@
         <module>jdbl-pom-main</module>
         <module>jdbl-pom-maven-plugin</module>
         <module>maven-dependency-analyzer-modified</module>
+        <module>jdeps-wall-of-shame</module>
+        <module>eclipse-aether-example</module>
+        <module>dependency</module>
     </modules>
 
     <!-- Build options -->
@@ -194,7 +197,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13-beta-2</version>
-            <scope>test</scope>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>
