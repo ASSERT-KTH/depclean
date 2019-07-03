@@ -2,15 +2,18 @@ package se.kth.jdbl.pom.util;
 
 public class ClassMembersVisitorCounter {
 
-    // fields ---------------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //------ CLASS FIELDS ------/
+    //--------------------------/
 
     private static int nbVisitedClasses;
     private static int nbVisitedFields;
     private static int nbVisitedMethods;
     private static int nbVisitedAnnotations;
 
-
-    // public methods -------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //------ CONSTRUCTORS ------/
+    //--------------------------/
 
     public static void resetClassCounters() {
         nbVisitedClasses = 0;
@@ -18,6 +21,10 @@ public class ClassMembersVisitorCounter {
         nbVisitedMethods = 0;
         nbVisitedAnnotations = 0;
     }
+
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
 
     public static void addVisitedClass() {
         nbVisitedClasses++;
@@ -35,7 +42,9 @@ public class ClassMembersVisitorCounter {
         nbVisitedAnnotations++;
     }
 
-    // getters --------------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //---- GETTER METHODS ------/
+    //--------------------------/
 
     public static int getNbVisitedClasses() {
         return nbVisitedClasses;

@@ -9,11 +9,19 @@ import java.io.*;
 
 public class SCMCollector {
 
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
+
     public static void main(String[] args) throws IOException, XmlPullParserException {
         selectArtifacts(new File("/home/cesarsv/Documents/artifacts.csv"));
     }
 
-    public static void selectArtifacts(File artifacts) throws XmlPullParserException, IOException {
+    //--------------------------/
+    //---- PRIVATE METHODS -----/
+    //--------------------------/
+
+    private static void selectArtifacts(File artifacts) throws XmlPullParserException, IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("/home/cesarsv/Documents/subjects.csv")));
         BufferedReader br = new BufferedReader(new FileReader(artifacts));
         String artifact = br.readLine();

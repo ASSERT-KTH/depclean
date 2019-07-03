@@ -8,8 +8,16 @@ import java.net.URL;
 
 public class PomDownloader {
 
+    //--------------------------/
+    //------ CONSTRUCTORS ------/
+    //--------------------------/
+
     private PomDownloader() {
     }
+
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
 
     /**
      * This method downloads a pom file from the Maven Central repository.

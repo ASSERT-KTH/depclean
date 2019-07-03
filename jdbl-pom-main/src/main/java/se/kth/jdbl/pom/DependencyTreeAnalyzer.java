@@ -11,11 +11,15 @@ import java.util.List;
 
 public class DependencyTreeAnalyzer {
 
-    // fields ---------------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //------ CLASS FIELDS ------/
+    //--------------------------/
 
     Node rootNode;
 
-    // constructors ---------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //------ CONSTRUCTORS ------/
+    //--------------------------/
 
     public DependencyTreeAnalyzer(String dependencyTreeFile) {
         InputType type = InputType.TEXT;
@@ -28,7 +32,9 @@ public class DependencyTreeAnalyzer {
         }
     }
 
-    // public methods -------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
 
     public ArrayList<String> getArtifactsAllDependencies(ArrayList<String> artifacts) {
         ArrayList<String> listOfChildrensCanonical = new ArrayList();
@@ -98,7 +104,9 @@ public class DependencyTreeAnalyzer {
         return 0; // should never be reached
     }
 
-    // private methods -------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //---- PRIVATE METHODS -----/
+    //--------------------------/
 
     private int distanceFromRoot(Node node) {
         int d = 0;

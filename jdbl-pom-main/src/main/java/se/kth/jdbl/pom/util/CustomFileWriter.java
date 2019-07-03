@@ -11,6 +11,10 @@ import java.util.List;
 
 public class CustomFileWriter {
 
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
+
     /**
      * Writes a file with descriptive fields of the studied artifacts locally.
      *

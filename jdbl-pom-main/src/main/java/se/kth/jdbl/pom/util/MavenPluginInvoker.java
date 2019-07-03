@@ -11,6 +11,10 @@ import java.util.Properties;
 
 public class MavenPluginInvoker {
 
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
+
     /**
      * This method resolves all the direct and transitive dependencies of an artifact from Maven Central.
      *
@@ -21,13 +25,6 @@ public class MavenPluginInvoker {
     public void resolveDependencies(String pomPath, String coordinates)
             throws TestToolsException {
         resolveDependencies(pomPath, coordinates, new Properties());
-    }
-
-    private void resolveDependencies(String pomPath, String coordinates, Properties properties) throws TestToolsException {
-        File pom = new File(pomPath);
-        List<String> goals = Arrays.asList("dependency:get", "-Dartifact=" + coordinates);
-        File log = new File(pom.getParentFile(), "build.log");
-        executeRequest(properties, pom, goals, log);
     }
 
     /**
@@ -41,22 +38,8 @@ public class MavenPluginInvoker {
         copyDependencies(pomPath, coordinates, outputDirectoryPath, new Properties());
     }
 
-    private void copyDependencies(String pomPath, String coordinates, String outputDirectoryPath, Properties properties) throws TestToolsException {
-        File pom = new File(pomPath);
-        List<String> goals = Arrays.asList("dependency:copy-dependencies", "-DaddParentPoms=true", "-DuseRepositoryLayout=true", "-DoutputDirectory=" + outputDirectoryPath, "-Dartifact=" + coordinates);
-        File log = new File(pom.getParentFile(), "build.log");
-        executeRequest(properties, pom, goals, log);
-    }
-
     public void copyDependencyTree(String pomPath, String coordinates, String dependenciesDir) throws TestToolsException {
         copyDependencyTree(pomPath, coordinates, dependenciesDir, new Properties());
-    }
-
-    private void copyDependencyTree(String pomPath, String coordinates, String dependenciesDir, Properties properties) throws TestToolsException {
-        File pom = new File(pomPath);
-        List<String> goals = Arrays.asList("dependency:tree", "-Dverbose", "-DoutputFile=" + dependenciesDir, "-DoutputType=text", "-Dartifact=" + coordinates);
-        File log = new File(pom.getParentFile(), "build.log");
-        executeRequest(properties, pom, goals, log);
     }
 
     /**
@@ -70,6 +53,10 @@ public class MavenPluginInvoker {
         copyArtifact(pomPath, coordinates, outputDirectoryPath, new Properties());
     }
 
+    //--------------------------/
+    //---- PRIVATE METHODS -----/
+    //--------------------------/
+
     private void copyArtifact(String pomPath, String coordinates, String outputDirectoryPath, Properties properties) throws TestToolsException {
         File pom = new File(pomPath);
         List<String> goals = Arrays.asList("dependency:copy", "-DoutputDirectory=" + outputDirectoryPath, "-Dartifact=" + coordinates);
@@ -82,5 +69,26 @@ public class MavenPluginInvoker {
         request.setLocalRepositoryDirectory(App.getLocalRepo());
         request.setPomFile(pom);
         App.getBuildTool().executeMaven(request);
+    }
+
+    private void copyDependencyTree(String pomPath, String coordinates, String dependenciesDir, Properties properties) throws TestToolsException {
+        File pom = new File(pomPath);
+        List<String> goals = Arrays.asList("dependency:tree", "-Dverbose", "-DoutputFile=" + dependenciesDir, "-DoutputType=text", "-Dartifact=" + coordinates);
+        File log = new File(pom.getParentFile(), "build.log");
+        executeRequest(properties, pom, goals, log);
+    }
+
+    private void copyDependencies(String pomPath, String coordinates, String outputDirectoryPath, Properties properties) throws TestToolsException {
+        File pom = new File(pomPath);
+        List<String> goals = Arrays.asList("dependency:copy-dependencies", "-DaddParentPoms=true", "-DuseRepositoryLayout=true", "-DoutputDirectory=" + outputDirectoryPath, "-Dartifact=" + coordinates);
+        File log = new File(pom.getParentFile(), "build.log");
+        executeRequest(properties, pom, goals, log);
+    }
+
+    private void resolveDependencies(String pomPath, String coordinates, Properties properties) throws TestToolsException {
+        File pom = new File(pomPath);
+        List<String> goals = Arrays.asList("dependency:get", "-Dartifact=" + coordinates);
+        File log = new File(pom.getParentFile(), "build.log");
+        executeRequest(properties, pom, goals, log);
     }
 }

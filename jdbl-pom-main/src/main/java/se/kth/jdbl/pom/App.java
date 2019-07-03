@@ -26,7 +26,9 @@ import java.util.logging.Logger;
 
 public class App extends PlexusTestCase {
 
-    // fields ---------------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //------ CLASS FIELDS ------/
+    //--------------------------/
 
     private static BuildTool buildTool;
     private static File localRepo;
@@ -35,7 +37,9 @@ public class App extends PlexusTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(App.class.getName());
 
-    // public methods -------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
 
     public static void main(String[] args) throws Exception {
         App app = new App();
@@ -90,7 +94,9 @@ public class App extends PlexusTestCase {
         return localRepo;
     }
 
-    // private methods ------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //---- PRIVATE METHODS -----/
+    //--------------------------/
 
     @Override
     protected void setUp() throws Exception {
@@ -288,7 +294,7 @@ public class App extends PlexusTestCase {
      * Removes all files in the dependencies if the size of the directory is greater than a given value.
      *
      * @param dependenciesDir The directory with the dependencies
-     * @param dirSize The size threshold
+     * @param dirSize         The size threshold
      * @throws IOException
      */
     private void checkDependenciesDirSize(String dependenciesDir, BigInteger dirSize) throws IOException {

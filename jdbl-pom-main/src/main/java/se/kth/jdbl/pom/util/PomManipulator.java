@@ -26,10 +26,18 @@ import java.util.*;
 
 public final class PomManipulator {
 
+    //--------------------------/
+    //------ CONSTRUCTORS ------/
+    //--------------------------/
+
     private PomManipulator() {
         throw new UnsupportedOperationException(
                 "Creating an instance is not supported for this utility class");
     }
+
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
 
     /**
      * Reads a Maven POM.
@@ -70,6 +78,47 @@ public final class PomManipulator {
             XmlPullParserException {
         return readModel(pomXmlFile, null);
     }
+
+    /**
+     * Creates a map with all model properties.
+     *
+     * @param model Model to add properties from.
+     * @return New map with key/values from the model.
+     */
+    public static Map<String, String> createVarMap(final Model model) {
+        final Map<String, String> vars = new HashMap<>();
+        addAllModelProperties(vars, model);
+        return vars;
+    }
+
+    /**
+     * Adds all model properties to the map.
+     *
+     * @param vars  Variables to add properties to.
+     * @param model Model to add properties from.
+     */
+    public static void addAllModelProperties(final Map<String, String> vars, final Model model) {
+        final Enumeration<Object> enu = model.getProperties().keys();
+        while (enu.hasMoreElements()) {
+            final String key = "" + enu.nextElement();
+            vars.put(key, "" + model.getProperties().get(key));
+        }
+    }
+
+    public static void writePom(Path pomFile, Model model) throws IOException {
+        MavenXpp3Writer writer = new MavenXpp3Writer();
+        writer.write(Files.newBufferedWriter(pomFile), model);
+    }
+
+    public static void removeDependencies(List<Dependency> dependenciesToRemove, Model model) {
+        for (Dependency dependency : dependenciesToRemove) {
+            model.removeDependency(dependency);
+        }
+    }
+
+    //--------------------------/
+    //---- PRIVATE METHODS -----/
+    //--------------------------/
 
     private static Model readModel(final File pomXmlFile, final Model preModel)
             throws IOException, XmlPullParserException {
@@ -116,32 +165,6 @@ public final class PomManipulator {
             return targetFile;
         } catch (final IOException ex) {
             throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * Creates a map with all model properties.
-     *
-     * @param model Model to add properties from.
-     * @return New map with key/values from the model.
-     */
-    public static Map<String, String> createVarMap(final Model model) {
-        final Map<String, String> vars = new HashMap<>();
-        addAllModelProperties(vars, model);
-        return vars;
-    }
-
-    /**
-     * Adds all model properties to the map.
-     *
-     * @param vars  Variables to add properties to.
-     * @param model Model to add properties from.
-     */
-    public static void addAllModelProperties(final Map<String, String> vars, final Model model) {
-        final Enumeration<Object> enu = model.getProperties().keys();
-        while (enu.hasMoreElements()) {
-            final String key = "" + enu.nextElement();
-            vars.put(key, "" + model.getProperties().get(key));
         }
     }
 
@@ -251,11 +274,6 @@ public final class PomManipulator {
                 + "/" + artifactId + "-" + version + "." + type;
     }
 
-    public static void writePom(Path pomFile, Model model) throws IOException {
-        MavenXpp3Writer writer = new MavenXpp3Writer();
-        writer.write(Files.newBufferedWriter(pomFile), model);
-    }
-
     /**
      * Return the Maven coordinates of the dependencies. Looks at the properties in case version number declared as properties.
      *
@@ -276,11 +294,5 @@ public final class PomManipulator {
             }
         }
         return depCoordinates;
-    }
-
-    public static void removeDependencies(List<Dependency> dependenciesToRemove, Model model) {
-        for (Dependency dependency : dependenciesToRemove) {
-            model.removeDependency(dependency);
-        }
     }
 }

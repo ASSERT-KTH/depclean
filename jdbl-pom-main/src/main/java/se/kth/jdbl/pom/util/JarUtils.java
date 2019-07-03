@@ -10,6 +10,10 @@ import java.util.jar.JarFile;
 
 public class JarUtils {
 
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
+
     /**
      * This method decompresses a jar file into a given destination.
      *
@@ -24,7 +28,7 @@ public class JarUtils {
             // fist get all directories,
             // then make those directory on the destination path
             for (Enumeration<JarEntry> enums = jar.entries(); enums.hasMoreElements(); ) {
-                JarEntry entry = (JarEntry) enums.nextElement();
+                JarEntry entry = enums.nextElement();
                 String fileName = destinationDir + File.separator + entry.getName();
                 File f = new File(fileName);
                 if (fileName.endsWith("/")) {

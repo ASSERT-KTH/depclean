@@ -2,7 +2,9 @@ package se.kth.jdbl.pom;
 
 public class MavenDependency {
 
-    // fields ---------------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //------ CLASS FIELDS ------/
+    //--------------------------/
 
     private String coordinates;
     private String type;
@@ -17,7 +19,9 @@ public class MavenDependency {
     private boolean isUsed;
     private boolean isDeclared;
 
-    // public methods -------------------------------------------------------------------------------------------------
+    //--------------------------/
+    //----- PUBLIC METHODS -----/
+    //--------------------------/
 
     public MavenDependency setCoordinates(String coordinates) {
         this.coordinates = coordinates;
