@@ -8,13 +8,16 @@ import java.net.URL;
 
 public class PomDownloader {
 
+    private PomDownloader() {
+    }
+
     /**
-     * Download pom file from the Maven Central repository.
+     * This method downloads a pom file from the Maven Central repository.
      *
-     * @param artifactDir
-     * @param groupId
-     * @param artifactId
-     * @param version
+     * @param artifactDir Directory to put the pom file.
+     * @param groupId     The artifact groupId.
+     * @param artifactId  The artifact artifactId.
+     * @param version     The artifact version.
      * @throws IOException
      */
     public static void downloadPom(String artifactDir, String groupId, String artifactId, String version) throws IOException {
@@ -25,6 +28,5 @@ public class PomDownloader {
                         version + "/" +
                         artifactId + "-" + version + ".pom"),
                 new File(artifactDir + "pom.xml"));
-
     }
 }

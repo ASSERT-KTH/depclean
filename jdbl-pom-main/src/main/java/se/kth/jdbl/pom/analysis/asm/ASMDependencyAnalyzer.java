@@ -1,4 +1,4 @@
-package analyzer.asm;
+package se.kth.jdbl.pom.analysis.asm;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,35 +19,39 @@ package analyzer.asm;
  * under the License.
  */
 
-import analyzer.ClassFileVisitorUtils;
-import analyzer.DependencyAnalyzer;
 import org.codehaus.plexus.component.annotations.Component;
+import se.kth.jdbl.pom.analysis.ClassFileVisitorUtils;
+import se.kth.jdbl.pom.analysis.DependencyAnalyzer;
+import se.kth.jdbl.pom.util.ClassMembersVisitorCounter;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 
 /**
- * ASMDependencyAnalyzer 
- * 
+ * ASMDependencyAnalyzer
+ *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @version $Id$
  */
-@Component( role = DependencyAnalyzer.class )
+@Component(role = DependencyAnalyzer.class)
 public class ASMDependencyAnalyzer
-    implements DependencyAnalyzer
-{
+        implements DependencyAnalyzer {
     // DependencyAnalyzer methods ---------------------------------------------
 
     /*
      * @see org.apache.maven.shared.dependency.analyzer.DependencyAnalyzer#analyze(java.net.URL)
      */
-    public Set<String> analyze( URL url )
-        throws IOException
-    {
+    public Set<String> analyze(URL url)
+            throws IOException {
+
+        ClassMembersVisitorCounter.resetClassCounters();
+
         DependencyClassFileVisitor visitor = new DependencyClassFileVisitor();
 
-        ClassFileVisitorUtils.accept( url, visitor );
+        System.out.println("URL: " + url.getPath());
+
+        ClassFileVisitorUtils.accept(url, visitor);
 
         return visitor.getDependencies();
     }

@@ -1,4 +1,4 @@
-package analyzer.asm;
+package se.kth.jdbl.pom.analysis.asm;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,9 +19,10 @@ package analyzer.asm;
  * under the License.
  */
 
-import analyzer.ClassFileVisitor;
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.SignatureVisitor;
+import se.kth.jdbl.pom.analysis.ClassFileVisitor;
+import se.kth.jdbl.pom.util.ClassMembersVisitorCounter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,10 +71,12 @@ public class DependencyClassFileVisitor
             SignatureVisitor signatureVisitor = new DefaultSignatureVisitor( resultCollector );
             FieldVisitor fieldVisitor = new DefaultFieldVisitor( annotationVisitor, resultCollector );
             MethodVisitor mv = new DefaultMethodVisitor( annotationVisitor, signatureVisitor, resultCollector );
-            ClassVisitor classVisitor =
-                new DefaultClassVisitor( signatureVisitor, annotationVisitor, fieldVisitor, mv, resultCollector );
+
+            ClassVisitor classVisitor = new DefaultClassVisitor( signatureVisitor, annotationVisitor, fieldVisitor, mv, resultCollector);
 
             reader.accept( classVisitor, 0 );
+
+
         }
         catch ( IOException exception )
         {

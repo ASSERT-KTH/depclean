@@ -18,11 +18,8 @@ public class JarUtils {
      * @throws IOException
      */
     public static void decompressJarFile(String destinationDir, String jarPath) throws IOException {
-
         File file = new File(jarPath);
-
         if (file.exists()) {
-
             JarFile jar = new JarFile(file);
             // fist get all directories,
             // then make those directory on the destination path

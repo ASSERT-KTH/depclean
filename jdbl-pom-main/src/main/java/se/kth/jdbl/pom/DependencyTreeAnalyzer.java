@@ -11,25 +11,29 @@ import java.util.List;
 
 public class DependencyTreeAnalyzer {
 
-    Node artifact;
+    // fields ---------------------------------------------------------------------------------------------------------
+
+    Node rootNode;
+
+    // constructors ---------------------------------------------------------------------------------------------------
 
     public DependencyTreeAnalyzer(String dependencyTreeFile) {
         InputType type = InputType.TEXT;
         try {
             Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(dependencyTreeFile), "UTF-8"));
             Parser parser = type.newParser();
-            artifact = parser.parse(r);
+            rootNode = parser.parse(r);
         } catch (ParseException | FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }
 
-    public ArrayList<String> getArtifactsAllDependencies(ArrayList<String> artifacts) {
-        // the list to return
-        ArrayList<String> listOfChildrensCanonical = new ArrayList();
+    // public methods -------------------------------------------------------------------------------------------------
 
-        List<Node> allDependenciesNodes = returnAllNodes(artifact);
-        allDependenciesNodes.remove(artifact);
+    public ArrayList<String> getArtifactsAllDependencies(ArrayList<String> artifacts) {
+        ArrayList<String> listOfChildrensCanonical = new ArrayList();
+        List<Node> allDependenciesNodes = returnAllNodes(rootNode);
+        allDependenciesNodes.remove(rootNode);
 
         for (Node node : allDependenciesNodes) {
             // if the node is declared but unused
@@ -47,7 +51,7 @@ public class DependencyTreeAnalyzer {
     }
 
     public ArrayList<String> getDirectDependencies() {
-        List<Node> directDependenciesNodes = artifact.getChildNodes();
+        List<Node> directDependenciesNodes = rootNode.getChildNodes();
         ArrayList<String> directDependenciesCanonical = new ArrayList();
         for (Node dependency : directDependenciesNodes) {
             directDependenciesCanonical.add(dependency.getArtifactCanonicalForm());
@@ -62,8 +66,8 @@ public class DependencyTreeAnalyzer {
     }
 
     public ArrayList<String> getAllDependencies() {
-        List<Node> allDependenciesNodes = returnAllNodes(artifact);
-        allDependenciesNodes.remove(artifact);
+        List<Node> allDependenciesNodes = returnAllNodes(rootNode);
+        allDependenciesNodes.remove(rootNode);
         ArrayList<String> allDependenciesCanonical = new ArrayList();
         for (Node dependency : allDependenciesNodes) {
             allDependenciesCanonical.add(dependency.getArtifactCanonicalForm());
@@ -72,16 +76,37 @@ public class DependencyTreeAnalyzer {
     }
 
     public int getNumberOfDependenciesOfNode(String groupId, String artifactId, String version) {
-        List<Node> allDependenciesNodes = returnAllNodes(artifact);
-        allDependenciesNodes.remove(artifact);
+        List<Node> allDependenciesNodes = returnAllNodes(rootNode);
+        allDependenciesNodes.remove(rootNode);
 
         for (Node node : allDependenciesNodes) {
             if (node.getGroupId().equals(groupId) && node.getArtifactId().equals(artifactId) && node.getVersion().equals(version)) {
                 return node.getChildNodes().size();
             }
         }
+        return 0; // should never be reached
+    }
 
-        return 0; // should never happen
+    public int getLevel(String groupId, String artifactId, String version) {
+        List<Node> allDependenciesNodes = returnAllNodes(rootNode);
+
+        for (Node node : allDependenciesNodes) {
+            if (node.getGroupId().equals(groupId) && node.getArtifactId().equals(artifactId) && node.getVersion().equals(version)) {
+                return distanceFromRoot(node);
+            }
+        }
+        return 0; // should never be reached
+    }
+
+    // private methods -------------------------------------------------------------------------------------------------
+
+    private int distanceFromRoot(Node node) {
+        int d = 0;
+        while (node.getParent() != null) {
+            d++;
+            node = node.getParent();
+        }
+        return d;
     }
 
     private List<Node> returnAllNodes(Node node) {
@@ -100,27 +125,5 @@ public class DependencyTreeAnalyzer {
                 }
             }
         }
-    }
-
-
-    public int getLevel(String groupId, String artifactId, String version) {
-        List<Node> allDependenciesNodes = returnAllNodes(artifact);
-
-        for (Node node : allDependenciesNodes) {
-            if (node.getGroupId().equals(groupId) && node.getArtifactId().equals(artifactId) && node.getVersion().equals(version)) {
-                return distanceFromRoot(node);
-            }
-        }
-
-        return 0; // should never happen
-    }
-
-    private int distanceFromRoot(Node node) {
-        int d = 0;
-        while (node.getParent() != null) {
-            d++;
-            node = node.getParent();
-        }
-        return d;
     }
 }

@@ -1,4 +1,4 @@
-package analyzer.asm;
+package se.kth.jdbl.pom.analysis.asm;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,8 +19,9 @@ package analyzer.asm;
  * under the License.
  */
 
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.signature.SignatureVisitor;
+import org.objectweb.asm.Type;
 
 /**
  * Computes the set of classes referenced by visited code.
@@ -29,24 +30,43 @@ import org.objectweb.asm.signature.SignatureVisitor;
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @version $Id$
  */
-public class DefaultSignatureVisitor
-    extends SignatureVisitor
+public class DefaultAnnotationVisitor
+    extends AnnotationVisitor
 {
     private final ResultCollector resultCollector;
 
-    public DefaultSignatureVisitor( ResultCollector resultCollector )
+    public DefaultAnnotationVisitor( ResultCollector resultCollector )
     {
         super( Opcodes.ASM7 );
         this.resultCollector = resultCollector;
     }
 
-    public void visitClassType( final String name )
+    public void visit( final String name, final Object value )
     {
-        resultCollector.addName( name );
+        if ( value instanceof Type )
+        {
+            resultCollector.addType( (Type) value );
+        }
     }
 
-    public void visitInnerClassType( final String name )
+    public void visitEnum( final String name, final String desc, final String value )
     {
-        resultCollector.addName( name );
+        resultCollector.addDesc( desc );
     }
+
+    public AnnotationVisitor visitAnnotation( final String name, final String desc )
+    {
+        resultCollector.addDesc( desc );
+
+        return this;
+    }
+
+    /*
+     * @see org.objectweb.asm.AnnotationVisitor#visitArray(java.lang.String)
+     */
+    public AnnotationVisitor visitArray( final String name )
+    {
+        return this;
+    }
+
 }

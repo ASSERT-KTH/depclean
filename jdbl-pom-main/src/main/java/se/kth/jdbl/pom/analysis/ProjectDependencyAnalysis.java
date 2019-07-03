@@ -1,4 +1,4 @@
-package analyzer;
+package se.kth.jdbl.pom.analysis;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

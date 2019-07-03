@@ -1,4 +1,4 @@
-package analyzer;
+package se.kth.jdbl.pom.analysis;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,26 +19,15 @@ package analyzer;
  * under the License.
  */
 
+import java.io.InputStream;
+
 /**
+ * 
+ * 
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @version $Id$
  */
-public class ProjectDependencyAnalyzerException
-        extends Exception {
-    // constants --------------------------------------------------------------
-
-    /**
-     * The serialisation unique ID.
-     */
-    private static final long serialVersionUID = -5954447543668196977L;
-
-    // constructors -----------------------------------------------------------
-
-    public ProjectDependencyAnalyzerException(String message) {
-        super(message);
-    }
-
-    public ProjectDependencyAnalyzerException(String message, Throwable cause) {
-        super(message, cause);
-    }
+public interface ClassFileVisitor
+{
+    void visitClass(String className, InputStream in);
 }

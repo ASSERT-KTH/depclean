@@ -1,8 +1,5 @@
 package se.kth.jdbl.pom;
 
-import analyzer.ProjectDependencyAnalysis;
-import analyzer.ProjectDependencyAnalyzer;
-import analyzer.ProjectDependencyAnalyzerException;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Build;
@@ -15,9 +12,13 @@ import org.apache.maven.shared.test.plugin.RepositoryTool;
 import org.apache.maven.shared.test.plugin.TestToolsException;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import se.kth.jdbl.pom.analysis.ProjectDependencyAnalysis;
+import se.kth.jdbl.pom.analysis.ProjectDependencyAnalyzer;
+import se.kth.jdbl.pom.analysis.ProjectDependencyAnalyzerException;
 import se.kth.jdbl.pom.util.*;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,12 +26,16 @@ import java.util.logging.Logger;
 
 public class App extends PlexusTestCase {
 
-    private static final Logger LOGGER = Logger.getLogger(App.class.getName());
+    // fields ---------------------------------------------------------------------------------------------------------
 
     private static BuildTool buildTool;
     private static File localRepo;
     private static ProjectTool projectTool;
     private static ProjectDependencyAnalyzer analyzer;
+
+    private static final Logger LOGGER = Logger.getLogger(App.class.getName());
+
+    // public methods -------------------------------------------------------------------------------------------------
 
     public static void main(String[] args) throws Exception {
         App app = new App();
@@ -50,7 +55,7 @@ public class App extends PlexusTestCase {
         BufferedWriter bwDescription = new BufferedWriter(new FileWriter(resultsDir + "description.csv", true));
 
         // write csv report headers
-        bwDescription.write("Artifact,Organization,Scm,Ci,License,Description" + "\n");
+        bwDescription.write("Artifact,NbClasses,NbFields,NbMethods,NbAnnotations,Organization,Scm,Ci,License,Description" + "\n");
         bwResults.write("Artifact,AllDeps,Pack,Scope,Optional,Type,Used,Declared,NbDeps,TreeLevel,InConflict" + "\n");
 
         bwResults.close();
@@ -77,6 +82,17 @@ public class App extends PlexusTestCase {
         br.close();
     }
 
+    public static BuildTool getBuildTool() {
+        return buildTool;
+    }
+
+    public static File getLocalRepo() {
+        return localRepo;
+    }
+
+    // private methods ------------------------------------------------------------------------------------------------
+
+    @Override
     protected void setUp() throws Exception {
 
         super.setUp();
@@ -101,7 +117,7 @@ public class App extends PlexusTestCase {
 
     }
 
-    public void execute(String groupId, String artifactId, String version, String resultsDir, String artifactDir, String dependenciesDir)
+    private void execute(String groupId, String artifactId, String version, String resultsDir, String artifactDir, String dependenciesDir)
             throws TestToolsException, ProjectDependencyAnalyzerException, IOException, XmlPullParserException {
 
         MavenPluginInvoker mavenPluginInvoker = new MavenPluginInvoker();
@@ -110,10 +126,7 @@ public class App extends PlexusTestCase {
         FileUtils.cleanDirectory(new File(artifactDir));
 
         // set a size threshold of 10GB size (clean it if is larger that that)
-       /* BigInteger dependencyFolderSize = FileUtils.sizeOfAsBigInteger(new File(dependenciesDir));
-        if (dependencyFolderSize.compareTo(new BigInteger("53687091200")) > 0) { // 50GB
-            FileUtils.cleanDirectory(new File(dependenciesDir));
-        }*/
+        // checkDependenciesDirSize(dependenciesDir, new BigInteger("53687091200"); // 50GB
 
         String coordinates = groupId + ":" + artifactId + ":" + version;
 
@@ -162,11 +175,6 @@ public class App extends PlexusTestCase {
 
                 if (mavenProject != null) { // the maven project was build correctly
 
-//                MavenRepositorySystem mavenRepositorySystem = new MavenRepositorySystem();
-//                Model myModel = mavenRepositorySystem.getEffectiveModel(new File(artifactDir + "pom.xml"));
-//                MavenProject mavenProject = new MavenProject(myModel);
-//                mavenProject.setFile(new File(artifactDir + "target/classes"));
-
                     Build build = new Build();
                     build.setDirectory(artifactDir);
                     mavenProject.setBuild(build);
@@ -192,6 +200,7 @@ public class App extends PlexusTestCase {
                     // manipulation of the pom file
                     LOGGER.info("writing artifact description");
                     Model pomModel = PomManipulator.readModel(new File(artifactDir + "pom.xml"));
+
                     CustomFileWriter.writeArtifactProperties(resultsDir + "description.csv", pomModel, coordinates);
 
                     ArrayList<MavenDependency> dependencies = new ArrayList<>();
@@ -275,11 +284,22 @@ public class App extends PlexusTestCase {
         }
     }
 
-    public static BuildTool getBuildTool() {
-        return buildTool;
+    /**
+     * Removes all files in the dependencies if the size of the directory is greater than a given value.
+     *
+     * @param dependenciesDir The directory with the dependencies
+     * @param dirSize The size threshold
+     * @throws IOException
+     */
+    private void checkDependenciesDirSize(String dependenciesDir, BigInteger dirSize) throws IOException {
+        BigInteger dependencyFolderSize = FileUtils.sizeOfAsBigInteger(new File(dependenciesDir));
+        if (dependencyFolderSize.compareTo(dirSize) > 0) {
+            FileUtils.cleanDirectory(new File(dependenciesDir));
+        }
     }
 
-    public static File getLocalRepo() {
-        return localRepo;
-    }
+//                MavenRepositorySystem mavenRepositorySystem = new MavenRepositorySystem();
+//                Model myModel = mavenRepositorySystem.getEffectiveModel(new File(artifactDir + "pom.xml"));
+//                MavenProject mavenProject = new MavenProject(myModel);
+//                mavenProject.setFile(new File(artifactDir + "target/classes"));
 }

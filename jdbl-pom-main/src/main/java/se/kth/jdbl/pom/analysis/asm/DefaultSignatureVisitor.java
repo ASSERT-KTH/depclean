@@ -1,4 +1,4 @@
-package analyzer;
+package se.kth.jdbl.pom.analysis.asm;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,24 +19,34 @@ package analyzer;
  * under the License.
  */
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Set;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.signature.SignatureVisitor;
 
 /**
- * Gets the set of classes referenced by a library given either as a jar file or an exploded directory.
- * 
+ * Computes the set of classes referenced by visited code.
+ * Inspired by <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
+ *
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @version $Id$
  */
-public interface DependencyAnalyzer
+public class DefaultSignatureVisitor
+    extends SignatureVisitor
 {
-    // fields -----------------------------------------------------------------
+    private final ResultCollector resultCollector;
 
-    String ROLE = DependencyAnalyzer.class.getName();
+    public DefaultSignatureVisitor( ResultCollector resultCollector )
+    {
+        super( Opcodes.ASM7 );
+        this.resultCollector = resultCollector;
+    }
 
-    // public methods ---------------------------------------------------------
+    public void visitClassType( final String name )
+    {
+        resultCollector.addName( name );
+    }
 
-    Set<String> analyze(URL url)
-        throws IOException;
+    public void visitInnerClassType( final String name )
+    {
+        resultCollector.addName( name );
+    }
 }

@@ -1,4 +1,4 @@
-package analyzer.asm;
+package se.kth.jdbl.pom.analysis.asm;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,7 +22,6 @@ package analyzer.asm;
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
-
 
 /**
  * Computes the set of classes referenced by visited code.

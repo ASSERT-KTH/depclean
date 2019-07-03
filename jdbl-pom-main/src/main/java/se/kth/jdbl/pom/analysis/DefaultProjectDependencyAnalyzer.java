@@ -1,4 +1,4 @@
-package analyzer;
+package se.kth.jdbl.pom.analysis;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;

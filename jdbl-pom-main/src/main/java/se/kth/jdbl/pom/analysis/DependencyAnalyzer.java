@@ -1,4 +1,4 @@
-package analyzer.asm;
+package se.kth.jdbl.pom.analysis;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,36 +19,24 @@ package analyzer.asm;
  * under the License.
  */
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Opcodes;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Set;
 
 /**
- * Computes the set of classes referenced by visited code.
- * Inspired by <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
- *
+ * Gets the set of classes referenced by a library given either as a jar file or an exploded directory.
+ * 
  * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
  * @version $Id$
  */
-public class DefaultFieldVisitor
-    extends FieldVisitor
+public interface DependencyAnalyzer
 {
-    private final AnnotationVisitor annotationVisitor;
+    // fields -----------------------------------------------------------------
 
-    private final ResultCollector resultCollector;
+    String ROLE = DependencyAnalyzer.class.getName();
 
-    public DefaultFieldVisitor( AnnotationVisitor annotationVisitor, ResultCollector resultCollector )
-    {
-        super( Opcodes.ASM7 );
-        this.annotationVisitor = annotationVisitor;
-        this.resultCollector = resultCollector;
-    }
+    // public methods ---------------------------------------------------------
 
-    public AnnotationVisitor visitAnnotation( final String desc, final boolean visible )
-    {
-        resultCollector.addDesc( desc );
-
-        return annotationVisitor;
-    }
-
+    Set<String> analyze(URL url)
+        throws IOException;
 }

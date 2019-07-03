@@ -1,4 +1,4 @@
-package analyzer;
+package se.kth.jdbl.pom.analysis;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -30,7 +30,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-
 
 /**
  * Utility to visit classes in a library given either as a jar file or an exploded directory.

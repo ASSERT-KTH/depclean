@@ -25,6 +25,12 @@ public class CustomFileWriter {
         // write coordinates
         bw.write(coordinates + ",");
 
+        // write static analysis stats
+        bw.write(ClassMembersVisitorCounter.getNbVisitedClasses() + "," +
+                ClassMembersVisitorCounter.getNbVisitedFields() + "," +
+                ClassMembersVisitorCounter.getNbVisitedMethods() + "," +
+                ClassMembersVisitorCounter.getNbVisitedAnnotations() + ",");
+
         // write organization
         Organization organization = model.getOrganization();
         if (organization != null) {
@@ -88,7 +94,7 @@ public class CustomFileWriter {
         for (MavenDependency dependency : dependencies) {
             // write artifact coordinates
             bw.write(artifact + ",");
-            bw.write(dependency.toString() );
+            bw.write(dependency.toString());
         }
         bw.close();
     }
