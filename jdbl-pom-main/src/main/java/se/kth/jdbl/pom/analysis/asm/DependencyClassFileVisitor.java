@@ -22,7 +22,7 @@ package se.kth.jdbl.pom.analysis.asm;
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.SignatureVisitor;
 import se.kth.jdbl.pom.analysis.ClassFileVisitor;
-import se.kth.jdbl.pom.util.ClassMembersVisitorCounter;
+import se.kth.jdbl.pom.counter.ClassMembersVisitorCounter;
 
 import java.io.IOException;
 import java.io.InputStream;

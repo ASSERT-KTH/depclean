@@ -156,7 +156,7 @@ public final class ClassFileVisitorUtils
             throw new IllegalArgumentException( "Path is not a class" );
         }
 
-        String className = path.substring( 0, path.length() - 6 );
+        String className = path.substring( 0, path.length() - ".class".length() );
 
         className = className.replace( '/', '.' );
 

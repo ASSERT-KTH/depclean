@@ -22,7 +22,7 @@ package se.kth.jdbl.pom.analysis.asm;
 import org.objectweb.asm.*;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
-import se.kth.jdbl.pom.util.ClassMembersVisitorCounter;
+import se.kth.jdbl.pom.counter.ClassMembersVisitorCounter;
 
 /**
  * Computes the set of classes referenced by visited code.

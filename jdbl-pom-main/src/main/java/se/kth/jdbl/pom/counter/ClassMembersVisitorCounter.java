@@ -1,4 +1,4 @@
-package se.kth.jdbl.pom.util;
+package se.kth.jdbl.pom.counter;
 
 public class ClassMembersVisitorCounter {
 
@@ -6,10 +6,10 @@ public class ClassMembersVisitorCounter {
     //------ CLASS FIELDS ------/
     //--------------------------/
 
-    private static int nbVisitedClasses;
-    private static int nbVisitedFields;
-    private static int nbVisitedMethods;
-    private static int nbVisitedAnnotations;
+    private static long nbVisitedClasses;
+    private static long nbVisitedFields;
+    private static long nbVisitedMethods;
+    private static long nbVisitedAnnotations;
 
     //--------------------------/
     //------ CONSTRUCTORS ------/
@@ -46,19 +46,19 @@ public class ClassMembersVisitorCounter {
     //---- GETTER METHODS ------/
     //--------------------------/
 
-    public static int getNbVisitedClasses() {
+    public static long getNbVisitedClasses() {
         return nbVisitedClasses;
     }
 
-    public static int getNbVisitedFields() {
+    public static long getNbVisitedFields() {
         return nbVisitedFields;
     }
 
-    public static int getNbVisitedMethods() {
+    public static long getNbVisitedMethods() {
         return nbVisitedMethods;
     }
 
-    public static int getNbVisitedAnnotations() {
+    public static long getNbVisitedAnnotations() {
         return nbVisitedAnnotations;
     }
 }

@@ -22,7 +22,7 @@ package se.kth.jdbl.pom.analysis.asm;
 import org.codehaus.plexus.component.annotations.Component;
 import se.kth.jdbl.pom.analysis.ClassFileVisitorUtils;
 import se.kth.jdbl.pom.analysis.DependencyAnalyzer;
-import se.kth.jdbl.pom.util.ClassMembersVisitorCounter;
+import se.kth.jdbl.pom.counter.ClassMembersVisitorCounter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -48,8 +48,6 @@ public class ASMDependencyAnalyzer
         ClassMembersVisitorCounter.resetClassCounters();
 
         DependencyClassFileVisitor visitor = new DependencyClassFileVisitor();
-
-        System.out.println("URL: " + url.getPath());
 
         ClassFileVisitorUtils.accept(url, visitor);
 

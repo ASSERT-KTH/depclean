@@ -2,6 +2,7 @@ package se.kth.jdbl.pom.util;
 
 import org.apache.maven.model.*;
 import se.kth.jdbl.pom.MavenDependency;
+import se.kth.jdbl.pom.counter.ClassMembersVisitorCounter;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

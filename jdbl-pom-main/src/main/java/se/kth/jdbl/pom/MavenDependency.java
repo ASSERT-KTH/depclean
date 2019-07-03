@@ -12,6 +12,11 @@ public class MavenDependency {
     private String dependencyType;
     private String inConflict;
 
+    private long nbTypes;
+    private long nbFields;
+    private long nbMethods;
+    private long nbAnnotations;
+
     private int nbDependencies;
     private int treeLevel;
 
@@ -53,6 +58,26 @@ public class MavenDependency {
         return this;
     }
 
+    public MavenDependency setNbTypes(long nbTypes) {
+        this.nbTypes = nbTypes;
+        return this;
+    }
+
+    public MavenDependency setNbFields(long nbFields) {
+        this.nbFields = nbFields;
+        return this;
+    }
+
+    public MavenDependency setNbMethods(long nbMethods) {
+        this.nbMethods = nbMethods;
+        return this;
+    }
+
+    public MavenDependency setNbAnnotations(long nbAnnotations) {
+        this.nbAnnotations = nbAnnotations;
+        return this;
+    }
+
     public MavenDependency setNbDependencies(int nbDependencies) {
         this.nbDependencies = nbDependencies;
         return this;
@@ -75,7 +100,19 @@ public class MavenDependency {
 
     @Override
     public String toString() {
-        return coordinates + "," + type + "," + scope + "," + isOptional + "," + dependencyType + "," + isUsed + "," + isDeclared + "," +
-                nbDependencies + "," + treeLevel + "," + inConflict + "\n";
+        return coordinates + "," +
+                type + "," +
+                scope + "," +
+                isOptional + "," +
+                dependencyType + "," +
+                isUsed + "," +
+                isDeclared + "," +
+                nbTypes + "," +
+                nbFields + "," +
+                nbMethods + "," +
+                nbAnnotations + "," +
+                nbDependencies + "," +
+                treeLevel + "," +
+                inConflict + "\n";
     }
 }

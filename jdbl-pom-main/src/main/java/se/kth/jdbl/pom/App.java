@@ -12,16 +12,21 @@ import org.apache.maven.shared.test.plugin.RepositoryTool;
 import org.apache.maven.shared.test.plugin.TestToolsException;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import se.kth.jdbl.pom.analysis.ClassFileVisitorUtils;
 import se.kth.jdbl.pom.analysis.ProjectDependencyAnalysis;
 import se.kth.jdbl.pom.analysis.ProjectDependencyAnalyzer;
 import se.kth.jdbl.pom.analysis.ProjectDependencyAnalyzerException;
+import se.kth.jdbl.pom.analysis.asm.DependencyClassFileVisitor;
+import se.kth.jdbl.pom.counter.ClassMembersVisitorCounter;
 import se.kth.jdbl.pom.util.*;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class App extends PlexusTestCase {
@@ -60,7 +65,7 @@ public class App extends PlexusTestCase {
 
         // write csv report headers
         bwDescription.write("Artifact,NbClasses,NbFields,NbMethods,NbAnnotations,Organization,Scm,Ci,License,Description" + "\n");
-        bwResults.write("Artifact,AllDeps,Pack,Scope,Optional,Type,Used,Declared,NbDeps,TreeLevel,InConflict" + "\n");
+        bwResults.write("Artifact,AllDeps,Pack,Scope,Optional,Type,Used,Declared,NbTypes,NbFields,NbMethods,NbAnnotations,NbDeps,TreeLevel,InConflict" + "\n");
 
         bwResults.close();
         bwDescription.close();
@@ -137,7 +142,7 @@ public class App extends PlexusTestCase {
         String coordinates = groupId + ":" + artifactId + ":" + version;
 
         LOGGER.info("---------------------------------------------------------------------------------------------");
-        LOGGER.info("Processing: " + coordinates);
+        LOGGER.log(Level.INFO, () -> "Processing: " + coordinates);
         LOGGER.info("---------------------------------------------------------------------------------------------");
 
         // download the artifact pom
@@ -190,7 +195,7 @@ public class App extends PlexusTestCase {
                     ArrayList<String> directDependencies = dta.getDirectDependencies();
                     ArrayList<String> allDependencies = dta.getAllDependencies();
 
-                    // analysis of dependencies
+                    LOGGER.info("analyzing dependencies usage");
                     ProjectDependencyAnalysis actualAnalysis = analyzer.analyze(mavenProject);
                     actualAnalysis.ignoreNonCompile();
 
@@ -199,9 +204,6 @@ public class App extends PlexusTestCase {
 
                     // used but not undeclared dependencies
                     Set<Artifact> usedUndeclaredDependencies = actualAnalysis.getUsedUndeclaredArtifacts();
-
-                    // unused but not declared dependencies
-                    Set<Artifact> unusedDeclaredDependencies = actualAnalysis.getUnusedDeclaredArtifacts();
 
                     // manipulation of the pom file
                     LOGGER.info("writing artifact description");
@@ -262,6 +264,29 @@ public class App extends PlexusTestCase {
                             }
                         }
 
+                        // bytecode class members counting
+                        ClassMembersVisitorCounter.resetClassCounters();
+                        File file = new File(dependenciesDir + "/" +
+                                g.replace(".", "/") + "/" +
+                                a + "/" +
+                                v + "/" +
+                                a + "-" +
+                                v + ".jar");
+
+                        if (file.exists()) {
+                            URL url = file.toURI().toURL();
+                            try {
+                                ClassFileVisitorUtils.accept(url, new DependencyClassFileVisitor());
+                            }catch (Exception e){
+                                LOGGER.log(Level.WARNING, "Something happen with: " + file.getAbsolutePath());
+                            }
+                        }
+
+                       /* System.out.println(ClassMembersVisitorCounter.getNbVisitedClasses());
+                        System.out.println(ClassMembersVisitorCounter.getNbVisitedFields());
+                        System.out.println(ClassMembersVisitorCounter.getNbVisitedMethods());
+                        System.out.println(ClassMembersVisitorCounter.getNbVisitedAnnotations());*/
+
                         MavenDependency dependency = new MavenDependency();
                         dependency
                                 .setCoordinates(g + ":" + a + ":" + v)
@@ -272,6 +297,10 @@ public class App extends PlexusTestCase {
                                 .isUsed(isUsed)
                                 .isDeclared(isDeclared)
                                 .setTreeLevel(dta.getLevel(g, a, v))
+                                .setNbTypes(ClassMembersVisitorCounter.getNbVisitedClasses())
+                                .setNbFields(ClassMembersVisitorCounter.getNbVisitedFields())
+                                .setNbMethods(ClassMembersVisitorCounter.getNbVisitedMethods())
+                                .setNbAnnotations(ClassMembersVisitorCounter.getNbVisitedAnnotations())
                                 .setNbDependencies(dta.getNumberOfDependenciesOfNode(g, a, v))
                                 .inConflict(inConflict);
                         dependencies.add(dependency);
