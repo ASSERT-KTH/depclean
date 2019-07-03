@@ -1,12 +1,14 @@
 package se.kth.jdbl.pom.counter;
 
+import java.util.Optional;
+
 public class ClassMembersVisitorCounter {
 
     //--------------------------/
     //------ CLASS FIELDS ------/
     //--------------------------/
 
-    private static long nbVisitedClasses;
+    private static long nbVisitedTypes;
     private static long nbVisitedFields;
     private static long nbVisitedMethods;
     private static long nbVisitedAnnotations;
@@ -15,19 +17,30 @@ public class ClassMembersVisitorCounter {
     //------ CONSTRUCTORS ------/
     //--------------------------/
 
-    public static void resetClassCounters() {
-        nbVisitedClasses = 0;
-        nbVisitedFields = 0;
-        nbVisitedMethods = 0;
-        nbVisitedAnnotations = 0;
+    private ClassMembersVisitorCounter() {
+        throw new IllegalStateException("Utility class");
     }
 
     //--------------------------/
     //----- PUBLIC METHODS -----/
     //--------------------------/
 
+    public static void resetClassCounters() {
+        nbVisitedTypes = 0;
+        nbVisitedFields = 0;
+        nbVisitedMethods = 0;
+        nbVisitedAnnotations = 0;
+    }
+
+    public static void markAsNotFoundClassCounters() {
+        nbVisitedTypes = -1;
+        nbVisitedFields = -1;
+        nbVisitedMethods = -1;
+        nbVisitedAnnotations = -1;
+    }
+
     public static void addVisitedClass() {
-        nbVisitedClasses++;
+        nbVisitedTypes++;
     }
 
     public static void addVisitedField() {
@@ -46,8 +59,8 @@ public class ClassMembersVisitorCounter {
     //---- GETTER METHODS ------/
     //--------------------------/
 
-    public static long getNbVisitedClasses() {
-        return nbVisitedClasses;
+    public static long getNbVisitedTypes() {
+        return nbVisitedTypes;
     }
 
     public static long getNbVisitedFields() {
@@ -60,5 +73,25 @@ public class ClassMembersVisitorCounter {
 
     public static long getNbVisitedAnnotations() {
         return nbVisitedAnnotations;
+    }
+
+    //--------------------------/
+    //---- SETTER METHODS ------/
+    //--------------------------/
+
+    public static void setNbVisitedTypes(long nbVisitedTypes) {
+        ClassMembersVisitorCounter.nbVisitedTypes = nbVisitedTypes;
+    }
+
+    public static void setNbVisitedFields(long nbVisitedFields) {
+        ClassMembersVisitorCounter.nbVisitedFields = nbVisitedFields;
+    }
+
+    public static void setNbVisitedMethods(long nbVisitedMethods) {
+        ClassMembersVisitorCounter.nbVisitedMethods = nbVisitedMethods;
+    }
+
+    public static void setNbVisitedAnnotations(long nbVisitedAnnotations) {
+        ClassMembersVisitorCounter.nbVisitedAnnotations = nbVisitedAnnotations;
     }
 }

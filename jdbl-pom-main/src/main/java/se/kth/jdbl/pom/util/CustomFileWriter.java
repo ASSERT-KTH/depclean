@@ -31,7 +31,7 @@ public class CustomFileWriter {
         bw.write(coordinates + ",");
 
         // write static analysis stats
-        bw.write(ClassMembersVisitorCounter.getNbVisitedClasses() + "," +
+        bw.write(ClassMembersVisitorCounter.getNbVisitedTypes() + "," +
                 ClassMembersVisitorCounter.getNbVisitedFields() + "," +
                 ClassMembersVisitorCounter.getNbVisitedMethods() + "," +
                 ClassMembersVisitorCounter.getNbVisitedAnnotations() + ",");

@@ -64,7 +64,7 @@ public class App extends PlexusTestCase {
         BufferedWriter bwDescription = new BufferedWriter(new FileWriter(resultsDir + "description.csv", true));
 
         // write csv report headers
-        bwDescription.write("Artifact,NbClasses,NbFields,NbMethods,NbAnnotations,Organization,Scm,Ci,License,Description" + "\n");
+        bwDescription.write("Artifact,NbTypes,NbFields,NbMethods,NbAnnotations,Organization,Scm,Ci,License,Description" + "\n");
         bwResults.write("Artifact,AllDeps,Pack,Scope,Optional,Type,Used,Declared,NbTypes,NbFields,NbMethods,NbAnnotations,NbDeps,TreeLevel,InConflict" + "\n");
 
         bwResults.close();
@@ -229,11 +229,23 @@ public class App extends PlexusTestCase {
 
                         dep = dep.split(" ")[0];// manage the case "junit:junit:3.8.1:test (scope not updated to compile)"
                         String[] split = dep.split(":");
-                        String g = split[0];
-                        String a = split[1];
-                        String t = split[2];
-                        String v = split[3];
-                        String s = split[4].split(" ")[0];
+                        String g;
+                        String a;
+                        String t;
+                        String v;
+                        String s;
+                        g = split[0];
+                        if (split.length == 5) {
+                            a = split[1];
+                            t = split[2];
+                            v = split[3];
+                            s = split[4].split(" ")[0];
+                        } else { // consider the case org.jacoco:org.jacoco.agent:jar:runtime:0.7.5.201505241946:test
+                            a = split[1];
+                            t = split[3];
+                            v = split[4];
+                            s = split[5].split(" ")[0];
+                        }
 
                         boolean isOptional = false;
                         boolean isUsed = false;
@@ -266,26 +278,33 @@ public class App extends PlexusTestCase {
 
                         // bytecode class members counting
                         ClassMembersVisitorCounter.resetClassCounters();
-                        File file = new File(dependenciesDir + "/" +
-                                g.replace(".", "/") + "/" +
-                                a + "/" +
-                                v + "/" +
-                                a + "-" +
-                                v + ".jar");
-
+                        File file;
+                        if (split.length == 5) {
+                            file = new File(dependenciesDir + "/" +
+                                    g.replace(".", "/") + "/" +
+                                    a + "/" +
+                                    v + "/" +
+                                    a + "-" +
+                                    v + ".jar");
+                        } else { // consider the case org.jacoco:org.jacoco.agent:jar:runtime:0.7.5.201505241946:test
+                            file = new File(dependenciesDir + "/" +
+                                    g.replace(".", "/") + "/" +
+                                    a + "/" +
+                                    v + "/" +
+                                    a + "-" +
+                                    v + "-" + t + ".jar");
+                        }
                         if (file.exists()) {
                             URL url = file.toURI().toURL();
                             try {
                                 ClassFileVisitorUtils.accept(url, new DependencyClassFileVisitor());
-                            }catch (Exception e){
+                            } catch (Exception e) {
+                                ClassMembersVisitorCounter.markAsNotFoundClassCounters();
                                 LOGGER.log(Level.WARNING, "Something happen with: " + file.getAbsolutePath());
                             }
+                        } else {
+                            ClassMembersVisitorCounter.markAsNotFoundClassCounters();
                         }
-
-                       /* System.out.println(ClassMembersVisitorCounter.getNbVisitedClasses());
-                        System.out.println(ClassMembersVisitorCounter.getNbVisitedFields());
-                        System.out.println(ClassMembersVisitorCounter.getNbVisitedMethods());
-                        System.out.println(ClassMembersVisitorCounter.getNbVisitedAnnotations());*/
 
                         MavenDependency dependency = new MavenDependency();
                         dependency
@@ -297,7 +316,7 @@ public class App extends PlexusTestCase {
                                 .isUsed(isUsed)
                                 .isDeclared(isDeclared)
                                 .setTreeLevel(dta.getLevel(g, a, v))
-                                .setNbTypes(ClassMembersVisitorCounter.getNbVisitedClasses())
+                                .setNbTypes(ClassMembersVisitorCounter.getNbVisitedTypes())
                                 .setNbFields(ClassMembersVisitorCounter.getNbVisitedFields())
                                 .setNbMethods(ClassMembersVisitorCounter.getNbVisitedMethods())
                                 .setNbAnnotations(ClassMembersVisitorCounter.getNbVisitedAnnotations())

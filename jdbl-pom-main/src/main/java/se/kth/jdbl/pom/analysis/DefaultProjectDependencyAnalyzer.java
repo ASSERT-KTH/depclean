@@ -4,7 +4,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import se.kth.jdbl.pom.counter.DependencyMemberCounter;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,13 +43,13 @@ public class DefaultProjectDependencyAnalyzer
         try {
             Map<Artifact, Set<String>> artifactClassMap = buildArtifactClassMap(project);
 
-            Map<String, Set<String>> typesClassMap = new HashMap<>();
+            /*Map<String, Set<String>> typesClassMap = new HashMap<>();
             for (Map.Entry<Artifact, Set<String>> entry : artifactClassMap.entrySet()) {
                 Artifact key = entry.getKey();
                 Set<String> value = entry.getValue();
                 typesClassMap.put(key.getGroupId() + ":" + key.getArtifactId() + ":" + key.getVersion(), value);
             }
-            DependencyMemberCounter.setArtifactClassMap(typesClassMap);
+            DependencyMemberCounter.setArtifactClassMap(typesClassMap);*/
 
             Set<String> dependencyClasses = buildDependencyClasses(project);
 
