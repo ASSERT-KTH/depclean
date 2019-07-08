@@ -31,8 +31,7 @@ public final class PomManipulator {
     //--------------------------/
 
     private PomManipulator() {
-        throw new UnsupportedOperationException(
-                "Creating an instance is not supported for this utility class");
+        throw new UnsupportedOperationException("Creating an instance is not supported for this utility class");
     }
 
     //--------------------------/
@@ -176,7 +175,7 @@ public final class PomManipulator {
                 final String version = findVersion(dm, dependency);
                 if (version == null) {
                     throw new IllegalStateException(
-                            "MavenDependency version not set for '"
+                            "MavenDependencyBuilder version not set for '"
                                     + dependency.getGroupId() + ":"
                                     + dependency.getArtifactId() + "' in '"
                                     + model.getGroupId() + ":"
@@ -255,8 +254,7 @@ public final class PomManipulator {
                 return formatStage.asSingleFile();
             }
         } catch (final NoResolvedResultException | IOException ex) {
-            throw new IllegalStateException("Couldn't resolve '"
-                    + canonicalForm + "'", ex);
+            throw new IllegalStateException("Couldn't resolve '" + canonicalForm + "'", ex);
         }
     }
 

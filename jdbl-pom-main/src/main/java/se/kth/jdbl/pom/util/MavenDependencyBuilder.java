@@ -1,6 +1,6 @@
-package se.kth.jdbl.pom;
+package se.kth.jdbl.pom.util;
 
-public class MavenDependency {
+public class MavenDependencyBuilder {
 
     //--------------------------/
     //------ CLASS FIELDS ------/
@@ -23,80 +23,90 @@ public class MavenDependency {
     private boolean isOptional;
     private boolean isUsed;
     private boolean isDeclared;
+    private boolean isRemovable;
+
+
 
     //--------------------------/
     //----- PUBLIC METHODS -----/
     //--------------------------/
 
-    public MavenDependency setCoordinates(String coordinates) {
+    public MavenDependencyBuilder setCoordinates(String coordinates) {
         this.coordinates = coordinates;
         return this;
     }
 
-    public MavenDependency setType(String type) {
+    public MavenDependencyBuilder setType(String type) {
         this.type = type;
         return this;
     }
 
-    public MavenDependency setScope(String scope) {
+    public MavenDependencyBuilder setScope(String scope) {
         this.scope = scope;
         return this;
     }
 
-    public MavenDependency isOptional(boolean isOptional) {
+    public MavenDependencyBuilder isOptional(boolean isOptional) {
         this.isOptional = isOptional;
         return this;
     }
 
-    public MavenDependency isDeclared(boolean isDeclared) {
+    public MavenDependencyBuilder isDeclared(boolean isDeclared) {
         this.isDeclared = isDeclared;
         return this;
     }
 
-    public MavenDependency isUsed(boolean isUsed) {
+    public MavenDependencyBuilder isRemovable(boolean isRemovable) {
+        this.isRemovable = isRemovable;
+        return this;
+    }
+
+    public MavenDependencyBuilder isUsed(boolean isUsed) {
         this.isUsed = isUsed;
         return this;
     }
 
-    public MavenDependency setNbTypes(long nbTypes) {
+    public MavenDependencyBuilder setNbTypes(long nbTypes) {
         this.nbTypes = nbTypes;
         return this;
     }
 
-    public MavenDependency setNbFields(long nbFields) {
+    public MavenDependencyBuilder setNbFields(long nbFields) {
         this.nbFields = nbFields;
         return this;
     }
 
-    public MavenDependency setNbMethods(long nbMethods) {
+    public MavenDependencyBuilder setNbMethods(long nbMethods) {
         this.nbMethods = nbMethods;
         return this;
     }
 
-    public MavenDependency setNbAnnotations(long nbAnnotations) {
+    public MavenDependencyBuilder setNbAnnotations(long nbAnnotations) {
         this.nbAnnotations = nbAnnotations;
         return this;
     }
 
-    public MavenDependency setNbDependencies(int nbDependencies) {
+    public MavenDependencyBuilder setNbDependencies(int nbDependencies) {
         this.nbDependencies = nbDependencies;
         return this;
     }
 
-    public MavenDependency setTreeLevel(int treeLevel) {
+    public MavenDependencyBuilder setTreeLevel(int treeLevel) {
         this.treeLevel = treeLevel;
         return this;
     }
 
-    public MavenDependency setDependencyType(String dependencyType) {
+    public MavenDependencyBuilder setDependencyType(String dependencyType) {
         this.dependencyType = dependencyType;
         return this;
     }
 
-    public MavenDependency inConflict(String inConflict) {
+    public MavenDependencyBuilder inConflict(String inConflict) {
         this.inConflict = inConflict;
         return this;
     }
+
+
 
     @Override
     public String toString() {
@@ -107,6 +117,7 @@ public class MavenDependency {
                 dependencyType + "," +
                 isUsed + "," +
                 isDeclared + "," +
+                isRemovable + "," +
                 nbTypes + "," +
                 nbFields + "," +
                 nbMethods + "," +

@@ -18,9 +18,8 @@ public class MavenPluginInvoker {
     /**
      * This method resolves all the direct and transitive dependencies of an artifact from Maven Central.
      *
-     * @param pomPath
-     * @param coordinates
-     * @throws TestToolsException
+     * @param pomPath     path to the pom of the artifact
+     * @param coordinates artifact's coordinates
      */
     public void resolveDependencies(String pomPath, String coordinates)
             throws TestToolsException {
@@ -30,9 +29,8 @@ public class MavenPluginInvoker {
     /**
      * This method copies all the direct and transitive dependencies of an artifact from Maven Central.
      *
-     * @param pomPath
-     * @param coordinates
-     * @throws TestToolsException
+     * @param pomPath     path to the pom of the artifact
+     * @param coordinates artifact's coordinates
      */
     public void copyDependencies(String pomPath, String coordinates, String outputDirectoryPath) throws TestToolsException {
         copyDependencies(pomPath, coordinates, outputDirectoryPath, new Properties());
@@ -45,9 +43,8 @@ public class MavenPluginInvoker {
     /**
      * This method resolves all the direct and transitive dependencies of an artifact from Maven Central.
      *
-     * @param pomPath
-     * @param coordinates
-     * @throws TestToolsException
+     * @param pomPath     path to the pom of the artifact
+     * @param coordinates artifact's coordinates
      */
     public void copyArtifact(String pomPath, String coordinates, String outputDirectoryPath) throws TestToolsException {
         copyArtifact(pomPath, coordinates, outputDirectoryPath, new Properties());

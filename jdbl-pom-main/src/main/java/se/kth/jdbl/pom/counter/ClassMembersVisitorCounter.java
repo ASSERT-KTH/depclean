@@ -1,7 +1,5 @@
 package se.kth.jdbl.pom.counter;
 
-import java.util.Optional;
-
 public class ClassMembersVisitorCounter {
 
     //--------------------------/
@@ -75,23 +73,4 @@ public class ClassMembersVisitorCounter {
         return nbVisitedAnnotations;
     }
 
-    //--------------------------/
-    //---- SETTER METHODS ------/
-    //--------------------------/
-
-    public static void setNbVisitedTypes(long nbVisitedTypes) {
-        ClassMembersVisitorCounter.nbVisitedTypes = nbVisitedTypes;
-    }
-
-    public static void setNbVisitedFields(long nbVisitedFields) {
-        ClassMembersVisitorCounter.nbVisitedFields = nbVisitedFields;
-    }
-
-    public static void setNbVisitedMethods(long nbVisitedMethods) {
-        ClassMembersVisitorCounter.nbVisitedMethods = nbVisitedMethods;
-    }
-
-    public static void setNbVisitedAnnotations(long nbVisitedAnnotations) {
-        ClassMembersVisitorCounter.nbVisitedAnnotations = nbVisitedAnnotations;
-    }
 }

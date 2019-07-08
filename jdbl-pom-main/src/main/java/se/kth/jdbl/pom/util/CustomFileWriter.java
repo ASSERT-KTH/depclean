@@ -1,8 +1,9 @@
 package se.kth.jdbl.pom.util;
 
 import org.apache.maven.model.*;
-import se.kth.jdbl.pom.MavenDependency;
 import se.kth.jdbl.pom.counter.ClassMembersVisitorCounter;
+import se.kth.jdbl.pom.tree.StandardTextVisitor;
+import se.kth.jdbl.pom.tree.analysis.DependencyTreeAnalyzer;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -18,13 +19,8 @@ public class CustomFileWriter {
 
     /**
      * Writes a file with descriptive fields of the studied artifacts locally.
-     *
-     * @param descriptionPath
-     * @param model
-     * @throws IOException
      */
-    public static void writeArtifactProperties(String descriptionPath, Model model, String coordinates) throws IOException {
-
+    public static void writeArtifactProperties(String descriptionPath, Model model, String coordinates, DependencyTreeAnalyzer dta, DependencyTreeAnalyzer dtaDebloated) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(descriptionPath, true));
 
         // write coordinates
@@ -74,33 +70,36 @@ public class CustomFileWriter {
 
         // write project description
         if (model.getDescription() != null) {
-            bw.write(model.getDescription().replaceAll(",", "[comma]").replaceAll("\n", " ") + "\n");
+            bw.write(model.getDescription().replaceAll(",", "[comma]").replaceAll("\n", " ") + ",");
         } else {
-            bw.write("NA," + "\n");
+            bw.write("NA,");
         }
+
+        // write height of original and debloated dependency trees
+        bw.write(dta.heightOfDependencyTree() + "," + dtaDebloated.heightOfDependencyTree() + "\n");
 
         bw.close();
     }
 
     /**
      * Writes the results to a file locally.
-     *
-     * @param resultsPath
-     * @param artifact
-     * @param dependencies
-     * @throws IOException
      */
-    public static void writeDependencyResults(String resultsPath,
-                                              String artifact,
-                                              ArrayList<MavenDependency> dependencies) throws IOException {
-
+    public static void writeDependencyResults(String resultsPath, String artifact, ArrayList<MavenDependencyBuilder> dependencies) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(resultsPath, true));
-
-        for (MavenDependency dependency : dependencies) {
+        for (MavenDependencyBuilder dependency : dependencies) {
             // write artifact coordinates
             bw.write(artifact + ",");
             bw.write(dependency.toString());
         }
+        bw.close();
+    }
+
+    /**
+     * Writes the debloated pom file.
+     */
+    public static void writeDebloatedPom(StandardTextVisitor standardTextVisitor, String debloatedPomPath) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(debloatedPomPath));
+        bw.write(standardTextVisitor.toString());
         bw.close();
     }
 }

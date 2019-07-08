@@ -167,11 +167,11 @@
             <version>1.5.3</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.whitesource</groupId>
-            <artifactId>maven-dependency-tree-parser</artifactId>
-            <version>1.0.5</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.whitesource</groupId>-->
+            <!--<artifactId>maven-dependency-tree-parser</artifactId>-->
+            <!--<version>1.0.5</version>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>org.jboss.shrinkwrap.resolver</groupId>
@@ -185,10 +185,10 @@
             <version>${version.shrinkwrap.resolvers}</version>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.apache.maven</groupId>-->
-            <!--<artifactId>maven-model-builder</artifactId>-->
-            <!--<version>3.6.1</version>-->
-            <!--<scope>compile</scope>-->
+        <!--<groupId>org.apache.maven</groupId>-->
+        <!--<artifactId>maven-model-builder</artifactId>-->
+        <!--<version>3.6.1</version>-->
+        <!--<scope>compile</scope>-->
         <!--</dependency>-->
 
 

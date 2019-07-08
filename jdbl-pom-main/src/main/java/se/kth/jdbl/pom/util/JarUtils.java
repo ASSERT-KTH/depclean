@@ -17,9 +17,8 @@ public class JarUtils {
     /**
      * This method decompresses a jar file into a given destination.
      *
-     * @param destinationDir
-     * @param jarPath
-     * @throws IOException
+     * @param destinationDir destination dir to decompress the file
+     * @param jarPath        path to the jar file
      */
     public static void decompressJarFile(String destinationDir, String jarPath) throws IOException {
         File file = new File(jarPath);
