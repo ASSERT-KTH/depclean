@@ -95,7 +95,7 @@ public class CustomFileWriter {
     }
 
     /**
-     * Writes the debloated core file.
+     * Writes the debloated pom file.
      */
     public static void writeDebloatedPom(StandardTextVisitor standardTextVisitor, String debloatedPomPath) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(debloatedPomPath));

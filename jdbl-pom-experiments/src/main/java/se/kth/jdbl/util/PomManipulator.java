@@ -234,9 +234,9 @@ public final class PomManipulator {
 
                 // Resolve any JAR file to get the local repository path
                 final String jarNameAndPath = resolveArtifact(
-                        "org.apache.invoke:invoke-pom:jar:3.2.5")
+                        "org.apache.maven:maven-core-pom:jar:3.2.5")
                         .getCanonicalPath();
-                final int len = "org/apache/maven/invoke-pom/3.2.5/invoke-pom-3.2.5.jar"
+                final int len = "org/apache/maven/maven-core/3.2.5/maven-core-pom-3.2.5.jar"
                         .length();
 
                 // Create the local POM file path and name
