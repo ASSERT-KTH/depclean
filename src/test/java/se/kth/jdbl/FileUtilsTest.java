@@ -1,8 +1,8 @@
-package se.kth.jdbl.pom;
+package se.kth.jdbl;
 
 import org.junit.Assert;
 import org.junit.Test;
-import se.kth.jdbl.pom.util.FileUtils;
+import se.kth.jdbl.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;

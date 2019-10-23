@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>se.kth.jdbl</groupId>
-    <artifactId>jdbl-pom-maven-plugin</artifactId>
+    <artifactId>debloat-pom-maven-plugin</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
     <packaging>maven-plugin</packaging>
 
-    <name>jdbl-pom-maven-plugin</name>
+    <name>debloat-pom-maven-plugin</name>
     <description>A plugin for debloating Maven pom files</description>
     <url>https://github.com/castor-software/royal-debloat/jdbl-pom</url>
 
@@ -25,9 +25,9 @@
     <!-- List of developers -->
     <developers>
         <developer>
-            <id>cesarsotovalero</id>
-            <name>César Soto Valero</name>
-            <email>cesarsv@kth.se</email>
+            <id>anonymous</id>
+            <name>anonymous</name>
+            <email>anonymous</email>
         </developer>
     </developers>
 
@@ -63,13 +63,14 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>3.6.0</version>
                 <configuration>
-                    <goalPrefix>pom-debloat</goalPrefix>
-                    <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                    <goalPrefix>jdbl</goalPrefix>
+                    <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
                 </configuration>
                 <executions>
                     <execution>
@@ -85,22 +86,16 @@
     </build>
 
     <dependencies>
-        <!--Maven -->
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-plugin-api</artifactId>
-            <version>3.3.9</version>
-        </dependency>
+        <!--Maven tools for plugin construction-->
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>3.0</version>
+            <version>3.6.0</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.maven.plugin-tools</groupId>
-            <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.4</version>
-            <scope>provided</scope>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+            <version>3.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -108,25 +103,16 @@
             <version>3.0-alpha-2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-model</artifactId>
-            <version>3.0</version>
+            <groupId>org.apache.maven.plugin-tools</groupId>
+            <artifactId>maven-plugin-annotations</artifactId>
+            <version>3.6.0</version>
         </dependency>
+
+        <!-- Bytecode manipulation -->
         <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-model-builder</artifactId>
-            <version>3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.shared</groupId>
-            <artifactId>maven-invoker</artifactId>
-            <version>3.0.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.shared</groupId>
-            <artifactId>maven-dependency-analyzer</artifactId>
-            <version>1.11.1</version>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>7.1</version>
         </dependency>
 
         <!-- Utils -->
@@ -150,51 +136,52 @@
             <artifactId>shrinkwrap-resolver-api-maven</artifactId>
             <version>${version.shrinkwrap.resolvers}</version>
         </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-api</artifactId>
-            <version>1.11</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-util</artifactId>
-            <version>1.11</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-impl</artifactId>
-            <version>1.11</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-connector-file</artifactId>
-            <version>1.11</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-connector-asynchttpclient</artifactId>
-            <version>1.11</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-connector-wagon</artifactId>
-            <version>1.11</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-aether-provider</artifactId>
-            <version>3.0.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-settings-builder</artifactId>
-            <version>3.0.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-http-lightweight</artifactId>
-            <version>1.0</version>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.sonatype.aether</groupId>-->
+        <!--<artifactId>aether-api</artifactId>-->
+        <!--<version>1.11</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.sonatype.aether</groupId>-->
+        <!--<artifactId>aether-util</artifactId>-->
+        <!--<version>1.11</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.sonatype.aether</groupId>-->
+        <!--<artifactId>aether-impl</artifactId>-->
+        <!--<version>1.11</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.sonatype.aether</groupId>-->
+        <!--<artifactId>aether-connector-file</artifactId>-->
+        <!--<version>1.11</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.sonatype.aether</groupId>-->
+        <!--<artifactId>aether-connector-asynchttpclient</artifactId>-->
+        <!--<version>1.11</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.sonatype.aether</groupId>-->
+        <!--<artifactId>aether-connector-wagon</artifactId>-->
+        <!--<version>1.11</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.apache.maven</groupId>-->
+        <!--<artifactId>maven-aether-provider</artifactId>-->
+        <!--<version>3.0.4</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.apache.maven</groupId>-->
+        <!--<artifactId>maven-settings-builder</artifactId>-->
+        <!--<version>3.0.4</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.apache.maven.wagon</groupId>-->
+        <!--<artifactId>wagon-http-lightweight</artifactId>-->
+        <!--<version>1.0</version>-->
+        <!--</dependency>-->
+
 
         <!-- Logging -->
         <dependency>

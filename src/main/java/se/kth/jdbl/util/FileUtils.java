@@ -1,4 +1,4 @@
-package se.kth.jdbl.pom.util;
+package se.kth.jdbl.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;

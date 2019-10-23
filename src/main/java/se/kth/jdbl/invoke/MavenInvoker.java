@@ -1,4 +1,4 @@
-package se.kth.jdbl.pom.invoke;
+package se.kth.jdbl.invoke;
 
 import org.apache.maven.shared.invoker.*;
 

@@ -1,6 +1,6 @@
-package se.kth.jdbl.pom;
+package se.kth.jdbl;
 
-import se.kth.jdbl.pom.core.PomManipulator;
+import se.kth.jdbl.core.PomManipulator;
 
 /**
  * Test for the {@link PomManipulator} class.
