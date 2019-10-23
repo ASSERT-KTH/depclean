@@ -25,9 +25,6 @@ import org.objectweb.asm.signature.SignatureVisitor;
 /**
  * Computes the set of classes referenced by visited code.
  * Inspired by <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
- *
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
  */
 public class DefaultSignatureVisitor
         extends SignatureVisitor {

@@ -19,10 +19,6 @@ package se.kth.jdbl.analysis;
  * under the License.
  */
 
-/**
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
- */
 public class ProjectDependencyAnalyzerException
         extends Exception {
     // constants --------------------------------------------------------------

@@ -26,8 +26,6 @@ import java.util.Set;
 /**
  * Simply collects the set of visited classes.
  *
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
  * @see #getClasses()
  */
 public class CollectorClassFileVisitor

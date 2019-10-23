@@ -13,10 +13,6 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-/**
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
- */
 @Component(role = ProjectDependencyAnalyzer.class)
 public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyzer {
     // fields -----------------------------------------------------------------
@@ -41,7 +37,6 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
 
         try {
-
             // map of [dependencies] -> [classes]
             Map<Artifact, Set<String>> artifactClassMap = buildArtifactClassMap(project);
 

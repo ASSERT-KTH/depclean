@@ -25,9 +25,6 @@ import java.util.*;
 
 /**
  * Project dependencies analysis result.
- *
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
  */
 public class ProjectDependencyAnalysis {
     // fields -----------------------------------------------------------------

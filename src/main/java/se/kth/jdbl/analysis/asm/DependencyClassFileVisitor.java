@@ -31,8 +31,6 @@ import java.util.Set;
  * Computes the set of classes referenced by visited class files, using
  * <a href="DependencyVisitor.html">DependencyVisitor</a>.
  *
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
  * @see #getDependencies()
  */
 public class DependencyClassFileVisitor

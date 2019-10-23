@@ -26,10 +26,6 @@ import java.net.URL;
 import java.util.Set;
 import java.util.zip.ZipException;
 
-/**
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
- */
 @Component(role = ClassAnalyzer.class)
 public class DefaultClassAnalyzer
         implements ClassAnalyzer {

@@ -33,9 +33,6 @@ import java.util.jar.JarInputStream;
 
 /**
  * Utility to visit classes in a library given either as a jar file or an exploded directory.
- *
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
  */
 public final class ClassFileVisitorUtils {
     // constants --------------------------------------------------------------

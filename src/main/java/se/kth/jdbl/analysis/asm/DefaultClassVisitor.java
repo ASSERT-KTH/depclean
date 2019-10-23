@@ -27,9 +27,6 @@ import se.kth.jdbl.count.ClassMembersVisitorCounter;
 /**
  * Computes the set of classes referenced by visited code.
  * Inspired by <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
- *
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
  */
 public class DefaultClassVisitor
         extends ClassVisitor {

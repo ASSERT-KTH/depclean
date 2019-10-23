@@ -21,10 +21,6 @@ package se.kth.jdbl.analysis;
 
 import java.io.InputStream;
 
-/**
- * @author <a href="mailto:markhobson@gmail.com">Mark Hobson</a>
- * @version $Id$
- */
 public interface ClassFileVisitor {
     void visitClass(String className, InputStream in);
 }

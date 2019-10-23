@@ -24,9 +24,6 @@ import org.objectweb.asm.Type;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * @author Kristian Rosenvold
- */
 public class ResultCollector {
 
     private final Set<String> classes = new HashSet<String>();
