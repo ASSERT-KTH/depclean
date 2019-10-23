@@ -190,7 +190,7 @@ public class PomDebloatMojo extends AbstractMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        /* TODO exclude unused undeclared dependencies [need to be done manually for now] */
+        /* exclude unused undeclared dependencies */
         try {
             if (!unusedUndeclaredArtifacts.isEmpty()) {
                 getLog().info("Excluding " + unusedUndeclaredArtifacts.size() + " unused declared dependencies one-by-one.");
@@ -198,7 +198,6 @@ public class PomDebloatMojo extends AbstractMojo {
                     for (Artifact artifact : unusedUndeclaredArtifacts) {
                         if (isChildren(artifact, dependency)) {
                             System.out.println("Excluding " + artifact.toString() + " from dependency " + dependency.toString());
-
                             Exclusion exclusion = new Exclusion();
                             exclusion.setGroupId(artifact.getGroupId());
                             exclusion.setArtifactId(artifact.getArtifactId());
@@ -210,6 +209,8 @@ public class PomDebloatMojo extends AbstractMojo {
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+
+        /* TODO check the debloat w.r.t the test suite */
 
         /* write the debloated pom file */
         try {
@@ -223,6 +224,10 @@ public class PomDebloatMojo extends AbstractMojo {
         getLog().info("Debloated pom written to: " + pathToPutDebloatedPom);
     }
 
+    //--------------------------------/
+    //------ PRIVATE METHOD/S -------/
+    //------------------------------/
+
     /**
      * Returns true if the artifact is a child of a dependency in the dependency tree.
      *
@@ -234,8 +239,7 @@ public class PomDebloatMojo extends AbstractMojo {
         for (DependencyNode node : dependencyNodes) {
             Dependency dependencyNode = createDependency(node.getArtifact());
             if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
-                    dependency.getArtifactId().equals(dependencyNode.getArtifactId()) &&
-                    dependency.getVersion().equals(dependencyNode.getVersion())) {
+                    dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
                 // now we are in the target dependency
                 for (DependencyNode child : node.getChildren()) {
                     if (child.getArtifact().equals(artifact)) {
@@ -257,10 +261,6 @@ public class PomDebloatMojo extends AbstractMojo {
         rootNode.accept(visitor);
         return visitor.getNodes();
     }
-
-    //--------------------------------/
-    //------ PRIVATE METHOD/S -------/
-    //------------------------------/
 
     private Dependency createDependency(Artifact artifact) {
         Dependency dependency = new Dependency();
