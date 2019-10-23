@@ -3,6 +3,7 @@ package se.kth.jdbl;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -10,9 +11,15 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
 import se.kth.jdbl.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.jdbl.analysis.ProjectDependencyAnalysis;
 import se.kth.jdbl.analysis.ProjectDependencyAnalyzer;
@@ -26,6 +33,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,7 +42,6 @@ import java.util.Set;
  *
  * @see <a href="https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin"></a>
  * @see <a href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html"></a>
- *
  */
 @Mojo(name = "debloat-pom", defaultPhase = LifecyclePhase.PACKAGE,
         requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME,
@@ -56,6 +63,9 @@ public class PomDebloatMojo extends AbstractMojo {
 
     @Component
     private RepositorySystem repositorySystem;
+
+    @Component(hint = "default")
+    private DependencyGraphBuilder dependencyGraphBuilder;
 
     //--------------------------------/
     //------- PUBLIC METHOD/S -------/
@@ -162,18 +172,25 @@ public class PomDebloatMojo extends AbstractMojo {
         }
 
         /* TODO exclude unused undeclared dependencies [need to be done manually for now] */
-//        try {
-//            if (!unusedUndeclaredArtifacts.isEmpty()) {
-//                getLog().info("Excluding " + unusedUndeclaredArtifacts.size() + " unused undeclared dependencies.");
-//                for (Artifact unusedUndeclaredArtifact : unusedUndeclaredArtifacts) {
-//                    unusedUndeclaredArtifact.setScope("provided");
-//                    unusedUndeclaredArtifact.setOptional(true);
-//                    model.addDependency(createDependency(unusedUndeclaredArtifact));
-//                }
-//            }
-//        } catch (Exception e) {
-//            throw new MojoExecutionException(e.getMessage(), e);
-//        }
+        try {
+            if (!unusedUndeclaredArtifacts.isEmpty()) {
+                getLog().info("Excluding " + unusedUndeclaredArtifacts.size() + " unused declared dependencies one-by-one.");
+                for (Dependency dependency : model.getDependencies()) {
+                    for (Artifact artifact : unusedUndeclaredArtifacts) {
+                        if (isChildren(artifact, dependency)) {
+                            System.out.println("Excluding " + artifact.toString() + " from dependency " +  dependency.toString());
+
+                            Exclusion exclusion = new Exclusion();
+                            exclusion.setGroupId(artifact.getGroupId());
+                            exclusion.setArtifactId(artifact.getArtifactId());
+                            dependency.addExclusion(exclusion);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
 
         /* write the debloated pom file */
         try {
@@ -185,6 +202,41 @@ public class PomDebloatMojo extends AbstractMojo {
 
         getLog().info("POM debloated successfully");
         getLog().info("Debloated pom written to: " + pathToPutDebloatedPom);
+    }
+
+    /**
+     * Returns true if the artifact is a child of a dependency in the dependency tree.
+     *
+     * @param dependency
+     * @param artifact
+     */
+    private boolean isChildren(Artifact artifact, Dependency dependency) throws DependencyGraphBuilderException {
+        List<DependencyNode> dependencyNodes = getDependencyNodes();
+        for (DependencyNode node : dependencyNodes) {
+            Dependency dependencyNode = createDependency(node.getArtifact());
+            if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
+                    dependency.getArtifactId().equals(dependencyNode.getArtifactId()) &&
+                    dependency.getVersion().equals(dependencyNode.getVersion())) {
+                // now we are in the target dependency
+                for (DependencyNode child : node.getChildren()) {
+                    if (child.getArtifact().equals(artifact)) {
+                        // the dependency contains the artifact as a child node
+                        return true;
+                    }
+
+                }
+            }
+        }
+        return false;
+    }
+
+    private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException {
+        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        buildingRequest.setProject(project);
+        DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
+        CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
+        rootNode.accept(visitor);
+        return visitor.getNodes();
     }
 
     //--------------------------------/
