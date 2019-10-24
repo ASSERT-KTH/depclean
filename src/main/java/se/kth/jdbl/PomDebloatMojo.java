@@ -148,22 +148,22 @@ public class PomDebloatMojo extends AbstractMojo {
         unusedUndeclaredArtifacts.removeAll(usedUndeclaredArtifacts);
         unusedUndeclaredArtifacts.removeAll(unusedDeclaredArtifacts);
 
-        System.out.println("Used declared dependencies" + " [" + usedDeclaredArtifacts.size() + "]" + ": ");
+        System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifacts.size() + "]" + ": ");
         usedDeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
 
-        System.out.println("Used undeclared dependencies" + " [" + usedUndeclaredArtifacts.size() + "]" + ": ");
+        System.out.println("Used transitive dependencies" + " [" + usedUndeclaredArtifacts.size() + "]" + ": ");
         usedUndeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
 
-        System.out.println("Unused declared dependencies" + " [" + unusedDeclaredArtifacts.size() + "]" + ": ");
+        System.out.println("Potentially unused direct dependencies" + " [" + unusedDeclaredArtifacts.size() + "]" + ": ");
         unusedDeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
 
-        System.out.println("Unused undeclared dependencies" + " [" + unusedUndeclaredArtifacts.size() + "]" + ": ");
+        System.out.println("Potentially unused transitive dependencies" + " [" + unusedUndeclaredArtifacts.size() + "]" + ": ");
         unusedUndeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
 
-        /* add used undeclared as direct dependencies */
+        /* add used transitive as direct dependencies */
         try {
             if (!usedUndeclaredArtifacts.isEmpty()) {
-                getLog().info("Adding " + usedUndeclaredArtifacts.size() + " used undeclared dependencies.");
+                getLog().info("Adding " + usedUndeclaredArtifacts.size() + " used direct dependencies as direct dependencies.");
                 for (Artifact usedUndeclaredArtifact : usedUndeclaredArtifacts) {
                     model.addDependency(createDependency(usedUndeclaredArtifact));
                 }
@@ -172,10 +172,10 @@ public class PomDebloatMojo extends AbstractMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        /* remove unused declared dependencies */
+        /* remove unused direct dependencies */
         try {
             if (!unusedDeclaredArtifacts.isEmpty()) {
-                getLog().info("Removing " + unusedDeclaredArtifacts.size() + " unused declared dependencies one-by-one.");
+                getLog().info("Removing " + unusedDeclaredArtifacts.size() + " unused direct dependencies one-by-one.");
                 for (Artifact unusedDeclaredArtifact : unusedDeclaredArtifacts) {
                     for (Dependency dependency : model.getDependencies()) {
                         if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId()) &&
@@ -190,10 +190,10 @@ public class PomDebloatMojo extends AbstractMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        /* exclude unused undeclared dependencies */
+        /* exclude unused transitive dependencies */
         try {
             if (!unusedUndeclaredArtifacts.isEmpty()) {
-                getLog().info("Excluding " + unusedUndeclaredArtifacts.size() + " unused declared dependencies one-by-one.");
+                getLog().info("Excluding " + unusedUndeclaredArtifacts.size() + " unused direct dependencies one-by-one.");
                 for (Dependency dependency : model.getDependencies()) {
                     for (Artifact artifact : unusedUndeclaredArtifacts) {
                         if (isChildren(artifact, dependency)) {
@@ -210,7 +210,7 @@ public class PomDebloatMojo extends AbstractMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        /* TODO check the debloat w.r.t the test suite */
+        /* TODO check the debloat results w.r.t the test suite */
 
         /* write the debloated pom file */
         try {
@@ -240,7 +240,7 @@ public class PomDebloatMojo extends AbstractMojo {
             Dependency dependencyNode = createDependency(node.getArtifact());
             if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
                     dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
-                // now we are in the target dependency
+                // now we are in the target dependencyma
                 for (DependencyNode child : node.getChildren()) {
                     if (child.getArtifact().equals(artifact)) {
                         // the dependency contains the artifact as a child node
