@@ -148,6 +148,8 @@ public class PomDebloatMojo extends AbstractMojo {
         unusedUndeclaredArtifacts.removeAll(usedUndeclaredArtifacts);
         unusedUndeclaredArtifacts.removeAll(unusedDeclaredArtifacts);
 
+        /* TODO consider only dependencies with compile scope */
+
         System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifacts.size() + "]" + ": ");
         usedDeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
 
