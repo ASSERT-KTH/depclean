@@ -33,6 +33,5 @@ public interface DependencyAnalyzer {
 
     // public methods ---------------------------------------------------------
 
-    Set<String> analyze(URL url)
-            throws IOException;
+    Set<String> analyze(URL url) throws IOException;
 }

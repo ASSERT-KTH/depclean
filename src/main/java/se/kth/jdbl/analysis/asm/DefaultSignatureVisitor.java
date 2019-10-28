@@ -35,10 +35,12 @@ public class DefaultSignatureVisitor
         this.resultCollector = resultCollector;
     }
 
+    @Override
     public void visitClassType(final String name) {
         resultCollector.addName(name);
     }
 
+    @Override
     public void visitInnerClassType(final String name) {
         resultCollector.addName(name);
     }

@@ -32,6 +32,10 @@ public class ResultCollector {
         return classes;
     }
 
+    public void clearClasses() {
+        classes.clear();
+    }
+
     void addDesc(final String desc) {
         addType(Type.getType(desc));
     }

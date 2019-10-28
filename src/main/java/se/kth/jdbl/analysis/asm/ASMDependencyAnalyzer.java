@@ -22,6 +22,7 @@ package se.kth.jdbl.analysis.asm;
 import org.codehaus.plexus.component.annotations.Component;
 import se.kth.jdbl.analysis.ClassFileVisitorUtils;
 import se.kth.jdbl.analysis.DependencyAnalyzer;
+import se.kth.jdbl.analysis.graph.DefaultCallGraph;
 import se.kth.jdbl.count.ClassMembersVisitorCounter;
 
 import java.io.IOException;
@@ -29,21 +30,19 @@ import java.net.URL;
 import java.util.Set;
 
 @Component(role = DependencyAnalyzer.class)
-public class ASMDependencyAnalyzer
-        implements DependencyAnalyzer {
+public class ASMDependencyAnalyzer implements DependencyAnalyzer {
+
+
     // DependencyAnalyzer methods ---------------------------------------------
 
     /*
      * @see org.apache.invoke.shared.dependency.analyzer.DependencyAnalyzer#analyze(java.net.URL)
      */
+    @Override
     public Set<String> analyze(URL url) throws IOException {
-
         ClassMembersVisitorCounter.resetClassCounters();
-
         DependencyClassFileVisitor visitor = new DependencyClassFileVisitor();
-
         ClassFileVisitorUtils.accept(url, visitor);
-
         return visitor.getDependencies();
     }
 }

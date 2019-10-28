@@ -150,6 +150,10 @@ public class PomDebloatMojo extends AbstractMojo {
 
         /* TODO consider only dependencies with compile scope */
 
+        System.out.println( "**************************************************");
+        System.out.println( "****************** RESULTS");
+        System.out.println( "**************************************************");
+
         System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifacts.size() + "]" + ": ");
         usedDeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
 

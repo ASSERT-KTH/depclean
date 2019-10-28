@@ -28,8 +28,7 @@ import se.kth.jdbl.count.ClassMembersVisitorCounter;
  * Computes the set of classes referenced by visited code.
  * Inspired by <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
  */
-public class DefaultClassVisitor
-        extends ClassVisitor {
+public class DefaultClassVisitor extends ClassVisitor {
     // fields -----------------------------------------------------------------
 
     private final ResultCollector resultCollector;
@@ -55,12 +54,13 @@ public class DefaultClassVisitor
         this.resultCollector = resultCollector;
     }
 
+    @Override
     public void visit(final int version, final int access, final String name, final String signature,
                       final String superName, final String[] interfaces) {
 //        System.out.println("visiting class: " +  name);
+
         ClassMembersVisitorCounter.addVisitedClass();
         if (signature == null) {
-
             resultCollector.addName(superName);
             resultCollector.addNames(interfaces);
         } else {
@@ -68,10 +68,12 @@ public class DefaultClassVisitor
         }
     }
 
+    @Override
     public void visitNestHost(final String nestHost) {
         resultCollector.addName(nestHost);
     }
 
+    @Override
     public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
 //        System.out.println("\t" + "visiting annotation: " +  desc);
         ClassMembersVisitorCounter.addVisitedAnnotation();
@@ -80,10 +82,12 @@ public class DefaultClassVisitor
         return annotationVisitor;
     }
 
+    @Override
     public void visitNestMember(final String nestMember) {
         resultCollector.addName(nestMember);
     }
 
+    @Override
     public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
                                    final Object value) {
 //        System.out.println("\t" + "visiting field: " +  name);
@@ -101,6 +105,7 @@ public class DefaultClassVisitor
         return fieldVisitor;
     }
 
+    @Override
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
                                      final String[] exceptions) {
 //        System.out.println("\t" + "visiting method: " +  name);

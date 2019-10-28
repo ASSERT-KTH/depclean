@@ -19,9 +19,13 @@ package se.kth.jdbl.analysis.asm;
  * under the License.
  */
 
-import org.objectweb.asm.*;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.signature.SignatureVisitor;
 import se.kth.jdbl.analysis.ClassFileVisitor;
+import se.kth.jdbl.analysis.graph.DefaultCallGraph;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,11 +37,11 @@ import java.util.Set;
  *
  * @see #getDependencies()
  */
-public class DependencyClassFileVisitor
-        implements ClassFileVisitor {
+public class DependencyClassFileVisitor implements ClassFileVisitor {
     // fields -----------------------------------------------------------------
 
     private final ResultCollector resultCollector = new ResultCollector();
+
 
     // constructors -----------------------------------------------------------
 
@@ -54,19 +58,27 @@ public class DependencyClassFileVisitor
         try {
             ClassReader reader = new ClassReader(in);
 
+            System.out.println("**************************************************");
+            System.out.println("Reading class: " + className);
+
             final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
             for (String string : constantPoolClassRefs) {
                 resultCollector.addName(string);
             }
 
+            /* visit class members */
             AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(resultCollector);
             SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(resultCollector);
             FieldVisitor fieldVisitor = new DefaultFieldVisitor(annotationVisitor, resultCollector);
-            MethodVisitor mv = new DefaultMethodVisitor(annotationVisitor, signatureVisitor, resultCollector);
+            MethodVisitor methodVisitor = new DefaultMethodVisitor(annotationVisitor, signatureVisitor, resultCollector);
 
-            ClassVisitor classVisitor = new DefaultClassVisitor(signatureVisitor, annotationVisitor, fieldVisitor, mv, resultCollector);
+            DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(signatureVisitor, annotationVisitor, fieldVisitor, methodVisitor, resultCollector);
 
-            reader.accept(classVisitor, 0);
+            reader.accept(defaultClassVisitor, 0);
+
+            // inset edge in the graph based on the bytecode analysis
+            DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
+            resultCollector.clearClasses();
 
         } catch (IOException exception) {
             exception.printStackTrace();

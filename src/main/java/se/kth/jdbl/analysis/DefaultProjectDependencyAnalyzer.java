@@ -5,6 +5,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import se.kth.jdbl.analysis.asm.ASMDependencyAnalyzer;
+import se.kth.jdbl.analysis.graph.DefaultCallGraph;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,22 +38,41 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
 
         try {
-            // map of [dependencies] -> [classes]
+            // map of [dependency] -> [classes]
             Map<Artifact, Set<String>> artifactClassMap = buildArtifactClassMap(project);
 
-            // classes statically captured in the project
-            Set<String> dependencyClasses = buildDependencyClasses(project);
+            // set of classes in project
+            Set<String> projectClasses = buildDependencyClasses(project);
 
+            // direct dependencies of the project
             Set<Artifact> declaredArtifacts = project.getDependencyArtifacts();
 
-            Set<Artifact> usedArtifacts = buildUsedArtifacts(artifactClassMap, dependencyClasses);
+            // transitive dependencies of the project
+            Set<Artifact> transitiveArtifacts = removeAll(project.getArtifacts(), declaredArtifacts);
 
+            /* ******************** bytecode analysis ********************* */
+
+            // search for the dependencies used by the project
+            Set<Artifact> usedArtifacts = buildUsedArtifacts(artifactClassMap, projectClasses);
+
+
+
+            /* ******************** call graph analysis ******************** */
+            System.out.println("-------------------------------------------------------");
+            System.out.println(DefaultCallGraph.referencedClassMembers(projectClasses));
+
+
+            /* ******************** results as statically used at the bytecode *********************** */
+
+            // for the used dependencies, get the ones that are declared
             Set<Artifact> usedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
             usedDeclaredArtifacts.retainAll(usedArtifacts);
 
+            // for the used dependencies, remove the ones that are declared
             Set<Artifact> usedUndeclaredArtifacts = new LinkedHashSet<>(usedArtifacts);
             usedUndeclaredArtifacts = removeAll(usedUndeclaredArtifacts, declaredArtifacts);
 
+            // for the declared dependencies, get the ones that are not used
             Set<Artifact> unusedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
             unusedDeclaredArtifacts = removeAll(unusedDeclaredArtifacts, usedArtifacts);
 
@@ -62,10 +82,9 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         }
     }
 
-    protected Map<Artifact, Set<String>> buildArtifactClassMap(MavenProject project) throws IOException {
+    private Map<Artifact, Set<String>> buildArtifactClassMap(MavenProject project) throws IOException {
         Map<Artifact, Set<String>> artifactClassMap = new LinkedHashMap<>();
 
-        @SuppressWarnings("unchecked")
         Set<Artifact> dependencyArtifacts = project.getArtifacts();
 
         for (Artifact artifact : dependencyArtifacts) {
@@ -109,23 +128,26 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         return artifactClassMap;
     }
 
-    protected Set<String> buildDependencyClasses(MavenProject project) throws IOException {
+    private Set<String> buildDependencyClasses(MavenProject project) throws IOException {
+
         Set<String> dependencyClasses = new HashSet<>();
 
         String outputDirectory = project.getBuild().getOutputDirectory();
-
         String testOutputDirectory = project.getBuild().getTestOutputDirectory();
+        String dependenciesDirectory = project.getBuild().getDirectory() + "/" + "dependency";
 
         dependencyClasses.addAll(buildDependencyClasses(outputDirectory));
         dependencyClasses.addAll(buildDependencyClasses(testOutputDirectory));
+        dependencyClasses.addAll(buildDependencyClasses(dependenciesDirectory));
 
         return dependencyClasses;
     }
 
-    protected Set<Artifact> buildUsedArtifacts(Map<Artifact, Set<String>> artifactClassMap,
-                                               Set<String> dependencyClasses) {
+    private Set<Artifact> buildUsedArtifacts(Map<Artifact, Set<String>> artifactClassMap,
+                                             Set<String> dependencyClasses) {
         Set<Artifact> usedArtifacts = new HashSet<>();
 
+        // find for used members in each class in the dependency classes
         for (String className : dependencyClasses) {
             Artifact artifact = findArtifactForClassName(artifactClassMap, className);
 
@@ -172,18 +194,16 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         return dependencyAnalyzer.analyze(url);
     }
 
-    protected Artifact findArtifactForClassName(Map<Artifact, Set<String>> artifactClassMap, String className) {
+    private Artifact findArtifactForClassName(Map<Artifact, Set<String>> artifactClassMap, String className) {
         for (Map.Entry<Artifact, Set<String>> entry : artifactClassMap.entrySet()) {
             if (entry.getValue().contains(className)) {
                 return entry.getKey();
             }
         }
-
         return null;
     }
 
     protected Set<Artifact> buildDeclaredArtifacts(MavenProject project) {
-        @SuppressWarnings("unchecked")
         Set<Artifact> declaredArtifacts = project.getArtifacts();
 
         if (declaredArtifacts == null) {
