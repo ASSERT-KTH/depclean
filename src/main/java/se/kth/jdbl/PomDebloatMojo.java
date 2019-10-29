@@ -199,7 +199,7 @@ public class PomDebloatMojo extends AbstractMojo {
         /* exclude unused transitive dependencies */
         try {
             if (!unusedUndeclaredArtifacts.isEmpty()) {
-                getLog().info("Excluding " + unusedUndeclaredArtifacts.size() + " unused direct dependencies one-by-one.");
+                getLog().info("Excluding " + unusedUndeclaredArtifacts.size() + " unused transitive dependencies one-by-one.");
                 for (Dependency dependency : model.getDependencies()) {
                     for (Artifact artifact : unusedUndeclaredArtifacts) {
                         if (isChildren(artifact, dependency)) {
@@ -246,7 +246,7 @@ public class PomDebloatMojo extends AbstractMojo {
             Dependency dependencyNode = createDependency(node.getArtifact());
             if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
                     dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
-                // now we are in the target dependencyma
+                // now we are in the target dependency
                 for (DependencyNode child : node.getChildren()) {
                     if (child.getArtifact().equals(artifact)) {
                         // the dependency contains the artifact as a child node
