@@ -38,29 +38,40 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
 
         try {
+
             // map of [dependency] -> [classes]
             Map<Artifact, Set<String>> artifactClassMap = buildArtifactClassMap(project);
 
-            // set of classes in project
-            Set<String> projectClasses = buildDependencyClasses(project);
-
             // direct dependencies of the project
             Set<Artifact> declaredArtifacts = project.getDependencyArtifacts();
+            System.out.println("DIRECT DEPENDENCIES: " + declaredArtifacts);
 
             // transitive dependencies of the project
             Set<Artifact> transitiveArtifacts = removeAll(project.getArtifacts(), declaredArtifacts);
+            System.out.println("TRANSITIVE DEPENDENCIES: " + transitiveArtifacts);
 
             /* ******************** bytecode analysis ********************* */
 
+            // set of classes in project
+            Set<String> builtProjectDependencyClasses = buildProjectDependencyClasses(project);
+            Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
+//            System.out.println("PROJECT CLASSES: " + projectClasses);
+            System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
+
+            Set<String> builtDependenciesDependencyClasses = buildDependenciesDependencyClasses(project);
+//            HashSet dependencyClasses = new HashSet<>(DefaultCallGraph.getProjectVertices().removeAll(projectClasses));
+//            System.out.println("DEPENDENCY CLASSES: " + dependencyClasses);
+            System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
+
+            /* ******************** usage analysis ********************* */
+
+            System.out.println("PROJECT CLASSES: " +projectClasses);
             // search for the dependencies used by the project
-            Set<Artifact> usedArtifacts = buildUsedArtifacts(artifactClassMap, projectClasses);
-
-
+            Set<Artifact> usedArtifacts = buildUsedArtifacts(artifactClassMap, DefaultCallGraph.referencedClassMembers(projectClasses));
 
             /* ******************** call graph analysis ******************** */
             System.out.println("-------------------------------------------------------");
-            System.out.println(DefaultCallGraph.referencedClassMembers(projectClasses));
-
+            System.out.println("USED ARTIFACTS:" + usedArtifacts);
 
             /* ******************** results as statically used at the bytecode *********************** */
 
@@ -128,23 +139,27 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         return artifactClassMap;
     }
 
-    private Set<String> buildDependencyClasses(MavenProject project) throws IOException {
-
+    private Set<String> buildProjectDependencyClasses(MavenProject project) throws IOException {
         Set<String> dependencyClasses = new HashSet<>();
-
+        /* paths to project compiled classes */
         String outputDirectory = project.getBuild().getOutputDirectory();
         String testOutputDirectory = project.getBuild().getTestOutputDirectory();
-        String dependenciesDirectory = project.getBuild().getDirectory() + "/" + "dependency";
-
+        /* construct the dependency classes */
         dependencyClasses.addAll(buildDependencyClasses(outputDirectory));
         dependencyClasses.addAll(buildDependencyClasses(testOutputDirectory));
+
+        return dependencyClasses;
+    }
+
+    private Set<String> buildDependenciesDependencyClasses(MavenProject project) throws IOException {
+        Set<String> dependencyClasses = new HashSet<>();
+        String dependenciesDirectory = project.getBuild().getDirectory() + "/" + "dependency";
         dependencyClasses.addAll(buildDependencyClasses(dependenciesDirectory));
 
         return dependencyClasses;
     }
 
-    private Set<Artifact> buildUsedArtifacts(Map<Artifact, Set<String>> artifactClassMap,
-                                             Set<String> dependencyClasses) {
+    private Set<Artifact> buildUsedArtifacts(Map<Artifact, Set<String>> artifactClassMap, Set<String> dependencyClasses) {
         Set<Artifact> usedArtifacts = new HashSet<>();
 
         // find for used members in each class in the dependency classes

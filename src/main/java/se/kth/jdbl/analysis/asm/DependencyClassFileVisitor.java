@@ -58,8 +58,8 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
         try {
             ClassReader reader = new ClassReader(in);
 
-            System.out.println("**************************************************");
-            System.out.println("Reading class: " + className);
+//            System.out.println("**************************************************");
+//            System.out.println("Reading class: " + className);
 
             final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
             for (String string : constantPoolClassRefs) {

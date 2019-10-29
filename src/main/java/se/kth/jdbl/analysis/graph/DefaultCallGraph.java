@@ -17,6 +17,8 @@ public class DefaultCallGraph {
 
     private static AbstractBaseGraph<String, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
+    private static Set<String> projectVertices = new HashSet<>();
+
     //--------------------------------/
     //------- PUBLIC METHOD/S -------/
     //------------------------------/
@@ -28,13 +30,14 @@ public class DefaultCallGraph {
                 directedGraph.addVertex(referencedClassMember);
             }
             directedGraph.addEdge(clazz, referencedClassMember);
+            projectVertices.add(clazz);
 
-            System.out.println(clazz + " -> " + referencedClassMember);
+//            System.out.println(clazz + " -> " + referencedClassMember);
         }
     }
 
     public static Set<String> referencedClassMembers(Set<String> projectClasses) {
-        System.out.println("project classes: " + projectClasses);
+//        System.out.println("project classes: " + projectClasses);
         Set<String> allReferencedClassMembers = new HashSet<>();
         for (String projectClass : projectClasses) {
             allReferencedClassMembers.addAll(traverse(projectClass));
@@ -42,7 +45,15 @@ public class DefaultCallGraph {
         return allReferencedClassMembers;
     }
 
-    public static void cleanDirectedGraph(){
+    public static Set<String> getProjectVertices() {
+        return projectVertices;
+    }
+
+    public static Set<String> getVertices() {
+        return directedGraph.vertexSet();
+    }
+
+    public static void cleanDirectedGraph() {
         directedGraph.vertexSet().clear();
         directedGraph.edgeSet().clear();
     }

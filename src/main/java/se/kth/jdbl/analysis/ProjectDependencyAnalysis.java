@@ -182,8 +182,9 @@ public class ProjectDependencyAnalysis {
         return false;
     }
 
-    // private methods --------------------------------------------------------
-
+    //--------------------------------/
+    //------ PRIVATE METHOD/S -------/
+    //------------------------------/
     /*
      * @see java.lang.Object#toString()
      */

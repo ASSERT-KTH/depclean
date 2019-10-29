@@ -63,8 +63,8 @@ import java.util.Set;
  * @see <a href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html"></a>
  */
 @Mojo(name = "debloat-pom", defaultPhase = LifecyclePhase.PACKAGE,
-        requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME,
-        requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
+        requiresDependencyCollection = ResolutionScope.TEST,
+        requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class PomDebloatMojo extends AbstractMojo {
 
     //--------------------------------/
@@ -150,9 +150,9 @@ public class PomDebloatMojo extends AbstractMojo {
 
         /* TODO consider only dependencies with compile scope */
 
-        System.out.println( "**************************************************");
-        System.out.println( "****************** RESULTS");
-        System.out.println( "**************************************************");
+        System.out.println("**************************************************");
+        System.out.println("****************** RESULTS");
+        System.out.println("**************************************************");
 
         System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifacts.size() + "]" + ": ");
         usedDeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
@@ -169,7 +169,7 @@ public class PomDebloatMojo extends AbstractMojo {
         /* add used transitive as direct dependencies */
         try {
             if (!usedUndeclaredArtifacts.isEmpty()) {
-                getLog().info("Adding " + usedUndeclaredArtifacts.size() + " used direct dependencies as direct dependencies.");
+                getLog().info("Adding " + usedUndeclaredArtifacts.size() + " used transitive dependencies as direct dependencies.");
                 for (Artifact usedUndeclaredArtifact : usedUndeclaredArtifacts) {
                     model.addDependency(createDependency(usedUndeclaredArtifact));
                 }
@@ -181,7 +181,7 @@ public class PomDebloatMojo extends AbstractMojo {
         /* remove unused direct dependencies */
         try {
             if (!unusedDeclaredArtifacts.isEmpty()) {
-                getLog().info("Removing " + unusedDeclaredArtifacts.size() + " unused direct dependencies one-by-one.");
+                getLog().info("Removing " + unusedDeclaredArtifacts.size() + " unused direct dependencies.");
                 for (Artifact unusedDeclaredArtifact : unusedDeclaredArtifacts) {
                     for (Dependency dependency : model.getDependencies()) {
                         if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId()) &&
