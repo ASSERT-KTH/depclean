@@ -43,7 +43,7 @@ import se.kth.depclean.maven.plugin.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.maven.plugin.analysis.ProjectDependencyAnalysis;
 import se.kth.depclean.maven.plugin.analysis.ProjectDependencyAnalyzer;
 import se.kth.depclean.maven.plugin.analysis.ProjectDependencyAnalyzerException;
-import se.kth.depclean.maven.plugin.invoke.MavenInvoker;
+import se.kth.depclean.maven.plugin.util.MavenInvoker;
 import se.kth.depclean.maven.plugin.util.JarUtils;
 
 import java.io.File;

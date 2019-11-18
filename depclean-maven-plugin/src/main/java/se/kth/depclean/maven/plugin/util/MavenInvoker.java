@@ -1,4 +1,4 @@
-package se.kth.depclean.maven.plugin.invoke;
+package se.kth.depclean.maven.plugin.util;
 
 import org.apache.maven.shared.invoker.*;
 

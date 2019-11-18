@@ -9,8 +9,6 @@
 ### Git files
 .gitattributes
 
-
-
 depclean-gradle-plugin/
 .attach_pid*
-depclean-core/src/
+
