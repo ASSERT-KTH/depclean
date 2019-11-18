@@ -1,5 +1,3 @@
-package se.kth.depclean.maven.plugin;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,8 @@ package se.kth.depclean.maven.plugin;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+package se.kth.depclean.maven.plugin;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
@@ -39,10 +39,10 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
-import se.kth.depclean.maven.plugin.analysis.DefaultProjectDependencyAnalyzer;
-import se.kth.depclean.maven.plugin.analysis.ProjectDependencyAnalysis;
-import se.kth.depclean.maven.plugin.analysis.ProjectDependencyAnalyzer;
-import se.kth.depclean.maven.plugin.analysis.ProjectDependencyAnalyzerException;
+import se.kth.depclean.analysis.DefaultProjectDependencyAnalyzer;
+import se.kth.depclean.analysis.ProjectDependencyAnalysis;
+import se.kth.depclean.analysis.ProjectDependencyAnalyzer;
+import se.kth.depclean.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.maven.plugin.util.MavenInvoker;
 import se.kth.depclean.maven.plugin.util.JarUtils;
 
@@ -70,6 +70,7 @@ public class PomDebloatMojo extends AbstractMojo {
     //--------------------------------/
     //-------- CLASS FIELD/S --------/
     //------------------------------/
+
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
