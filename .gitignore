@@ -1,0 +1,26 @@
+### IntelliJ
+*.idea
+
+### Maven template
+target/
+*.iml
+
+### Git files
+.gitattributes
+
+### Project
+#spoon*
+
+
+
+
+*.html
+*.RData
+*.Rhistory
+*.Rproj
+*.csv
+*.txt
+.Rproj.user
+Data
+
+
