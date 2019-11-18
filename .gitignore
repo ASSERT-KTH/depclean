@@ -1,26 +1,16 @@
 ### IntelliJ
 *.idea
+.attach_pid
 
 ### Maven template
-target/
+*target/
 *.iml
 
 ### Git files
 .gitattributes
 
-### Project
-#spoon*
 
 
-
-
-*.html
-*.RData
-*.Rhistory
-*.Rproj
-*.csv
-*.txt
-.Rproj.user
-Data
-
-
+depclean-gradle-plugin/
+.attach_pid*
+depclean-core/src/

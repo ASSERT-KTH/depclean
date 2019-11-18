@@ -1,75 +1,36 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>se.kth.jdbl</groupId>
-    <artifactId>debloat-pom-maven-plugin</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>se.kth.depclean</groupId>
+        <artifactId>depclean-parent-pom</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
+    <artifactId>depclean-maven-plugin</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
-    <name>debloat-pom-maven-plugin</name>
+    <name>depclean-maven-plugin</name>
     <description>A plugin for debloating Maven pom files</description>
     <url>https://github.com/castor-software/royal-debloat/jdbl-pom</url>
 
-    <!-- License statement -->
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <!-- List of developers -->
-    <developers>
-        <developer>
-            <id>anonymous</id>
-            <name>anonymous</name>
-            <email>anonymous</email>
-        </developer>
-    </developers>
-
     <scm>
-        <url>https://github.com/castor-software/royal-debloat/jdbl-pom</url>
-        <connection>scm:git:git:github.com/castor-software/royal-debloat/jdbl-pom.git</connection>
-        <developerConnection>scm:git:git@github.com:castor-software/royal-debloat/jdbl-pom.git
+        <url>https://github.com/castor-software/depclean/depclean-maven-plugin</url>
+        <connection>scm:git:git:github.com/castor-software/depclean/depclean-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:castor-software/depclean/depclean-maven-plugin.git
         </developerConnection>
     </scm>
 
-    <issueManagement>
-        <system>GitHub Issues</system>
-        <url>https://github.com/castor-software/royal-debloat/jdbl-pom/issues</url>
-    </issueManagement>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <java.src.version>1.8</java.src.version>
-        <java.test.version>1.8</java.test.version>
-        <version.shrinkwrap.resolvers>2.2.4</version.shrinkwrap.resolvers>
-    </properties>
-
     <build>
         <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>3.6.0</version>
                 <configuration>
-                    <goalPrefix>jdbl-pom</goalPrefix>
+                    <goalPrefix>depclean</goalPrefix>
                     <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
                 </configuration>
                 <executions>
@@ -126,16 +87,6 @@
             <artifactId>commons-io</artifactId>
             <version>2.5</version>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.shrinkwrap.resolver</groupId>
-            <artifactId>shrinkwrap-resolver-api</artifactId>
-            <version>${version.shrinkwrap.resolvers}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.shrinkwrap.resolver</groupId>
-            <artifactId>shrinkwrap-resolver-api-maven</artifactId>
-            <version>${version.shrinkwrap.resolvers}</version>
-        </dependency>
 
         <!-- Logging -->
         <dependency>
@@ -162,19 +113,16 @@
             <version>3.3.0</version>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-dependency-tree</artifactId>
             <version>3.0.1</version>
         </dependency>
-
         <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
             <version>1.3.0</version>
         </dependency>
-
-
     </dependencies>
+
 </project>
