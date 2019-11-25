@@ -1,4 +1,4 @@
-package se.kth.depclean.maven.plugin.util;
+package se.kth.depclean.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -24,14 +24,24 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class FileUtils {
+public final class FileUtils {
+
+    //--------------------------------/
+    //-------- CONSTRUCTOR/S --------/
+    //------------------------------/
+
+    private FileUtils() {
+    }
+
+    //--------------------------------/
+    //------- PUBLIC METHOD/S -------/
+    //------------------------------/
 
     /**
      * Deletes a directory recursively.
      *
-     * @param directory
-     * @throws IOException
-     * @throws IllegalArgumentException
+     * @param directory The directory to be deleted.
+     * @throws IOException In case of IO issues.
      */
     public static void deleteDirectory(final File directory) throws IOException {
         if (!directory.exists()) {
@@ -41,10 +51,14 @@ public class FileUtils {
             cleanDirectory(directory);
         }
         if (!directory.delete()) {
-            final String message = "Unable to delete directory " + directory + ".";
+            final String message = "Unable to delete directory " + directory + '.';
             throw new IOException(message);
         }
     }
+
+    //--------------------------------/
+    //------ PRIVATE METHOD/S -------/
+    //------------------------------/
 
     private static boolean isSymlink(final File file) throws IOException {
         if (file == null) {
@@ -89,13 +103,14 @@ public class FileUtils {
             deleteDirectory(file);
         } else {
             final boolean filePresent = file.exists();
-            if (!file.delete()) {
-                if (!filePresent) {
-                    throw new FileNotFoundException("File does not exist: " + file);
-                }
-                final String message = "Unable to delete file: " + file;
-                throw new IOException(message);
+            if (file.delete()) {
+                return;
             }
+            if (!filePresent) {
+                throw new FileNotFoundException("File does not exist: " + file);
+            }
+            final String message = "Unable to delete file: " + file;
+            throw new IOException(message);
         }
     }
 }

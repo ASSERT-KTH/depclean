@@ -1,20 +1,23 @@
-# Bloated Dependencies in the Maven Ecosystem
+<img src="https://cesarsotovalero.github.io/img/logos/depclean_logo.png" height="100px" />
 
-### What is `jdbl-pom-maven-plugin`?
+[![Build Status](https://travis-ci.org/castor-software/royal-debloat.svg?branch=master)](https://travis-ci.org/castor-software/royal-debloat)
 
-`jdbl-pom-maven-plugin` is a Maven plugin to automatically remove dependencies that are included in the Maven dependency tree but are not actually used in the Java projects. This tool detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent. For that, it relies on bytecode static analysis and the `maven-dependency-analyze` plugin. The tool does not modify the original source code of the application nor its original `pom.xml`. It can be executed as a Maven goal through the command line or integrated directly into the Maven build lifecycle.
 
-### How does `jdbl-pom-maven-plugin` work?
+### What is `Depclean`?
 
-`jdbl-pom-maven-plugin` runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the project actually use in the bytecode with respect to the class members belonging to its dependencies.
+`Depclean` is a tool to automatically remove dependencies that are included in the Maven dependency tree but are not actually used in Java projects. `Depclean` detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent. For that, it relies on bytecode static analysis and the `maven-dependency-analyze` plugin. The tool does not modify the original source code of the application nor its original `pom.xml`. It can be executed as a Maven goal through the command line or integrated directly into the Maven build lifecycle.
 
-With the usage information, the `jdbl-pom-maven-plugin` executes the following steps:
+### How does `Depclean` works?
+
+`Depclean` runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the project actually use in the bytecode with respect to the class members belonging to its dependencies.
+
+With the usage information, the `Depclean` executes the following steps:
 
 1. add all used transitive dependencies as direct dependencies to the `pom`
 2. remove all bloated direct dependencies from the `pom`
 3. exclude all bloated transitive dependencies in the `pom`
 
-If all the tests pass and the project builds correctly after this changes, then it means that the identified  as bloated dependencies can be removed. `jdbl-pom-maven-plugin` produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
+If all the tests pass and the project builds correctly after this changes, then it means that the identified  as bloated dependencies can be removed. `Depclean` produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
 
 ## Getting Started
 
@@ -26,7 +29,7 @@ If all the tests pass and the project builds correctly after this changes, then 
 ### Installing and building from source
 
 In a terminal clone the repository:
-
+File Types
 ```bash
 git clone https://github.com/castor-software/royal-debloat.git
 ```
@@ -45,16 +48,16 @@ mvn clean install
 Once the plugin is installed, you can execute the plugin directly in the command line:
 
 ```shell script
-mvn se.kth.jdbl:debloat-pom-maven-plugin:0.1.0-SNAPSHOT:debloat-pom
+mvn se.kth.depclean:depclean-maven-plugin:1.0.0:depclean
 ```
 
-Or you can configure the `pom.xml` file of your Maven project to use `jdbl-pom-maven-plugin` as part of the build:
+Or you can configure the `pom.xml` file of your Maven project to use `Depclean` as part of the build:
 
 ```xml
 <plugin>
-    <groupId>se.kth.jdbl</groupId>
+    <groupId>se.kth.Depclean</groupId>
     <artifactId>debloat-pom-maven-plugin</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <executions>
         <execution>
             <goals>

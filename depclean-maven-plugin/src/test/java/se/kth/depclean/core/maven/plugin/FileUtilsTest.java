@@ -1,8 +1,8 @@
-package se.kth.depclean.maven.plugin;
+package se.kth.depclean.core.maven.plugin;
 
 import org.junit.Assert;
 import org.junit.Test;
-import se.kth.depclean.maven.plugin.util.FileUtils;
+import se.kth.depclean.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;

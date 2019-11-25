@@ -1,4 +1,4 @@
-package se.kth.depclean.maven.plugin.util;
+package se.kth.depclean.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,37 +19,56 @@ package se.kth.depclean.maven.plugin.util;
  * under the License.
  */
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
-public class JarUtils {
+public final class JarUtils {
 
     /**
      * Size of the buffer to read/write data.
      */
     private static final int BUFFER_SIZE = 16384;
 
+    //--------------------------------/
+    //-------- CONSTRUCTOR/S --------/
+    //------------------------------/
+
     private JarUtils() {
     }
 
+    //--------------------------------/
+    //------- PUBLIC METHOD/S -------/
+    //------------------------------/
+
     /**
      * Decompress all jar files located in a given directory.
+     *
+     * @param outputDirectory The directory path to put the decompressed files.
      */
-    public static void decompressJars(String outputDirectory) {
+    public static void decompressJars(final String outputDirectory) {
         File files = new File(outputDirectory);
-        for (File f : files.listFiles()) {
+        for (File f : Objects.requireNonNull(files.listFiles())) {
             if (f.getName().endsWith(".jar")) {
                 try {
                     JarUtils.decompressJarFile(outputDirectory, f.getAbsolutePath());
                     // delete the original dependency jar file
                     f.delete();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println("Problem decompressing jar file.");
                 }
             }
         }
     }
+
+    //--------------------------------/
+    //------ PRIVATE METHOD/S -------/
+    //------------------------------/
 
     /**
      * Decompress a jar file in a path to a directory (will be created if it doesn't exists).
@@ -61,7 +80,7 @@ public class JarUtils {
         }
         JarInputStream jarIn = new JarInputStream(new FileInputStream(jarFilePath));
         JarEntry entry = jarIn.getNextJarEntry();
-        // iterates over entries in the jar file
+        // iterates over all the entries in the jar file
         while (entry != null) {
             String filePath = destDirectory + "/" + entry.getName();
             if (!entry.isDirectory()) {
@@ -84,11 +103,11 @@ public class JarUtils {
     /**
      * Extracts an entry file.
      *
-     * @param jarIn
-     * @param filePath
-     * @throws IOException
+     * @param jarIn The jar file to be extracted.
+     * @param filePath Path to the file.
+     * @throws IOException In case of IO issues.
      */
-    private static void extractFile(JarInputStream jarIn, String filePath) throws IOException {
+    private static void extractFile(final JarInputStream jarIn, final String filePath) throws IOException {
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
         byte[] bytesIn = new byte[BUFFER_SIZE];
         int read = 0;

@@ -9,6 +9,10 @@
 ### Git files
 .gitattributes
 
-depclean-gradle-plugin/
 .attach_pid*
+
+*~
+build/**
+.build/**
+
 

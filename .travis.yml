@@ -1,0 +1,33 @@
+language: java
+
+sudo: true
+
+os: linux
+
+dist: trusty
+
+jdk: openjdk11
+
+env:
+  global:
+    - M2_HOME="/usr/local/maven"
+  matrix:
+    - SCRIPT=travis-jdbl-pom.sh
+
+before_cache: rm -rf $HOME/.m2/se/kth/
+
+cache:
+  directories:
+    - $HOME/.m2
+
+before_install:
+  - sudo apt-get update
+  - jdk_switcher use openjdk11
+  - java -version
+
+install: true
+
+script: ./.travis/$SCRIPT
+
+after_success:
+  - mvn clean test jacoco:report coveralls:report

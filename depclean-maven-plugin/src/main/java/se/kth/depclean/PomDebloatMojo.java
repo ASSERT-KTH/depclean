@@ -1,3 +1,5 @@
+package se.kth.depclean;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,8 +19,6 @@
  * under the License.
  */
 
-package se.kth.depclean.maven.plugin;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
@@ -29,7 +29,11 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
@@ -39,12 +43,12 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
-import se.kth.depclean.analysis.DefaultProjectDependencyAnalyzer;
-import se.kth.depclean.analysis.ProjectDependencyAnalysis;
-import se.kth.depclean.analysis.ProjectDependencyAnalyzer;
-import se.kth.depclean.analysis.ProjectDependencyAnalyzerException;
-import se.kth.depclean.maven.plugin.util.MavenInvoker;
-import se.kth.depclean.maven.plugin.util.JarUtils;
+import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
+import se.kth.depclean.core.analysis.ProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
+import se.kth.depclean.util.JarUtils;
+import se.kth.depclean.util.MavenInvoker;
 
 import java.io.File;
 import java.io.FileReader;
@@ -70,7 +74,6 @@ public class PomDebloatMojo extends AbstractMojo {
     //--------------------------------/
     //-------- CLASS FIELD/S --------/
     //------------------------------/
-
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
@@ -149,8 +152,6 @@ public class PomDebloatMojo extends AbstractMojo {
         unusedUndeclaredArtifacts.removeAll(usedUndeclaredArtifacts);
         unusedUndeclaredArtifacts.removeAll(unusedDeclaredArtifacts);
 
-        /* TODO consider only dependencies with compile scope */
-
         System.out.println("**************************************************");
         System.out.println("****************** RESULTS");
         System.out.println("**************************************************");
@@ -217,8 +218,6 @@ public class PomDebloatMojo extends AbstractMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        /* TODO check the debloat results w.r.t the test suite */
-
         /* write the debloated pom file */
         try {
             Path path = Paths.get(pathToPutDebloatedPom);
@@ -236,10 +235,12 @@ public class PomDebloatMojo extends AbstractMojo {
     //------------------------------/
 
     /**
-     * Returns true if the artifact is a child of a dependency in the dependency tree.
+     * Determine if an artifact is a direct or transitive child of a dependency.
      *
-     * @param dependency
-     * @param artifact
+     * @param artifact   The artifact.
+     * @param dependency The dependency
+     * @return true if the artifact is a child of a dependency in the dependency tree.
+     * @throws DependencyGraphBuilderException If the graph cannot be constructed.
      */
     private boolean isChildren(Artifact artifact, Dependency dependency) throws DependencyGraphBuilderException {
         List<DependencyNode> dependencyNodes = getDependencyNodes();
@@ -260,6 +261,12 @@ public class PomDebloatMojo extends AbstractMojo {
         return false;
     }
 
+    /**
+     * This method returns a list of dependency nodes from a graph of dependency tree.
+     *
+     * @return The nodes in the dependency graph.
+     * @throws DependencyGraphBuilderException If the graph cannot be built.
+     */
     private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException {
         ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
         buildingRequest.setProject(project);
@@ -269,7 +276,14 @@ public class PomDebloatMojo extends AbstractMojo {
         return visitor.getNodes();
     }
 
-    private Dependency createDependency(Artifact artifact) {
+    /**
+     * This method creates a {@link org.apache.maven.model.Dependency} object from a
+     * Maven {@link org.apache.maven.artifact.Artifact}.
+     *
+     * @param artifact The artifact to create the dependency.
+     * @return The Dependency object.
+     */
+    private Dependency createDependency(final Artifact artifact) {
         Dependency dependency = new Dependency();
         dependency.setGroupId(artifact.getGroupId());
         dependency.setArtifactId(artifact.getArtifactId());
@@ -283,7 +297,14 @@ public class PomDebloatMojo extends AbstractMojo {
         return dependency;
     }
 
-    private static void writePom(Path pomFile, Model model) throws IOException {
+    /**
+     * Write pom file to the filesystem.
+     *
+     * @param pomFile The path to the pom.
+     * @param model   The maven model to get the pom from.
+     * @throws IOException In case of any IO issue.
+     */
+    private static void writePom(final Path pomFile, final Model model) throws IOException {
         MavenXpp3Writer writer = new MavenXpp3Writer();
         writer.write(Files.newBufferedWriter(pomFile), model);
     }
