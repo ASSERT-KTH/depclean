@@ -12,7 +12,7 @@ env:
   global:
     - M2_HOME="/usr/local/maven"
   matrix:
-    - SCRIPT=travis-jdbl-pom.sh
+    - SCRIPT=depclean-maven-plugin.sh
 
 before_cache: rm -rf $HOME/.m2/se/kth/
 
