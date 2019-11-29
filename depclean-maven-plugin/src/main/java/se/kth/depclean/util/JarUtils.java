@@ -72,6 +72,10 @@ public final class JarUtils {
 
     /**
      * Decompress a jar file in a path to a directory (will be created if it doesn't exists).
+     *
+     * @param destDirectory The destine directory.
+     * @param jarFilePath   The path to the Jar file to be decompressed.
+     * @throws IOException In case of IO issues.
      */
     private static void decompressJarFile(String destDirectory, String jarFilePath) throws IOException {
         File destDir = new File(destDirectory);
@@ -103,7 +107,7 @@ public final class JarUtils {
     /**
      * Extracts an entry file.
      *
-     * @param jarIn The jar file to be extracted.
+     * @param jarIn    The jar file to be extracted.
      * @param filePath Path to the file.
      * @throws IOException In case of IO issues.
      */
