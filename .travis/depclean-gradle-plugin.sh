@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-cd depclean-core
+# install the core library
 mvn clean install
-cd ..
+# build the gradle plugin
 cd depclean-gradle-plugin
 ./gradlew build
