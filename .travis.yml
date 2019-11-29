@@ -6,7 +6,7 @@ os: linux
 
 dist: trusty
 
-jdk: openjdk11
+jdk: openjdk8
 
 env:
   global:
@@ -22,7 +22,7 @@ cache:
 
 before_install:
   - sudo apt-get update
-  - jdk_switcher use openjdk11
+  - jdk_switcher use openjdk8
   - java -version
 
 install: true
