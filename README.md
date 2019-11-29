@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/castor-software/royal-debloat.svg?branch=master)](https://travis-ci.org/castor-software/royal-debloat)
 
 
-### What is `Depclean`?
+### What it is?
 
 `Depclean` is a tool to automatically remove dependencies that are included in the Maven dependency tree but are not actually used in Java projects. `Depclean` detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent. For that, it relies on bytecode static analysis and extends the `maven-dependency-analyze` plugin. The tool does not modify the original source code of the application nor its original `pom.xml`. It can be executed as a Maven goal through the command line or integrated directly into the Maven build lifecycle.
 
@@ -32,14 +32,14 @@ In a terminal clone the repository and switch to the cloned folder:
 
 ```bash
 git clone https://github.com/castor-software/depclean.git
-cd jdbl-pom
+cd depclean
 ```
 Then run the following Maven command to build the application and install the plugin locally:
 
 ```bash
 mvn clean install
 ```
-Once the plugin is installed, you can execute the plugin directly in the command line:
+Once the plugin is installed, you can execute the plugin goal directly in the command line:
 
 ```shell script
 mvn se.kth.depclean:depclean-maven-plugin:1.0.0:depclean

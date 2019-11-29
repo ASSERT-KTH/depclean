@@ -1,0 +1,36 @@
+group = 'se.kth.depclean'
+project.version = '1.0.0'
+
+repositories {
+    if (project.hasProperty('local')) {
+        mavenLocal()
+    }
+    jcenter()
+    mavenLocal()
+    mavenCentral()
+}
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'java-gradle-plugin'
+
+dependencies {
+    compile 'se.kth.depclean:depclean-core:1.0.0' // dependency towards core
+}
+
+gradlePlugin {
+    plugins {
+        evocrash {
+            id = 'se.kth.depclean'
+            implementationClass = 'se.kth.depclean.DepcleanGradlePlugin'
+        }
+    }
+}
