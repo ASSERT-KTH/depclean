@@ -45,7 +45,7 @@ mvn clean install
 ```
 Once the plugin is installed, you can execute the plugin goal directly in the command line:
 
-```shell script
+```bash
 mvn se.kth.depclean:depclean-maven-plugin:1.0.0:depclean
 ```
 
