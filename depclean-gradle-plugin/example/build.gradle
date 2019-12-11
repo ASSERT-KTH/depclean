@@ -1,22 +1,44 @@
+/* Apply the plugin */
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'se.kth.depclean.gradle'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.8 // java 8
+targetCompatibility = 1.8
+
+
+//depcleanSettings {
+//    message = "OK OK"
+//}
+
+//copying all dependencies attached to 'compile' into a specific folder
+task copyDependencies(type: Copy) {
+    from configurations.runtimeClasspath
+    into 'build/dependencies'
+}
+
+dependencies {
+    compile group: 'org.glassfish.jersey.bundles', name: 'jaxrs-ri', version: '2.23.1' // required to copy all dependencies into build/dependencies
+    compile 'com.google.guava:guava:18.0'
+    compile 'junit:junit:4.12'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
 buildscript {
-
     repositories {
-        if (project.hasProperty('local')) {
-            mavenLocal()
-        }
         mavenCentral()
+        mavenLocal()
     }
-
 
     dependencies {
         classpath 'se.kth.depclean:depclean-gradle-plugin:1.0.0' //for using the plugin in local maven
     }
 }
 
-apply plugin: se.kth.depclean.DepcleanGradlePlugin
-
-example {
-    sentenceToDisplay = "OK OK"
-}
 
 

@@ -16,7 +16,7 @@
     <name>maven-plugin</name>
 
     <description>A plugin for debloating Maven pom files</description>
-    <url>https://github.com/castor-software/royal-debloat/jdbl-pom</url>
+    <url>https://github.com/castor-software/royal-debloat/depclean</url>
 
     <scm>
         <url>https://github.com/castor-software/depclean/depclean-maven-plugin</url>
@@ -24,7 +24,6 @@
         <developerConnection>scm:git:git@github.com:castor-software/depclean/depclean-maven-plugin.git
         </developerConnection>
     </scm>
-
 
     <!-- Build options -->
     <build>

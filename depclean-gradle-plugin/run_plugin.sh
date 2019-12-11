@@ -1,4 +1,4 @@
 clear
-./gradlew install
+mvn clean install
 cd example || exit
-./gradlew example Plocal
+./gradlew depclean

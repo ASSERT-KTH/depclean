@@ -1,4 +1,4 @@
-package se.kth.depclean.util;
+package se.kth.depclean.gradle.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
