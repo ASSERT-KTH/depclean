@@ -1,4 +1,4 @@
-<img src="https://cesarsotovalero.github.io/img/logos/depclean_logo.png" height="100px" />
+<img src="https://cesarsotovalero.github.io/img/logos/DepClean_logo.png" height="100px" />
 
 [![Build Status](https://travis-ci.org/castor-software/depclean.svg?branch=master)](https://travis-ci.org/castor-software/depclean)
 
