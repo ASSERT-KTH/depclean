@@ -1,22 +1,7 @@
-### IntelliJ
-*.idea
-.attach_pid
-
-### Maven template
-*target/
-*.iml
-
-### Git files
-.gitattributes
-
-.attach_pid*
-
-*~
-build/**
-.build/**
-*.gradle
-
 _site
 .sass-cache
 Gemfile.lock
 *.gem
+*.idea
+
+

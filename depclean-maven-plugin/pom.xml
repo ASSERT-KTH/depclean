@@ -15,8 +15,8 @@
     <packaging>maven-plugin</packaging>
     <name>maven-plugin</name>
 
-    <description>A plugin for debloating Maven pom files</description>
-    <url>https://github.com/castor-software/royal-debloat/depclean</url>
+    <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
+    <url>https://github.com/castor-software/depclean</url>
 
     <scm>
         <url>https://github.com/castor-software/depclean/depclean-maven-plugin</url>

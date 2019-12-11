@@ -49,6 +49,7 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
             Map<Artifact, Set<String>> artifactClassMap = buildArtifactClassMap(project);
 
             // direct dependencies of the project
+            System.out.println("-------------------------------------------------------");
             Set<Artifact> declaredArtifacts = project.getDependencyArtifacts();
             System.out.println("DIRECT DEPENDENCIES: " + declaredArtifacts);
 
@@ -62,12 +63,12 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
             Set<String> builtProjectDependencyClasses = buildProjectDependencyClasses(project);
             Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
 //            System.out.println("PROJECT CLASSES: " + projectClasses);
-            System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
+//            System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
 
             Set<String> builtDependenciesDependencyClasses = buildDependenciesDependencyClasses(project);
 //            HashSet dependencyClasses = new HashSet<>(DefaultCallGraph.getProjectVertices().removeAll(projectClasses));
 //            System.out.println("DEPENDENCY CLASSES: " + dependencyClasses);
-            System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
+//            System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
 
             /* ******************** usage analysis ********************* */
 
@@ -78,6 +79,8 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
             /* ******************** call graph analysis ******************** */
             System.out.println("-------------------------------------------------------");
             System.out.println("USED ARTIFACTS:" + usedArtifacts);
+            System.out.println("-------------------------------------------------------");
+            System.out.println();
 
             /* ******************** results as statically used at the bytecode *********************** */
 
