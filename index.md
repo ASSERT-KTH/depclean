@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<img src="https://cesarsotovalero.github.io/img/logos/depclean_logo.png" height="100px" />
+<img src="https://cesarsotovalero.github.io/img/logos/DepClean_logo.png" height="100px" />
 
 [![Build Status](https://travis-ci.org/castor-software/depclean.svg?branch=master)](https://travis-ci.org/castor-software/depclean)
 
@@ -13,15 +13,15 @@ DepClean is a tool to automatically remove dependencies that are included in you
 
 ### How does it work?
 
-Depclean runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the project actually use in the bytecode with respect to the class members belonging to its dependencies.
+DepClean runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the project actually use in the bytecode with respect to the class members belonging to its dependencies.
 
-With this usage information, Depclean constructs a new `pom.xml` based on the following steps:
+With this usage information, DepClean constructs a new `pom.xml` based on the following steps:
 
 1. add all used transitive dependencies as direct dependencies
 2. remove all unused direct dependencies
 3. exclude all unused transitive dependencies
 
-If all the tests pass and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. Depclean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
+If all the tests pass and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
 
 ## Usage
 
@@ -49,7 +49,7 @@ Once the plugin is installed, you can execute the plugin goal directly in the co
 mvn se.kth.depclean:depclean-maven-plugin:1.0.0:depclean
 ```
 
-Alternatively, you can configure the `pom.xml` file of your Maven project to use Depclean as part of the build:
+Alternatively, you can configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
 
 ```xml
 <plugin>
