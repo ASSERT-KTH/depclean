@@ -119,6 +119,7 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
+        System.out.println("-------------------------------------------------------");
         getLog().info("Starting DepClean dependency analysis");
 
         File pomFile = new File(project.getBasedir().getAbsolutePath() + "/" + "pom.xml");
@@ -214,11 +215,8 @@ public class DepCleanMojo extends AbstractMojo {
         }
 
         /* Printing the results to the console */
-        System.out.println(" ");
-        System.out.println("-------------------------------------------------------");
         System.out.println(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
         System.out.println("-------------------------------------------------------");
-        System.out.println(" ");
 
         System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifactsCoordinates.size() + "]" + ": ");
         usedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
@@ -232,7 +230,8 @@ public class DepCleanMojo extends AbstractMojo {
         System.out.println("Potentially unused transitive dependencies" + " [" + unusedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
         unusedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
 
-        if (ignoreDependencies != null) {
+        if (!ignoreDependencies.isEmpty()) {
+            System.out.println("-------------------------------------------------------");
             System.out.println("Dependencies ignored in the analysis by the user" + " [" + ignoreDependencies.size() + "]" + ": ");
             ignoreDependencies.stream().forEach(s -> System.out.println("\t" + s));
         }

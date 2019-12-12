@@ -80,7 +80,6 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
             System.out.println("-------------------------------------------------------");
             System.out.println("USED ARTIFACTS:" + usedArtifacts);
             System.out.println("-------------------------------------------------------");
-            System.out.println();
 
             /* ******************** results as statically used at the bytecode *********************** */
 
