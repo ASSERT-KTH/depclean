@@ -74,7 +74,7 @@ public class DepCleanMojo extends AbstractMojo {
      * If this is true, DepClean creates a debloated version of the pom without unused dependencies,
      * called "debloated-pom.xml", in root of the project.
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(property = "create.pom.debloated", defaultValue = "false")
     private boolean createPomDebloated;
 
     /**
@@ -82,7 +82,7 @@ public class DepCleanMojo extends AbstractMojo {
      * considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis
      * Dependency format is <code>groupId:artifactId:version</code>.
      */
-    @Parameter
+    @Parameter(property = "ignore.dependencies")
     private Set<String> ignoreDependencies;
 
     /**
