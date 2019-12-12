@@ -6,7 +6,7 @@
 
     <!-- Parent pom -->
     <parent>
-        <groupId>se.kth.depclean</groupId>
+        <groupId>se.kth.castor</groupId>
         <artifactId>depclean-parent-pom</artifactId>
         <version>1.0.0</version>
     </parent>
@@ -14,7 +14,10 @@
     <!-- Coordinates -->
     <artifactId>depclean-core</artifactId>
     <version>1.0.0</version>
-    <name>core</name>
+
+    <name>depclean-core</name>
+    <packaging>jar</packaging>
+    <description>Core library of DepClean</description>
 
     <dependencies>
         <!-- Bytecode manipulation -->

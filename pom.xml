@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <!-- Coordinates -->
-    <groupId>se.kth.depclean</groupId>
+    <groupId>se.kth.castor</groupId>
     <artifactId>depclean-parent-pom</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
@@ -23,7 +23,7 @@
     </properties>
 
     <!-- Project description-->
-    <description>Depclean is a tool to automatically debloat dependencies in Java projects</description>
+    <description>DepClean is a tool that automatically debloats dependencies in Java projects</description>
     <url>https://github.com/castor-software/depclean</url>
 
     <issueManagement>
@@ -32,10 +32,9 @@
     </issueManagement>
 
     <scm>
-        <url>https://github.com/castor-software/royal-debloat/jdbl-pom</url>
-        <connection>scm:git:git:github.com/castor-software/royal-debloat/jdbl-pom.git</connection>
-        <developerConnection>scm:git:git@github.com:castor-software/royal-debloat/jdbl-pom.git
-        </developerConnection>
+        <url>https://github.com/castor-software/depclean/</url>
+        <connection>scm:git:git:github.com/castor-software/depclean.git</connection>
+        <developerConnection>scm:git:git@github.com:castor-software/depclean.git</developerConnection>
     </scm>
 
     <!-- License statement -->

@@ -41,14 +41,14 @@ mvn clean install
 Once the plugin is installed, you can execute the plugin goal directly in the command line:
 
 ```shell script
-mvn se.kth.depclean:depclean-maven-plugin:1.0.0:depclean
+mvn se.kth.castor:depclean-maven-plugin:1.0.0:depclean
 ```
 
 Alternatively, you can configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
 
 ```xml
 <plugin>
-    <groupId>se.kth.depclean</groupId>
+    <groupId>se.kth.castor</groupId>
     <artifactId>depclean-maven-plugin</artifactId>
     <version>1.0.0</version>
     <executions>

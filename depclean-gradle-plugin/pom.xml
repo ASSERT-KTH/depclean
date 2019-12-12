@@ -4,7 +4,7 @@
 
     <!-- Parent -->
     <parent>
-        <groupId>se.kth.depclean</groupId>
+        <groupId>se.kth.castor</groupId>
         <artifactId>depclean-parent-pom</artifactId>
         <version>1.0.0</version>
     </parent>
@@ -14,17 +14,8 @@
     <version>1.0.0</version>
 
     <packaging>jar</packaging>
-    <name>gradle-plugin</name>
-
+    <name>depclean-gradle-plugin</name>
     <description>A plugin for debloating dependencies in Gradle projects</description>
-    <url>https://github.com/castor-software/royal-debloat/jdbl-pom</url>
-
-    <scm>
-        <url>https://github.com/castor-software/depclean/depclean-gradle-plugin</url>
-        <connection>scm:git:git:github.com/castor-software/depclean/depclean-gradle-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:castor-software/depclean/depclean-gradle-plugin.git
-        </developerConnection>
-    </scm>
 
     <!-- Build options -->
     <build>

@@ -4,7 +4,7 @@
 
     <!-- Parent -->
     <parent>
-        <groupId>se.kth.depclean</groupId>
+        <groupId>se.kth.castor</groupId>
         <artifactId>depclean-parent-pom</artifactId>
         <version>1.0.0</version>
     </parent>
@@ -12,18 +12,11 @@
     <!-- Coordinates -->
     <artifactId>depclean-maven-plugin</artifactId>
     <version>1.0.0</version>
+
     <packaging>maven-plugin</packaging>
     <name>maven-plugin</name>
 
     <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
-    <url>https://github.com/castor-software/depclean</url>
-
-    <scm>
-        <url>https://github.com/castor-software/depclean/depclean-maven-plugin</url>
-        <connection>scm:git:git:github.com/castor-software/depclean/depclean-maven-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:castor-software/depclean/depclean-maven-plugin.git
-        </developerConnection>
-    </scm>
 
     <!-- Build options -->
     <build>
