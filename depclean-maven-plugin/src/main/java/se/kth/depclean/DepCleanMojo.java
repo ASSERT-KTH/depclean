@@ -58,17 +58,45 @@ public class DepCleanMojo extends AbstractMojo {
     //-------- CLASS FIELD/S --------/
     //------------------------------/
 
+    /**
+     * The Maven project to analyze.
+     */
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
 
+    /**
+     * The Maven session to analyze.
+     */
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
+    /**
+     * If this is true, DepClean creates a debloated version of the pom without unused dependencies,
+     * called "debloated-pom.xml", in root of the project.
+     */
     @Parameter(defaultValue = "false")
-    private boolean writePomDebloated;
+    private boolean createPomDebloated;
 
+    /**
+     * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
+     * considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis
+     * Dependency format is <code>groupId:artifactId:version</code>.
+     */
     @Parameter
     private Set<String> ignoreDependencies;
+
+    /**
+     * If this is true, and DepClean reported any unused dependency in the dependency tree,
+     * the build fails immediately after running DepClean.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean failIfUnusedDependency;
+
+    /**
+     * Skip plugin execution completely.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean skipDepClean;
 
     @Component
     private ProjectBuilder mavenProjectBuilder;
@@ -85,6 +113,11 @@ public class DepCleanMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+
+        if (skipDepClean) {
+            getLog().info("Skipping DepClean plugin execution");
+            return;
+        }
 
         getLog().info("Starting DepClean dependency analysis");
 
@@ -181,9 +214,11 @@ public class DepCleanMojo extends AbstractMojo {
         }
 
         /* Printing the results to the console */
-        System.out.println("**************************************************");
-        System.out.println("****************** RESULTS");
-        System.out.println("**************************************************");
+        System.out.println(" ");
+        System.out.println("-------------------------------------------------------");
+        System.out.println(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
+        System.out.println("-------------------------------------------------------");
+        System.out.println(" ");
 
         System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifactsCoordinates.size() + "]" + ": ");
         usedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
@@ -198,12 +233,18 @@ public class DepCleanMojo extends AbstractMojo {
         unusedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
 
         if (ignoreDependencies != null) {
-            System.out.println("Dependencies ignored in the analysis by the user"  + " [" + ignoreDependencies.size() + "]" + ": ");
+            System.out.println("Dependencies ignored in the analysis by the user" + " [" + ignoreDependencies.size() + "]" + ": ");
             ignoreDependencies.stream().forEach(s -> System.out.println("\t" + s));
         }
 
+        /* Fail the build if there are unused dependencies */
+        if (failIfUnusedDependency && (unusedDeclaredArtifactsCoordinates.size() > 0 || unusedUndeclaredArtifactsCoordinates.size() > 0)) {
+            throw new MojoExecutionException("Build failed due to unused dependencies in the dependency tree.");
+        }
+
+
         /* Writing the debloated version of the pom */
-        if (writePomDebloated) {
+        if (createPomDebloated) {
             getLog().info("Starting debloating POM");
 
             /* add used transitive as direct dependencies */
@@ -266,7 +307,7 @@ public class DepCleanMojo extends AbstractMojo {
             }
 
             getLog().info("POM debloated successfully");
-            getLog().info("Debloated pom written to: " + pathToPutDebloatedPom);
+            getLog().info("pom-debloated.xml file created in: " + pathToPutDebloatedPom);
         }
     }
 
