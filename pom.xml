@@ -225,6 +225,21 @@
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
+
+            <!-- Performing a release deployment with the Maven Release Plugin -->
+            <!-- see https://central.sonatype.org/pages/apache-maven.html -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
+
         </plugins>
 
         <!-- Coveralls plugin -->

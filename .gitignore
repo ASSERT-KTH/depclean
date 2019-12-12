@@ -6,6 +6,8 @@ Gemfile.lock
 
 target/
 
+.attach*
+
 depclean-core/target
 depclean-gradle-plugin/target
 depclean-maven-plugin/target
