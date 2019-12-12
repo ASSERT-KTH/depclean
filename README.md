@@ -61,13 +61,13 @@ Alternatively, you can configure the `pom.xml` file of your Maven project to use
 </plugin>
 ```
 
-#### Optional Parameters
+### Optional Parameters
 
 The Maven plugin can be configured with the following additional parameters.
 
 | Name   |  Type |   Description      | 
 |:----------|:-------------:| :-------------| 
-| `<ignoreDependencies>` | `boolean` | Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis. Dependency format is `groupId:artifactId:version`.|
+| `<ignoreDependencies>` | `Set<String>` | Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis. Dependency format is `groupId:artifactId:version`.|
 | `<createPomDebloated>` | `boolean` | If this is true, DepClean creates a debloated version of the pom without unused dependencies called `debloated-pom.xml`, in root of the project. **Default value is:** `false`.|
 | `<failIfUnusedDependency>` | `boolean` | If this is true, and DepClean reported any unused dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.|
 | `<createPomDebloated>` | `boolean` | If this is true, DepClean creates a debloated version of the pom without unused dependencies clled "debloated-pom.xml", in root of the project. **Default value is:** `false`.|

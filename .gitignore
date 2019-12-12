@@ -6,6 +6,9 @@ Gemfile.lock
 
 target/
 
+depclean-core/target
+depclean-gradle-plugin/target
+depclean-maven-plugin/target
 
 depclean-core/depclean-core.iml
 depclean-core/target/generated-sources/
