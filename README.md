@@ -1,6 +1,8 @@
 <img src="https://cesarsotovalero.github.io/img/logos/DepClean_logo.png" height="100px" />
 
 [![Build Status](https://travis-ci.org/castor-software/depclean.svg?branch=master)](https://travis-ci.org/castor-software/depclean)
+[![Hits-of-Code](https://hitsofcode.com/github/castor-software/depclean)](https://hitsofcode.com/view/github/castor-software/depclean)
+
 
 ### What is DepClean?
 
