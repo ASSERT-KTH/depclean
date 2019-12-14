@@ -2,5 +2,6 @@
 
 mvn clean install -Ptravis
 mvn jacoco:report coveralls:report --fail-never
-mvn sonar:sonar
-mvn clean verify sonar:sonar -Pcoverage
+mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=castor-software_depclean
+
+
