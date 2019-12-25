@@ -38,4 +38,4 @@ script: ./.travis/$SCRIPT
   # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
 
 after_success:
-  - mvn clean test jacoco:report
+  - mvn clean test jacoco:report coveralls:report
