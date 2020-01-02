@@ -1,13 +1,8 @@
 package se.kth.depclean.gradle.task;
 
 import org.gradle.api.DefaultTask;
-import org.gradle.api.Project;
-import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.tasks.TaskAction;
 import se.kth.depclean.gradle.DepCleanExtension;
-
-import java.io.File;
 
 public class DepCleanTask extends DefaultTask {
 
@@ -23,28 +18,32 @@ public class DepCleanTask extends DefaultTask {
         HelloWorld helloWorld = new HelloWorld(message);
         System.out.println(helloWorld.greet());
 
-        Project project = getProject();
-        System.out.println(project.getConfigurations().detachedConfiguration().getAllDependencies());
-        System.out.println(project.getConfigurations().detachedConfiguration().getResolvedConfiguration().getResolvedArtifacts());
+        GradleConnector connector = new GradleConnector(getProject().getGradle().getGradleHomeDir().getAbsolutePath(), getProject().getProjectDir().getAbsolutePath());
 
-        System.out.println("******");
-        Configuration configuration = project.getConfigurations().getByName("runtimeClasspath");
-        for (File file : configuration) {
-            project.getLogger().lifecycle("Found project dependency @ " + file.getAbsolutePath());
-        }
+        System.out.println("gradle task names: " + connector.getGradleTaskNames());
+        connector.getProjectDependencyNames().forEach(s -> System.out.println(s));
 
-        Configuration configuration2 = project.getConfigurations().getByName("copyAllDependencies");
+        connector.executeTask("copyDependencies");
 
-        for (Dependency dependency : configuration2.getDependencies()) {
-            project.getLogger().lifecycle("Dependency @ " + dependency.getGroup() + ":" + dependency.getName());
-        }
+        // Project project = getProject();
+        // System.out.println("Get all dependencies: " + project.getConfigurations().detachedConfiguration().getAllDependencies());
+        // System.out.println("Get resolved artifacts: " + project.getConfigurations().detachedConfiguration().getResolvedConfiguration().getResolvedArtifacts());
+        //
+        // System.out.println("******");
+        // Configuration configuration = project.getConfigurations().getByName("runtimeClasspath");
+        // for (File file : configuration) {
+        //     project.getLogger().lifecycle("Found project dependency @ " + file.getAbsolutePath());
+        // }
+        //
+        // Configuration configuration2 = project.getConfigurations().getByName("copyDependencies");
+        //
+        // for (Dependency dependency : configuration2.getDependencies()) {
+        //     project.getLogger().lifecycle("Dependency @ " + dependency.getGroup() + ":" + dependency.getName());
+        // }
 
     }
 
-
-
     /*
-
      *//* Copy direct dependencies locally *//*
         // TODO
 
