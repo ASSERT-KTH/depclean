@@ -8,7 +8,6 @@ import org.gradle.tooling.model.idea.IdeaDependency;
 import org.gradle.tooling.model.idea.IdeaModule;
 import org.gradle.tooling.model.idea.IdeaProject;
 import org.gradle.tooling.model.idea.IdeaSingleEntryLibraryDependency;
-import org.gradle.util.GradleVersion;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,10 +27,6 @@ public class GradleConnector {
         connector = org.gradle.tooling.GradleConnector.newConnector();
         connector.useInstallation(gradleInstallationDir1);
         connector.forProjectDirectory(new File(projectDir));
-    }
-
-    public String getGradleVersion() {
-        return GradleVersion.current().getVersion();
     }
 
     public List<String> getGradleTaskNames() {

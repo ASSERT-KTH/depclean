@@ -3,11 +3,26 @@ package se.kth.depclean.gradle.task;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 import se.kth.depclean.gradle.DepCleanExtension;
+import se.kth.depclean.gradle.dt.InputType;
+import se.kth.depclean.gradle.dt.Node;
+import se.kth.depclean.gradle.dt.ParseException;
+import se.kth.depclean.gradle.dt.Parser;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 
 public class DepCleanTask extends DefaultTask {
 
     @TaskAction
-    public void depcleanAction() {
+    public void depcleanAction() throws FileNotFoundException, UnsupportedEncodingException {
 
         DepCleanExtension extension = getProject().getExtensions().findByType(DepCleanExtension.class);
         if (extension == null) {
@@ -21,9 +36,28 @@ public class DepCleanTask extends DefaultTask {
         GradleConnector connector = new GradleConnector(getProject().getGradle().getGradleHomeDir().getAbsolutePath(), getProject().getProjectDir().getAbsolutePath());
 
         System.out.println("gradle task names: " + connector.getGradleTaskNames());
-        connector.getProjectDependencyNames().forEach(s -> System.out.println(s));
+        // connector.getProjectDependencyNames().forEach(s -> System.out.println(s));
 
         connector.executeTask("copyDependencies");
+        connector.executeTask("dependencyReportFile");
+
+        String pathToDependencyTree = getProject().getBuildDir().getAbsolutePath() + "/dependencies/dependencies.txt";
+        removeBlankLines(pathToDependencyTree);
+
+
+        // parsing the dependency tree
+        InputType type = InputType.TEXT;
+        Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(pathToDependencyTree), StandardCharsets.UTF_8));
+        Parser parser = type.newParser();
+        try {
+            Node tree = parser.parse(reader);
+            System.out.println("direct dependencies: ");
+            for (Node childNode : tree.getChildNodes()) {
+                System.out.println("\t" + childNode.getArtifactCanonicalForm());
+            }
+        } catch (ParseException e) {
+            System.out.println("Unable to parse the dependency tree file.");
+        }
 
         // Project project = getProject();
         // System.out.println("Get all dependencies: " + project.getConfigurations().detachedConfiguration().getAllDependencies());
@@ -87,4 +121,30 @@ public class DepCleanTask extends DefaultTask {
         System.out.println("Potentially unused transitive dependencies" + " [" + unusedUndeclaredArtifacts.size() + "]" + ": ");
         unusedUndeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
 */
+
+    public static void removeBlankLines(String filePath) throws FileNotFoundException {
+        Scanner file;
+        PrintWriter writer;
+
+        file = new Scanner(new File(filePath));
+        writer = new PrintWriter(filePath + "_old");
+
+        while (file.hasNext()) {
+            String line = file.nextLine();
+            if (!line.isEmpty() && !line.startsWith("\n") && (line.startsWith(" ") || line.startsWith("|") || line.startsWith("+") || line.startsWith("\\")
+                    || line.startsWith("³") || line.startsWith("Ã") || line.startsWith("Ä") || line.startsWith("À"))) {
+                writer.write(line);
+                writer.write("\n");
+            }
+        }
+        file.close();
+        writer.close();
+
+        File file1 = new File(filePath);
+        File file2 = new File(filePath + "_old");
+
+        file1.delete();
+        file2.renameTo(file1);
+    }
+
 }
