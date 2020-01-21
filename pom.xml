@@ -63,7 +63,6 @@
     <modules>
         <module>depclean-core</module>
         <module>depclean-maven-plugin</module>
-        <module>depclean-gradle-plugin</module>
     </modules>
 
     <!-- List of global dependencies -->

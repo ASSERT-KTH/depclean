@@ -1,0 +1,79 @@
+digraph "G" {
+node ["fontname"="Times New Roman"]
+"exampleproject" ["shape"="rectangle","label"="example-project"]
+"orgglassfishjerseybundlesjaxrsri" ["shape"="rectangle","label"="jaxrs-ri"]
+"orgglassfishjerseycontainersjerseycontainerservlet" ["shape"="rectangle","label"="jersey-container-servlet"]
+"orgglassfishjerseycontainersjerseycontainerservletcore" ["shape"="rectangle","label"="jersey-container-servlet-core"]
+"orgglassfishjerseycorejerseyserver" ["shape"="rectangle","label"="jersey-server"]
+"orgglassfishjerseymediajerseymediajaxb" ["shape"="rectangle","label"="jersey-media-jaxb"]
+"orgglassfishjerseycorejerseycommon" ["shape"="rectangle","label"="jersey-common"]
+"javaxwsrsjavaxwsrsapi" ["shape"="rectangle","label"="javax.ws.rs-api"]
+"javaxannotationjavaxannotationapi" ["shape"="rectangle","label"="javax.annotation-api"]
+"orgglassfishjerseybundlesrepackagedjerseyguava" ["shape"="rectangle","label"="jersey-guava"]
+"orgglassfishhk2hk2locator" ["shape"="rectangle","label"="hk2-locator"]
+"orgglassfishhk2hk2api" ["shape"="rectangle","label"="hk2-api"]
+"orgglassfishhk2hk2utils" ["shape"="rectangle","label"="hk2-utils"]
+"javaxinjectjavaxinject" ["shape"="rectangle","label"="javax.inject"]
+"orgglassfishhk2externalaopalliancerepackaged" ["shape"="rectangle","label"="aopalliance-repackaged"]
+"orgglassfishhk2externaljavaxinject" ["shape"="rectangle","label"="javax.inject"]
+"orgjavassistjavassist" ["shape"="rectangle","label"="javassist"]
+"orgglassfishhk2osgiresourcelocator" ["shape"="rectangle","label"="osgi-resource-locator"]
+"orgglassfishjerseycorejerseyclient" ["shape"="rectangle","label"="jersey-client"]
+"javaxvalidationvalidationapi" ["shape"="rectangle","label"="validation-api"]
+"comgoogleguavaguava" ["shape"="rectangle","label"="guava"]
+"junitjunit" ["shape"="rectangle","label"="junit"]
+"orghamcresthamcrestcore" ["shape"="rectangle","label"="hamcrest-core"]
+"exampleproject" -> "orgglassfishjerseybundlesjaxrsri"
+"exampleproject" -> "comgoogleguavaguava"
+"exampleproject" -> "junitjunit"
+"orgglassfishjerseybundlesjaxrsri" -> "orgglassfishjerseycontainersjerseycontainerservlet"
+"orgglassfishjerseybundlesjaxrsri" -> "orgglassfishjerseycontainersjerseycontainerservletcore"
+"orgglassfishjerseybundlesjaxrsri" -> "orgglassfishjerseycorejerseyserver"
+"orgglassfishjerseybundlesjaxrsri" -> "orgglassfishjerseymediajerseymediajaxb"
+"orgglassfishjerseybundlesjaxrsri" -> "orgglassfishjerseycorejerseyclient"
+"orgglassfishjerseybundlesjaxrsri" -> "orgglassfishjerseycorejerseycommon"
+"orgglassfishjerseycontainersjerseycontainerservlet" -> "orgglassfishjerseycontainersjerseycontainerservletcore"
+"orgglassfishjerseycontainersjerseycontainerservlet" -> "orgglassfishjerseycorejerseyserver"
+"orgglassfishjerseycontainersjerseycontainerservlet" -> "orgglassfishjerseycorejerseycommon"
+"orgglassfishjerseycontainersjerseycontainerservlet" -> "javaxwsrsjavaxwsrsapi"
+"orgglassfishjerseycontainersjerseycontainerservletcore" -> "orgglassfishjerseycorejerseyserver"
+"orgglassfishjerseycontainersjerseycontainerservletcore" -> "orgglassfishjerseycorejerseycommon"
+"orgglassfishjerseycontainersjerseycontainerservletcore" -> "javaxwsrsjavaxwsrsapi"
+"orgglassfishjerseycontainersjerseycontainerservletcore" -> "orgglassfishhk2externaljavaxinject"
+"orgglassfishjerseycorejerseyserver" -> "orgglassfishjerseymediajerseymediajaxb"
+"orgglassfishjerseycorejerseyserver" -> "orgglassfishjerseycorejerseyclient"
+"orgglassfishjerseycorejerseyserver" -> "orgglassfishjerseycorejerseycommon"
+"orgglassfishjerseycorejerseyserver" -> "javaxwsrsjavaxwsrsapi"
+"orgglassfishjerseycorejerseyserver" -> "javaxannotationjavaxannotationapi"
+"orgglassfishjerseycorejerseyserver" -> "orgglassfishhk2hk2locator"
+"orgglassfishjerseycorejerseyserver" -> "orgglassfishhk2hk2api"
+"orgglassfishjerseycorejerseyserver" -> "orgglassfishhk2externaljavaxinject"
+"orgglassfishjerseycorejerseyserver" -> "javaxvalidationvalidationapi"
+"orgglassfishjerseymediajerseymediajaxb" -> "orgglassfishjerseycorejerseycommon"
+"orgglassfishjerseymediajerseymediajaxb" -> "orgglassfishhk2hk2locator"
+"orgglassfishjerseymediajerseymediajaxb" -> "orgglassfishhk2hk2api"
+"orgglassfishjerseymediajerseymediajaxb" -> "orgglassfishhk2externaljavaxinject"
+"orgglassfishjerseymediajerseymediajaxb" -> "orgglassfishhk2osgiresourcelocator"
+"orgglassfishjerseycorejerseycommon" -> "javaxwsrsjavaxwsrsapi"
+"orgglassfishjerseycorejerseycommon" -> "javaxannotationjavaxannotationapi"
+"orgglassfishjerseycorejerseycommon" -> "orgglassfishjerseybundlesrepackagedjerseyguava"
+"orgglassfishjerseycorejerseycommon" -> "orgglassfishhk2hk2locator"
+"orgglassfishjerseycorejerseycommon" -> "orgglassfishhk2hk2api"
+"orgglassfishjerseycorejerseycommon" -> "orgglassfishhk2externaljavaxinject"
+"orgglassfishjerseycorejerseycommon" -> "orgglassfishhk2osgiresourcelocator"
+"orgglassfishhk2hk2locator" -> "orgglassfishhk2hk2api"
+"orgglassfishhk2hk2locator" -> "orgglassfishhk2externaljavaxinject"
+"orgglassfishhk2hk2locator" -> "orgglassfishhk2hk2utils"
+"orgglassfishhk2hk2locator" -> "orgglassfishhk2externalaopalliancerepackaged"
+"orgglassfishhk2hk2locator" -> "orgjavassistjavassist"
+"orgglassfishhk2hk2api" -> "orgglassfishhk2hk2utils"
+"orgglassfishhk2hk2api" -> "orgglassfishhk2externalaopalliancerepackaged"
+"orgglassfishhk2hk2api" -> "javaxinjectjavaxinject"
+"orgglassfishhk2hk2utils" -> "javaxinjectjavaxinject"
+"orgglassfishjerseycorejerseyclient" -> "orgglassfishjerseycorejerseycommon"
+"orgglassfishjerseycorejerseyclient" -> "javaxwsrsjavaxwsrsapi"
+"orgglassfishjerseycorejerseyclient" -> "orgglassfishhk2hk2locator"
+"orgglassfishjerseycorejerseyclient" -> "orgglassfishhk2hk2api"
+"orgglassfishjerseycorejerseyclient" -> "orgglassfishhk2externaljavaxinject"
+"junitjunit" -> "orghamcresthamcrestcore"
+}

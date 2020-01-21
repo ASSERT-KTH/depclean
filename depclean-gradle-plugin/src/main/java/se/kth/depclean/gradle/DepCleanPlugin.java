@@ -5,7 +5,7 @@ import org.gradle.api.Project;
 import se.kth.depclean.gradle.task.DepCleanTask;
 
 /**
- * Registers the plugin's tasks.
+ * This class is in charge of registering the plugin's tasks.
  */
 public class DepCleanPlugin implements Plugin<Project> {
 
