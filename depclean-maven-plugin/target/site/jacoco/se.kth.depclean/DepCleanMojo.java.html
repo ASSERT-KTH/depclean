@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DepCleanMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">depclean-maven-plugin</a> &gt; <a href="index.source.html" class="el_package">se.kth.depclean</a> &gt; <span class="el_source">DepCleanMojo.java</span></div><h1>DepCleanMojo.java</h1><pre class="source lang-java linenums">package se.kth.depclean;
+
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Exclusion;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
+import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
+import se.kth.depclean.core.analysis.ProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
+import se.kth.depclean.util.JarUtils;
+import se.kth.depclean.util.MavenInvoker;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * This Maven mojo produces a clean copy of the project's pom file without bloated dependencies.
+ * It is built on top of the maven-dependency-analyzer component.
+ *
+ * @see &lt;a href=&quot;https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin&quot;&gt;&lt;/a&gt;
+ * @see &lt;a href=&quot;http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html&quot;&gt;&lt;/a&gt;
+ */
+@Mojo(name = &quot;depclean&quot;, defaultPhase = LifecyclePhase.PACKAGE,
+        requiresDependencyCollection = ResolutionScope.TEST,
+        requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
+<span class="nc" id="L55">public class DepCleanMojo extends AbstractMojo {</span>
+
+    //--------------------------------/
+    //-------- CLASS FIELD/S --------/
+    //------------------------------/
+
+    /**
+     * The Maven project to analyze.
+     */
+    @Parameter(defaultValue = &quot;${project}&quot;, readonly = true)
+    private MavenProject project;
+
+    /**
+     * The Maven session to analyze.
+     */
+    @Parameter(defaultValue = &quot;${session}&quot;, readonly = true)
+    private MavenSession session;
+
+    /**
+     * If this is true, DepClean creates a debloated version of the pom without unused dependencies,
+     * called &quot;debloated-pom.xml&quot;, in root of the project.
+     */
+    @Parameter(property = &quot;create.pom.debloated&quot;, defaultValue = &quot;false&quot;)
+    private boolean createPomDebloated;
+
+    /**
+     * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
+     * considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis
+     * Dependency format is &lt;code&gt;groupId:artifactId:version&lt;/code&gt;.
+     */
+    @Parameter(property = &quot;ignore.dependencies&quot;)
+    private Set&lt;String&gt; ignoreDependencies;
+
+    /**
+     * If this is true, and DepClean reported any unused dependency in the dependency tree,
+     * the build fails immediately after running DepClean.
+     */
+    @Parameter(defaultValue = &quot;false&quot;)
+    private boolean failIfUnusedDependency;
+
+    /**
+     * Skip plugin execution completely.
+     */
+    @Parameter(defaultValue = &quot;false&quot;)
+    private boolean skipDepClean;
+
+    @Component
+    private ProjectBuilder mavenProjectBuilder;
+
+    @Component
+    private RepositorySystem repositorySystem;
+
+    @Component(hint = &quot;default&quot;)
+    private DependencyGraphBuilder dependencyGraphBuilder;
+
+    //--------------------------------/
+    //------- PUBLIC METHOD/S -------/
+    //------------------------------/
+
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (skipDepClean) {</span>
+<span class="nc" id="L118">            getLog().info(&quot;Skipping DepClean plugin execution&quot;);</span>
+<span class="nc" id="L119">            return;</span>
+        }
+
+<span class="nc" id="L122">        System.out.println(&quot;-------------------------------------------------------&quot;);</span>
+<span class="nc" id="L123">        getLog().info(&quot;Starting DepClean dependency analysis&quot;);</span>
+
+<span class="nc" id="L125">        File pomFile = new File(project.getBasedir().getAbsolutePath() + &quot;/&quot; + &quot;pom.xml&quot;);</span>
+
+<span class="nc" id="L127">        String packaging = project.getPackaging();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (packaging.equals(&quot;pom&quot;)) {</span>
+<span class="nc" id="L129">            getLog().info(&quot;Skipping because packaging type &quot; + packaging + &quot;.&quot;);</span>
+<span class="nc" id="L130">            return;</span>
+        }
+
+<span class="nc" id="L133">        String pathToPutDebloatedPom = project.getBasedir().getAbsolutePath() + &quot;/&quot; + &quot;pom-debloated.xml&quot;;</span>
+
+        /* Build maven model to manipulate the pom */
+        Model model;
+        FileReader reader;
+<span class="nc" id="L138">        MavenXpp3Reader mavenReader = new MavenXpp3Reader();</span>
+        try {
+<span class="nc" id="L140">            reader = new FileReader(pomFile);</span>
+<span class="nc" id="L141">            model = mavenReader.read(reader);</span>
+<span class="nc" id="L142">            model.setPomFile(pomFile);</span>
+<span class="nc" id="L143">        } catch (Exception ex) {</span>
+<span class="nc" id="L144">            getLog().error(&quot;Unable to build the maven project.&quot;);</span>
+<span class="nc" id="L145">            return;</span>
+<span class="nc" id="L146">        }</span>
+
+        /* Copy direct dependencies locally */
+        try {
+<span class="nc" id="L150">            MavenInvoker.runCommand(&quot;mvn dependency:copy-dependencies&quot;);</span>
+<span class="nc" id="L151">        } catch (IOException e) {</span>
+<span class="nc" id="L152">            getLog().error(&quot;Unable resolve all the dependencies.&quot;);</span>
+<span class="nc" id="L153">            return;</span>
+<span class="nc" id="L154">        }</span>
+
+        /* Decompress dependencies */
+<span class="nc" id="L157">        JarUtils.decompressJars(project.getBuild().getDirectory() + &quot;/&quot; + &quot;dependency&quot;);</span>
+
+        /* Analyze dependencies usage status */
+        ProjectDependencyAnalysis projectDependencyAnalysis;
+        try {
+<span class="nc" id="L162">            ProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer();</span>
+<span class="nc" id="L163">            projectDependencyAnalysis = dependencyAnalyzer.analyze(project);</span>
+<span class="nc" id="L164">        } catch (ProjectDependencyAnalyzerException e) {</span>
+<span class="nc" id="L165">            getLog().error(&quot;Unable to analyze dependencies.&quot;);</span>
+<span class="nc" id="L166">            return;</span>
+<span class="nc" id="L167">        }</span>
+
+<span class="nc" id="L169">        Set&lt;Artifact&gt; usedUndeclaredArtifacts = projectDependencyAnalysis.getUsedUndeclaredArtifacts();</span>
+<span class="nc" id="L170">        Set&lt;Artifact&gt; usedDeclaredArtifacts = projectDependencyAnalysis.getUsedDeclaredArtifacts();</span>
+<span class="nc" id="L171">        Set&lt;Artifact&gt; unusedDeclaredArtifacts = projectDependencyAnalysis.getUnusedDeclaredArtifacts();</span>
+
+<span class="nc" id="L173">        Set&lt;Artifact&gt; unusedUndeclaredArtifacts = project.getArtifacts();</span>
+<span class="nc" id="L174">        unusedUndeclaredArtifacts.removeAll(usedDeclaredArtifacts);</span>
+<span class="nc" id="L175">        unusedUndeclaredArtifacts.removeAll(usedUndeclaredArtifacts);</span>
+<span class="nc" id="L176">        unusedUndeclaredArtifacts.removeAll(unusedDeclaredArtifacts);</span>
+
+        /* Use artifacts coordinates for the report instead of the Artifact object */
+<span class="nc" id="L179">        Set&lt;String&gt; usedDeclaredArtifactsCoordinates = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L180">        usedDeclaredArtifacts.forEach(s -&gt; usedDeclaredArtifactsCoordinates.add(s.getGroupId() + &quot;:&quot; + s.getArtifactId() + &quot;:&quot; + s.getVersion()));</span>
+
+<span class="nc" id="L182">        Set&lt;String&gt; usedUndeclaredArtifactsCoordinates = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L183">        usedUndeclaredArtifacts.forEach(s -&gt; usedUndeclaredArtifactsCoordinates.add(s.getGroupId() + &quot;:&quot; + s.getArtifactId() + &quot;:&quot; + s.getVersion()));</span>
+
+<span class="nc" id="L185">        Set&lt;String&gt; unusedDeclaredArtifactsCoordinates = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L186">        unusedDeclaredArtifacts.forEach(s -&gt; unusedDeclaredArtifactsCoordinates.add(s.getGroupId() + &quot;:&quot; + s.getArtifactId() + &quot;:&quot; + s.getVersion()));</span>
+
+<span class="nc" id="L188">        Set&lt;String&gt; unusedUndeclaredArtifactsCoordinates = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L189">        unusedUndeclaredArtifacts.forEach(s -&gt; unusedUndeclaredArtifactsCoordinates.add(s.getGroupId() + &quot;:&quot; + s.getArtifactId() + &quot;:&quot; + s.getVersion()));</span>
+
+        /* Ignoring dependencies from analysis */
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        if (ignoreDependencies != null) {</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            for (String ignoredDependency : ignoreDependencies) {</span>
+                // if the ignored dependency is an unused declared dependency then add it to the set of used declared
+                // and remove it from the set of unused declared
+<span class="nc bnc" id="L196" title="All 2 branches missed.">                for (Iterator&lt;String&gt; i = unusedDeclaredArtifactsCoordinates.iterator(); i.hasNext(); ) {</span>
+<span class="nc" id="L197">                    String unusedDeclaredArtifact = i.next();</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">                    if (ignoredDependency.equals(unusedDeclaredArtifact)) {</span>
+<span class="nc" id="L199">                        usedDeclaredArtifactsCoordinates.add(unusedDeclaredArtifact);</span>
+<span class="nc" id="L200">                        i.remove();</span>
+<span class="nc" id="L201">                        break;</span>
+                    }
+<span class="nc" id="L203">                }</span>
+                // if the ignored dependency is an unused undeclared dependency then add it to the set of used undeclared
+                // and remove it from the set of unused undeclared
+<span class="nc bnc" id="L206" title="All 2 branches missed.">                for (Iterator&lt;String&gt; j = unusedUndeclaredArtifactsCoordinates.iterator(); j.hasNext(); ) {</span>
+<span class="nc" id="L207">                    String unusedUndeclaredArtifact = j.next();</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">                    if (ignoredDependency.equals(unusedUndeclaredArtifact)) {</span>
+<span class="nc" id="L209">                        usedUndeclaredArtifactsCoordinates.add(unusedUndeclaredArtifact);</span>
+<span class="nc" id="L210">                        j.remove();</span>
+<span class="nc" id="L211">                        break;</span>
+                    }
+<span class="nc" id="L213">                }</span>
+<span class="nc" id="L214">            }</span>
+        }
+
+        /* Printing the results to the console */
+<span class="nc" id="L218">        System.out.println(&quot; D E P C L E A N   A N A L Y S I S   R E S U L T S&quot;);</span>
+<span class="nc" id="L219">        System.out.println(&quot;-------------------------------------------------------&quot;);</span>
+
+<span class="nc" id="L221">        System.out.println(&quot;Used direct dependencies&quot; + &quot; [&quot; + usedDeclaredArtifactsCoordinates.size() + &quot;]&quot; + &quot;: &quot;);</span>
+<span class="nc" id="L222">        usedDeclaredArtifactsCoordinates.stream().forEach(s -&gt; System.out.println(&quot;\t&quot; + s));</span>
+
+<span class="nc" id="L224">        System.out.println(&quot;Used transitive dependencies&quot; + &quot; [&quot; + usedUndeclaredArtifactsCoordinates.size() + &quot;]&quot; + &quot;: &quot;);</span>
+<span class="nc" id="L225">        usedUndeclaredArtifactsCoordinates.stream().forEach(s -&gt; System.out.println(&quot;\t&quot; + s));</span>
+
+<span class="nc" id="L227">        System.out.println(&quot;Potentially unused direct dependencies&quot; + &quot; [&quot; + unusedDeclaredArtifactsCoordinates.size() + &quot;]&quot; + &quot;: &quot;);</span>
+<span class="nc" id="L228">        unusedDeclaredArtifactsCoordinates.stream().forEach(s -&gt; System.out.println(&quot;\t&quot; + s));</span>
+
+<span class="nc" id="L230">        System.out.println(&quot;Potentially unused transitive dependencies&quot; + &quot; [&quot; + unusedUndeclaredArtifactsCoordinates.size() + &quot;]&quot; + &quot;: &quot;);</span>
+<span class="nc" id="L231">        unusedUndeclaredArtifactsCoordinates.stream().forEach(s -&gt; System.out.println(&quot;\t&quot; + s));</span>
+
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (!ignoreDependencies.isEmpty()) {</span>
+<span class="nc" id="L234">            System.out.println(&quot;-------------------------------------------------------&quot;);</span>
+<span class="nc" id="L235">            System.out.println(&quot;Dependencies ignored in the analysis by the user&quot; + &quot; [&quot; + ignoreDependencies.size() + &quot;]&quot; + &quot;: &quot;);</span>
+<span class="nc" id="L236">            ignoreDependencies.stream().forEach(s -&gt; System.out.println(&quot;\t&quot; + s));</span>
+        }
+
+        /* Fail the build if there are unused dependencies */
+<span class="nc bnc" id="L240" title="All 6 branches missed.">        if (failIfUnusedDependency &amp;&amp; (unusedDeclaredArtifactsCoordinates.size() &gt; 0 || unusedUndeclaredArtifactsCoordinates.size() &gt; 0)) {</span>
+<span class="nc" id="L241">            throw new MojoExecutionException(&quot;Build failed due to unused dependencies in the dependency tree.&quot;);</span>
+        }
+
+
+        /* Writing the debloated version of the pom */
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        if (createPomDebloated) {</span>
+<span class="nc" id="L247">            getLog().info(&quot;Starting debloating POM&quot;);</span>
+
+            /* add used transitive as direct dependencies */
+            try {
+<span class="nc bnc" id="L251" title="All 2 branches missed.">                if (!usedUndeclaredArtifacts.isEmpty()) {</span>
+<span class="nc" id="L252">                    getLog().info(&quot;Adding &quot; + usedUndeclaredArtifacts.size() + &quot; used transitive dependencies as direct dependencies.&quot;);</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">                    for (Artifact usedUndeclaredArtifact : usedUndeclaredArtifacts) {</span>
+<span class="nc" id="L254">                        model.addDependency(createDependency(usedUndeclaredArtifact));</span>
+<span class="nc" id="L255">                    }</span>
+                }
+<span class="nc" id="L257">            } catch (Exception e) {</span>
+<span class="nc" id="L258">                throw new MojoExecutionException(e.getMessage(), e);</span>
+<span class="nc" id="L259">            }</span>
+
+            /* remove unused direct dependencies */
+            try {
+<span class="nc bnc" id="L263" title="All 2 branches missed.">                if (!unusedDeclaredArtifacts.isEmpty()) {</span>
+<span class="nc" id="L264">                    getLog().info(&quot;Removing &quot; + unusedDeclaredArtifacts.size() + &quot; unused direct dependencies.&quot;);</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">                    for (Artifact unusedDeclaredArtifact : unusedDeclaredArtifacts) {</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">                        for (Dependency dependency : model.getDependencies()) {</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">                            if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId()) &amp;&amp;</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">                                    dependency.getArtifactId().equals(unusedDeclaredArtifact.getArtifactId())) {</span>
+<span class="nc" id="L269">                                model.removeDependency(dependency);</span>
+<span class="nc" id="L270">                                break;</span>
+                            }
+<span class="nc" id="L272">                        }</span>
+<span class="nc" id="L273">                    }</span>
+                }
+<span class="nc" id="L275">            } catch (Exception e) {</span>
+<span class="nc" id="L276">                throw new MojoExecutionException(e.getMessage(), e);</span>
+<span class="nc" id="L277">            }</span>
+
+            /* exclude unused transitive dependencies */
+            try {
+<span class="nc bnc" id="L281" title="All 2 branches missed.">                if (!unusedUndeclaredArtifacts.isEmpty()) {</span>
+<span class="nc" id="L282">                    getLog().info(&quot;Excluding &quot; + unusedUndeclaredArtifacts.size() + &quot; unused transitive dependencies one-by-one.&quot;);</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">                    for (Dependency dependency : model.getDependencies()) {</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">                        for (Artifact artifact : unusedUndeclaredArtifacts) {</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">                            if (isChildren(artifact, dependency)) {</span>
+<span class="nc" id="L286">                                System.out.println(&quot;Excluding &quot; + artifact.toString() + &quot; from dependency &quot; + dependency.toString());</span>
+<span class="nc" id="L287">                                Exclusion exclusion = new Exclusion();</span>
+<span class="nc" id="L288">                                exclusion.setGroupId(artifact.getGroupId());</span>
+<span class="nc" id="L289">                                exclusion.setArtifactId(artifact.getArtifactId());</span>
+<span class="nc" id="L290">                                dependency.addExclusion(exclusion);</span>
+                            }
+<span class="nc" id="L292">                        }</span>
+<span class="nc" id="L293">                    }</span>
+                }
+<span class="nc" id="L295">            } catch (Exception e) {</span>
+<span class="nc" id="L296">                throw new MojoExecutionException(e.getMessage(), e);</span>
+<span class="nc" id="L297">            }</span>
+
+
+            /* write the debloated pom file */
+            try {
+<span class="nc" id="L302">                Path path = Paths.get(pathToPutDebloatedPom);</span>
+<span class="nc" id="L303">                writePom(path, model);</span>
+<span class="nc" id="L304">            } catch (IOException e) {</span>
+<span class="nc" id="L305">                throw new MojoExecutionException(e.getMessage(), e);</span>
+<span class="nc" id="L306">            }</span>
+
+<span class="nc" id="L308">            getLog().info(&quot;POM debloated successfully&quot;);</span>
+<span class="nc" id="L309">            getLog().info(&quot;pom-debloated.xml file created in: &quot; + pathToPutDebloatedPom);</span>
+        }
+<span class="nc" id="L311">    }</span>
+
+    //--------------------------------/
+    //------ PRIVATE METHOD/S -------/
+    //------------------------------/
+
+    /**
+     * Determine if an artifact is a direct or transitive child of a dependency.
+     *
+     * @param artifact   The artifact.
+     * @param dependency The dependency
+     * @return true if the artifact is a child of a dependency in the dependency tree.
+     * @throws DependencyGraphBuilderException If the graph cannot be constructed.
+     */
+    private boolean isChildren(Artifact artifact, Dependency dependency) throws DependencyGraphBuilderException {
+<span class="nc" id="L326">        List&lt;DependencyNode&gt; dependencyNodes = getDependencyNodes();</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">        for (DependencyNode node : dependencyNodes) {</span>
+<span class="nc" id="L328">            Dependency dependencyNode = createDependency(node.getArtifact());</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">            if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &amp;&amp;</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">                    dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {</span>
+                // now we are in the target dependency
+<span class="nc bnc" id="L332" title="All 2 branches missed.">                for (DependencyNode child : node.getChildren()) {</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">                    if (child.getArtifact().equals(artifact)) {</span>
+                        // the dependency contains the artifact as a child node
+<span class="nc" id="L335">                        return true;</span>
+                    }
+
+<span class="nc" id="L338">                }</span>
+            }
+<span class="nc" id="L340">        }</span>
+<span class="nc" id="L341">        return false;</span>
+    }
+
+    /**
+     * This method returns a list of dependency nodes from a graph of dependency tree.
+     *
+     * @return The nodes in the dependency graph.
+     * @throws DependencyGraphBuilderException If the graph cannot be built.
+     */
+    private List&lt;DependencyNode&gt; getDependencyNodes() throws DependencyGraphBuilderException {
+<span class="nc" id="L351">        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());</span>
+<span class="nc" id="L352">        buildingRequest.setProject(project);</span>
+<span class="nc" id="L353">        DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);</span>
+<span class="nc" id="L354">        CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();</span>
+<span class="nc" id="L355">        rootNode.accept(visitor);</span>
+<span class="nc" id="L356">        return visitor.getNodes();</span>
+    }
+
+    /**
+     * This method creates a {@link org.apache.maven.model.Dependency} object from a
+     * Maven {@link org.apache.maven.artifact.Artifact}.
+     *
+     * @param artifact The artifact to create the dependency.
+     * @return The Dependency object.
+     */
+    private Dependency createDependency(final Artifact artifact) {
+<span class="nc" id="L367">        Dependency dependency = new Dependency();</span>
+<span class="nc" id="L368">        dependency.setGroupId(artifact.getGroupId());</span>
+<span class="nc" id="L369">        dependency.setArtifactId(artifact.getArtifactId());</span>
+<span class="nc" id="L370">        dependency.setVersion(artifact.getVersion());</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">        if (artifact.hasClassifier()) {</span>
+<span class="nc" id="L372">            dependency.setClassifier(artifact.getClassifier());</span>
+        }
+<span class="nc" id="L374">        dependency.setOptional(artifact.isOptional());</span>
+<span class="nc" id="L375">        dependency.setScope(artifact.getScope());</span>
+<span class="nc" id="L376">        dependency.setType(artifact.getType());</span>
+<span class="nc" id="L377">        return dependency;</span>
+    }
+
+    /**
+     * Write pom file to the filesystem.
+     *
+     * @param pomFile The path to the pom.
+     * @param model   The maven model to get the pom from.
+     * @throws IOException In case of any IO issue.
+     */
+    private static void writePom(final Path pomFile, final Model model) throws IOException {
+<span class="nc" id="L388">        MavenXpp3Writer writer = new MavenXpp3Writer();</span>
+<span class="nc" id="L389">        writer.write(Files.newBufferedWriter(pomFile), model);</span>
+<span class="nc" id="L390">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

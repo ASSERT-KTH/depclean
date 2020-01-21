@@ -5,7 +5,10 @@ layout: default
 <img src="https://cesarsotovalero.github.io/img/logos/DepClean_logo.png" height="100px" />
 
 [![Build Status](https://travis-ci.org/castor-software/depclean.svg?branch=master)](https://travis-ci.org/castor-software/depclean)
+[![Maven Central](https://img.shields.io/maven-central/v/se.kth.castor/depclean-core.svg)](https://search.maven.org/search?q=g:se.kth.castor%20AND%20a:depclean*)
 
+[![SonarQube](https://img.shields.io/badge/sonar-ok-green.svg)](https://sonarcloud.io/dashboard?id=castor-software_depclean)
+[![Hits-of-Code](https://hitsofcode.com/github/castor-software/depclean)](https://hitsofcode.com/view/github/castor-software/depclean)
 
 ### What is DepClean?
 
@@ -23,14 +26,45 @@ With this usage information, DepClean constructs a new `pom.xml` based on the fo
 
 If all the tests pass and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
 
+
 ## Usage
 
-### Prerequisites
+You can configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
+
+```xml
+<plugin>
+    <groupId>se.kth.castor</groupId>
+    <artifactId>depclean-maven-plugin</artifactId>
+    <version>1.0.0</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>depclean</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
+### Optional Parameters
+
+The Maven plugin can be configured with the following additional parameters.
+
+| Name   |  Type |   Description      | 
+|:----------|:-------------:| :-------------| 
+| `<ignoreDependencies>` | `Set<String>` | Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis. Dependency format is `groupId:artifactId:version`.|
+| `<createPomDebloated>` | `boolean` | If this is true, DepClean creates a debloated version of the pom without unused dependencies called `debloated-pom.xml`, in root of the project. **Default value is:** `false`.|
+| `<failIfUnusedDependency>` | `boolean` | If this is true, and DepClean reported any unused dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.|
+| `<createPomDebloated>` | `boolean` | If this is true, DepClean creates a debloated version of the pom without unused dependencies clled "debloated-pom.xml", in root of the project. **Default value is:** `false`.|
+| `<skipDepClean>` | `boolean` | Skip plugin execution completely. **Default value is:** `false`.|
+
+
+## Installing and building from source
+
+Prerequisites:
 
 - [Java OpenJDK 8](https://openjdk.java.net) or above
 - [Apache Maven](https://maven.apache.org/)
-
-### Installing and building from source
 
 In a terminal clone the repository and switch to the cloned folder:
 
@@ -45,27 +79,11 @@ mvn clean install
 ```
 Once the plugin is installed, you can execute the plugin goal directly in the command line:
 
-```bash
-mvn se.kth.depclean:depclean-maven-plugin:1.0.0:depclean
-```
-
-Alternatively, you can configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
-
-```xml
-<plugin>
-    <groupId>se.kth.depclean</groupId>
-    <artifactId>depclean-maven-plugin</artifactId>
-    <version>1.0.0</version>
-    <executions>
-        <execution>
-            <goals>
-                <goal>depclean</goal>
-            </goals>
-        </execution>
-    </executions>
-</plugin>
+```shell script
+mvn se.kth.castor:depclean-maven-plugin:1.0.0:depclean
 ```
 
 ## License
 
 Distributed under the MIT License. See [LICENSE](https://github.com/castor-software/depclean/blob/master/LICENSE.md) for more information.
+

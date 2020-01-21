@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <plugins>
+    <plugin>
+      <name>depclean-maven-plugin</name>
+      <prefix>depclean</prefix>
+      <artifactId>depclean-maven-plugin</artifactId>
+    </plugin>
+  </plugins>
+</metadata>

@@ -1,0 +1,4 @@
+se/kth/depclean/util/JarUtils.class
+se/kth/depclean/DepCleanMojo.class
+se/kth/depclean/util/FileUtils.class
+se/kth/depclean/util/MavenInvoker.class
