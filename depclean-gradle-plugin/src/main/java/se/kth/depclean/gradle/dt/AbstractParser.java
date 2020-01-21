@@ -3,11 +3,6 @@ package se.kth.depclean.gradle.dt;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Parent class for all parsers.
- *
- * @author Alexandre Dutra
- */
 public abstract class AbstractParser implements Parser {
 
     /**
@@ -121,7 +116,6 @@ public abstract class AbstractParser implements Parser {
             }
 
         } else if (tokens.size() == 7) {
-
             groupId = tokens.get(0);
             artifactId = tokens.get(1);
             packaging = tokens.get(2);

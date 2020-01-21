@@ -1,23 +1,36 @@
 package se.kth.depclean.gradle.task;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.project.MavenProject;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
+import se.kth.depclean.core.analysis.ProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.gradle.DepCleanExtension;
+import se.kth.depclean.gradle.analysis.GradleDependencyAnalyzer;
 import se.kth.depclean.gradle.dt.InputType;
 import se.kth.depclean.gradle.dt.Node;
 import se.kth.depclean.gradle.dt.ParseException;
 import se.kth.depclean.gradle.dt.Parser;
+import se.kth.depclean.gradle.util.JarUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class DepCleanTask extends DefaultTask {
 
@@ -33,17 +46,50 @@ public class DepCleanTask extends DefaultTask {
         HelloWorld helloWorld = new HelloWorld(message);
         System.out.println(helloWorld.greet());
 
+        System.out.println("-------------------------------------------------------");
+
+        /* Initialize the Gradle connector */
         GradleConnector connector = new GradleConnector(getProject().getGradle().getGradleHomeDir().getAbsolutePath(), getProject().getProjectDir().getAbsolutePath());
 
-        System.out.println("gradle task names: " + connector.getGradleTaskNames());
-        // connector.getProjectDependencyNames().forEach(s -> System.out.println(s));
-
+        /* Copy direct dependencies locally */
         connector.executeTask("copyDependencies");
+
+        /* Decompress dependencies */
+        JarUtils.decompressJars(getProject().getBuildDir().getAbsolutePath() + "/dependencies");
+
+        /* Generate a model */
+        connector.executeTask("install");
+        Model model = null;
+        FileReader pomReader = null;
+        MavenXpp3Reader mavenXpp3Reader = new MavenXpp3Reader();
+        try {
+            pomReader = new FileReader(getProject().getBuildDir().getAbsolutePath() + "/poms/pom-default.xml");
+            model = mavenXpp3Reader.read(pomReader);
+            model.setPomFile(new File(getProject().getBuildDir().getAbsolutePath() + "/poms/pom-default.xml"));
+        } catch (Exception ex) {
+        }
+        MavenProject project = new MavenProject(model);
+        Build build = new Build();
+        build.setDirectory(getProject().getBuildDir().getAbsolutePath());
+        project.setBuild(build);
+
+
+        /* Analyze dependencies usage status */
+        ProjectDependencyAnalysis projectDependencyAnalysis;
+        try {
+            ProjectDependencyAnalyzer dependencyAnalyzer = new GradleDependencyAnalyzer();
+            projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
+        } catch (ProjectDependencyAnalyzerException e) {
+            getLogger().error("Unable to analyze dependencies.");
+            return;
+        }
+
+        printAnalysisResults(project, projectDependencyAnalysis);
+
         connector.executeTask("dependencyReportFile");
 
         String pathToDependencyTree = getProject().getBuildDir().getAbsolutePath() + "/dependencies/dependencies.txt";
         removeBlankLines(pathToDependencyTree);
-
 
         // parsing the dependency tree
         InputType type = InputType.TEXT;
@@ -59,70 +105,49 @@ public class DepCleanTask extends DefaultTask {
             System.out.println("Unable to parse the dependency tree file.");
         }
 
-        // Project project = getProject();
-        // System.out.println("Get all dependencies: " + project.getConfigurations().detachedConfiguration().getAllDependencies());
-        // System.out.println("Get resolved artifacts: " + project.getConfigurations().detachedConfiguration().getResolvedConfiguration().getResolvedArtifacts());
-        //
-        // System.out.println("******");
-        // Configuration configuration = project.getConfigurations().getByName("runtimeClasspath");
-        // for (File file : configuration) {
-        //     project.getLogger().lifecycle("Found project dependency @ " + file.getAbsolutePath());
-        // }
-        //
-        // Configuration configuration2 = project.getConfigurations().getByName("copyDependencies");
-        //
-        // for (Dependency dependency : configuration2.getDependencies()) {
-        //     project.getLogger().lifecycle("Dependency @ " + dependency.getGroup() + ":" + dependency.getName());
-        // }
-
     }
 
-    /*
-     *//* Copy direct dependencies locally *//*
-        // TODO
-
-
-        *//* Decompress dependencies *//*
-        JarUtils.decompressJars(project.getBuild().getDirectory() + "/" + "dependency");
-
-        *//* Analyze dependencies usage status *//*
-        ProjectDependencyAnalysis projectDependencyAnalysis;
-        try {
-            ProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer();
-            projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
-        } catch (ProjectDependencyAnalyzerException e) {
-            getLog().error("Unable to analyze dependencies.");
-            return;
-        }
-
+    private void printAnalysisResults(MavenProject project, ProjectDependencyAnalysis projectDependencyAnalysis) {
         Set<Artifact> usedUndeclaredArtifacts = projectDependencyAnalysis.getUsedUndeclaredArtifacts();
         Set<Artifact> usedDeclaredArtifacts = projectDependencyAnalysis.getUsedDeclaredArtifacts();
         Set<Artifact> unusedDeclaredArtifacts = projectDependencyAnalysis.getUnusedDeclaredArtifacts();
 
         Set<Artifact> unusedUndeclaredArtifacts = project.getArtifacts();
-
         unusedUndeclaredArtifacts.removeAll(usedDeclaredArtifacts);
         unusedUndeclaredArtifacts.removeAll(usedUndeclaredArtifacts);
         unusedUndeclaredArtifacts.removeAll(unusedDeclaredArtifacts);
 
-        System.out.println("**************************************************");
-        System.out.println("****************** RESULTS");
-        System.out.println("**************************************************");
+        /* Use artifacts coordinates for the report instead of the Artifact object */
+        Set<String> usedDeclaredArtifactsCoordinates = new HashSet<>();
+        usedDeclaredArtifacts.forEach(s -> usedDeclaredArtifactsCoordinates.add(s.getGroupId() + ":" + s.getArtifactId() + ":" + s.getVersion()));
 
-        System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifacts.size() + "]" + ": ");
-        usedDeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
+        Set<String> usedUndeclaredArtifactsCoordinates = new HashSet<>();
+        usedUndeclaredArtifacts.forEach(s -> usedUndeclaredArtifactsCoordinates.add(s.getGroupId() + ":" + s.getArtifactId() + ":" + s.getVersion()));
 
-        System.out.println("Used transitive dependencies" + " [" + usedUndeclaredArtifacts.size() + "]" + ": ");
-        usedUndeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
+        Set<String> unusedDeclaredArtifactsCoordinates = new HashSet<>();
+        unusedDeclaredArtifacts.forEach(s -> unusedDeclaredArtifactsCoordinates.add(s.getGroupId() + ":" + s.getArtifactId() + ":" + s.getVersion()));
 
-        System.out.println("Potentially unused direct dependencies" + " [" + unusedDeclaredArtifacts.size() + "]" + ": ");
-        unusedDeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
+        Set<String> unusedUndeclaredArtifactsCoordinates = new HashSet<>();
+        unusedUndeclaredArtifacts.forEach(s -> unusedUndeclaredArtifactsCoordinates.add(s.getGroupId() + ":" + s.getArtifactId() + ":" + s.getVersion()));
 
-        System.out.println("Potentially unused transitive dependencies" + " [" + unusedUndeclaredArtifacts.size() + "]" + ": ");
-        unusedUndeclaredArtifacts.stream().forEach(s -> System.out.println("\t" + s));
-*/
+        /* Printing the results to the console */
+        System.out.println(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
+        System.out.println("-------------------------------------------------------");
 
-    public static void removeBlankLines(String filePath) throws FileNotFoundException {
+        System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifactsCoordinates.size() + "]" + ": ");
+        usedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
+
+        System.out.println("Used transitive dependencies" + " [" + usedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
+        usedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
+
+        System.out.println("Potentially unused direct dependencies" + " [" + unusedDeclaredArtifactsCoordinates.size() + "]" + ": ");
+        unusedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
+
+        System.out.println("Potentially unused transitive dependencies" + " [" + unusedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
+        unusedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
+    }
+
+    private void removeBlankLines(String filePath) throws FileNotFoundException {
         Scanner file;
         PrintWriter writer;
 

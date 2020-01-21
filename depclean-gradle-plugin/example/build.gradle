@@ -8,14 +8,21 @@ sourceCompatibility = 1.8 // java 8
 targetCompatibility = 1.8
 
 
-//depcleanSettings {
-//    message = "OK OK"
-//}
+depcleanSettings {
+    message = "OK OK"
+}
 
-//copying all dependencies attached to 'compile' into a specific folder
+// copying all dependencies attached to 'compile' into a specific folder
 task copyDependencies(type: Copy) {
     from configurations.runtimeClasspath
     into 'build/dependencies'
+}
+
+// generate a dependency tree
+task dependencyReportFile(type: DependencyReportTask) {
+    outputFile = file('build/dependencies/dependencies.txt')
+     Set configs = [project.configurations.compile]
+     setConfigurations(configs)
 }
 
 dependencies {
@@ -36,7 +43,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'se.kth.depclean:depclean-gradle-plugin:1.0.0' //for using the plugin in local maven
+        classpath 'se.kth.castor:depclean-gradle-plugin:1.0.0' //for using the plugin in local maven
     }
 }
 

@@ -1,0 +1,463 @@
+<svg width="1064pt" height="764pt"
+ viewBox="0.00 0.00 1063.81 764.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 760)">
+<title>G</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-760 1059.8101,-760 1059.8101,4 -4,4"/>
+<!-- exampleproject -->
+<g id="node1" class="node">
+<title>exampleproject</title>
+<polygon fill="none" stroke="#000000" points="759,-756 625,-756 625,-720 759,-720 759,-756"/>
+<text text-anchor="middle" x="692" y="-734.3" font-family="Times New Roman" font-size="14.00" fill="#000000">example&#45;project</text>
+</g>
+<!-- orgglassfishjerseybundlesjaxrsri -->
+<g id="node2" class="node">
+<title>orgglassfishjerseybundlesjaxrsri</title>
+<polygon fill="none" stroke="#000000" points="578,-684 512,-684 512,-648 578,-648 578,-684"/>
+<text text-anchor="middle" x="545" y="-662.3" font-family="Times New Roman" font-size="14.00" fill="#000000">jaxrs&#45;ri</text>
+</g>
+<!-- exampleproject&#45;&gt;orgglassfishjerseybundlesjaxrsri -->
+<g id="edge1" class="edge">
+<title>exampleproject&#45;&gt;orgglassfishjerseybundlesjaxrsri</title>
+<path fill="none" stroke="#000000" d="M654.9057,-719.8314C634.3087,-709.743 608.6089,-697.1554 587.2409,-686.6894"/>
+<polygon fill="#000000" stroke="#000000" points="588.59,-683.453 578.0698,-682.1975 585.5109,-689.7394 588.59,-683.453"/>
+</g>
+<!-- comgoogleguavaguava -->
+<g id="node21" class="node">
+<title>comgoogleguavaguava</title>
+<polygon fill="none" stroke="#000000" points="722.5,-684 661.5,-684 661.5,-648 722.5,-648 722.5,-684"/>
+<text text-anchor="middle" x="692" y="-662.3" font-family="Times New Roman" font-size="14.00" fill="#000000">guava</text>
+</g>
+<!-- exampleproject&#45;&gt;comgoogleguavaguava -->
+<g id="edge2" class="edge">
+<title>exampleproject&#45;&gt;comgoogleguavaguava</title>
+<path fill="none" stroke="#000000" d="M692,-719.8314C692,-712.131 692,-702.9743 692,-694.4166"/>
+<polygon fill="#000000" stroke="#000000" points="695.5001,-694.4132 692,-684.4133 688.5001,-694.4133 695.5001,-694.4132"/>
+</g>
+<!-- junitjunit -->
+<g id="node22" class="node">
+<title>junitjunit</title>
+<polygon fill="none" stroke="#000000" points="828,-684 774,-684 774,-648 828,-648 828,-684"/>
+<text text-anchor="middle" x="801" y="-662.3" font-family="Times New Roman" font-size="14.00" fill="#000000">junit</text>
+</g>
+<!-- exampleproject&#45;&gt;junitjunit -->
+<g id="edge3" class="edge">
+<title>exampleproject&#45;&gt;junitjunit</title>
+<path fill="none" stroke="#000000" d="M719.5053,-719.8314C733.4234,-710.6377 750.4839,-699.3684 765.3921,-689.5208"/>
+<polygon fill="#000000" stroke="#000000" points="767.4662,-692.3455 773.8811,-683.9134 763.608,-686.5047 767.4662,-692.3455"/>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservlet -->
+<g id="node3" class="node">
+<title>orgglassfishjerseycontainersjerseycontainerservlet</title>
+<polygon fill="none" stroke="#000000" points="517,-612 331,-612 331,-576 517,-576 517,-612"/>
+<text text-anchor="middle" x="424" y="-590.3" font-family="Times New Roman" font-size="14.00" fill="#000000">jersey&#45;container&#45;servlet</text>
+</g>
+<!-- orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycontainersjerseycontainerservlet -->
+<g id="edge4" class="edge">
+<title>orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycontainersjerseycontainerservlet</title>
+<path fill="none" stroke="#000000" d="M514.4666,-647.8314C498.9899,-638.6221 480.0131,-627.3301 463.4437,-617.4706"/>
+<polygon fill="#000000" stroke="#000000" points="464.9071,-614.2687 454.5236,-612.1628 461.3276,-620.2843 464.9071,-614.2687"/>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservletcore -->
+<g id="node4" class="node">
+<title>orgglassfishjerseycontainersjerseycontainerservletcore</title>
+<polygon fill="none" stroke="#000000" points="289.5,-540 66.5,-540 66.5,-504 289.5,-504 289.5,-540"/>
+<text text-anchor="middle" x="178" y="-518.3" font-family="Times New Roman" font-size="14.00" fill="#000000">jersey&#45;container&#45;servlet&#45;core</text>
+</g>
+<!-- orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycontainersjerseycontainerservletcore -->
+<g id="edge5" class="edge">
+<title>orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycontainersjerseycontainerservletcore</title>
+<path fill="none" stroke="#000000" d="M511.8327,-661.3786C467.3325,-654.4225 386.4424,-639.1008 322,-612 280.871,-594.7035 238.0436,-566.4028 209.9006,-546.1541"/>
+<polygon fill="#000000" stroke="#000000" points="211.8001,-543.2076 201.6561,-540.1496 207.679,-548.866 211.8001,-543.2076"/>
+</g>
+<!-- orgglassfishjerseycorejerseyserver -->
+<g id="node5" class="node">
+<title>orgglassfishjerseycorejerseyserver</title>
+<polygon fill="none" stroke="#000000" points="584.5,-468 473.5,-468 473.5,-432 584.5,-432 584.5,-468"/>
+<text text-anchor="middle" x="529" y="-446.3" font-family="Times New Roman" font-size="14.00" fill="#000000">jersey&#45;server</text>
+</g>
+<!-- orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycorejerseyserver -->
+<g id="edge6" class="edge">
+<title>orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycorejerseyserver</title>
+<path fill="none" stroke="#000000" d="M543.6634,-647.9555C540.8751,-610.3144 534.4212,-523.1867 531.0833,-478.1246"/>
+<polygon fill="#000000" stroke="#000000" points="534.5733,-477.8592 530.3441,-468.1451 527.5925,-478.3763 534.5733,-477.8592"/>
+</g>
+<!-- orgglassfishjerseymediajerseymediajaxb -->
+<g id="node6" class="node">
+<title>orgglassfishjerseymediajerseymediajaxb</title>
+<polygon fill="none" stroke="#000000" points="865,-396 719,-396 719,-360 865,-360 865,-396"/>
+<text text-anchor="middle" x="792" y="-374.3" font-family="Times New Roman" font-size="14.00" fill="#000000">jersey&#45;media&#45;jaxb</text>
+</g>
+<!-- orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseymediajerseymediajaxb -->
+<g id="edge7" class="edge">
+<title>orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseymediajerseymediajaxb</title>
+<path fill="none" stroke="#000000" d="M578.1164,-663.1482C613.8475,-658.3772 670.2779,-645.6802 705,-612 763.714,-555.0478 783.1416,-454.8924 789.2976,-406.1862"/>
+<polygon fill="#000000" stroke="#000000" points="792.7966,-406.397 790.4778,-396.0591 785.8437,-405.5866 792.7966,-406.397"/>
+</g>
+<!-- orgglassfishjerseycorejerseycommon -->
+<g id="node7" class="node">
+<title>orgglassfishjerseycorejerseycommon</title>
+<polygon fill="none" stroke="#000000" points="679,-324 551,-324 551,-288 679,-288 679,-324"/>
+<text text-anchor="middle" x="615" y="-302.3" font-family="Times New Roman" font-size="14.00" fill="#000000">jersey&#45;common</text>
+</g>
+<!-- orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycorejerseycommon -->
+<g id="edge9" class="edge">
+<title>orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycorejerseycommon</title>
+<path fill="none" stroke="#000000" d="M578.1297,-651.327C621.2058,-629.7302 691,-585.015 691,-522 691,-522 691,-522 691,-450 691,-404.656 661.1616,-359.5999 638.8774,-332.2735"/>
+<polygon fill="#000000" stroke="#000000" points="641.3585,-329.7856 632.2456,-324.3814 635.9994,-334.2889 641.3585,-329.7856"/>
+</g>
+<!-- orgglassfishjerseycorejerseyclient -->
+<g id="node19" class="node">
+<title>orgglassfishjerseycorejerseyclient</title>
+<polygon fill="none" stroke="#000000" points="379,-396 275,-396 275,-360 379,-360 379,-396"/>
+<text text-anchor="middle" x="327" y="-374.3" font-family="Times New Roman" font-size="14.00" fill="#000000">jersey&#45;client</text>
+</g>
+<!-- orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycorejerseyclient -->
+<g id="edge8" class="edge">
+<title>orgglassfishjerseybundlesjaxrsri&#45;&gt;orgglassfishjerseycorejerseyclient</title>
+<path fill="none" stroke="#000000" d="M511.8335,-662.8807C410.8781,-652.605 110.9839,-616.0435 58,-540 -.0186,-456.7306 168.5949,-408.8997 264.9101,-388.9999"/>
+<polygon fill="#000000" stroke="#000000" points="265.7419,-392.4026 274.8508,-386.9918 264.3558,-385.5412 265.7419,-392.4026"/>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservlet&#45;&gt;orgglassfishjerseycontainersjerseycontainerservletcore -->
+<g id="edge10" class="edge">
+<title>orgglassfishjerseycontainersjerseycontainerservlet&#45;&gt;orgglassfishjerseycontainersjerseycontainerservletcore</title>
+<path fill="none" stroke="#000000" d="M362.2413,-575.9243C328.0268,-565.9103 285.3244,-553.412 249.6476,-542.97"/>
+<polygon fill="#000000" stroke="#000000" points="250.3646,-539.5331 239.7841,-540.0831 248.3983,-546.2513 250.3646,-539.5331"/>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservlet&#45;&gt;orgglassfishjerseycorejerseyserver -->
+<g id="edge11" class="edge">
+<title>orgglassfishjerseycontainersjerseycontainerservlet&#45;&gt;orgglassfishjerseycorejerseyserver</title>
+<path fill="none" stroke="#000000" d="M437.2983,-575.7623C455.6021,-550.66 488.6758,-505.3017 509.7011,-476.4671"/>
+<polygon fill="#000000" stroke="#000000" points="512.7459,-478.2318 515.8097,-468.0896 507.0899,-474.1076 512.7459,-478.2318"/>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservlet&#45;&gt;orgglassfishjerseycorejerseycommon -->
+<g id="edge12" class="edge">
+<title>orgglassfishjerseycontainersjerseycontainerservlet&#45;&gt;orgglassfishjerseycorejerseycommon</title>
+<path fill="none" stroke="#000000" d="M459.9362,-575.9997C498.2252,-555.0602 558.0363,-517.0092 593,-468 621.3087,-428.3193 621.5368,-368.9735 618.6198,-334.204"/>
+<polygon fill="#000000" stroke="#000000" points="622.1031,-333.8609 617.6412,-324.2514 615.1367,-334.546 622.1031,-333.8609"/>
+</g>
+<!-- javaxwsrsjavaxwsrsapi -->
+<g id="node8" class="node">
+<title>javaxwsrsjavaxwsrsapi</title>
+<polygon fill="none" stroke="#000000" points="181,-252 57,-252 57,-216 181,-216 181,-252"/>
+<text text-anchor="middle" x="119" y="-230.3" font-family="Times New Roman" font-size="14.00" fill="#000000">javax.ws.rs&#45;api</text>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservlet&#45;&gt;javaxwsrsjavaxwsrsapi -->
+<g id="edge13" class="edge">
+<title>orgglassfishjerseycontainersjerseycontainerservlet&#45;&gt;javaxwsrsjavaxwsrsapi</title>
+<path fill="none" stroke="#000000" d="M399.1455,-575.9539C335.0038,-529.3129 168.2482,-407.5858 159,-396 137.1537,-368.6319 135.7803,-357.8995 127,-324 121.7639,-303.7843 119.8102,-280.2559 119.141,-262.3268"/>
+<polygon fill="#000000" stroke="#000000" points="122.6372,-262.1312 118.8763,-252.2263 115.6396,-262.3146 122.6372,-262.1312"/>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservletcore&#45;&gt;orgglassfishjerseycorejerseyserver -->
+<g id="edge14" class="edge">
+<title>orgglassfishjerseycontainersjerseycontainerservletcore&#45;&gt;orgglassfishjerseycorejerseyserver</title>
+<path fill="none" stroke="#000000" d="M280.0939,-503.9513C333.5471,-494.1052 399.9858,-481.2446 459,-468 460.4539,-467.6737 461.9236,-467.3389 463.4044,-466.9972"/>
+<polygon fill="#000000" stroke="#000000" points="464.3662,-470.3663 473.2907,-464.6563 462.7533,-463.5546 464.3662,-470.3663"/>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservletcore&#45;&gt;orgglassfishjerseycorejerseycommon -->
+<g id="edge15" class="edge">
+<title>orgglassfishjerseycontainersjerseycontainerservletcore&#45;&gt;orgglassfishjerseycorejerseycommon</title>
+<path fill="none" stroke="#000000" d="M205.9665,-503.9987C256.2066,-472.1575 365.6794,-405.0214 464,-360 490.7157,-347.7668 521.0676,-336.4423 547.517,-327.3564"/>
+<polygon fill="#000000" stroke="#000000" points="548.727,-330.6419 557.071,-324.1128 546.4766,-324.0135 548.727,-330.6419"/>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservletcore&#45;&gt;javaxwsrsjavaxwsrsapi -->
+<g id="edge16" class="edge">
+<title>orgglassfishjerseycontainersjerseycontainerservletcore&#45;&gt;javaxwsrsjavaxwsrsapi</title>
+<path fill="none" stroke="#000000" d="M157.6336,-503.9367C133.9341,-481.4136 96.1205,-440.4282 81,-396 65.535,-350.5596 66.5125,-333.7615 81,-288 84.0815,-278.2664 89.6183,-268.7695 95.5289,-260.5228"/>
+<polygon fill="#000000" stroke="#000000" points="98.431,-262.49 101.7365,-252.4239 92.8752,-258.2316 98.431,-262.49"/>
+</g>
+<!-- orgglassfishhk2externaljavaxinject -->
+<g id="node16" class="node">
+<title>orgglassfishhk2externaljavaxinject</title>
+<polygon fill="none" stroke="#000000" points="391,-180 293,-180 293,-144 391,-144 391,-180"/>
+<text text-anchor="middle" x="342" y="-158.3" font-family="Times New Roman" font-size="14.00" fill="#000000">javax.inject</text>
+</g>
+<!-- orgglassfishjerseycontainersjerseycontainerservletcore&#45;&gt;orgglassfishhk2externaljavaxinject -->
+<g id="edge17" class="edge">
+<title>orgglassfishjerseycontainersjerseycontainerservletcore&#45;&gt;orgglassfishhk2externaljavaxinject</title>
+<path fill="none" stroke="#000000" d="M123.1417,-503.8627C70.8411,-482.7033 0,-442.1946 0,-378 0,-378 0,-378 0,-306 0,-260.6667 11.4027,-242.7534 48,-216 84.5618,-189.2725 207.9339,-173.8887 282.7461,-166.8046"/>
+<polygon fill="#000000" stroke="#000000" points="283.3308,-170.2656 292.9661,-165.8598 282.6863,-163.2953 283.3308,-170.2656"/>
+</g>
+<!-- orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishjerseymediajerseymediajaxb -->
+<g id="edge18" class="edge">
+<title>orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishjerseymediajerseymediajaxb</title>
+<path fill="none" stroke="#000000" d="M584.7755,-434.7307C623.0239,-424.2596 674.238,-410.239 716.1819,-398.7563"/>
+<polygon fill="#000000" stroke="#000000" points="717.3585,-402.063 726.0794,-396.0467 715.5102,-395.3115 717.3585,-402.063"/>
+</g>
+<!-- orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishjerseycorejerseycommon -->
+<g id="edge20" class="edge">
+<title>orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishjerseycorejerseycommon</title>
+<path fill="none" stroke="#000000" d="M559.225,-431.8538C572.0956,-422.6523 586.1515,-410.372 595,-396 606.4878,-377.3413 611.4085,-352.9022 613.5007,-334.2003"/>
+<polygon fill="#000000" stroke="#000000" points="616.9892,-334.4842 614.4149,-324.2069 610.0183,-333.8464 616.9892,-334.4842"/>
+</g>
+<!-- orgglassfishjerseycorejerseyserver&#45;&gt;javaxwsrsjavaxwsrsapi -->
+<g id="edge21" class="edge">
+<title>orgglassfishjerseycorejerseyserver&#45;&gt;javaxwsrsjavaxwsrsapi</title>
+<path fill="none" stroke="#000000" d="M473.4797,-447.2264C390.1462,-442.0519 237.9093,-428.3644 195,-396 151.4323,-363.139 131.8712,-299.0997 123.8845,-262.1416"/>
+<polygon fill="#000000" stroke="#000000" points="127.2558,-261.154 121.8457,-252.0446 120.3943,-262.5395 127.2558,-261.154"/>
+</g>
+<!-- javaxannotationjavaxannotationapi -->
+<g id="node9" class="node">
+<title>javaxannotationjavaxannotationapi</title>
+<polygon fill="none" stroke="#000000" points="439,-252 275,-252 275,-216 439,-216 439,-252"/>
+<text text-anchor="middle" x="357" y="-230.3" font-family="Times New Roman" font-size="14.00" fill="#000000">javax.annotation&#45;api</text>
+</g>
+<!-- orgglassfishjerseycorejerseyserver&#45;&gt;javaxannotationjavaxannotationapi -->
+<g id="edge22" class="edge">
+<title>orgglassfishjerseycorejerseyserver&#45;&gt;javaxannotationjavaxannotationapi</title>
+<path fill="none" stroke="#000000" d="M473.2239,-446.6013C403.9185,-441.0794 291.6297,-427.4267 266,-396 230.1212,-352.006 286.574,-291.9427 325.37,-258.6931"/>
+<polygon fill="#000000" stroke="#000000" points="327.9198,-261.1231 333.3411,-252.0204 323.4265,-255.7555 327.9198,-261.1231"/>
+</g>
+<!-- orgglassfishhk2hk2locator -->
+<g id="node11" class="node">
+<title>orgglassfishhk2hk2locator</title>
+<polygon fill="none" stroke="#000000" points="631,-252 533,-252 533,-216 631,-216 631,-252"/>
+<text text-anchor="middle" x="582" y="-230.3" font-family="Times New Roman" font-size="14.00" fill="#000000">hk2&#45;locator</text>
+</g>
+<!-- orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishhk2hk2locator -->
+<g id="edge23" class="edge">
+<title>orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishhk2hk2locator</title>
+<path fill="none" stroke="#000000" d="M496.7221,-431.8412C484.0575,-422.8521 470.9184,-410.742 464,-396 457.2025,-381.5157 458.1201,-374.8804 464,-360 480.7906,-317.5076 519.4301,-280.9407 547.9414,-258.3111"/>
+<polygon fill="#000000" stroke="#000000" points="550.295,-260.9153 556.0578,-252.0248 546.0086,-255.3811 550.295,-260.9153"/>
+</g>
+<!-- orgglassfishhk2hk2api -->
+<g id="node12" class="node">
+<title>orgglassfishhk2hk2api</title>
+<polygon fill="none" stroke="#000000" points="791,-180 721,-180 721,-144 791,-144 791,-180"/>
+<text text-anchor="middle" x="756" y="-158.3" font-family="Times New Roman" font-size="14.00" fill="#000000">hk2&#45;api</text>
+</g>
+<!-- orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishhk2hk2api -->
+<g id="edge24" class="edge">
+<title>orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishhk2hk2api</title>
+<path fill="none" stroke="#000000" d="M584.7538,-447.1083C654.1368,-442.1985 775.4948,-429.2702 874,-396 969.7537,-363.6591 1023.1212,-349.4282 1050,-252 1054.2552,-236.5762 1060.2409,-228.2932 1050,-216 1018.8708,-178.6325 875.722,-167.0358 801.2743,-163.5044"/>
+<polygon fill="#000000" stroke="#000000" points="801.39,-160.0062 791.2442,-163.0578 801.0786,-166.9992 801.39,-160.0062"/>
+</g>
+<!-- orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishhk2externaljavaxinject -->
+<g id="edge25" class="edge">
+<title>orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishhk2externaljavaxinject</title>
+<path fill="none" stroke="#000000" d="M473.2066,-447.2972C400.2889,-442.4618 278.601,-429.4782 251,-396 229.817,-370.3064 176.0129,-353.4636 255,-216 262.3401,-203.2259 274.0455,-193.0632 286.5205,-185.1599"/>
+<polygon fill="#000000" stroke="#000000" points="288.383,-188.1252 295.2359,-180.0451 284.8399,-182.0881 288.383,-188.1252"/>
+</g>
+<!-- orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishjerseycorejerseyclient -->
+<g id="edge19" class="edge">
+<title>orgglassfishjerseycorejerseyserver&#45;&gt;orgglassfishjerseycorejerseyclient</title>
+<path fill="none" stroke="#000000" d="M478.2876,-431.9243C450.673,-422.0815 416.325,-409.8386 387.3399,-399.5073"/>
+<polygon fill="#000000" stroke="#000000" points="388.3279,-396.1438 377.7333,-396.0831 385.9777,-402.7375 388.3279,-396.1438"/>
+</g>
+<!-- javaxvalidationvalidationapi -->
+<g id="node20" class="node">
+<title>javaxvalidationvalidationapi</title>
+<polygon fill="none" stroke="#000000" points="586.5,-396 473.5,-396 473.5,-360 586.5,-360 586.5,-396"/>
+<text text-anchor="middle" x="530" y="-374.3" font-family="Times New Roman" font-size="14.00" fill="#000000">validation&#45;api</text>
+</g>
+<!-- orgglassfishjerseycorejerseyserver&#45;&gt;javaxvalidationvalidationapi -->
+<g id="edge26" class="edge">
+<title>orgglassfishjerseycorejerseyserver&#45;&gt;javaxvalidationvalidationapi</title>
+<path fill="none" stroke="#000000" d="M529.2523,-431.8314C529.3593,-424.131 529.4865,-414.9743 529.6053,-406.4166"/>
+<polygon fill="#000000" stroke="#000000" points="533.1049,-406.4609 529.7443,-396.4133 526.1056,-406.3637 533.1049,-406.4609"/>
+</g>
+<!-- orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishjerseycorejerseycommon -->
+<g id="edge27" class="edge">
+<title>orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishjerseycorejerseycommon</title>
+<path fill="none" stroke="#000000" d="M747.3354,-359.8314C723.4523,-350.1162 693.871,-338.0831 668.7372,-327.8592"/>
+<polygon fill="#000000" stroke="#000000" points="669.9252,-324.564 659.3434,-324.038 667.2875,-331.0481 669.9252,-324.564"/>
+</g>
+<!-- orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishhk2hk2locator -->
+<g id="edge28" class="edge">
+<title>orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishhk2hk2locator</title>
+<path fill="none" stroke="#000000" d="M781.6937,-359.7334C769.531,-339.6533 747.5636,-307.6421 721,-288 697.2812,-270.4615 667.1397,-257.8377 640.9917,-249.2282"/>
+<polygon fill="#000000" stroke="#000000" points="641.7776,-245.8058 631.1875,-246.1231 639.6641,-252.4791 641.7776,-245.8058"/>
+</g>
+<!-- orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishhk2hk2api -->
+<g id="edge29" class="edge">
+<title>orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishhk2hk2api</title>
+<path fill="none" stroke="#000000" d="M865.0866,-359.9011C953.9354,-334.4597 1085.5503,-283.5666 1030,-216 1001.5909,-181.4455 871.7756,-168.6489 801.5037,-164.1969"/>
+<polygon fill="#000000" stroke="#000000" points="801.3662,-160.6824 791.174,-163.5754 800.9458,-167.6697 801.3662,-160.6824"/>
+</g>
+<!-- orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishhk2externaljavaxinject -->
+<g id="edge30" class="edge">
+<title>orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishhk2externaljavaxinject</title>
+<path fill="none" stroke="#000000" d="M765.816,-359.8138C752.0126,-349.805 735.0725,-336.8376 721,-324 704.9647,-309.3719 706.8094,-298.8313 688,-288 623.3313,-250.761 590.3816,-286.0921 524,-252 502.7243,-241.0733 504.414,-228.4627 484,-216 458.2365,-200.2714 427.1288,-187.8136 400.6041,-178.8456"/>
+<polygon fill="#000000" stroke="#000000" points="401.6507,-175.5054 391.0576,-175.7 399.4599,-182.1538 401.6507,-175.5054"/>
+</g>
+<!-- orgglassfishhk2osgiresourcelocator -->
+<g id="node18" class="node">
+<title>orgglassfishhk2osgiresourcelocator</title>
+<polygon fill="none" stroke="#000000" points="1021.5,-252 852.5,-252 852.5,-216 1021.5,-216 1021.5,-252"/>
+<text text-anchor="middle" x="937" y="-230.3" font-family="Times New Roman" font-size="14.00" fill="#000000">osgi&#45;resource&#45;locator</text>
+</g>
+<!-- orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishhk2osgiresourcelocator -->
+<g id="edge31" class="edge">
+<title>orgglassfishjerseymediajerseymediajaxb&#45;&gt;orgglassfishhk2osgiresourcelocator</title>
+<path fill="none" stroke="#000000" d="M810.3644,-359.7623C835.9678,-334.3354 882.4989,-288.1253 911.467,-259.3569"/>
+<polygon fill="#000000" stroke="#000000" points="914.1555,-261.6196 918.7848,-252.0896 909.2229,-256.6528 914.1555,-261.6196"/>
+</g>
+<!-- orgglassfishjerseycorejerseycommon&#45;&gt;javaxwsrsjavaxwsrsapi -->
+<g id="edge32" class="edge">
+<title>orgglassfishjerseycorejerseycommon&#45;&gt;javaxwsrsjavaxwsrsapi</title>
+<path fill="none" stroke="#000000" d="M550.9188,-296.6979C458.4723,-283.2782 288.1843,-258.559 191.339,-244.5008"/>
+<polygon fill="#000000" stroke="#000000" points="191.7389,-241.0223 181.3398,-243.0493 190.7332,-247.9497 191.7389,-241.0223"/>
+</g>
+<!-- orgglassfishjerseycorejerseycommon&#45;&gt;javaxannotationjavaxannotationapi -->
+<g id="edge33" class="edge">
+<title>orgglassfishjerseycorejerseycommon&#45;&gt;javaxannotationjavaxannotationapi</title>
+<path fill="none" stroke="#000000" d="M550.8932,-288.1097C514.7263,-278.0166 469.3573,-265.3555 431.6003,-254.8187"/>
+<polygon fill="#000000" stroke="#000000" points="432.2453,-251.365 421.6725,-252.0481 430.3637,-258.1074 432.2453,-251.365"/>
+</g>
+<!-- orgglassfishjerseybundlesrepackagedjerseyguava -->
+<g id="node10" class="node">
+<title>orgglassfishjerseybundlesrepackagedjerseyguava</title>
+<polygon fill="none" stroke="#000000" points="797,-252 687,-252 687,-216 797,-216 797,-252"/>
+<text text-anchor="middle" x="742" y="-230.3" font-family="Times New Roman" font-size="14.00" fill="#000000">jersey&#45;guava</text>
+</g>
+<!-- orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishjerseybundlesrepackagedjerseyguava -->
+<g id="edge34" class="edge">
+<title>orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishjerseybundlesrepackagedjerseyguava</title>
+<path fill="none" stroke="#000000" d="M647.0475,-287.8314C663.442,-278.5368 683.5786,-267.1208 701.0829,-257.1971"/>
+<polygon fill="#000000" stroke="#000000" points="702.9897,-260.1395 709.9628,-252.1628 699.5374,-254.05 702.9897,-260.1395"/>
+</g>
+<!-- orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishhk2hk2locator -->
+<g id="edge35" class="edge">
+<title>orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishhk2hk2locator</title>
+<path fill="none" stroke="#000000" d="M606.6727,-287.8314C603.027,-279.8771 598.6691,-270.369 594.6373,-261.5723"/>
+<polygon fill="#000000" stroke="#000000" points="597.7877,-260.0456 590.4394,-252.4133 591.4243,-262.9622 597.7877,-260.0456"/>
+</g>
+<!-- orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishhk2hk2api -->
+<g id="edge36" class="edge">
+<title>orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishhk2hk2api</title>
+<path fill="none" stroke="#000000" d="M679.0917,-296.3152C728.3497,-287.4081 790.5119,-272.4741 806,-252 821.4222,-231.613 804.0083,-205.9161 785.6332,-187.2047"/>
+<polygon fill="#000000" stroke="#000000" points="787.961,-184.5869 778.3394,-180.1513 783.0949,-189.6189 787.961,-184.5869"/>
+</g>
+<!-- orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishhk2externaljavaxinject -->
+<g id="edge37" class="edge">
+<title>orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishhk2externaljavaxinject</title>
+<path fill="none" stroke="#000000" d="M564.7896,-287.9476C541.5589,-278.6497 514.0655,-266.2646 491,-252 469.8018,-238.8901 468.7924,-229.7445 448,-216 430.4674,-204.4103 410.1242,-193.5019 391.9752,-184.5646"/>
+<polygon fill="#000000" stroke="#000000" points="393.2366,-181.2866 382.711,-180.0774 390.1852,-187.5865 393.2366,-181.2866"/>
+</g>
+<!-- orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishhk2osgiresourcelocator -->
+<g id="edge38" class="edge">
+<title>orgglassfishjerseycorejerseycommon&#45;&gt;orgglassfishhk2osgiresourcelocator</title>
+<path fill="none" stroke="#000000" d="M679.0018,-291.689C726.9154,-280.9754 793.1018,-266.176 846.4403,-254.2494"/>
+<polygon fill="#000000" stroke="#000000" points="847.2477,-257.6554 856.2429,-252.0575 845.7202,-250.824 847.2477,-257.6554"/>
+</g>
+<!-- orgglassfishhk2hk2locator&#45;&gt;orgglassfishhk2hk2api -->
+<g id="edge39" class="edge">
+<title>orgglassfishhk2hk2locator&#45;&gt;orgglassfishhk2hk2api</title>
+<path fill="none" stroke="#000000" d="M625.9075,-215.8314C652.0896,-204.9974 685.2376,-191.281 711.5202,-180.4054"/>
+<polygon fill="#000000" stroke="#000000" points="712.9651,-183.5954 720.867,-176.5378 710.2886,-177.1273 712.9651,-183.5954"/>
+</g>
+<!-- orgglassfishhk2hk2utils -->
+<g id="node13" class="node">
+<title>orgglassfishhk2hk2utils</title>
+<polygon fill="none" stroke="#000000" points="737.5,-108 660.5,-108 660.5,-72 737.5,-72 737.5,-108"/>
+<text text-anchor="middle" x="699" y="-86.3" font-family="Times New Roman" font-size="14.00" fill="#000000">hk2&#45;utils</text>
+</g>
+<!-- orgglassfishhk2hk2locator&#45;&gt;orgglassfishhk2hk2utils -->
+<g id="edge41" class="edge">
+<title>orgglassfishhk2hk2locator&#45;&gt;orgglassfishhk2hk2utils</title>
+<path fill="none" stroke="#000000" d="M618.7331,-215.9166C634.0785,-206.8725 651.0732,-194.6991 663,-180 677.6723,-161.9171 687.0012,-137.0876 692.4763,-118.0881"/>
+<polygon fill="#000000" stroke="#000000" points="695.915,-118.7783 695.1311,-108.2125 689.155,-116.961 695.915,-118.7783"/>
+</g>
+<!-- orgglassfishhk2externalaopalliancerepackaged -->
+<g id="node15" class="node">
+<title>orgglassfishhk2externalaopalliancerepackaged</title>
+<polygon fill="none" stroke="#000000" points="642,-108 454,-108 454,-72 642,-72 642,-108"/>
+<text text-anchor="middle" x="548" y="-86.3" font-family="Times New Roman" font-size="14.00" fill="#000000">aopalliance&#45;repackaged</text>
+</g>
+<!-- orgglassfishhk2hk2locator&#45;&gt;orgglassfishhk2externalaopalliancerepackaged -->
+<g id="edge42" class="edge">
+<title>orgglassfishhk2hk2locator&#45;&gt;orgglassfishhk2externalaopalliancerepackaged</title>
+<path fill="none" stroke="#000000" d="M576.5741,-215.5809C573.5874,-205.1773 569.9082,-191.9098 567,-180 561.9569,-159.3476 557.0208,-135.8366 553.4443,-118.025"/>
+<polygon fill="#000000" stroke="#000000" points="556.8353,-117.1317 551.4547,-108.0049 549.9693,-118.4951 556.8353,-117.1317"/>
+</g>
+<!-- orgglassfishhk2hk2locator&#45;&gt;orgglassfishhk2externaljavaxinject -->
+<g id="edge40" class="edge">
+<title>orgglassfishhk2hk2locator&#45;&gt;orgglassfishhk2externaljavaxinject</title>
+<path fill="none" stroke="#000000" d="M532.8533,-219.256C494.592,-207.7776 441.3586,-191.8076 400.8311,-179.6493"/>
+<polygon fill="#000000" stroke="#000000" points="401.665,-176.2455 391.081,-176.7243 399.6535,-182.9502 401.665,-176.2455"/>
+</g>
+<!-- orgjavassistjavassist -->
+<g id="node17" class="node">
+<title>orgjavassistjavassist</title>
+<polygon fill="none" stroke="#000000" points="654,-180 576,-180 576,-144 654,-144 654,-180"/>
+<text text-anchor="middle" x="615" y="-158.3" font-family="Times New Roman" font-size="14.00" fill="#000000">javassist</text>
+</g>
+<!-- orgglassfishhk2hk2locator&#45;&gt;orgjavassistjavassist -->
+<g id="edge43" class="edge">
+<title>orgglassfishhk2hk2locator&#45;&gt;orgjavassistjavassist</title>
+<path fill="none" stroke="#000000" d="M590.3273,-215.8314C593.973,-207.8771 598.3309,-198.369 602.3627,-189.5723"/>
+<polygon fill="#000000" stroke="#000000" points="605.5757,-190.9622 606.5606,-180.4133 599.2123,-188.0456 605.5757,-190.9622"/>
+</g>
+<!-- orgglassfishhk2hk2api&#45;&gt;orgglassfishhk2hk2utils -->
+<g id="edge44" class="edge">
+<title>orgglassfishhk2hk2api&#45;&gt;orgglassfishhk2hk2utils</title>
+<path fill="none" stroke="#000000" d="M741.6165,-143.8314C735.0514,-135.5386 727.1493,-125.557 719.9422,-116.4533"/>
+<polygon fill="#000000" stroke="#000000" points="722.5284,-114.0813 713.5772,-108.4133 717.0401,-118.4262 722.5284,-114.0813"/>
+</g>
+<!-- javaxinjectjavaxinject -->
+<g id="node14" class="node">
+<title>javaxinjectjavaxinject</title>
+<polygon fill="none" stroke="#000000" points="781,-36 683,-36 683,0 781,0 781,-36"/>
+<text text-anchor="middle" x="732" y="-14.3" font-family="Times New Roman" font-size="14.00" fill="#000000">javax.inject</text>
+</g>
+<!-- orgglassfishhk2hk2api&#45;&gt;javaxinjectjavaxinject -->
+<g id="edge46" class="edge">
+<title>orgglassfishhk2hk2api&#45;&gt;javaxinjectjavaxinject</title>
+<path fill="none" stroke="#000000" d="M755.1053,-143.9414C753.9875,-125.6772 751.6292,-96.6945 747,-72 745.3941,-63.4333 743.0755,-54.2501 740.7395,-45.9306"/>
+<polygon fill="#000000" stroke="#000000" points="744.0928,-44.9275 737.9283,-36.3107 737.3738,-46.8911 744.0928,-44.9275"/>
+</g>
+<!-- orgglassfishhk2hk2api&#45;&gt;orgglassfishhk2externalaopalliancerepackaged -->
+<g id="edge45" class="edge">
+<title>orgglassfishhk2hk2api&#45;&gt;orgglassfishhk2externalaopalliancerepackaged</title>
+<path fill="none" stroke="#000000" d="M720.7156,-149.7862C690.3925,-139.2897 645.9624,-123.91 609.7594,-111.3782"/>
+<polygon fill="#000000" stroke="#000000" points="610.8617,-108.0561 600.2669,-108.0924 608.5719,-114.671 610.8617,-108.0561"/>
+</g>
+<!-- orgglassfishhk2hk2utils&#45;&gt;javaxinjectjavaxinject -->
+<g id="edge47" class="edge">
+<title>orgglassfishhk2hk2utils&#45;&gt;javaxinjectjavaxinject</title>
+<path fill="none" stroke="#000000" d="M707.3273,-71.8314C710.973,-63.8771 715.3309,-54.369 719.3627,-45.5723"/>
+<polygon fill="#000000" stroke="#000000" points="722.5757,-46.9622 723.5606,-36.4133 716.2123,-44.0456 722.5757,-46.9622"/>
+</g>
+<!-- orgglassfishjerseycorejerseyclient&#45;&gt;orgglassfishjerseycorejerseycommon -->
+<g id="edge48" class="edge">
+<title>orgglassfishjerseycorejerseyclient&#45;&gt;orgglassfishjerseycorejerseycommon</title>
+<path fill="none" stroke="#000000" d="M379.1546,-364.9613C424.3645,-353.6589 490.3041,-337.174 540.9732,-324.5067"/>
+<polygon fill="#000000" stroke="#000000" points="542.0402,-327.8477 550.8928,-322.0268 540.3424,-321.0567 542.0402,-327.8477"/>
+</g>
+<!-- orgglassfishjerseycorejerseyclient&#45;&gt;javaxwsrsjavaxwsrsapi -->
+<g id="edge49" class="edge">
+<title>orgglassfishjerseycorejerseyclient&#45;&gt;javaxwsrsjavaxwsrsapi</title>
+<path fill="none" stroke="#000000" d="M292.7725,-359.9233C274.6217,-349.9454 252.1729,-336.9728 233,-324 202.8674,-303.6117 170.4889,-277.6171 147.9674,-258.8119"/>
+<polygon fill="#000000" stroke="#000000" points="150.0458,-255.9867 140.1384,-252.2326 145.5423,-261.3457 150.0458,-255.9867"/>
+</g>
+<!-- orgglassfishjerseycorejerseyclient&#45;&gt;orgglassfishhk2hk2locator -->
+<g id="edge50" class="edge">
+<title>orgglassfishjerseycorejerseyclient&#45;&gt;orgglassfishhk2hk2locator</title>
+<path fill="none" stroke="#000000" d="M335.7556,-359.6338C346.4488,-339.155 366.4439,-306.4884 393,-288 431.517,-261.1843 483.1962,-247.5958 522.7794,-240.7618"/>
+<polygon fill="#000000" stroke="#000000" points="523.5171,-244.1879 532.8248,-239.1264 522.3923,-237.2788 523.5171,-244.1879"/>
+</g>
+<!-- orgglassfishjerseycorejerseyclient&#45;&gt;orgglassfishhk2hk2api -->
+<g id="edge51" class="edge">
+<title>orgglassfishjerseycorejerseyclient&#45;&gt;orgglassfishhk2hk2api</title>
+<path fill="none" stroke="#000000" d="M368.7969,-359.856C411.957,-341.2731 481.3609,-311.8161 542,-288 585.1897,-271.0372 600.5686,-276.4592 640,-252 659.7699,-239.7368 659.9389,-230.664 678,-216 690.9013,-205.5253 705.7496,-194.919 719.006,-185.912"/>
+<polygon fill="#000000" stroke="#000000" points="721.1,-188.7218 727.451,-180.2415 717.1978,-182.9104 721.1,-188.7218"/>
+</g>
+<!-- orgglassfishjerseycorejerseyclient&#45;&gt;orgglassfishhk2externaljavaxinject -->
+<g id="edge52" class="edge">
+<title>orgglassfishjerseycorejerseyclient&#45;&gt;orgglassfishhk2externaljavaxinject</title>
+<path fill="none" stroke="#000000" d="M310.4764,-359.9212C284.6528,-329.3604 240.2222,-265.938 266,-216 272.2712,-203.8511 282.6782,-193.8403 293.8089,-185.8794"/>
+<polygon fill="#000000" stroke="#000000" points="295.9981,-188.6277 302.4052,-180.1898 292.1345,-182.7905 295.9981,-188.6277"/>
+</g>
+<!-- orghamcresthamcrestcore -->
+<g id="node23" class="node">
+<title>orghamcresthamcrestcore</title>
+<polygon fill="none" stroke="#000000" points="878.5,-612 757.5,-612 757.5,-576 878.5,-576 878.5,-612"/>
+<text text-anchor="middle" x="818" y="-590.3" font-family="Times New Roman" font-size="14.00" fill="#000000">hamcrest&#45;core</text>
+</g>
+<!-- junitjunit&#45;&gt;orghamcresthamcrestcore -->
+<g id="edge53" class="edge">
+<title>junitjunit&#45;&gt;orghamcresthamcrestcore</title>
+<path fill="none" stroke="#000000" d="M805.2898,-647.8314C807.108,-640.131 809.2699,-630.9743 811.2905,-622.4166"/>
+<polygon fill="#000000" stroke="#000000" points="814.7608,-622.95 813.6524,-612.4133 807.9481,-621.3414 814.7608,-622.95"/>
+</g>
+</g>
+</svg>
