@@ -87,7 +87,7 @@
 
         <!-- Project module -->
         <dependency>
-            <groupId>se.kth.depclean</groupId>
+            <groupId>se.kth.castor</groupId>
             <artifactId>depclean-core</artifactId>
             <version>1.0.0</version>
         </dependency>
