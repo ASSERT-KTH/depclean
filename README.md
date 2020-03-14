@@ -82,3 +82,10 @@ mvn se.kth.castor:depclean-maven-plugin:1.0.0:depclean
 ## License
 
 Distributed under the MIT License. See [LICENSE](https://github.com/castor-software/depclean/blob/master/LICENSE.md) for more information.
+
+## Funding
+
+DepClean is partially funded by the Wallenberg Autonomous Systems and Software Program (WASP).
+
+<img src="https://cesarsotovalero.github.io/img/logos/wasp_logo.png" height="100px" />
+	
