@@ -10,11 +10,11 @@ layout: default
 [![SonarQube](https://img.shields.io/badge/sonar-ok-green.svg)](https://sonarcloud.io/dashboard?id=castor-software_depclean)
 [![Hits-of-Code](https://hitsofcode.com/github/castor-software/depclean)](https://hitsofcode.com/view/github/castor-software/depclean)
 
-### What is DepClean?
+# What is DepClean?
 
 DepClean is a tool to automatically remove dependencies that are included in your Java dependency tree but are not actually used in the project's code. DepClean detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent. For that, it relies on bytecode static analysis and extends the `maven-dependency-analyze` plugin (more details on this [plugin](https://maven.apache.org/plugins/maven-dependency-plugin/analyze-mojo.html)). DepClean does not modify the original source code of the application nor its original `pom.xml`. It can be executed as a Maven goal through the command line or integrated directly into the Maven build lifecycle.
 
-### How does it work?
+# How does it work?
 
 DepClean runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the project actually use in the bytecode with respect to the class members belonging to its dependencies.
 
@@ -27,7 +27,7 @@ With this usage information, DepClean constructs a new `pom.xml` based on the fo
 If all the tests pass and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
 
 
-## Usage
+# Usage
 
 You can configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
 
@@ -46,7 +46,7 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 </plugin>
 ```
 
-### Optional Parameters
+## Optional Parameters
 
 The Maven plugin can be configured with the following additional parameters.
 
@@ -59,7 +59,7 @@ The Maven plugin can be configured with the following additional parameters.
 | `<skipDepClean>` | `boolean` | Skip plugin execution completely. **Default value is:** `false`.|
 
 
-## Installing and building from source
+# Installing and building from source
 
 Prerequisites:
 
@@ -83,7 +83,7 @@ Once the plugin is installed, you can execute the plugin goal directly in the co
 mvn se.kth.castor:depclean-maven-plugin:1.0.0:depclean
 ```
 
-## License
+# License
 
 Distributed under the MIT License. See [LICENSE](https://github.com/castor-software/depclean/blob/master/LICENSE.md) for more information.
 
