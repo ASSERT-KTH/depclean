@@ -19,33 +19,35 @@ package se.kth.depclean.core.analysis;
  * under the License.
  */
 
-import org.codehaus.plexus.component.annotations.Component;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 import java.util.zip.ZipException;
 
+import org.codehaus.plexus.component.annotations.Component;
+
 @Component(role = ClassAnalyzer.class)
 public class DefaultClassAnalyzer
-        implements ClassAnalyzer {
-    // ClassAnalyzer methods --------------------------------------------------
+   implements ClassAnalyzer
+{
+   // ClassAnalyzer methods --------------------------------------------------
 
-    public Set<String> analyze(URL url)
-            throws IOException {
-        CollectorClassFileVisitor visitor = new CollectorClassFileVisitor();
+   public Set<String> analyze(URL url)
+      throws IOException
+   {
+      CollectorClassFileVisitor visitor = new CollectorClassFileVisitor();
 
-        try {
-            ClassFileVisitorUtils.accept(url, visitor);
-        } catch (ZipException e) {
-            // since the current ZipException gives no indication what jar file is corrupted
-            // we prefer to wrap another ZipException for better error visibility
-            ZipException ze =
-                    new ZipException("Cannot process Jar entry on URL: " + url + " due to " + e.getMessage());
-            ze.initCause(e);
-            throw ze;
-        }
+      try {
+         ClassFileVisitorUtils.accept(url, visitor);
+      } catch (ZipException e) {
+         // since the current ZipException gives no indication what jar file is corrupted
+         // we prefer to wrap another ZipException for better error visibility
+         ZipException ze =
+            new ZipException("Cannot process Jar entry on URL: " + url + " due to " + e.getMessage());
+         ze.initCause(e);
+         throw ze;
+      }
 
-        return visitor.getClasses();
-    }
+      return visitor.getClasses();
+   }
 }

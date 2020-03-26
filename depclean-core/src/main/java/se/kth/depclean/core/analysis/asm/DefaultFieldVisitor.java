@@ -28,21 +28,24 @@ import org.objectweb.asm.Opcodes;
  * Inspired by <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
  */
 public class DefaultFieldVisitor
-        extends FieldVisitor {
-    private final AnnotationVisitor annotationVisitor;
+   extends FieldVisitor
+{
+   private final AnnotationVisitor annotationVisitor;
 
-    private final ResultCollector resultCollector;
+   private final ResultCollector resultCollector;
 
-    public DefaultFieldVisitor(AnnotationVisitor annotationVisitor, ResultCollector resultCollector) {
-        super(Opcodes.ASM7);
-        this.annotationVisitor = annotationVisitor;
-        this.resultCollector = resultCollector;
-    }
+   public DefaultFieldVisitor(AnnotationVisitor annotationVisitor, ResultCollector resultCollector)
+   {
+      super(Opcodes.ASM7);
+      this.annotationVisitor = annotationVisitor;
+      this.resultCollector = resultCollector;
+   }
 
-    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-        resultCollector.addDesc(desc);
+   public AnnotationVisitor visitAnnotation(final String desc, final boolean visible)
+   {
+      resultCollector.addDesc(desc);
 
-        return annotationVisitor;
-    }
+      return annotationVisitor;
+   }
 
 }

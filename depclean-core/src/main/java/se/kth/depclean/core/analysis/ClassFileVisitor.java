@@ -21,6 +21,7 @@ package se.kth.depclean.core.analysis;
 
 import java.io.InputStream;
 
-public interface ClassFileVisitor {
-    void visitClass(String className, InputStream in);
+public interface ClassFileVisitor
+{
+   void visitClass(String className, InputStream in);
 }
