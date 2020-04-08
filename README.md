@@ -86,6 +86,6 @@ Distributed under the MIT License. See [LICENSE](https://github.com/castor-softw
 
 ## Funding
 
-DepClean is partially funded by the Wallenberg Autonomous Systems and Software Program (WASP).
+DepClean is partially funded by the [Wallenberg Autonomous Systems and Software Program (WASP)](https://wasp-sweden.org).
 
-<img src="https://github.com/castor-software/depclean/blob/master/wasp.svg" height="100px" alt="Wallenberg Autonomous Systems and Software Program (WASP)"/>
+<img src="https://github.com/castor-software/depclean/blob/master/wasp.svg" height="50px" alt="Wallenberg Autonomous Systems and Software Program (WASP)"/>
