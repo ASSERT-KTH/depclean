@@ -5,6 +5,7 @@
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=castor-software_depclean&metric=alert_status)](https://sonarcloud.io/dashboard?id=castor-software_depclean)
 [![Hits-of-Code](https://hitsofcode.com/github/castor-software/depclean)](https://hitsofcode.com/view/github/castor-software/depclean)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/castor-software/depclean/blob/master/LICENSE.md)
 
 ### What is DepClean?
 
