@@ -101,10 +101,10 @@ public class DepCleanMojo extends AbstractMojo
     private Set<String> ignoreDependencies;
 
     /**
-     * Exclude dependencies with specific scopes from the DepClean analysis.
+     * Ignore dependencies with specific scopes from the DepClean analysis.
      */
-    @Parameter(property = "exclude.scopes")
-    private Set<String> excludeScope;
+    @Parameter(property = "ignore.scopes")
+    private Set<String> ignoreScopes;
 
     /**
      * If this is true, and DepClean reported any unused dependency in the dependency tree,
@@ -194,13 +194,12 @@ public class DepCleanMojo extends AbstractMojo
         unusedUndeclaredArtifacts.removeAll(unusedDeclaredArtifacts);
 
         /* Exclude dependencies with specific scopes from the DepClean analysis */
-        if (excludeScope.size() >= 1) {
+        if (ignoreScopes.size() >= 1) {
             usedUndeclaredArtifacts = excludeScope(usedUndeclaredArtifacts);
             usedDeclaredArtifacts = excludeScope(usedDeclaredArtifacts);
             unusedDeclaredArtifacts = excludeScope(unusedDeclaredArtifacts);
             unusedUndeclaredArtifacts = excludeScope(unusedUndeclaredArtifacts);
         }
-
 
         /* Use artifacts coordinates for the report instead of the Artifact object */
         Set<String> usedDeclaredArtifactsCoordinates = new HashSet<>();
@@ -342,7 +341,7 @@ public class DepCleanMojo extends AbstractMojo
         Iterator<Artifact> iterator = artifacts.iterator();
         while (iterator.hasNext()) {
             Artifact artifact = iterator.next();
-            if (!excludeScope.contains(artifact.getScope())) {
+            if (!ignoreScopes.contains(artifact.getScope())) {
                 nonExcludedArtifacts.add(artifact);
             }
         }
