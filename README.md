@@ -32,7 +32,7 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 <plugin>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <executions>
         <execution>
             <goals>
