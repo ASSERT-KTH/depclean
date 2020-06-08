@@ -32,7 +32,7 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 <plugin>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <executions>
         <execution>
             <goals>
@@ -50,7 +50,7 @@ The Maven plugin can be configured with the following additional parameters.
 | Name   |  Type |   Description      | 
 |:----------|:-------------:| :-------------| 
 | `<ignoreDependencies>` | `Set<String>` | Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis. **Dependency format is:** `groupId:artifactId:version`.|
-| `<ignoreScopes>` | `Set<String>` | Add a list of scopes, to be ignored by DepClean during the analysis. Useful to not analyze dependencies with scopes that are not needed at runtime. **Valid scopes are:** `compile`, `provided`, `test`, `runtime`, `system`, `import`. **Default value is:** `all`.|
+| `<ignoreScopes>` | `Set<String>` | Add a list of scopes, to be ignored by DepClean during the analysis. Useful to not analyze dependencies with scopes that are not needed at runtime. **Valid scopes are:** `compile`, `provided`, `test`, `runtime`, `system`, `import`. An Empty string indicates no scopes (default).|
 | `<createPomDebloated>` | `boolean` | If this is true, DepClean creates a debloated version of the pom without unused dependencies called `debloated-pom.xml`, in root of the project. **Default value is:** `false`.|
 | `<failIfUnusedDependency>` | `boolean` | If this is true, and DepClean reported any unused dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.|
 | `<skipDepClean>` | `boolean` | Skip plugin execution completely. **Default value is:** `false`.|
