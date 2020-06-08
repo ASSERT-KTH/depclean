@@ -20,7 +20,7 @@
       <maven.compiler.target>1.8</maven.compiler.target>
       <java.src.version>1.8</java.src.version>
       <java.test.version>1.8</java.test.version>
-      <maven.jacoco.plugin.version>0.8.2</maven.jacoco.plugin.version>
+      <maven.jacoco.plugin.version>0.8.4</maven.jacoco.plugin.version>
       <maven.coveralls.plugin.version>4.3.0</maven.coveralls.plugin.version>
    </properties>
 
@@ -132,34 +132,47 @@
             </executions>
          </plugin>
 
-         <!--            &lt;!&ndash; Maven GPG plugin to sign the components &ndash;&gt;-->
-         <!--            <plugin>-->
-         <!--                <groupId>org.apache.maven.plugins</groupId>-->
-         <!--                <artifactId>maven-gpg-plugin</artifactId>-->
-         <!--                <version>1.5</version>-->
-         <!--                <executions>-->
-         <!--                    <execution>-->
-         <!--                        <id>sign-artifacts</id>-->
-         <!--                        <phase>verify</phase>-->
-         <!--                        <goals>-->
-         <!--                            <goal>sign</goal>-->
-         <!--                        </goals>-->
-         <!--                    </execution>-->
-         <!--                </executions>-->
-         <!--            </plugin>-->
+         <!-- Maven GPG plugin to sign the components -->
+<!--         <plugin>-->
+<!--            <groupId>org.apache.maven.plugins</groupId>-->
+<!--            <artifactId>maven-gpg-plugin</artifactId>-->
+<!--            <version>1.5</version>-->
+<!--            <executions>-->
+<!--               <execution>-->
+<!--                  <id>sign-artifacts</id>-->
+<!--                  <phase>verify</phase>-->
+<!--                  <goals>-->
+<!--                     <goal>sign</goal>-->
+<!--                  </goals>-->
+<!--               </execution>-->
+<!--            </executions>-->
+<!--         </plugin>-->
 
-         <!--            &lt;!&ndash; Nexus Staging Maven plugin to deploy components to OSSRH &ndash;&gt;-->
-         <!--            <plugin>-->
-         <!--                <groupId>org.sonatype.plugins</groupId>-->
-         <!--                <artifactId>nexus-staging-maven-plugin</artifactId>-->
-         <!--                <version>1.6.7</version>-->
-         <!--                <extensions>true</extensions>-->
-         <!--                <configuration>-->
-         <!--                    <serverId>ossrh</serverId>-->
-         <!--                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
-         <!--                    <autoReleaseAfterClose>true</autoReleaseAfterClose>-->
-         <!--                </configuration>-->
-         <!--            </plugin>-->
+         <!-- Nexus Staging Maven plugin to deploy components to OSSRH -->
+         <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.7</version>
+            <extensions>true</extensions>
+            <configuration>
+               <serverId>ossrh</serverId>
+               <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+               <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            </configuration>
+         </plugin>
+
+
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-site-plugin</artifactId>
+            <version>3.7.1</version>
+         </plugin>
+
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+            <version>3.0.0</version>
+         </plugin>
 
 
          <!-- Surefire plugin -->
@@ -175,25 +188,25 @@
          </plugin>
 
          <!--Checkstyle plugin-->
-         <!--            <plugin>-->
-         <!--                <groupId>org.apache.maven.plugins</groupId>-->
-         <!--                <artifactId>maven-checkstyle-plugin</artifactId>-->
-         <!--                <version>3.0.0</version>-->
-         <!--                <configuration>-->
-         <!--                    <configLocation>checkstyle.xml</configLocation>-->
-         <!--                    <failOnViolation>false</failOnViolation>-->
-         <!--                    <failsOnError>false</failsOnError>-->
-         <!--                    <consoleOutput>true</consoleOutput>-->
-         <!--                </configuration>-->
-         <!--                <executions>-->
-         <!--                    <execution>-->
-         <!--                        <phase>deploy</phase>-->
-         <!--                        <goals>-->
-         <!--                            <goal>checkstyle</goal>-->
-         <!--                        </goals>-->
-         <!--                    </execution>-->
-         <!--                </executions>-->
-         <!--            </plugin>-->
+         <!--                     <plugin>-->
+         <!--                         <groupId>org.apache.maven.plugins</groupId>-->
+         <!--                         <artifactId>maven-checkstyle-plugin</artifactId>-->
+         <!--                         <version>3.0.0</version>-->
+         <!--                         <configuration>-->
+         <!--                             <configLocation>checkstyle.xml</configLocation>-->
+         <!--                             <failOnViolation>false</failOnViolation>-->
+         <!--                             <failsOnError>false</failsOnError>-->
+         <!--                             <consoleOutput>true</consoleOutput>-->
+         <!--                         </configuration>-->
+         <!--                         <executions>-->
+         <!--                             <execution>-->
+         <!--                                 <phase>deploy</phase>-->
+         <!--                                 <goals>-->
+         <!--                                     <goal>checkstyle</goal>-->
+         <!--                                 </goals>-->
+         <!--                             </execution>-->
+         <!--                         </executions>-->
+         <!--                     </plugin>-->
 
          <!--JaCoCo plugin-->
          <plugin>
@@ -216,33 +229,32 @@
             </executions>
          </plugin>
 
-         <!--            &lt;!&ndash; Nexus Staging Maven plugin for deployment to Sonatype&ndash;&gt;-->
-         <!--            <plugin>-->
-         <!--                <groupId>org.sonatype.plugins</groupId>-->
-         <!--                <artifactId>nexus-staging-maven-plugin</artifactId>-->
-         <!--                <version>1.6.7</version>-->
-         <!--                <extensions>true</extensions>-->
-         <!--                <configuration>-->
-         <!--                    <serverId>ossrh</serverId>-->
-         <!--                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
-         <!--                    <autoReleaseAfterClose>true</autoReleaseAfterClose>-->
-         <!--                </configuration>-->
-         <!--            </plugin>-->
+         <!-- Nexus Staging Maven plugin for deployment to Sonatype-->
+<!--         <plugin>-->
+<!--            <groupId>org.sonatype.plugins</groupId>-->
+<!--            <artifactId>nexus-staging-maven-plugin</artifactId>-->
+<!--            <version>1.6.7</version>-->
+<!--            <extensions>true</extensions>-->
+<!--            <configuration>-->
+<!--               <serverId>ossrh</serverId>-->
+<!--               <nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
+<!--               <autoReleaseAfterClose>true</autoReleaseAfterClose>-->
+<!--            </configuration>-->
+<!--         </plugin>-->
 
-         <!--            &lt;!&ndash; Performing a release deployment with the Maven Release Plugin &ndash;&gt;-->
-         <!--            &lt;!&ndash; see https://central.sonatype.org/pages/apache-maven.html &ndash;&gt;-->
-         <!--            <plugin>-->
-         <!--                <groupId>org.apache.maven.plugins</groupId>-->
-         <!--                <artifactId>maven-release-plugin</artifactId>-->
-         <!--                <version>2.5.3</version>-->
-         <!--                <configuration>-->
-         <!--                    <autoVersionSubmodules>true</autoVersionSubmodules>-->
-         <!--                    <useReleaseProfile>false</useReleaseProfile>-->
-         <!--                    <releaseProfiles>release</releaseProfiles>-->
-         <!--                    <goals>deploy</goals>-->
-         <!--                </configuration>-->
-         <!--            </plugin>-->
-
+         <!-- Performing a release deployment with the Maven Release Plugin -->
+         <!-- see https://central.sonatype.org/pages/apache-maven.html -->
+<!--         <plugin>-->
+<!--            <groupId>org.apache.maven.plugins</groupId>-->
+<!--            <artifactId>maven-release-plugin</artifactId>-->
+<!--            <version>2.5.3</version>-->
+<!--            <configuration>-->
+<!--               <autoVersionSubmodules>true</autoVersionSubmodules>-->
+<!--               <useReleaseProfile>false</useReleaseProfile>-->
+<!--               <releaseProfiles>release</releaseProfiles>-->
+<!--               <goals>deploy</goals>-->
+<!--            </configuration>-->
+<!--         </plugin>-->
       </plugins>
 
       <!-- Coveralls plugin -->
