@@ -1,4 +1,4 @@
-# DepClean <img src="https://github.com/castor-software/depclean/blob/master/logo.svg" align="right" height="125px" alt="DepClean logo"/>
+# DepClean <img src="https://github.com/castor-software/depclean/blob/master/logo.svg" align="left" height="125px" alt="DepClean logo"/>
 
 [![Build Status](https://travis-ci.org/castor-software/depclean.svg?branch=master)](https://travis-ci.org/castor-software/depclean)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=castor-software_depclean&metric=alert_status)](https://sonarcloud.io/dashboard?id=castor-software_depclean)
