@@ -50,7 +50,7 @@ public final class JarUtils
             try {
                JarUtils.decompressJarFile(outputDirectory, f.getAbsolutePath());
                // delete the original dependency jar file
-               f.delete();
+               org.apache.commons.io.FileUtils.forceDelete(f);
             } catch (IOException e) {
                System.err.println("Problem decompressing jar file.");
             }
@@ -71,26 +71,26 @@ public final class JarUtils
       if (!destDir.exists()) {
          destDir.mkdir();
       }
-      JarInputStream jarIn = new JarInputStream(new FileInputStream(jarFilePath));
-      JarEntry entry = jarIn.getNextJarEntry();
-      // iterates over all the entries in the jar file
-      while (entry != null) {
-         String filePath = destDirectory + "/" + entry.getName();
-         if (!entry.isDirectory()) {
-            new File(filePath).getParentFile().mkdirs();
-            // if the entry is a file, extracts it
-            extractFile(jarIn, filePath);
-         }/* else {
-                System.out.println("New dir: " + filePath);
-                // if the entry is a directory, make the directory
-                File dir = new File(filePath);
-                dir.mkdir();
-                System.out.println(dir.canWrite());
-            }*/
-         jarIn.closeEntry();
-         entry = jarIn.getNextJarEntry();
+      try (JarInputStream jarIn = new JarInputStream(new FileInputStream(jarFilePath))) {
+         JarEntry entry = jarIn.getNextJarEntry();
+         // iterates over all the entries in the jar file
+         while (entry != null) {
+            String filePath = destDirectory + "/" + entry.getName();
+            if (!entry.isDirectory()) {
+               new File(filePath).getParentFile().mkdirs();
+               // if the entry is a file, extracts it
+               extractFile(jarIn, filePath);
+            }/* else {
+                   System.out.println("New dir: " + filePath);
+                   // if the entry is a directory, make the directory
+                   File dir = new File(filePath);
+                   dir.mkdir();
+                   System.out.println(dir.canWrite());
+               }*/
+            jarIn.closeEntry();
+            entry = jarIn.getNextJarEntry();
+         }
       }
-      jarIn.close();
    }
 
    /**
@@ -102,12 +102,12 @@ public final class JarUtils
     */
    private static void extractFile(final JarInputStream jarIn, final String filePath) throws IOException
    {
-      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
-      byte[] bytesIn = new byte[BUFFER_SIZE];
-      int read = 0;
-      while ((read = jarIn.read(bytesIn)) != -1) {
-         bos.write(bytesIn, 0, read);
+      try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
+         byte[] bytesIn = new byte[BUFFER_SIZE];
+         int read = 0;
+         while ((read = jarIn.read(bytesIn)) != -1) {
+            bos.write(bytesIn, 0, read);
+         }
       }
-      bos.close();
    }
 }

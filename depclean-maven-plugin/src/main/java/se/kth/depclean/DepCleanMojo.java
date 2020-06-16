@@ -73,6 +73,8 @@ import se.kth.depclean.util.MavenInvoker;
     requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class DepCleanMojo extends AbstractMojo
 {
+    private static final String SEPARATOR = "-------------------------------------------------------";
+
     /**
      * The Maven project to analyze.
      */
@@ -137,7 +139,8 @@ public class DepCleanMojo extends AbstractMojo
             return;
         }
 
-        System.out.println("-------------------------------------------------------");
+
+        System.out.println(SEPARATOR);
         getLog().info("Starting DepClean dependency analysis");
 
         File pomFile = new File(project.getBasedir().getAbsolutePath() + "/" + "pom.xml");
@@ -194,7 +197,7 @@ public class DepCleanMojo extends AbstractMojo
         unusedUndeclaredArtifacts.removeAll(unusedDeclaredArtifacts);
 
         /* Exclude dependencies with specific scopes from the DepClean analysis */
-        if (ignoreScopes.size() >= 1) {
+        if (!ignoreScopes.isEmpty()) {
             usedUndeclaredArtifacts = excludeScope(usedUndeclaredArtifacts);
             usedDeclaredArtifacts = excludeScope(usedDeclaredArtifacts);
             unusedDeclaredArtifacts = excludeScope(unusedDeclaredArtifacts);
@@ -242,7 +245,7 @@ public class DepCleanMojo extends AbstractMojo
 
         /* Printing the results to the console */
         System.out.println(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
-        System.out.println("-------------------------------------------------------");
+        System.out.println(SEPARATOR);
 
         System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifactsCoordinates.size() + "]" + ": ");
         usedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
@@ -257,13 +260,13 @@ public class DepCleanMojo extends AbstractMojo
         unusedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
 
         if (!ignoreDependencies.isEmpty()) {
-            System.out.println("-------------------------------------------------------");
+            System.out.println(SEPARATOR);
             System.out.println("Dependencies ignored in the analysis by the user" + " [" + ignoreDependencies.size() + "]" + ": ");
             ignoreDependencies.stream().forEach(s -> System.out.println("\t" + s));
         }
 
         /* Fail the build if there are unused dependencies */
-        if (failIfUnusedDependency && (unusedDeclaredArtifactsCoordinates.size() > 0 || unusedUndeclaredArtifactsCoordinates.size() > 0)) {
+        if (failIfUnusedDependency && (!unusedDeclaredArtifactsCoordinates.isEmpty() || !unusedUndeclaredArtifactsCoordinates.isEmpty())) {
             throw new MojoExecutionException("Build failed due to unused dependencies in the dependency tree.");
         }
 
@@ -320,7 +323,6 @@ public class DepCleanMojo extends AbstractMojo
             } catch (Exception e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }
-
 
             /* write the debloated pom file */
             try {
