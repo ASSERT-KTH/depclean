@@ -31,7 +31,7 @@ With this usage information, DepClean constructs a new `pom.xml` based on the fo
 2. remove all unused direct dependencies
 3. exclude all unused transitive dependencies
 
-If all the tests pass and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
+If all the tests pass, and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
 
 
 ## Usage
@@ -89,7 +89,7 @@ mvn clean install
 Once the plugin is installed, you can execute the plugin goal directly in the command line:
 
 ```shell script
-mvn se.kth.castor:depclean-maven-plugin:1.0.0:depclean
+mvn se.kth.castor:depclean-maven-plugin:1.1.0:depclean
 ```
 
 ## License
