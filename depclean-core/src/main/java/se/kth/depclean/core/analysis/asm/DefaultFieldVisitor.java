@@ -41,6 +41,7 @@ public class DefaultFieldVisitor
       this.resultCollector = resultCollector;
    }
 
+   @Override
    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible)
    {
       resultCollector.addDesc(desc);

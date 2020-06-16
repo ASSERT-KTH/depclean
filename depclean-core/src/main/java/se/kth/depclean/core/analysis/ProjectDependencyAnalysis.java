@@ -72,7 +72,7 @@ public class ProjectDependencyAnalysis
     */
    public ProjectDependencyAnalysis ignoreNonCompile()
    {
-      Set<Artifact> filteredUnusedDeclared = new HashSet<Artifact>(unusedDeclaredArtifacts);
+      Set<Artifact> filteredUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
       for (Iterator<Artifact> iter = filteredUnusedDeclared.iterator(); iter.hasNext(); ) {
          Artifact artifact = iter.next();
          if (!artifact.getScope().equals(Artifact.SCOPE_COMPILE)) {
@@ -97,10 +97,9 @@ public class ProjectDependencyAnalysis
    public ProjectDependencyAnalysis forceDeclaredDependenciesUsage(String[] forceUsedDependencies)
       throws ProjectDependencyAnalyzerException
    {
-      Set<String> forced = new HashSet<String>(Arrays.asList(forceUsedDependencies));
-
-      Set<Artifact> forcedUnusedDeclared = new HashSet<Artifact>(unusedDeclaredArtifacts);
-      Set<Artifact> forcedUsedDeclared = new HashSet<Artifact>(usedDeclaredArtifacts);
+      Set<String> forced = new HashSet<>(Arrays.asList(forceUsedDependencies));
+      Set<Artifact> forcedUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
+      Set<Artifact> forcedUsedDeclared = new HashSet<>(usedDeclaredArtifacts);
 
       for (Iterator<Artifact> iter = forcedUnusedDeclared.iterator(); iter.hasNext(); ) {
          Artifact artifact = iter.next();
@@ -114,7 +113,7 @@ public class ProjectDependencyAnalysis
 
       if (!forced.isEmpty()) {
          // trying to force dependencies as used-declared which were not declared or already detected as used
-         Set<String> used = new HashSet<String>();
+         Set<String> used = new HashSet<>();
          for (Artifact artifact : usedDeclaredArtifacts) {
             String id = artifact.getGroupId() + ':' + artifact.getArtifactId();
             if (forced.remove(id)) {
@@ -134,7 +133,6 @@ public class ProjectDependencyAnalysis
          }
          throw new ProjectDependencyAnalyzerException("Trying to force use of dependencies which are " + builder);
       }
-
       return new ProjectDependencyAnalysis(forcedUsedDeclared, usedUndeclaredArtifacts, forcedUnusedDeclared);
    }
 

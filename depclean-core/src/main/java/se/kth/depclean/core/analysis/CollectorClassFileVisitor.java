@@ -39,7 +39,7 @@ public class CollectorClassFileVisitor
 
    public CollectorClassFileVisitor()
    {
-      classes = new HashSet<String>();
+      classes = new HashSet<>();
    }
 
    // ClassFileVisitor methods -----------------------------------------------

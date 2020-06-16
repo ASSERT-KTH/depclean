@@ -49,6 +49,7 @@ public class DefaultMethodVisitor extends MethodVisitor
       this.resultCollector = resultCollector;
    }
 
+   @Override
    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible)
    {
       resultCollector.addDesc(desc);
@@ -64,6 +65,7 @@ public class DefaultMethodVisitor extends MethodVisitor
       return annotationVisitor;
    }
 
+   @Override
    public AnnotationVisitor visitParameterAnnotation(final int parameter, final String desc, final boolean visible)
    {
       resultCollector.addDesc(desc);
@@ -71,6 +73,7 @@ public class DefaultMethodVisitor extends MethodVisitor
       return annotationVisitor;
    }
 
+   @Override
    public void visitTypeInsn(final int opcode, final String desc)
    {
       if (desc.charAt(0) == '[') {
@@ -80,6 +83,7 @@ public class DefaultMethodVisitor extends MethodVisitor
       }
    }
 
+   @Override
    public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc)
    {
       resultCollector.addName(owner);
@@ -97,6 +101,7 @@ public class DefaultMethodVisitor extends MethodVisitor
       resultCollector.addName(owner);
    }
 
+   @Override
    public void visitLdcInsn(final Object cst)
    {
       if (cst instanceof Type) {
@@ -104,16 +109,19 @@ public class DefaultMethodVisitor extends MethodVisitor
       }
    }
 
+   @Override
    public void visitMultiANewArrayInsn(final String desc, final int dims)
    {
       resultCollector.addDesc(desc);
    }
 
+   @Override
    public void visitTryCatchBlock(final Label start, final Label end, final Label handler, final String type)
    {
       resultCollector.addName(type);
    }
 
+   @Override
    public void visitLocalVariable(final String name, final String desc, final String signature, final Label start,
       final Label end, final int index)
    {

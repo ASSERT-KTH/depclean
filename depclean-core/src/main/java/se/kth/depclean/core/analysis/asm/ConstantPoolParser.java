@@ -42,142 +42,147 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ConstantPoolParser
 {
-   public static final int HEAD = 0xcafebabe;
+    public static final int HEAD = 0xcafebabe;
 
-   // Constant pool types
-   public static final byte CONSTANT_UTF8 = 1;
+    // Constant pool types
+    public static final byte CONSTANT_UTF8 = 1;
 
-   public static final byte CONSTANT_INTEGER = 3;
+    public static final byte CONSTANT_INTEGER = 3;
 
-   public static final byte CONSTANT_FLOAT = 4;
+    public static final byte CONSTANT_FLOAT = 4;
 
-   public static final byte CONSTANT_LONG = 5;
+    public static final byte CONSTANT_LONG = 5;
 
-   public static final byte CONSTANT_DOUBLE = 6;
+    public static final byte CONSTANT_DOUBLE = 6;
 
-   public static final byte CONSTANT_CLASS = 7;
+    public static final byte CONSTANT_CLASS = 7;
 
-   public static final byte CONSTANT_STRING = 8;
+    public static final byte CONSTANT_STRING = 8;
 
-   public static final byte CONSTANT_FIELDREF = 9;
+    public static final byte CONSTANT_FIELDREF = 9;
 
-   public static final byte CONSTANT_METHODREF = 10;
+    public static final byte CONSTANT_METHODREF = 10;
 
-   public static final byte CONSTANT_INTERFACEMETHODREF = 11;
+    public static final byte CONSTANT_INTERFACEMETHODREF = 11;
 
-   public static final byte CONSTANT_NAME_AND_TYPE = 12;
+    public static final byte CONSTANT_NAME_AND_TYPE = 12;
 
-   public static final byte CONSTANT_METHODHANDLE = 15;
+    public static final byte CONSTANT_METHODHANDLE = 15;
 
-   public static final byte CONSTANT_METHOD_TYPE = 16;
+    public static final byte CONSTANT_METHOD_TYPE = 16;
 
-   public static final byte CONSTANT_INVOKE_DYNAMIC = 18;
+    public static final byte CONSTANT_INVOKE_DYNAMIC = 18;
 
-   public static final byte CONSTANT_MODULE = 19;
+    public static final byte CONSTANT_MODULE = 19;
 
-   public static final byte CONSTANT_PACKAGE = 20;
+    public static final byte CONSTANT_PACKAGE = 20;
 
-   private static final int OXF0 = 0xf0;
+    private static final int OXF0 = 0xf0;
 
-   private static final int OXE0 = 0xe0;
+    private static final int OXE0 = 0xe0;
 
-   private static final int OX3F = 0x3F;
+    private static final int OX3F = 0x3F;
 
-   static Set<String> getConstantPoolClassReferences(byte[] b)
-   {
-      return parseConstantPoolClassReferences(ByteBuffer.wrap(b));
-   }
+    static Set<String> getConstantPoolClassReferences(byte[] b)
+    {
+        return parseConstantPoolClassReferences(ByteBuffer.wrap(b));
+    }
 
-   static Set<String> parseConstantPoolClassReferences(ByteBuffer buf)
-   {
-      if (buf.order(ByteOrder.BIG_ENDIAN)
-         .getInt() != HEAD) {
-         return Collections.emptySet();
-      }
-      buf.getChar();
-      buf.getChar(); // minor + ver
-      Set<Integer> classes = new HashSet<>();
-      Map<Integer, String> stringConstants = new HashMap<>();
-      for (int ix = 1, num = buf.getChar(); ix < num; ix++) {
-         byte tag = buf.get();
-         switch (tag) {
-            default:
-               throw new RuntimeException("Unknown constant pool type '" + tag + "'");
-            case CONSTANT_UTF8:
-               stringConstants.put(ix, decodeString(buf));
-               continue;
-            case CONSTANT_CLASS:
-            case CONSTANT_STRING:
-            case CONSTANT_METHOD_TYPE:
-               classes.add((int) buf.getChar());
-               break;
-            case CONSTANT_FIELDREF:
-            case CONSTANT_METHODREF:
-            case CONSTANT_INTERFACEMETHODREF:
-            case CONSTANT_NAME_AND_TYPE:
-               buf.getChar();
-               buf.getChar();
-               break;
-            case CONSTANT_INTEGER:
-               buf.getInt();
-               break;
-            case CONSTANT_FLOAT:
-               buf.getFloat();
-               break;
-            case CONSTANT_DOUBLE:
-               buf.getDouble();
-               ix++;
-               break;
-            case CONSTANT_LONG:
-               buf.getLong();
-               ix++;
-               break;
-            case CONSTANT_METHODHANDLE:
-               buf.get();
-               buf.getChar();
-               break;
-            case CONSTANT_INVOKE_DYNAMIC:
-               buf.getChar();
-               buf.getChar();
-               break;
-            case CONSTANT_MODULE:
-               buf.getChar();
-               break;
-            case CONSTANT_PACKAGE:
-               buf.getChar();
-               break;
-         }
-      }
-      Set<String> result = new HashSet<>();
-      for (Integer aClass : classes) {
-         result.add(stringConstants.get(aClass));
-      }
-      return result;
-   }
-
-   @NotNull
-   private static String decodeString(ByteBuffer buf)
-   {
-      int size = buf.getChar();
-      // Explicit cast for compatibility with covariant return type on JDK 9's ByteBuffer
-      int oldLimit = buf.limit();
-      buf.limit(buf.position() + size);
-      StringBuilder sb = new StringBuilder(size + (size >> 1) + 16);
-      while (buf.hasRemaining()) {
-         byte b = buf.get();
-         if (b > 0) {
-            sb.append((char) b);
-         } else {
-            int b2 = buf.get();
-            if ((b & OXF0) != OXE0) {
-               sb.append((char) ((b & 0x1F) << 6 | b2 & OX3F));
-            } else {
-               int b3 = buf.get();
-               sb.append((char) ((b & 0x0F) << 12 | (b2 & OX3F) << 6 | b3 & OX3F));
+    static Set<String> parseConstantPoolClassReferences(ByteBuffer buf)
+    {
+        if (buf.order(ByteOrder.BIG_ENDIAN)
+            .getInt() != HEAD) {
+            return Collections.emptySet();
+        }
+        buf.getChar();
+        buf.getChar(); // minor + ver
+        Set<Integer> classes = new HashSet<>();
+        Map<Integer, String> stringConstants = new HashMap<>();
+        for (int ix = 1, num = buf.getChar(); ix < num; ix++) {
+            byte tag = buf.get();
+            switch (tag) {
+                case CONSTANT_UTF8:
+                    stringConstants.put(ix, decodeString(buf));
+                    continue;
+                case CONSTANT_CLASS:
+                case CONSTANT_STRING:
+                case CONSTANT_METHOD_TYPE:
+                    classes.add((int) buf.getChar());
+                    break;
+                case CONSTANT_FIELDREF:
+                case CONSTANT_METHODREF:
+                case CONSTANT_INTERFACEMETHODREF:
+                case CONSTANT_NAME_AND_TYPE:
+                    buf.getChar();
+                    buf.getChar();
+                    break;
+                case CONSTANT_INTEGER:
+                    buf.getInt();
+                    break;
+                case CONSTANT_FLOAT:
+                    buf.getFloat();
+                    break;
+                case CONSTANT_DOUBLE:
+                    buf.getDouble();
+                    ix++;
+                    break;
+                case CONSTANT_LONG:
+                    buf.getLong();
+                    ix++;
+                    break;
+                case CONSTANT_METHODHANDLE:
+                    buf.get();
+                    buf.getChar();
+                    break;
+                case CONSTANT_INVOKE_DYNAMIC:
+                    buf.getChar();
+                    buf.getChar();
+                    break;
+                case CONSTANT_MODULE:
+                    buf.getChar();
+                    break;
+                case CONSTANT_PACKAGE:
+                    buf.getChar();
+                    break;
+                default:
+                    throw new RuntimeException("Unknown constant pool type '" + tag + "'");
             }
-         }
-      }
-      buf.limit(oldLimit);
-      return sb.toString();
-   }
+        }
+        Set<String> result = new HashSet<>();
+        for (Integer aClass : classes) {
+            result.add(stringConstants.get(aClass));
+        }
+        return result;
+    }
+
+    private ConstantPoolParser()
+    {
+        throw new IllegalStateException("Utility class");
+    }
+
+    @NotNull
+    private static String decodeString(ByteBuffer buf)
+    {
+        int size = buf.getChar();
+        // Explicit cast for compatibility with covariant return type on JDK 9's ByteBuffer
+        int oldLimit = buf.limit();
+        buf.limit(buf.position() + size);
+        StringBuilder sb = new StringBuilder(size + (size >> 1) + 16);
+        while (buf.hasRemaining()) {
+            byte b = buf.get();
+            if (b > 0) {
+                sb.append((char) b);
+            } else {
+                int b2 = buf.get();
+                if ((b & OXF0) != OXE0) {
+                    sb.append((char) ((b & 0x1F) << 6 | b2 & OX3F));
+                } else {
+                    int b3 = buf.get();
+                    sb.append((char) ((b & 0x0F) << 12 | (b2 & OX3F) << 6 | b3 & OX3F));
+                }
+            }
+        }
+        buf.limit(oldLimit);
+        return sb.toString();
+    }
 }

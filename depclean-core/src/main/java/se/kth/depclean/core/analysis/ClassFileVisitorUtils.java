@@ -67,8 +67,7 @@ public final class ClassFileVisitorUtils
                         throw new IllegalArgumentException(message + url);
                     }
                 } catch (URISyntaxException exception) {
-                    IllegalArgumentException e = new IllegalArgumentException(message + url, exception);
-                    throw e;
+                    throw new IllegalArgumentException(message + url, exception);
                 }
             } else {
                 throw new IllegalArgumentException(message + url);
