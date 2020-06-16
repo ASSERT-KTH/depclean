@@ -1,4 +1,4 @@
-<img align="left" src="https://github.com/castor-software/depclean/blob/master/logo.svg" height="100px"  alt="DepClean logo"/>
+# DepClean <img src="https://github.com/castor-software/depclean/blob/master/logo.svg" align="right" height="139px" alt="DepClean logo"/>
 
 [![Build Status](https://travis-ci.org/castor-software/depclean.svg?branch=master)](https://travis-ci.org/castor-software/depclean)
 [![Maven Central](https://img.shields.io/maven-central/v/se.kth.castor/depclean-core.svg)](https://search.maven.org/search?q=g:se.kth.castor%20AND%20a:depclean*)
