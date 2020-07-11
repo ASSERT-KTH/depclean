@@ -117,8 +117,8 @@ Potentially unused transitive dependencies [2]:
 [INFO] Adding 4 used transitive dependencies as direct dependencies.
 [INFO] Removing 1 unused direct dependency.
 [INFO] Excluding 2 potentially unused transitive dependencies one-by-one.
-Excluding org.apache.ant:ant:jar:1.9.6:compile from dependency Dependency {groupId=cglib, artifactId=cglib, version=3.2.5}
-Excluding org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile from dependency Dependency {groupId=com.google.guava, artifactId=guava, version=23.0}
+- Excluding org.apache.ant:ant:jar:1.9.6:compile from dependency Dependency {groupId=cglib, artifactId=cglib, version=3.2.5}
+- Excluding org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile from dependency Dependency {groupId=com.google.guava, artifactId=guava, version=23.0}
 [INFO] POM debloated successfully
 [INFO] pom-debloated.xml file created in: /projectdir/pom-debloated.xml
 [INFO] ------------------------------------------------------------------------
