@@ -66,8 +66,6 @@ The Maven plugin can be configured with the following additional parameters.
 | `<skipDepClean>` | `boolean` | Skip plugin execution completely. **Default value is:** `false`.|
 
 
-
-
 ## Installing and building from source
 
 Prerequisites:
@@ -90,6 +88,41 @@ Once the plugin is installed, you can execute the plugin goal directly in the co
 
 ```shell script
 mvn se.kth.castor:depclean-maven-plugin:1.1.0:depclean
+```
+
+The output is going to look like the following:
+
+```
+-------------------------------------------------------
+ D E P C L E A N   A N A L Y S I S   R E S U L T S
+-------------------------------------------------------
+Used direct dependencies [6]: 
+	org.weakref:jmxutils:1.19:compile
+	com.google.guava:guava:23.0:compile
+	com.alibaba:fastjson:1.2.38:compile
+    cglib:cglib:3.2.5:compile
+    org.mockito:mockito-all:1.8.5:test
+	junit:junit:4.8.1:test    
+Used transitive dependencies [4]: 
+	org.apache.httpcomponents:httpcore:4.4.6:compile
+	com.google.j2objc:j2objc-annotations:1.1:compile
+	commons-codec:commons-codec:1.9:compile
+	org.ow2.asm:asm:6.0_ALPHA:compile
+Potentially unused direct dependencies [1]: 
+    com.google.guava:guava:23.0:compile
+Potentially unused transitive dependencies [2]: 
+	org.apache.ant:ant:1.9.6:compile
+	org.codehaus.mojo:animal-sniffer-annotations:1.14:compile
+[INFO] Starting debloating POM
+[INFO] Adding 4 used transitive dependencies as direct dependencies.
+[INFO] Excluding 2 potentially unused transitive dependencies one-by-one.
+Excluding org.apache.ant:ant:jar:1.9.6:compile from dependency Dependency {groupId=cglib, artifactId=cglib, version=3.2.5}
+Excluding org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile from dependency Dependency {groupId=com.google.guava, artifactId=guava, version=23.0}
+[INFO] POM debloated successfully
+[INFO] pom-debloated.xml file created in: /projectdir/pom-debloated.xml
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
 ```
 
 ## License
