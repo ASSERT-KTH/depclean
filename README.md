@@ -100,8 +100,8 @@ Used direct dependencies [6]:
 	org.weakref:jmxutils:1.19:compile
 	com.google.guava:guava:23.0:compile
 	com.alibaba:fastjson:1.2.38:compile
-    cglib:cglib:3.2.5:compile
-    org.mockito:mockito-all:1.8.5:test
+   	cglib:cglib:3.2.5:compile
+   	org.mockito:mockito-all:1.8.5:test
 	junit:junit:4.8.1:test    
 Used transitive dependencies [4]: 
 	org.apache.httpcomponents:httpcore:4.4.6:compile
@@ -109,12 +109,13 @@ Used transitive dependencies [4]:
 	commons-codec:commons-codec:1.9:compile
 	org.ow2.asm:asm:6.0_ALPHA:compile
 Potentially unused direct dependencies [1]: 
-    com.google.guava:guava:23.0:compile
+   	commons-io:commons-io:2.5:compile
 Potentially unused transitive dependencies [2]: 
 	org.apache.ant:ant:1.9.6:compile
 	org.codehaus.mojo:animal-sniffer-annotations:1.14:compile
 [INFO] Starting debloating POM
 [INFO] Adding 4 used transitive dependencies as direct dependencies.
+[INFO] Removing 1 unused direct dependency.
 [INFO] Excluding 2 potentially unused transitive dependencies one-by-one.
 Excluding org.apache.ant:ant:jar:1.9.6:compile from dependency Dependency {groupId=cglib, artifactId=cglib, version=3.2.5}
 Excluding org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile from dependency Dependency {groupId=com.google.guava, artifactId=guava, version=23.0}
