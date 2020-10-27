@@ -175,7 +175,11 @@ public class DepCleanMojo extends AbstractMojo
         }
 
         /* Decompress dependencies */
-        JarUtils.decompressJars(project.getBuild().getDirectory() + "/" + "dependency");
+        String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + "dependency";
+        File dependencyDirectory = new File(dependencyDirectoryName);
+        if (dependencyDirectory.exists()) {
+            JarUtils.decompressJars(dependencyDirectoryName);
+        }
 
         /* Analyze dependencies usage status */
         ProjectDependencyAnalysis projectDependencyAnalysis;
