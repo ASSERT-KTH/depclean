@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layouts/main_layout :: head(title = 'Springit - Spring Boot Reddit Clone')}">
+</head>
+<body>
+
+    <nav th:replace="~{layouts/main_layout :: nav}"></nav>
+    <div th:replace="~{layouts/main_layout :: jumbotron}"></div>
+
+    <div class="container">
+
+        <div class="alert alert-success" role="alert" th:if="${success}">
+            Your new link was created!
+        </div>
+
+        <!-- link -->
+        <div class="row link">
+            <div class="col-1">
+                <div><a class="upvote" href="#"><i class="fas fa-arrow-up"></i></a></div>
+                <div><span class="votecount">3</span></div>
+                <div><a class="downvote" href="#"><i class="fas fa-arrow-down"></i></a></div>
+            </div>
+            <div class="col-11">
+                <p class="title">
+                    <a class="title " target="_blank" th:href="${link.url}" th:text="${link.title}">
+                        What's new in Spring Boot 2?
+                    </a>
+                    <span class="domain">(<a th:href="${link.url}"
+                                             th:text="${link.getDomainName()}">therealdanvega.com</a>)</span>
+                </p>
+                <p class="tagline ">submitted
+                    <time class="live-timestamp" th:datetime="${link.getCreationDate()}"
+                          th:text="${link.getPrettyTime()}" th:title="${link.getCreationDate()}">1 hour(s)
+                    </time>
+                    by
+                    <a class="author" th:href="@{'/u/' + ${link.getUser().getAlias()}}"
+                       th:text="${link.getUser().getAlias()}">therealdanvega</a>
+                    <span class="userattrs"></span>
+                </p>
+                <p><a target="_blank" th:href="${link.url}" th:text="${link.url}"></a></p>
+                <p>
+                    <a class="comments" href="/" th:text="|${link.getComments().size()} comments|"><i
+                            class="fas fa-comments"></i> 0 comments</a>
+                    <a class="share" href="#"><i class="fas fa-share-square"></i> share</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- link comments -->
+        <div class="comments" id="comments">
+            <div class="row header">
+                <div class="col-1">&nbsp;</div>
+                <div class="col-11 title" th:text="|all ${link.getComments().size()} comments|">
+                    all 21 comments
+                </div>
+            </div>
+            <div class="row addcomment" sec:authorize="hasRole('ROLE_USER')">
+                <div class="col-1">&nbsp;</div>
+                <div class="col-11">
+                    <form id="frmAddComment" method="POST" th:action="@{/link/comments}" th:object="${comment}">
+                        <input th:field="*{link}" type="hidden"/>
+                        <div class="form-group">
+                            <textarea class="form-control" id="comment" rows="3" th:field="*{body}"></textarea>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Add Comment</button>
+                    </form>
+                </div>
+            </div>
+            <!-- single comment -->
+            <div class="row comment" th:each="comment : ${link.getComments()}">
+                <div class="col-1">&nbsp;</div>
+                <div class="col-11">
+                    <span><a href="#" th:text="${comment.getCreatedBy()}"><i class="far fa-user"></i> therealdanvega</a></span>
+                    <span th:text="${comment.getPrettyTime()}"><i class="far fa-clock"></i> 4 hours ago</span>
+                    <p class="body" th:text="${comment.getBody()}">It’s one thing I never care about, new releases of
+                        maven. Yet I do for most other things.. I really should take a look at any features released in
+                        the last while! Pull my dependencies, run my tests and upload to nexus. I don’t care for much
+                        else, I wonder what if any I’m missing.</p>
+                    <a class="permalink" href="#"><i class="fas fa-link"></i> permalink</a>
+                    <a class="like" href="#"><i class="far fa-thumbs-up"></i> Like</a>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <br/><br/>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layouts/main_layout :: head(title = 'Springit - Spring Boot Reddit Clone')}">
+</head>
+<body>
+    <nav th:replace="~{layouts/main_layout :: nav}"></nav>
+    <div th:replace="~{layouts/main_layout :: jumbotron}"></div>
+
+    <div class="container">
+        <!-- links -->
+        <div class="row link" th:each="link : ${links}">
+            <div class="col-1">
+                <div><a class="upvote" href="#" th:data-id="${link.id}"><i class="fas fa-arrow-up"></i></a></div>
+                <div><span class="votecount" th:id="|votecount-${link.id}|" th:text="${link.getVoteCount()}">0</span>
+                </div>
+                <div><a class="downvote" href="#" th:data-id="${link.id}" th:disabled="true"><i
+                        class="fas fa-arrow-down"></i></a></div>
+            </div>
+            <div class="col-11">
+                <p class="title">
+                    <a class="title " target="_blank" th:href="@{'/link/' + ${link.id}}" th:text="${link.title}"> </a>
+                    <span class="domain">(<a th:href="${link.url}" th:text="${link.getDomainName()}"> </a>)</span>
+                </p>
+                <p class="tagline ">submitted
+
+                    <time class="live-timestamp" th:datetime="${link.getCreationDate()}"
+                          th:text="${link.getPrettyTime()}" th:title="${link.getCreationDate()}">1 hour(s)
+                    </time>
+                    by
+                    <a class="author" th:href="@{'/link/' + ${link.getUser().getAlias()}}"
+                       th:text="${link.getUser().getAlias()}">therealdanvega</a>
+                </p>
+                <p>
+                    <a class="comments" th:href="@{'/link/' + ${link.id} + '#comments'}"
+                       th:text="|${link.getComments().size()} comments|"><i class="fas fa-comments"></i> 0 comments</a>
+                    <a class="share" href="#"><i class="fas fa-share-square"></i> share</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <script sec:authorize="isFullyAuthenticated()">
+        const allvotes = document.querySelectorAll(".upvote, .downvote");
+        for (let i = 0; i < allvotes.length; i++) {
+            let className = allvotes[i].className;
+            allvotes[i].addEventListener('click', function (event) {
+                const direction = className === 'upvote' ? 1 : -1;
+                const linkID = this.getAttribute("data-id");
+                const voteSum = document.getElementById('votecount-' + linkID);
+                const voteSumValue = voteSum.innerHTML;
+                fetch(`http://localhost:8080/vote/link/${linkID}/direction/${direction}/votecount/${voteSumValue}`)
+                    .then(response => response.json())
+                    .then(data => voteSum.innerHTML = data)
+                    .catch(err => console.error(err))
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
