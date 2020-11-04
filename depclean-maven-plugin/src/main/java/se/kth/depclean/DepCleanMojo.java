@@ -69,8 +69,8 @@ import se.kth.depclean.util.MavenInvoker;
  * @see <a href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html"></a>
  */
 @Mojo(name = "depclean", defaultPhase = LifecyclePhase.PACKAGE,
-    requiresDependencyCollection = ResolutionScope.TEST,
-    requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
+        requiresDependencyCollection = ResolutionScope.TEST,
+        requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class DepCleanMojo extends AbstractMojo
 {
     private static final String SEPARATOR = "-------------------------------------------------------";
@@ -133,12 +133,10 @@ public class DepCleanMojo extends AbstractMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-
         if (skipDepClean) {
             getLog().info("Skipping DepClean plugin execution");
             return;
         }
-
 
         System.out.println(SEPARATOR);
         getLog().info("Starting DepClean dependency analysis");
@@ -153,7 +151,7 @@ public class DepCleanMojo extends AbstractMojo
 
         String pathToPutDebloatedPom = project.getBasedir().getAbsolutePath() + "/" + "pom-debloated.xml";
 
-        /* Build maven model to manipulate the pom */
+        /* Build Maven model to manipulate the pom */
         Model model;
         FileReader reader;
         MavenXpp3Reader mavenReader = new MavenXpp3Reader();
@@ -170,7 +168,7 @@ public class DepCleanMojo extends AbstractMojo
         try {
             MavenInvoker.runCommand("mvn dependency:copy-dependencies");
         } catch (IOException e) {
-            getLog().error("Unable resolve all the dependencies.");
+            getLog().error("Unable to resolve all the dependencies.");
             return;
         }
 
@@ -274,7 +272,7 @@ public class DepCleanMojo extends AbstractMojo
         if (createPomDebloated) {
             getLog().info("Starting debloating POM");
 
-            /* add used transitive as direct dependencies */
+            /* Add used transitive as direct dependencies */
             try {
                 if (!usedUndeclaredArtifacts.isEmpty()) {
                     getLog().info("Adding " + usedUndeclaredArtifacts.size() + " used transitive dependencies as direct dependencies.");
@@ -286,14 +284,14 @@ public class DepCleanMojo extends AbstractMojo
                 throw new MojoExecutionException(e.getMessage(), e);
             }
 
-            /* remove unused direct dependencies */
+            /* Remove unused direct dependencies */
             try {
                 if (!unusedDeclaredArtifacts.isEmpty()) {
                     getLog().info("Removing " + unusedDeclaredArtifacts.size() + " unused direct dependencies.");
                     for (Artifact unusedDeclaredArtifact : unusedDeclaredArtifacts) {
                         for (Dependency dependency : model.getDependencies()) {
                             if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId()) &&
-                                dependency.getArtifactId().equals(unusedDeclaredArtifact.getArtifactId())) {
+                                    dependency.getArtifactId().equals(unusedDeclaredArtifact.getArtifactId())) {
                                 model.removeDependency(dependency);
                                 break;
                             }
@@ -304,7 +302,7 @@ public class DepCleanMojo extends AbstractMojo
                 throw new MojoExecutionException(e.getMessage(), e);
             }
 
-            /* exclude unused transitive dependencies */
+            /* Exclude unused transitive dependencies */
             try {
                 if (!unusedUndeclaredArtifacts.isEmpty()) {
                     getLog().info("Excluding " + unusedUndeclaredArtifacts.size() + " unused transitive dependencies one-by-one.");
@@ -324,7 +322,7 @@ public class DepCleanMojo extends AbstractMojo
                 throw new MojoExecutionException(e.getMessage(), e);
             }
 
-            /* write the debloated pom file */
+            /* Write the debloated pom file */
             try {
                 Path path = Paths.get(pathToPutDebloatedPom);
                 writePom(path, model);
@@ -364,7 +362,7 @@ public class DepCleanMojo extends AbstractMojo
         for (DependencyNode node : dependencyNodes) {
             Dependency dependencyNode = createDependency(node.getArtifact());
             if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
-                dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
+                    dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
                 // now we are in the target dependency
                 for (DependencyNode child : node.getChildren()) {
                     if (child.getArtifact().equals(artifact)) {

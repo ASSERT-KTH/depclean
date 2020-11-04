@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
@@ -32,6 +33,7 @@ import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 
+@Slf4j
 public final class MavenInvoker
 {
     private MavenInvoker()
@@ -57,7 +59,7 @@ public final class MavenInvoker
         try {
             process.waitFor();
         } catch (InterruptedException e) {
-            System.err.println("Process was interrupted");
+            log.error("Process was interrupted");
             Thread.currentThread().interrupt();
         }
         br.close();

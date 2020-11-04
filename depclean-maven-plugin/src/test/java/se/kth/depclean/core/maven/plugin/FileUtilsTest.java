@@ -12,7 +12,7 @@ public class FileUtilsTest {
     @Test
     public void deleteDirectory() throws IOException {
         File file = new File("./target/dependency");
-        if(file.exists()) {
+        if (file.exists()) {
             FileUtils.deleteDirectory(new File("./target/dependency"));
         }
         Assert.assertFalse(file.exists());

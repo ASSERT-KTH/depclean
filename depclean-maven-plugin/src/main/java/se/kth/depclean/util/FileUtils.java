@@ -17,15 +17,16 @@
 
 package se.kth.depclean.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public final class FileUtils
-{
-    private FileUtils()
-    {
+@Slf4j
+public final class FileUtils {
+
+    private FileUtils() {
     }
 
     /**
@@ -34,30 +35,24 @@ public final class FileUtils
      * @param directory The directory to be deleted.
      * @throws IOException In case of IO issues.
      */
-    public static void deleteDirectory(final File directory) throws IOException
-    {
+    public static void deleteDirectory(final File directory) throws IOException {
         if (!directory.exists()) {
             return;
         }
         if (!isSymlink(directory)) {
             cleanDirectory(directory);
         }
-        if (!directory.delete()) {
-            final String message = "Unable to delete directory " + directory + '.';
-            throw new IOException(message);
-        }
+        Files.delete(directory.toPath());
     }
 
-    private static boolean isSymlink(final File file)
-    {
+    private static boolean isSymlink(final File file) {
         if (file == null) {
             throw new NullPointerException("File must be not null");
         }
         return Files.isSymbolicLink(file.toPath());
     }
 
-    private static void cleanDirectory(final File directory) throws IOException
-    {
+    private static void cleanDirectory(final File directory) throws IOException {
         final File[] files = verifiedListFiles(directory);
         IOException exception = null;
         for (final File file : files) {
@@ -72,8 +67,7 @@ public final class FileUtils
         }
     }
 
-    private static File[] verifiedListFiles(final File directory) throws IOException
-    {
+    private static File[] verifiedListFiles(final File directory) throws IOException {
         if (!directory.exists()) {
             final String message = directory + " does not exist";
             throw new IllegalArgumentException(message);
@@ -89,20 +83,11 @@ public final class FileUtils
         return files;
     }
 
-    private static void forceDelete(final File file) throws IOException
-    {
+    private static void forceDelete(final File file) throws IOException {
         if (file.isDirectory()) {
             deleteDirectory(file);
         } else {
-            final boolean filePresent = file.exists();
-            if (file.delete()) {
-                return;
-            }
-            if (!filePresent) {
-                throw new FileNotFoundException("File does not exist: " + file);
-            }
-            final String message = "Unable to delete file: " + file;
-            throw new IOException(message);
+            Files.delete(file.toPath());
         }
     }
 }
