@@ -6,7 +6,7 @@ os: linux
 
 dist: trusty
 
-jdk: openjdk8
+jdk: openjdk11
 
 env:
   global:
