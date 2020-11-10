@@ -13,7 +13,6 @@ env:
     - M2_HOME="/usr/local/maven"
   matrix:
     - SCRIPT=depclean-maven-plugin.sh
-    - SCRIPT=depclean-gradle-plugin.sh
 
 before_cache: rm -rf $HOME/.m2/se/kth/
 
