@@ -17,17 +17,8 @@
 
 package se.kth.depclean;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
+import fr.dutra.tools.maven.deptree.core.ParseException;
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
@@ -52,13 +43,25 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
-
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.util.JarUtils;
 import se.kth.depclean.util.MavenInvoker;
+import se.kth.depclean.util.json.ParsedDependencies;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This Maven mojo is the main class of DepClean.
@@ -71,8 +74,7 @@ import se.kth.depclean.util.MavenInvoker;
 @Mojo(name = "depclean", defaultPhase = LifecyclePhase.PACKAGE,
         requiresDependencyCollection = ResolutionScope.TEST,
         requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
-public class DepCleanMojo extends AbstractMojo
-{
+public class DepCleanMojo extends AbstractMojo {
     private static final String SEPARATOR = "-------------------------------------------------------";
 
     /**
@@ -93,6 +95,13 @@ public class DepCleanMojo extends AbstractMojo
      */
     @Parameter(property = "create.pom.debloated", defaultValue = "false")
     private boolean createPomDebloated;
+
+    /**
+     * If this is true, DepClean creates a JSON file with the result of the analysis. The file is called
+     * "debloat-result.json" and it is located in the root of the project.
+     */
+    @Parameter(property = "create.result.json", defaultValue = "false")
+    private boolean createDebloatResultJSON;
 
     /**
      * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
@@ -130,9 +139,20 @@ public class DepCleanMojo extends AbstractMojo
     @Component(hint = "default")
     private DependencyGraphBuilder dependencyGraphBuilder;
 
+    /**
+     * Write pom file to the filesystem.
+     *
+     * @param pomFile The path to the pom.
+     * @param model   The maven model to get the pom from.
+     * @throws IOException In case of any IO issue.
+     */
+    private static void writePom(final Path pomFile, final Model model) throws IOException {
+        MavenXpp3Writer writer = new MavenXpp3Writer();
+        writer.write(Files.newBufferedWriter(pomFile), model);
+    }
+
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException
-    {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         if (skipDepClean) {
             getLog().info("Skipping DepClean plugin execution");
             return;
@@ -337,10 +357,38 @@ public class DepCleanMojo extends AbstractMojo
             getLog().info("POM debloated successfully");
             getLog().info("pom-debloated.xml file created in: " + pathToPutDebloatedPom);
         }
+
+
+        /* Writing the JSON file with the debloat results */
+        if (createDebloatResultJSON) {
+            getLog().info("Starting creating JSON file");
+            String treeFile = project.getBuild().getDirectory() + "/" + "tree.txt";
+            /* Copy direct dependencies locally */
+            try {
+                MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
+            } catch (IOException e) {
+                getLog().error("Unable generate dependency tree.");
+                return;
+            }
+            ParsedDependencies parsedDependencies = new ParsedDependencies(
+                    treeFile,
+                    usedDeclaredArtifactsCoordinates,
+                    usedUndeclaredArtifactsCoordinates,
+                    unusedDeclaredArtifactsCoordinates,
+                    unusedUndeclaredArtifactsCoordinates
+            );
+            try {
+                FileUtils.write(new File(project.getBuild().getDirectory() + "/" + "results.json"),
+                        parsedDependencies.parseTreeToJSON(),
+                        Charset.defaultCharset()
+                               );
+            } catch (ParseException | IOException e) {
+                getLog().error("Unable generate JSON file.");
+            }
+        }
     }
 
-    private Set<Artifact> excludeScope(Set<Artifact> artifacts)
-    {
+    private Set<Artifact> excludeScope(Set<Artifact> artifacts) {
         Set<Artifact> nonExcludedArtifacts = new HashSet<>();
         Iterator<Artifact> iterator = artifacts.iterator();
         while (iterator.hasNext()) {
@@ -360,8 +408,7 @@ public class DepCleanMojo extends AbstractMojo
      * @return true if the artifact is a child of a dependency in the dependency tree.
      * @throws DependencyGraphBuilderException If the graph cannot be constructed.
      */
-    private boolean isChildren(Artifact artifact, Dependency dependency) throws DependencyGraphBuilderException
-    {
+    private boolean isChildren(Artifact artifact, Dependency dependency) throws DependencyGraphBuilderException {
         List<DependencyNode> dependencyNodes = getDependencyNodes();
         for (DependencyNode node : dependencyNodes) {
             Dependency dependencyNode = createDependency(node.getArtifact());
@@ -386,8 +433,7 @@ public class DepCleanMojo extends AbstractMojo
      * @return The nodes in the dependency graph.
      * @throws DependencyGraphBuilderException If the graph cannot be built.
      */
-    private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException
-    {
+    private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException {
         ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
         buildingRequest.setProject(project);
         DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
@@ -403,8 +449,7 @@ public class DepCleanMojo extends AbstractMojo
      * @param artifact The artifact to create the dependency.
      * @return The Dependency object.
      */
-    private Dependency createDependency(final Artifact artifact)
-    {
+    private Dependency createDependency(final Artifact artifact) {
         Dependency dependency = new Dependency();
         dependency.setGroupId(artifact.getGroupId());
         dependency.setArtifactId(artifact.getArtifactId());
@@ -416,18 +461,5 @@ public class DepCleanMojo extends AbstractMojo
         dependency.setScope(artifact.getScope());
         dependency.setType(artifact.getType());
         return dependency;
-    }
-
-    /**
-     * Write pom file to the filesystem.
-     *
-     * @param pomFile The path to the pom.
-     * @param model   The maven model to get the pom from.
-     * @throws IOException In case of any IO issue.
-     */
-    private static void writePom(final Path pomFile, final Model model) throws IOException
-    {
-        MavenXpp3Writer writer = new MavenXpp3Writer();
-        writer.write(Files.newBufferedWriter(pomFile), model);
     }
 }

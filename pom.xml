@@ -20,8 +20,14 @@
         <maven.compiler.target>11</maven.compiler.target>
         <java.src.version>11</java.src.version>
         <java.test.version>11</java.test.version>
+        <maven.javadoc.source>11</maven.javadoc.source>
+        <maven.maven-javadoc-plugin.version>3.2.0</maven.maven-javadoc-plugin.version>
         <maven.jacoco.plugin.version>0.8.5</maven.jacoco.plugin.version>
         <maven.coveralls.plugin.version>4.3.0</maven.coveralls.plugin.version>
+        <maven.junit.version>4.12</maven.junit.version>
+        <maven.lombok.version>1.18.16</maven.lombok.version>
+        <maven.slf4j-api.version>2.0.0-alpha1</maven.slf4j-api.version>
+        <maven.slf4j-log4j12.version>1.8.0-beta4</maven.slf4j-log4j12.version>
     </properties>
 
     <!-- Project description-->
@@ -70,42 +76,25 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${maven.junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.16</version>
+            <version>${maven.lombok.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>2.0.0-alpha1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/log4j/log4j -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.8.0-beta4</version>
         </dependency>
         <!-- Logging -->
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.12.0</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${maven.slf4j-api.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.13.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.13.2</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${maven.slf4j-log4j12.version}</version>
         </dependency>
     </dependencies>
 
@@ -152,9 +141,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>${maven.maven-javadoc-plugin.version}</version>
                 <configuration>
-                    <source>8</source>
+                    <source>${maven.javadoc.source}</source>
                 </configuration>
                 <executions>
                     <execution>
@@ -195,7 +184,6 @@
                 </configuration>
             </plugin>
 
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -207,7 +195,6 @@
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
-
 
             <!-- Surefire plugin -->
             <plugin>

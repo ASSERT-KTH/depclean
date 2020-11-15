@@ -82,23 +82,33 @@
       </dependency>
 
       <!-- Utils -->
-      <dependency>
-         <groupId>org.fuin</groupId>
-         <artifactId>utils4j</artifactId>
-         <version>0.9.2</version>
-      </dependency>
-      <dependency>
-         <groupId>commons-io</groupId>
-         <artifactId>commons-io</artifactId>
-         <version>2.5</version>
-      </dependency>
+       <dependency>
+           <groupId>org.fuin</groupId>
+           <artifactId>utils4j</artifactId>
+           <version>0.9.2</version>
+       </dependency>
+       <dependency>
+           <groupId>commons-io</groupId>
+           <artifactId>commons-io</artifactId>
+           <version>2.5</version>
+       </dependency>
+       <dependency>
+           <groupId>com.google.code.gson</groupId>
+           <artifactId>gson</artifactId>
+           <version>2.8.6</version>
+       </dependency>
+       <dependency>
+           <groupId>org.whitesource</groupId>
+           <artifactId>maven-dependency-tree-parser</artifactId>
+           <version>1.0.6</version>
+       </dependency>
 
-      <!-- Test -->
-      <dependency>
-         <groupId>org.apache.maven.plugin-testing</groupId>
-         <artifactId>maven-plugin-testing-tools</artifactId>
-         <version>3.3.0</version>
-         <scope>compile</scope>
-      </dependency>
+       <!-- Test -->
+       <dependency>
+           <groupId>org.apache.maven.plugin-testing</groupId>
+           <artifactId>maven-plugin-testing-tools</artifactId>
+           <version>3.3.0</version>
+           <scope>compile</scope>
+       </dependency>
    </dependencies>
 </project>
