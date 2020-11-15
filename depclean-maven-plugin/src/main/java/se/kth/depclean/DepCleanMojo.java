@@ -101,7 +101,7 @@ public class DepCleanMojo extends AbstractMojo {
      * "debloat-result.json" and it is located in the root of the project.
      */
     @Parameter(property = "create.result.json", defaultValue = "false")
-    private boolean createDebloatResultJSON;
+    private boolean createResultJson;
 
     /**
      * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
@@ -360,7 +360,7 @@ public class DepCleanMojo extends AbstractMojo {
 
 
         /* Writing the JSON file with the debloat results */
-        if (createDebloatResultJSON) {
+        if (createResultJson) {
             getLog().info("Starting creating JSON file");
             String treeFile = project.getBuild().getDirectory() + "/" + "tree.txt";
             /* Copy direct dependencies locally */
