@@ -22,7 +22,6 @@ cache:
 
 before_install:
   - sudo apt-get update
-  - jdk_switcher use openjdk11
   - java -version
 
 install: true
