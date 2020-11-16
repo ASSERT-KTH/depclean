@@ -165,7 +165,7 @@ public class DepCleanMojo extends AbstractMojo {
         System.out.println(SEPARATOR);
         getLog().info("Starting DepClean dependency analysis");
 
-        File pomFile = new File(project.getBasedir().getAbsolutePath() + "/" + "pom.xml");
+        File pomFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "pom.xml");
 
         String packaging = project.getPackaging();
         if (packaging.equals("pom")) {
@@ -173,7 +173,7 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
-        String pathToPutDebloatedPom = project.getBasedir().getAbsolutePath() + "/" + "pom-debloated.xml";
+        String pathToPutDebloatedPom = project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
 
         /* Build Maven model to manipulate the pom */
         Model model;
@@ -196,18 +196,16 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
-        // TODO calculate the size of all the dependencies in target/dependency
         /* Get the size of the dependencies */
         Map<String, Long> sizeOfDependencies = new HashMap<>();
         Iterator<File> iterator = FileUtils.iterateFiles(
                 new File(
-                        project.getBuild().getDirectory() + "/"
+                        project.getBuild().getDirectory() + File.separator
                                 + "dependency"), new String[]{"jar"}, true);
         while (iterator.hasNext()) {
             File file = iterator.next();
             sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
         }
-
 
         /* Decompress dependencies */
         String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + "dependency";
@@ -378,8 +376,8 @@ public class DepCleanMojo extends AbstractMojo {
 
         /* Writing the JSON file with the debloat results */
         if (createResultJson) {
-            getLog().info("Starting creating JSON file");
-            String treeFile = project.getBuild().getDirectory() + "/" + "tree.txt";
+            String jsonFile = project.getBuild().getDirectory() + File.separator + "results.json";
+            String treeFile = project.getBuild().getDirectory() + File.separator + "tree.txt";
             /* Copy direct dependencies locally */
             try {
                 MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
@@ -389,16 +387,15 @@ public class DepCleanMojo extends AbstractMojo {
             }
             ParsedDependencies parsedDependencies = new ParsedDependencies(
                     treeFile,
+                    sizeOfDependencies,
                     usedDeclaredArtifactsCoordinates,
                     usedUndeclaredArtifactsCoordinates
             );
             try {
-                FileUtils.write(new File(project.getBuild().getDirectory() + "/" + "results.json"),
-                        parsedDependencies.parseTreeToJSON(),
-                        Charset.defaultCharset()
-                               );
+                FileUtils.write(new File(jsonFile), parsedDependencies.parseTreeToJSON(), Charset.defaultCharset());
+                getLog().info("JSON file in created in " + jsonFile);
             } catch (ParseException | IOException e) {
-                getLog().error("Unable generate JSON file.");
+                getLog().error("Unable to generate JSON file.");
             }
         }
     }

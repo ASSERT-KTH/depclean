@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -22,13 +23,17 @@ public class ParsedDependencies {
     private final String treeTextFilePath;
     private final Set<String> usedDeclaredArtifactsCoordinates;
     private final Set<String> usedUndeclaredArtifactsCoordinates;
+    private final Map<String, Long> sizeOfDependencies;
 
     public ParsedDependencies(String treeTextFilePath,
+                              Map<String, Long> sizeOfDependencies,
                               Set<String> usedDeclaredArtifactsCoordinates,
-                              Set<String> usedUndeclaredArtifactsCoordinates) {
+                              Set<String> usedUndeclaredArtifactsCoordinates
+                             ) {
         this.treeTextFilePath = treeTextFilePath;
         this.usedDeclaredArtifactsCoordinates = usedDeclaredArtifactsCoordinates;
         this.usedUndeclaredArtifactsCoordinates = usedUndeclaredArtifactsCoordinates;
+        this.sizeOfDependencies = sizeOfDependencies;
     }
 
     public String parseTreeToJSON() throws ParseException, IOException {
@@ -40,7 +45,8 @@ public class ParsedDependencies {
         Node tree = parser.parse(r);
         NodeAdapter nodeAdapter = new NodeAdapter(
                 usedDeclaredArtifactsCoordinates,
-                usedUndeclaredArtifactsCoordinates
+                usedUndeclaredArtifactsCoordinates,
+                sizeOfDependencies
         );
         GsonBuilder gsonBuilder = new GsonBuilder()
                 .registerTypeAdapter(Node.class, nodeAdapter);
