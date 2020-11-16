@@ -58,6 +58,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -196,13 +198,14 @@ public class DepCleanMojo extends AbstractMojo {
 
         // TODO calculate the size of all the dependencies in target/dependency
         /* Get the size of the dependencies */
-
-        Map<String, Long> dependencySize = new HashMap<>();
-        Iterator<File> iterator = FileUtils.iterateFiles(new File(project.getBuild().getDirectory() + "/"
-                + "dependency"), new String[]{"jar"}, true);
+        Map<String, Long> sizeOfDependencies = new HashMap<>();
+        Iterator<File> iterator = FileUtils.iterateFiles(
+                new File(
+                        project.getBuild().getDirectory() + "/"
+                                + "dependency"), new String[]{"jar"}, true);
         while (iterator.hasNext()) {
             File file = iterator.next();
-            dependencySize.put(file.getName(), FileUtils.sizeOf(file));
+            sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
         }
 
 
@@ -284,16 +287,16 @@ public class DepCleanMojo extends AbstractMojo {
         System.out.println(SEPARATOR);
 
         System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifactsCoordinates.size() + "]" + ": ");
-        usedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
+        usedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
 
         System.out.println("Used transitive dependencies" + " [" + usedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
-        usedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
+        usedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
 
         System.out.println("Potentially unused direct dependencies" + " [" + unusedDeclaredArtifactsCoordinates.size() + "]" + ": ");
-        unusedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
+        unusedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
 
         System.out.println("Potentially unused transitive dependencies" + " [" + unusedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
-        unusedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s));
+        unusedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
 
         if (!ignoreDependencies.isEmpty()) {
             System.out.println(SEPARATOR);
@@ -347,7 +350,7 @@ public class DepCleanMojo extends AbstractMojo {
                     for (Dependency dependency : model.getDependencies()) {
                         for (Artifact artifact : unusedUndeclaredArtifacts) {
                             if (isChildren(artifact, dependency)) {
-                                System.out.println("Excluding " + artifact.toString() + " from dependency " + dependency.toString());
+                                getLog().info("Excluding " + artifact.toString() + " from dependency " + dependency.toString());
                                 Exclusion exclusion = new Exclusion();
                                 exclusion.setGroupId(artifact.getGroupId());
                                 exclusion.setArtifactId(artifact.getArtifactId());
@@ -400,11 +403,43 @@ public class DepCleanMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Get the size of the dependency in humnan readable format.
+     *
+     * @param dependency The dependency.
+     * @param sizeOfDependencies A map with the size of the dependencies, keys are stored as the downloaded jar file
+     *                           i.e., [artifactId]-[version].jar
+     * @return The human readable representation of the dependency size.
+     */
+    private String getSize(String dependency, Map<String, Long> sizeOfDependencies) {
+        String dep = dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar";
+        return humanReadableByteCountBin(sizeOfDependencies.get(dep));
+    }
+
+    private String humanReadableByteCountBin(long bytes) {
+        long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
+        if (absB < 1024) {
+            return bytes + " B";
+        }
+        long value = absB;
+        CharacterIterator ci = new StringCharacterIterator("KMGTPE");
+        for (int i = 40; i >= 0 && absB > 0xfffccccccccccccL >> i; i -= 10) {
+            value >>= 10;
+            ci.next();
+        }
+        value *= Long.signum(bytes);
+        return String.format("%.1f %ciB", value / 1024.0, ci.current());
+    }
+
+    /**
+     * Exclude artifacts with specific scopes from the analysis.
+     *
+     * @param artifacts The set of artifacts to analyze.
+     * @return The set of artifacts for which the scope has not been excluded.
+     */
     private Set<Artifact> excludeScope(Set<Artifact> artifacts) {
         Set<Artifact> nonExcludedArtifacts = new HashSet<>();
-        Iterator<Artifact> iterator = artifacts.iterator();
-        while (iterator.hasNext()) {
-            Artifact artifact = iterator.next();
+        for (Artifact artifact : artifacts) {
             if (!ignoreScopes.contains(artifact.getScope())) {
                 nonExcludedArtifacts.add(artifact);
             }
