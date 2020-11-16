@@ -13,18 +13,12 @@ public class NodeAdapter extends TypeAdapter<Node> {
 
     private final Set<String> usedDeclaredArtifactsCoordinates;
     private final Set<String> usedUndeclaredArtifactsCoordinates;
-    private final Set<String> unusedDeclaredArtifactsCoordinates;
-    private final Set<String> unusedUndeclaredArtifactsCoordinates;
     Random random = new Random();
 
     public NodeAdapter(Set<String> usedDeclaredArtifactsCoordinates,
-                       Set<String> usedUndeclaredArtifactsCoordinates,
-                       Set<String> unusedDeclaredArtifactsCoordinates,
-                       Set<String> unusedUndeclaredArtifactsCoordinates) {
+                       Set<String> usedUndeclaredArtifactsCoordinates) {
         this.usedDeclaredArtifactsCoordinates = usedDeclaredArtifactsCoordinates;
         this.usedUndeclaredArtifactsCoordinates = usedUndeclaredArtifactsCoordinates;
-        this.unusedDeclaredArtifactsCoordinates = unusedDeclaredArtifactsCoordinates;
-        this.unusedUndeclaredArtifactsCoordinates = unusedUndeclaredArtifactsCoordinates;
     }
 
     @Override

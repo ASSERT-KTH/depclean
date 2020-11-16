@@ -14,28 +14,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.Set;
 
 @Slf4j
 public class ParsedDependencies {
 
     private final String treeTextFilePath;
-    private Set<String> usedDeclaredArtifactsCoordinates = new HashSet<>();
-    private Set<String> usedUndeclaredArtifactsCoordinates = new HashSet<>();
-    private Set<String> unusedDeclaredArtifactsCoordinates = new HashSet<>();
-    private Set<String> unusedUndeclaredArtifactsCoordinates = new HashSet<>();
+    private final Set<String> usedDeclaredArtifactsCoordinates;
+    private final Set<String> usedUndeclaredArtifactsCoordinates;
 
     public ParsedDependencies(String treeTextFilePath,
                               Set<String> usedDeclaredArtifactsCoordinates,
-                              Set<String> usedUndeclaredArtifactsCoordinates,
-                              Set<String> unusedDeclaredArtifactsCoordinates,
-                              Set<String> unusedUndeclaredArtifactsCoordinates) {
+                              Set<String> usedUndeclaredArtifactsCoordinates) {
         this.treeTextFilePath = treeTextFilePath;
         this.usedDeclaredArtifactsCoordinates = usedDeclaredArtifactsCoordinates;
         this.usedUndeclaredArtifactsCoordinates = usedUndeclaredArtifactsCoordinates;
-        this.unusedDeclaredArtifactsCoordinates = unusedDeclaredArtifactsCoordinates;
-        this.unusedUndeclaredArtifactsCoordinates = unusedUndeclaredArtifactsCoordinates;
     }
 
     public String parseTreeToJSON() throws ParseException, IOException {
@@ -47,9 +40,7 @@ public class ParsedDependencies {
         Node tree = parser.parse(r);
         NodeAdapter nodeAdapter = new NodeAdapter(
                 usedDeclaredArtifactsCoordinates,
-                usedUndeclaredArtifactsCoordinates,
-                unusedDeclaredArtifactsCoordinates,
-                unusedUndeclaredArtifactsCoordinates
+                usedUndeclaredArtifactsCoordinates
         );
         GsonBuilder gsonBuilder = new GsonBuilder()
                 .registerTypeAdapter(Node.class, nodeAdapter);

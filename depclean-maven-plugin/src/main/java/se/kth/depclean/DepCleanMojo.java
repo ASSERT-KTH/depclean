@@ -58,9 +58,11 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -191,6 +193,18 @@ public class DepCleanMojo extends AbstractMojo {
             getLog().error("Unable to resolve all the dependencies.");
             return;
         }
+
+        // TODO calculate the size of all the dependencies in target/dependency
+        /* Get the size of the dependencies */
+
+        Map<String, Long> dependencySize = new HashMap<>();
+        Iterator<File> iterator = FileUtils.iterateFiles(new File(project.getBuild().getDirectory() + "/"
+                + "dependency"), new String[]{"jar"}, true);
+        while (iterator.hasNext()) {
+            File file = iterator.next();
+            dependencySize.put(file.getName(), FileUtils.sizeOf(file));
+        }
+
 
         /* Decompress dependencies */
         String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + "dependency";
@@ -373,9 +387,7 @@ public class DepCleanMojo extends AbstractMojo {
             ParsedDependencies parsedDependencies = new ParsedDependencies(
                     treeFile,
                     usedDeclaredArtifactsCoordinates,
-                    usedUndeclaredArtifactsCoordinates,
-                    unusedDeclaredArtifactsCoordinates,
-                    unusedUndeclaredArtifactsCoordinates
+                    usedUndeclaredArtifactsCoordinates
             );
             try {
                 FileUtils.write(new File(project.getBuild().getDirectory() + "/" + "results.json"),
