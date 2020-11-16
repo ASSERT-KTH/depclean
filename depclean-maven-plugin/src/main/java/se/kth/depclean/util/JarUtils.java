@@ -18,7 +18,6 @@
 package se.kth.depclean.util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -78,9 +77,7 @@ public final class JarUtils {
             while (entry != null) {
                 String filePath = destDirectory + File.separator + entry.getName();
                 if (!entry.isDirectory()) {
-                    if (FileUtils.directoryContains(new File(filePath).getParentFile(), new File(filePath))) {
-                        new File(filePath).getParentFile().mkdirs();
-                    }
+                    new File(filePath).getParentFile().mkdirs();
                     // if the entry is a file, extracts it
                     extractFile(jarIn, filePath);
                 }
@@ -98,13 +95,11 @@ public final class JarUtils {
      * @throws IOException In case of IO issues.
      */
     private static void extractFile(final JarInputStream jarIn, final String filePath) throws IOException {
-        if (FileUtils.directoryContains(new File(filePath).getParentFile(), new File(filePath))) {
-            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
-                byte[] bytesIn = new byte[BUFFER_SIZE];
-                int read;
-                while ((read = jarIn.read(bytesIn)) != -1) {
-                    bos.write(bytesIn, 0, read);
-                }
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
+            byte[] bytesIn = new byte[BUFFER_SIZE];
+            int read;
+            while ((read = jarIn.read(bytesIn)) != -1) {
+                bos.write(bytesIn, 0, read);
             }
         }
     }

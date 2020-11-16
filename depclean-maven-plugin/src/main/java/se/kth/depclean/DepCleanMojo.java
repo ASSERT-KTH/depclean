@@ -18,6 +18,7 @@
 package se.kth.depclean;
 
 import fr.dutra.tools.maven.deptree.core.ParseException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
@@ -81,6 +82,7 @@ import java.util.stream.Collectors;
 @Mojo(name = "depclean", defaultPhase = LifecyclePhase.PACKAGE,
         requiresDependencyCollection = ResolutionScope.TEST,
         requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
+@Slf4j
 public class DepCleanMojo extends AbstractMojo {
     private static final String SEPARATOR = "-------------------------------------------------------";
 
@@ -284,6 +286,7 @@ public class DepCleanMojo extends AbstractMojo {
         }
 
         /* Printing the results to the console */
+
         System.out.println(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
         System.out.println(SEPARATOR);
 
