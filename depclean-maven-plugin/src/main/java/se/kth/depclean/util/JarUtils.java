@@ -76,7 +76,7 @@ public final class JarUtils {
             JarEntry entry = jarIn.getNextJarEntry();
             // iterates over all the entries in the jar file
             while (entry != null) {
-                String filePath = destDirectory + "/" + entry.getName();
+                String filePath = destDirectory + File.separator + entry.getName();
                 if (!entry.isDirectory()) {
                     new File(filePath).getParentFile().mkdirs();
                     // if the entry is a file, extracts it

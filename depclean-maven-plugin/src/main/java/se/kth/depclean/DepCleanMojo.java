@@ -60,12 +60,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This Maven mojo is the main class of DepClean.
@@ -285,16 +288,16 @@ public class DepCleanMojo extends AbstractMojo {
         System.out.println(SEPARATOR);
 
         System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifactsCoordinates.size() + "]" + ": ");
-        usedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
+        printDependencies(sizeOfDependencies, usedDeclaredArtifactsCoordinates);
 
         System.out.println("Used transitive dependencies" + " [" + usedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
-        usedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
+        printDependencies(sizeOfDependencies, usedUndeclaredArtifactsCoordinates);
 
         System.out.println("Potentially unused direct dependencies" + " [" + unusedDeclaredArtifactsCoordinates.size() + "]" + ": ");
-        unusedDeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
+        printDependencies(sizeOfDependencies, unusedDeclaredArtifactsCoordinates);
 
         System.out.println("Potentially unused transitive dependencies" + " [" + unusedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
-        unusedUndeclaredArtifactsCoordinates.stream().forEach(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
+        printDependencies(sizeOfDependencies, unusedUndeclaredArtifactsCoordinates);
 
         if (!ignoreDependencies.isEmpty()) {
             System.out.println(SEPARATOR);
@@ -398,6 +401,22 @@ public class DepCleanMojo extends AbstractMojo {
                 getLog().error("Unable to generate JSON file.");
             }
         }
+    }
+
+    /**
+     * Print the status of the depenencies to the standard output.
+     * The format is: "[coordinates][scope] [(size)]"
+     *
+     * @param sizeOfDependencies A map with the size of the dependencies.
+     * @param dependencies The set dependencies to print.
+     */
+    private void printDependencies(Map<String, Long> sizeOfDependencies, Set<String> dependencies) {
+        dependencies
+                .stream()
+                .sorted(Comparator.comparing(o -> sizeOfDependencies.get(o.split(":")[1] + "-" + o.split(":")[2] + ".jar")))
+                .collect(Collectors.toCollection(LinkedList::new))
+                .descendingIterator()
+                .forEachRemaining(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
     }
 
     /**
