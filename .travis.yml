@@ -21,7 +21,6 @@ cache:
     - $HOME/.m2
 
 before_install:
-  - sudo apt-get update
   - java -version
 
 install: true
