@@ -382,7 +382,7 @@ public class DepCleanMojo extends AbstractMojo {
 
         /* Writing the JSON file with the debloat results */
         if (createResultJson) {
-            String jsonFile = project.getBuild().getDirectory() + File.separator + "results.json";
+            String jsonFile = project.getBuild().getDirectory() + File.separator + "depclean-results.json";
             String treeFile = project.getBuild().getDirectory() + File.separator + "tree.txt";
             /* Copy direct dependencies locally */
             try {
