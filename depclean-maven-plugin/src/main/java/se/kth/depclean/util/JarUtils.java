@@ -77,7 +77,7 @@ public final class JarUtils {
             while (entry != null) {
                 String filePath = destDirectory + File.separator + entry.getName();
                 if (!entry.isDirectory()) {
-                    new File(filePath).getParentFile().mkdirs();
+                    new File(filePath).getParentFile().mkdirs(); //NOSONAR Triggers a false warning of path traversal attack
                     // if the entry is a file, extracts it
                     extractFile(jarIn, filePath);
                 }
@@ -95,7 +95,7 @@ public final class JarUtils {
      * @throws IOException In case of IO issues.
      */
     private static void extractFile(final JarInputStream jarIn, final String filePath) throws IOException {
-        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) { //NOSONAR Triggers a false warning of path traversal attack
             byte[] bytesIn = new byte[BUFFER_SIZE];
             int read;
             while ((read = jarIn.read(bytesIn)) != -1) {

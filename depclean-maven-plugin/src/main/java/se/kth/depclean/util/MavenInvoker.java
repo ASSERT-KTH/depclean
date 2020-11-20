@@ -17,14 +17,6 @@
 
 package se.kth.depclean.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
@@ -33,11 +25,17 @@ import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+
 @Slf4j
-public final class MavenInvoker
-{
-    private MavenInvoker()
-    {
+public final class MavenInvoker {
+    private MavenInvoker() {
     }
 
     /**
@@ -47,15 +45,15 @@ public final class MavenInvoker
      * @return The console output.
      * @throws IOException In case of IO issues.
      */
-    public static String[] runCommand(String cmd) throws IOException
-    {
+    public static String[] runCommand(String cmd) throws IOException {
         ArrayList<String> list = new ArrayList<>();
         Process process = Runtime.getRuntime().exec(cmd);
         InputStream inputStream = process.getInputStream();
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         String s; // Temporary String variable
-        while ((s = br.readLine()) != null)
+        while ((s = br.readLine()) != null) {
             list.add(s);
+        }
         try {
             process.waitFor();
         } catch (InterruptedException e) {
@@ -76,8 +74,7 @@ public final class MavenInvoker
      * @return The exit code from the Maven invocation.
      * @throws MavenInvocationException In case of any issue invoking maven.
      */
-    public static int invokeMaven(String mvnHome, String pomPath, String mvnGoal) throws MavenInvocationException
-    {
+    public static int invokeMaven(String mvnHome, String pomPath, String mvnGoal) throws MavenInvocationException {
         InvocationRequest request = new DefaultInvocationRequest();
         request.setPomFile(new File(pomPath));
         request.setGoals(Collections.singletonList(mvnGoal));

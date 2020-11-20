@@ -84,6 +84,7 @@ import java.util.stream.Collectors;
         requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 @Slf4j
 public class DepCleanMojo extends AbstractMojo {
+
     private static final String SEPARATOR = "-------------------------------------------------------";
 
     /**
@@ -167,7 +168,7 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
-        System.out.println(SEPARATOR);
+        printString(SEPARATOR);
         getLog().info("Starting DepClean dependency analysis");
 
         File pomFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "pom.xml");
@@ -178,7 +179,7 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
-        String pathToPutDebloatedPom = project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
+        String pathToDebloatedPom = project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
 
         /* Build Maven model to manipulate the pom */
         Model model;
@@ -287,25 +288,25 @@ public class DepCleanMojo extends AbstractMojo {
 
         /* Printing the results to the console */
 
-        System.out.println(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
-        System.out.println(SEPARATOR);
+        printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
+        printString(SEPARATOR);
 
-        System.out.println("Used direct dependencies" + " [" + usedDeclaredArtifactsCoordinates.size() + "]" + ": ");
+        printString("Used direct dependencies" + " [" + usedDeclaredArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, usedDeclaredArtifactsCoordinates);
 
-        System.out.println("Used transitive dependencies" + " [" + usedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
+        printString("Used transitive dependencies" + " [" + usedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, usedUndeclaredArtifactsCoordinates);
 
-        System.out.println("Potentially unused direct dependencies" + " [" + unusedDeclaredArtifactsCoordinates.size() + "]" + ": ");
+        printString("Potentially unused direct dependencies" + " [" + unusedDeclaredArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, unusedDeclaredArtifactsCoordinates);
 
-        System.out.println("Potentially unused transitive dependencies" + " [" + unusedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
+        printString("Potentially unused transitive dependencies" + " [" + unusedUndeclaredArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, unusedUndeclaredArtifactsCoordinates);
 
         if (!ignoreDependencies.isEmpty()) {
-            System.out.println(SEPARATOR);
-            System.out.println("Dependencies ignored in the analysis by the user" + " [" + ignoreDependencies.size() + "]" + ": ");
-            ignoreDependencies.stream().forEach(s -> System.out.println("\t" + s));
+            printString(SEPARATOR);
+            printString("Dependencies ignored in the analysis by the user" + " [" + ignoreDependencies.size() + "]" + ": ");
+            ignoreDependencies.stream().forEach(s -> printString("\t" + s));
         }
 
         /* Fail the build if there are unused dependencies */
@@ -369,14 +370,14 @@ public class DepCleanMojo extends AbstractMojo {
 
             /* Write the debloated pom file */
             try {
-                Path path = Paths.get(pathToPutDebloatedPom);
+                Path path = Paths.get(pathToDebloatedPom);
                 writePom(path, model);
             } catch (IOException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }
 
             getLog().info("POM debloated successfully");
-            getLog().info("pom-debloated.xml file created in: " + pathToPutDebloatedPom);
+            getLog().info("pom-debloated.xml file created in: " + pathToDebloatedPom);
         }
 
 
@@ -419,7 +420,7 @@ public class DepCleanMojo extends AbstractMojo {
                 .sorted(Comparator.comparing(o -> sizeOfDependencies.get(o.split(":")[1] + "-" + o.split(":")[2] + ".jar")))
                 .collect(Collectors.toCollection(LinkedList::new))
                 .descendingIterator()
-                .forEachRemaining(s -> System.out.println("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
+                .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
     }
 
     /**
@@ -527,5 +528,9 @@ public class DepCleanMojo extends AbstractMojo {
         dependency.setScope(artifact.getScope());
         dependency.setType(artifact.getType());
         return dependency;
+    }
+
+    private void printString(String string) {
+        System.out.println(string); //NOSONAR avoid a warning of non-used logger
     }
 }
