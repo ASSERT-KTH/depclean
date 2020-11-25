@@ -19,18 +19,19 @@ package se.kth.depclean.core.analysis;
  * under the License.
  */
 
+import org.apache.maven.artifact.Artifact;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.maven.artifact.Artifact;
-
 /**
  * Project dependencies analysis result.
  */
 public class ProjectDependencyAnalysis {
+
     // fields -----------------------------------------------------------------
 
     private final Set<Artifact> usedDeclaredArtifacts;
@@ -45,7 +46,8 @@ public class ProjectDependencyAnalysis {
         this(null, null, null);
     }
 
-    public ProjectDependencyAnalysis(Set<Artifact> usedDeclaredArtifacts, Set<Artifact> usedUndeclaredArtifacts,
+    public ProjectDependencyAnalysis(Set<Artifact> usedDeclaredArtifacts,
+                                     Set<Artifact> usedUndeclaredArtifacts,
                                      Set<Artifact> unusedDeclaredArtifacts) {
         this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
         this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);

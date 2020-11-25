@@ -200,7 +200,8 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
-        /* Get the size of the dependencies */
+
+        /* Get the size of all the dependencies */
         Map<String, Long> sizeOfDependencies = new HashMap<>();
         Iterator<File> iterator = FileUtils.iterateFiles(
                 new File(
@@ -270,15 +271,10 @@ public class DepCleanMojo extends AbstractMojo {
             }
         }
 
+        // TODO Fix: The used transitive dependencies induced by inherited dependencies should be considered as used inherited
         for (Artifact artifact : usedTransitiveArtifacts) {
             String artifactCoordinates = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
-            if (declaredArtifactsCoordinates.contains(artifactCoordinates)) {
-                // the artifact is declared in the pom
-                usedTransitiveArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
-            } else {
-                // the artifact is inherited
-                usedInheritedArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
-            }
+            usedTransitiveArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
         }
 
         // --- unused dependencies
@@ -297,15 +293,10 @@ public class DepCleanMojo extends AbstractMojo {
             }
         }
 
+        // TODO Fix: The unused transitive dependencies induced by inherited dependencies should be considered as unused inherited
         for (Artifact artifact : unusedTransitiveArtifacts) {
             String artifactCoordinates = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
-            if (declaredArtifactsCoordinates.contains(artifactCoordinates)) {
-                // the artifact is declared in the pom
-                unusedTransitiveArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
-            } else {
-                // the artifact is inherited
-                unusedInheritedArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
-            }
+            unusedTransitiveArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
         }
 
         /* Ignoring dependencies from the analysis */
@@ -485,14 +476,33 @@ public class DepCleanMojo extends AbstractMojo {
     private void printDependencies(Map<String, Long> sizeOfDependencies, Set<String> dependencies) {
         dependencies
                 .stream()
-                .sorted(Comparator.comparing(o -> sizeOfDependencies.get(o.split(":")[1] + "-" + o.split(":")[2] + ".jar")))
+                .sorted(Comparator.comparing(o -> getSizeOfDependency(sizeOfDependencies, o)))
                 .collect(Collectors.toCollection(LinkedList::new))
                 .descendingIterator()
                 .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
     }
 
     /**
-     * Get the size of the dependency in humnan readable format.
+     * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size of the dependency
+     * cannot be obtained form the map (no key with the name of the dependency exists), then it returns 0.
+     *
+     * @param sizeOfDependencies A map of dependency -> size.
+     * @param dependency The coordinates of a dependency.
+     * @return The size of the dependency if its name is a key in the map, otherwise it returns 0.
+     */
+    private Long getSizeOfDependency(Map<String, Long> sizeOfDependencies, String dependency) {
+        Long size = sizeOfDependencies.get(dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar");
+        if (size != null) {
+            return size;
+        } else {
+            // The name of the dependency does not match with the name of the download jar, so we keep assume the size
+            // cannot be obtained and return 0.
+            return Long.valueOf(0);
+        }
+    }
+
+    /**
+     * Get the size of the dependency in human readable format.
      *
      * @param dependency The dependency.
      * @param sizeOfDependencies A map with the size of the dependencies, keys are stored as the downloaded jar file
@@ -501,7 +511,12 @@ public class DepCleanMojo extends AbstractMojo {
      */
     private String getSize(String dependency, Map<String, Long> sizeOfDependencies) {
         String dep = dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar";
-        return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
+        if (sizeOfDependencies.containsKey(dep)) {
+            return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
+        } else {
+            // The size cannot be obtained.
+            return "unknown";
+        }
     }
 
     /**

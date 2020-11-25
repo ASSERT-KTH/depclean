@@ -41,8 +41,11 @@ public class NodeAdapter extends TypeAdapter<Node> {
         String coordinates = node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getVersion() + ":" + node.getScope();
         String dependencyJar = node.getArtifactId() + "-" + node.getVersion() + ".jar";
         jsonWriter.beginObject()
-                .name("coordinates")
+                .name("id")
                 .jsonValue("\"" + node.getArtifactCanonicalForm() + "\"")
+
+                .name("coordinates")
+                .jsonValue("\"" + node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getVersion() + "\"")
 
                 .name("groupId")
                 .jsonValue("\"" + node.getGroupId() + "\"")

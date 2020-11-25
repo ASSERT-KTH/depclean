@@ -16,6 +16,13 @@
  */
 package se.kth.depclean.core.analysis;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
+import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
+import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -29,29 +36,22 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-
-import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
-import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
-
 @Component(role = ProjectDependencyAnalyzer.class)
 public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyzer {
+
     public static final String SEPARATOR = "-------------------------------------------------------";
 
     /**
      * ClassAnalyzer
      */
     @Requirement
-    private ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
+    private final ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
 
     /**
      * DependencyAnalyzer
      */
     @Requirement
-    private DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
+    private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
 
     // ProjectDependencyAnalyzer methods --------------------------------------
 
@@ -60,7 +60,6 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
      */
     public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
         try {
-
             // map of [dependency] -> [classes]
             Map<Artifact, Set<String>> artifactClassMap = buildArtifactClassMap(project);
 
@@ -70,6 +69,7 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
             System.out.println("DIRECT DEPENDENCIES: " + declaredArtifacts);
 
             // transitive dependencies of the project
+            System.out.println(SEPARATOR);
             Set<Artifact> transitiveArtifacts = removeAll(project.getArtifacts(), declaredArtifacts);
             System.out.println("TRANSITIVE DEPENDENCIES: " + transitiveArtifacts);
 
@@ -93,7 +93,7 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
 
             /* ******************** call graph analysis ******************** */
             System.out.println(SEPARATOR);
-            System.out.println("USED ARTIFACTS:" + usedArtifacts);
+            System.out.println("USED DEPENDENCIES: " + usedArtifacts);
             System.out.println(SEPARATOR);
 
             /* ******************** results as statically used at the bytecode *********************** */
