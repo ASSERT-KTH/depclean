@@ -16,20 +16,20 @@
  */
 package se.kth.depclean.core.analysis.graph;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 public class DefaultCallGraph {
-    private static AbstractBaseGraph<String, DefaultEdge> directedGraph =
+    private static final AbstractBaseGraph<String, DefaultEdge> directedGraph =
             new DefaultDirectedGraph<>(DefaultEdge.class);
 
-    private static Set<String> projectVertices = new HashSet<>();
+    private static final Set<String> projectVertices = new HashSet<>();
 
     public static void addEdge(String clazz, Set<String> referencedClassMembers) {
         directedGraph.addVertex(clazz);
@@ -45,7 +45,7 @@ public class DefaultCallGraph {
     }
 
     public static Set<String> referencedClassMembers(Set<String> projectClasses) {
-        // System.out.println("project classes: " + projectClasses);
+        System.out.println("project classes: " + projectClasses);
         Set<String> allReferencedClassMembers = new HashSet<>();
         for (String projectClass : projectClasses) {
             allReferencedClassMembers.addAll(traverse(projectClass));

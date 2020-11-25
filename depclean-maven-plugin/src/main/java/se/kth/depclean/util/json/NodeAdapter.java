@@ -11,15 +11,28 @@ import java.util.Set;
 
 public class NodeAdapter extends TypeAdapter<Node> {
 
-    private final Set<String> usedDeclaredArtifactsCoordinates;
-    private final Set<String> usedUndeclaredArtifactsCoordinates;
+    private final Set<String> usedDirectArtifactsCoordinates;
+    private final Set<String> usedInheritedArtifactsCoordinates;
+    private final Set<String> usedTransitiveArtifactsCoordinates;
+    private final Set<String> unusedDirectArtifactsCoordinates;
+    private final Set<String> unusedInheritedArtifactsCoordinates;
+    private final Set<String> unusedTransitiveArtifactsCoordinates;
+
     private final Map<String, Long> sizeOfDependencies;
 
-    public NodeAdapter(Set<String> usedDeclaredArtifactsCoordinates,
-                       Set<String> usedUndeclaredArtifactsCoordinates,
+    public NodeAdapter(Set<String> usedDirectArtifactsCoordinates,
+                       Set<String> usedInheritedArtifactsCoordinates,
+                       Set<String> usedTransitiveArtifactsCoordinates,
+                       Set<String> unusedDirectArtifactsCoordinates,
+                       Set<String> unusedInheritedArtifactsCoordinates,
+                       Set<String> unusedTransitiveArtifactsCoordinates,
                        Map<String, Long> sizeOfDependencies) {
-        this.usedDeclaredArtifactsCoordinates = usedDeclaredArtifactsCoordinates;
-        this.usedUndeclaredArtifactsCoordinates = usedUndeclaredArtifactsCoordinates;
+        this.usedDirectArtifactsCoordinates = usedDirectArtifactsCoordinates;
+        this.usedInheritedArtifactsCoordinates = usedInheritedArtifactsCoordinates;
+        this.usedTransitiveArtifactsCoordinates = usedTransitiveArtifactsCoordinates;
+        this.unusedDirectArtifactsCoordinates = unusedDirectArtifactsCoordinates;
+        this.unusedInheritedArtifactsCoordinates = unusedInheritedArtifactsCoordinates;
+        this.unusedTransitiveArtifactsCoordinates = unusedTransitiveArtifactsCoordinates;
         this.sizeOfDependencies = sizeOfDependencies;
     }
 
@@ -55,9 +68,22 @@ public class NodeAdapter extends TypeAdapter<Node> {
                 .name("size")
                 .jsonValue(String.valueOf(sizeOfDependencies.get(dependencyJar)))
 
+                .name("type")
+                .jsonValue(usedDirectArtifactsCoordinates.contains(coordinates) || unusedDirectArtifactsCoordinates.contains(coordinates) ? "\"" + "direct" + "\"" :
+                        usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates) ? "\"" + "inherited" + "\"" :
+                                usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates) ? "\"" + "transitive" + "\"" :
+                                        "\"" + "unknown" + "\"")
+
                 .name("status")
-                .jsonValue((usedDeclaredArtifactsCoordinates.contains(coordinates) ||
-                        usedUndeclaredArtifactsCoordinates.contains(coordinates)) ? "\"" + "used" + "\"" : "\"" + "bloated" + "\"")
+                .jsonValue(usedDirectArtifactsCoordinates.contains(coordinates) ||
+                        usedInheritedArtifactsCoordinates.contains(coordinates) ||
+                        usedTransitiveArtifactsCoordinates.contains(coordinates) ?
+                        "\"" + "used" + "\"" :
+                        unusedDirectArtifactsCoordinates.contains(coordinates) ||
+                                unusedInheritedArtifactsCoordinates.contains(coordinates) ||
+                                unusedTransitiveArtifactsCoordinates.contains(coordinates) ?
+                                "\"" + "bloated" + "\"" :
+                                "\"" + "unknown" + "\"")
 
                 .name("parent")
                 .jsonValue(node.getParent() != null ? "\"" + node.getParent().getArtifactCanonicalForm() + "\"" : "\"" + "null" + "\"")
