@@ -177,7 +177,6 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
-        String pathToDebloatedPom = project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
 
         /* Build Maven model to manipulate the pom */
         Model model;
@@ -256,7 +255,6 @@ public class DepCleanMojo extends AbstractMojo {
         }
 
         // --- used dependencies
-
         Set<String> usedDirectArtifactsCoordinates = new HashSet<>();
         Set<String> usedInheritedArtifactsCoordinates = new HashSet<>();
         Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
@@ -284,7 +282,6 @@ public class DepCleanMojo extends AbstractMojo {
         }
 
         // --- unused dependencies
-
         Set<String> unusedDirectArtifactsCoordinates = new HashSet<>();
         Set<String> unusedInheritedArtifactsCoordinates = new HashSet<>();
         Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
@@ -311,7 +308,7 @@ public class DepCleanMojo extends AbstractMojo {
             }
         }
 
-        /* Ignoring dependencies from analysis */
+        /* Ignoring dependencies from the analysis */
         if (ignoreDependencies != null) {
             for (String ignoredDependency : ignoreDependencies) {
                 // if the ignored dependency is an unused direct dependency then add it to the set of used direct
@@ -348,7 +345,6 @@ public class DepCleanMojo extends AbstractMojo {
         }
 
         /* Printing the results to the console */
-
         printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
         printString(SEPARATOR);
 
@@ -436,6 +432,7 @@ public class DepCleanMojo extends AbstractMojo {
             }
 
             /* Write the debloated pom file */
+            String pathToDebloatedPom = project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
             try {
                 Path path = Paths.get(pathToDebloatedPom);
                 writePom(path, model);
@@ -450,13 +447,13 @@ public class DepCleanMojo extends AbstractMojo {
 
         /* Writing the JSON file with the debloat results */
         if (createResultJson) {
-            String jsonFile = project.getBuild().getDirectory() + File.separator + "depclean-results.json";
+            String pathToJsonFile = project.getBasedir().getAbsolutePath() + File.separator + "depclean-results.json";
             String treeFile = project.getBuild().getDirectory() + File.separator + "tree.txt";
             /* Copy direct dependencies locally */
             try {
                 MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
             } catch (IOException e) {
-                getLog().error("Unable generate dependency tree.");
+                getLog().error("Unable to generate dependency tree.");
                 return;
             }
             ParsedDependencies parsedDependencies = new ParsedDependencies(
@@ -470,8 +467,8 @@ public class DepCleanMojo extends AbstractMojo {
                     unusedTransitiveArtifactsCoordinates
             );
             try {
-                FileUtils.write(new File(jsonFile), parsedDependencies.parseTreeToJSON(), Charset.defaultCharset());
-                getLog().info("depclean-results.json file created in " + jsonFile);
+                FileUtils.write(new File(pathToJsonFile), parsedDependencies.parseTreeToJSON(), Charset.defaultCharset());
+                getLog().info("depclean-results.json file created in: " + pathToJsonFile);
             } catch (ParseException | IOException e) {
                 getLog().error("Unable to generate JSON file.");
             }
