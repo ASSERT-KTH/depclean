@@ -59,8 +59,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -312,27 +311,35 @@ public class DepCleanMojo extends AbstractMojo {
             }
         }
 
-
         /* Ignoring dependencies from analysis */
-        // TODO Fix this code
         if (ignoreDependencies != null) {
             for (String ignoredDependency : ignoreDependencies) {
-                // if the ignored dependency is an unused declared dependency then add it to the set of used declared
-                // and remove it from the set of unused declared
+                // if the ignored dependency is an unused direct dependency then add it to the set of used direct
+                // and remove it from the set of unused direct
                 for (Iterator<String> i = unusedDirectArtifactsCoordinates.iterator(); i.hasNext(); ) {
-                    String unusedDeclaredArtifact = i.next();
-                    if (ignoredDependency.equals(unusedDeclaredArtifact)) {
-                        usedDirectArtifactsCoordinates.add(unusedDeclaredArtifact);
+                    String unusedDirectArtifact = i.next();
+                    if (ignoredDependency.equals(unusedDirectArtifact)) {
+                        usedDirectArtifactsCoordinates.add(unusedDirectArtifact);
                         i.remove();
                         break;
                     }
                 }
-                // if the ignored dependency is an unused undeclared dependency then add it to the set of used undeclared
-                // and remove it from the set of unused undeclared
+                // if the ignored dependency is an unused inherited dependency then add it to the set of used inherited
+                // and remove it from the set of unused inherited
+                for (Iterator<String> j = unusedInheritedArtifactsCoordinates.iterator(); j.hasNext(); ) {
+                    String unusedInheritedArtifact = j.next();
+                    if (ignoredDependency.equals(unusedInheritedArtifact)) {
+                        usedInheritedArtifactsCoordinates.add(unusedInheritedArtifact);
+                        j.remove();
+                        break;
+                    }
+                }
+                // if the ignored dependency is an unused transitive dependency then add it to the set of used transitive
+                // and remove it from the set of unused transitive
                 for (Iterator<String> j = unusedTransitiveArtifactsCoordinates.iterator(); j.hasNext(); ) {
-                    String unusedUndeclaredArtifact = j.next();
-                    if (ignoredDependency.equals(unusedUndeclaredArtifact)) {
-                        usedTransitiveArtifactsCoordinates.add(unusedUndeclaredArtifact);
+                    String unusedTransitiveArtifact = j.next();
+                    if (ignoredDependency.equals(unusedTransitiveArtifact)) {
+                        usedTransitiveArtifactsCoordinates.add(unusedTransitiveArtifact);
                         j.remove();
                         break;
                     }
@@ -464,7 +471,7 @@ public class DepCleanMojo extends AbstractMojo {
             );
             try {
                 FileUtils.write(new File(jsonFile), parsedDependencies.parseTreeToJSON(), Charset.defaultCharset());
-                getLog().info("JSON file in created in " + jsonFile);
+                getLog().info("depclean-results.json file created in " + jsonFile);
             } catch (ParseException | IOException e) {
                 getLog().error("Unable to generate JSON file.");
             }
@@ -481,7 +488,7 @@ public class DepCleanMojo extends AbstractMojo {
     private void printDependencies(Map<String, Long> sizeOfDependencies, Set<String> dependencies) {
         dependencies
                 .stream()
-                // .sorted(Comparator.comparing(o -> sizeOfDependencies.get(o.split(":")[1] + "-" + o.split(":")[2] + ".jar")))
+                .sorted(Comparator.comparing(o -> sizeOfDependencies.get(o.split(":")[1] + "-" + o.split(":")[2] + ".jar")))
                 .collect(Collectors.toCollection(LinkedList::new))
                 .descendingIterator()
                 .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
@@ -497,22 +504,7 @@ public class DepCleanMojo extends AbstractMojo {
      */
     private String getSize(String dependency, Map<String, Long> sizeOfDependencies) {
         String dep = dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar";
-        return humanReadableByteCountBin(sizeOfDependencies.get(dep));
-    }
-
-    private String humanReadableByteCountBin(long bytes) {
-        long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
-        if (absB < 1024) {
-            return bytes + " B";
-        }
-        long value = absB;
-        CharacterIterator ci = new StringCharacterIterator("KMGTPE");
-        for (int i = 40; i >= 0 && absB > 0xfffccccccccccccL >> i; i -= 10) {
-            value >>= 10;
-            ci.next();
-        }
-        value *= Long.signum(bytes);
-        return String.format("%.1f %ciB", value / 1024.0, ci.current());
+        return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
     }
 
     /**
