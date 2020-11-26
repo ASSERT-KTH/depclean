@@ -85,7 +85,7 @@ Then run the following Maven command to build the application and install the pl
 ```bash
 mvn clean install
 ```
-Once the plugin is installed, you can execute the plugin goal directly in the command line:
+Once the plugin is installed, you can execute the `depclean` plugin goal directly in the command line:
 
 ```shell script
 mvn se.kth.castor:depclean-maven-plugin:1.1.0:depclean -Dcreate.pom.debloated=true -Dcreate.result.json=true
@@ -97,29 +97,54 @@ This is an example of the output (note the dependencies are ordered according to
 -------------------------------------------------------
  D E P C L E A N   A N A L Y S I S   R E S U L T S
 -------------------------------------------------------
-Used direct dependencies [1]: 
-        org.slf4j:slf4j-api:1.7.12:compile (31.4 KiB)
-Used transitive dependencies [3]: 
-        ch.qos.logback:logback-core:1.1.3:test (444.4 KiB)
-        org.eclipse.jetty:jetty-server:9.0.5.v20130815:test (347.8 KiB)
-        org.eclipse.jetty:jetty-util:9.0.5.v20130815:test (328.5 KiB)
-Potentially unused direct dependencies [1]: 
-        org.apache.tomcat:catalina:6.0.29:test (1.1 MiB)
-Potentially unused transitive dependencies [15]: 
-        org.eclipse.jetty.orbit:javax.servlet:3.0.0.v201112011016:test (195.7 KiB)
-        org.eclipse.jetty:jetty-client:9.0.5.v20130815:test (156.4 KiB)
-        org.eclipse.jetty.websocket:websocket-common:9.0.5.v20130815:test (143.0 KiB)
-        org.eclipse.jetty:jetty-http:9.0.5.v20130815:test (102.6 KiB)
+Used direct dependencies [11]:
+	org.apache.flink:flink-shaded-guava:18.0-12.0:compile (2 MB)
+	org.apache.flink:flink-shaded-jackson:2.10.1-12.0:test (2 MB)
+	org.apache.commons:commons-compress:1.20:compile (617 KB)
+	commons-collections:commons-collections:3.2.2:compile (574 KB)
+	joda-time:joda-time:2.5:test (574 KB)
+	org.apache.commons:commons-lang3:3.3.2:compile (403 KB)
+	com.esotericsoftware.kryo:kryo:2.24.0:compile (331 KB)
+	org.apache.flink:flink-shaded-asm-7:7.1-12.0:compile (275 KB)
+	org.apache.flink:flink-test-utils-junit:1.12-SNAPSHOT:test (54 KB)
+	org.apache.flink:flink-metrics-core:1.12-SNAPSHOT:compile (18 KB)
+	org.apache.flink:flink-annotations:1.12-SNAPSHOT:compile (16 KB)
+Used inherited dependencies [7]:
+	org.mockito:mockito-core:2.21.0:test (550 KB)
+	junit:junit:4.12:test (307 KB)
+	org.hamcrest:hamcrest-all:1.3:test (299 KB)
+	org.powermock:powermock-api-mockito2:2.0.4:test (86 KB)
+	org.powermock:powermock-module-junit4:2.0.4:test (46 KB)
+	org.slf4j:slf4j-api:1.7.15:compile (39 KB)
+	com.google.code.findbugs:jsr305:1.3.9:compile (32 KB)
+Used transitive dependencies [5]:
+	org.powermock:powermock-core:2.0.4:test (196 KB)
+	org.powermock:powermock-reflect:2.0.4:test (64 KB)
+	org.hamcrest:hamcrest-core:1.3:test (43 KB)
+	org.objenesis:objenesis:2.1:compile (40 KB)
+	com.esotericsoftware.minlog:minlog:1.2:compile (4 KB)
+Potentially unused direct dependencies [2]:
+	org.projectlombok:lombok:1.16.22:test (1 MB)
+	org.joda:joda-convert:1.7:test (100 KB)
+Potentially unused inherited dependencies [5]:
+	org.apache.logging.log4j:log4j-core:2.12.1:test (1 MB)
+	org.apache.logging.log4j:log4j-api:2.12.1:test (270 KB)
+	org.apache.logging.log4j:log4j-1.2-api:2.12.1:test (65 KB)
+	org.apache.logging.log4j:log4j-slf4j-impl:2.12.1:test (22 KB)
+	org.apache.flink:force-shading:1.12-SNAPSHOT:compile (7 KB)
+Potentially unused transitive dependencies [5]:
+	net.bytebuddy:byte-buddy:1.8.15:test (2 MB)
+	org.javassist:javassist:3.24.0-GA:test (759 KB)
+	net.bytebuddy:byte-buddy-agent:1.8.15:test (40 KB)
+	org.powermock:powermock-api-support:2.0.4:test (21 KB)
+	org.powermock:powermock-module-junit4-common:2.0.4:test (17 KB)
 [INFO] Starting debloating POM
-[INFO] Adding 3 used transitive dependencies as direct dependencies.
-[INFO] Removing 1 unused direct dependency.
-[INFO] Excluding 2 potentially unused transitive dependencies one-by-one.
+[INFO] Adding 5 used transitive dependencies as direct dependencies.
+[INFO] Removing 2 unused direct dependencies.
+[INFO] Excluding 5 unused transitive dependencies one-by-one.
 [INFO] POM debloated successfully
-[INFO] pom-debloated.xml file created in: /projectdir/pom-debloated.xml
-[INFO] JSON file in created in /projectdir/depclean-results.json
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
+[INFO] pom-debloated.xml file created in: /Users/cesarsv/IdeaProjects/flink-master/flink-core/pom-debloated.xml
+[INFO] depclean-results.json file created in: /Users/cesarsv/IdeaProjects/flink-master/flink-core/depclean-results.json
 ```
 
 ## License
