@@ -88,6 +88,10 @@ mvn clean install
 Once the plugin is installed, you can execute the `depclean` plugin goal directly in the command line:
 
 ```shell script
+# First, compile the project sources and tests
+mvn compile   
+mvn compiler:testCompile
+# Then, executed DepClean
 mvn se.kth.castor:depclean-maven-plugin:1.1.0:depclean -Dcreate.pom.debloated=true -Dcreate.result.json=true
 ```
 
@@ -97,7 +101,7 @@ This is an example of the output (note the dependencies are ordered according to
 -------------------------------------------------------
  D E P C L E A N   A N A L Y S I S   R E S U L T S
 -------------------------------------------------------
-Used direct dependencies [11]:
+USED DIRECT DEPENDENCIES [11]:
 	org.apache.flink:flink-shaded-guava:18.0-12.0:compile (2 MB)
 	org.apache.flink:flink-shaded-jackson:2.10.1-12.0:test (2 MB)
 	org.apache.commons:commons-compress:1.20:compile (617 KB)
@@ -109,7 +113,7 @@ Used direct dependencies [11]:
 	org.apache.flink:flink-test-utils-junit:1.12-SNAPSHOT:test (54 KB)
 	org.apache.flink:flink-metrics-core:1.12-SNAPSHOT:compile (18 KB)
 	org.apache.flink:flink-annotations:1.12-SNAPSHOT:compile (16 KB)
-Used inherited dependencies [7]:
+USED INHERITED DEPENDENCIES [7]:
 	org.mockito:mockito-core:2.21.0:test (550 KB)
 	junit:junit:4.12:test (307 KB)
 	org.hamcrest:hamcrest-all:1.3:test (299 KB)
@@ -117,27 +121,28 @@ Used inherited dependencies [7]:
 	org.powermock:powermock-module-junit4:2.0.4:test (46 KB)
 	org.slf4j:slf4j-api:1.7.15:compile (39 KB)
 	com.google.code.findbugs:jsr305:1.3.9:compile (32 KB)
-Used transitive dependencies [5]:
+USED TRANSITIVE DEPENDENCIES [5]:
 	org.powermock:powermock-core:2.0.4:test (196 KB)
 	org.powermock:powermock-reflect:2.0.4:test (64 KB)
 	org.hamcrest:hamcrest-core:1.3:test (43 KB)
 	org.objenesis:objenesis:2.1:compile (40 KB)
 	com.esotericsoftware.minlog:minlog:1.2:compile (4 KB)
-Potentially unused direct dependencies [2]:
+POTENTIALLY UNUSED DIRECT DEPENDENCIES [2]:
 	org.projectlombok:lombok:1.16.22:test (1 MB)
 	org.joda:joda-convert:1.7:test (100 KB)
-Potentially unused inherited dependencies [5]:
+POTENTIALLY UNUSED INHERITED DEPENDENCIES [5]:
 	org.apache.logging.log4j:log4j-core:2.12.1:test (1 MB)
 	org.apache.logging.log4j:log4j-api:2.12.1:test (270 KB)
 	org.apache.logging.log4j:log4j-1.2-api:2.12.1:test (65 KB)
 	org.apache.logging.log4j:log4j-slf4j-impl:2.12.1:test (22 KB)
 	org.apache.flink:force-shading:1.12-SNAPSHOT:compile (7 KB)
-Potentially unused transitive dependencies [5]:
+POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [6]:
 	net.bytebuddy:byte-buddy:1.8.15:test (2 MB)
 	org.javassist:javassist:3.24.0-GA:test (759 KB)
 	net.bytebuddy:byte-buddy-agent:1.8.15:test (40 KB)
 	org.powermock:powermock-api-support:2.0.4:test (21 KB)
 	org.powermock:powermock-module-junit4-common:2.0.4:test (17 KB)
+	org.apache.flink:force-shading:1.12-SNAPSHOT:compile (7 KB)
 [INFO] Starting debloating POM
 [INFO] Adding 5 used transitive dependencies as direct dependencies.
 [INFO] Removing 2 unused direct dependencies.
