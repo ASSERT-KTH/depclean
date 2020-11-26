@@ -343,22 +343,22 @@ public class DepCleanMojo extends AbstractMojo {
         printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
         printString(SEPARATOR);
 
-        printString("Used direct dependencies" + " [" + usedDirectArtifactsCoordinates.size() + "]" + ": ");
+        printString("Used direct dependencies".toUpperCase() + " [" + usedDirectArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, usedDirectArtifactsCoordinates);
 
-        printString("Used inherited dependencies" + " [" + usedInheritedArtifactsCoordinates.size() + "]" + ": ");
+        printString("Used inherited dependencies".toUpperCase() + " [" + usedInheritedArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, usedInheritedArtifactsCoordinates);
 
-        printString("Used transitive dependencies" + " [" + usedTransitiveArtifactsCoordinates.size() + "]" + ": ");
+        printString("Used transitive dependencies".toUpperCase() + " [" + usedTransitiveArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, usedTransitiveArtifactsCoordinates);
 
-        printString("Potentially unused direct dependencies" + " [" + unusedDirectArtifactsCoordinates.size() + "]" + ": ");
+        printString("Potentially unused direct dependencies".toUpperCase() + " [" + unusedDirectArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, unusedDirectArtifactsCoordinates);
 
-        printString("Potentially unused inherited dependencies" + " [" + unusedInheritedArtifactsCoordinates.size() + "]" + ": ");
+        printString("Potentially unused inherited dependencies".toUpperCase() + " [" + unusedInheritedArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, unusedInheritedArtifactsCoordinates);
 
-        printString("Potentially unused transitive dependencies" + " [" + unusedTransitiveArtifactsCoordinates.size() + "]" + ": ");
+        printString("Potentially unused transitive dependencies".toUpperCase() + " [" + unusedTransitiveArtifactsCoordinates.size() + "]" + ": ");
         printDependencies(sizeOfDependencies, unusedTransitiveArtifactsCoordinates);
 
         if (!ignoreDependencies.isEmpty()) {
