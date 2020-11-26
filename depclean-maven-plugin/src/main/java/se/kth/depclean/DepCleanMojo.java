@@ -250,9 +250,9 @@ public class DepCleanMojo extends AbstractMojo {
 
         // List of dependencies declared in the POM
         List<Dependency> dependencies = model.getDependencies();
-        Set<String> declaredArtifactsCoordinates = new HashSet<>();
+        Set<String> declaredArtifactsGAs = new HashSet<>();
         for (Dependency dep : dependencies) {
-            declaredArtifactsCoordinates.add(dep.getGroupId() + ":" + dep.getArtifactId() + ":" + dep.getVersion());
+            declaredArtifactsGAs.add(dep.getGroupId() + ":" + dep.getArtifactId());
         }
 
         // --- used dependencies
@@ -261,20 +261,22 @@ public class DepCleanMojo extends AbstractMojo {
         Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
 
         for (Artifact artifact : usedDirectArtifacts) {
-            String artifactCoordinates = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
-            if (declaredArtifactsCoordinates.contains(artifactCoordinates)) {
+            String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
+            String artifactGAVS = artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
+            if (declaredArtifactsGAs.contains(artifactGA)) {
                 // the artifact is declared in the pom
-                usedDirectArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
+                usedDirectArtifactsCoordinates.add(artifactGAVS);
             } else {
                 // the artifact is inherited
-                usedInheritedArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
+                usedInheritedArtifactsCoordinates.add(artifactGAVS);
             }
         }
 
         // TODO Fix: The used transitive dependencies induced by inherited dependencies should be considered as used inherited
         for (Artifact artifact : usedTransitiveArtifacts) {
-            String artifactCoordinates = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
-            usedTransitiveArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
+            String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
+            String artifactGAVS = artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
+            usedTransitiveArtifactsCoordinates.add(artifactGAVS);
         }
 
         // --- unused dependencies
@@ -283,20 +285,22 @@ public class DepCleanMojo extends AbstractMojo {
         Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
 
         for (Artifact artifact : unusedDirectArtifacts) {
-            String artifactCoordinates = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
-            if (declaredArtifactsCoordinates.contains(artifactCoordinates)) {
+            String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
+            String artifactGAVS = artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
+            if (declaredArtifactsGAs.contains(artifactGA)) {
                 // the artifact is declared in the pom
-                unusedDirectArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
+                unusedDirectArtifactsCoordinates.add(artifactGAVS);
             } else {
                 // the artifact is inherited
-                unusedInheritedArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
+                unusedInheritedArtifactsCoordinates.add(artifactGAVS);
             }
         }
 
         // TODO Fix: The unused transitive dependencies induced by inherited dependencies should be considered as unused inherited
         for (Artifact artifact : unusedTransitiveArtifacts) {
-            String artifactCoordinates = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
-            unusedTransitiveArtifactsCoordinates.add(artifactCoordinates + ":" + artifact.getScope());
+            String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
+            String artifactGAVS = artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
+            unusedTransitiveArtifactsCoordinates.add(artifactGAVS);
         }
 
         /* Ignoring dependencies from the analysis */
@@ -375,7 +379,7 @@ public class DepCleanMojo extends AbstractMojo {
             /* Add used transitive as direct dependencies */
             try {
                 if (!usedTransitiveArtifacts.isEmpty()) {
-                    getLog().info("Adding " + usedTransitiveArtifacts.size() + " used transitive dependencies as direct dependencies.");
+                    getLog().info("Adding " + unusedTransitiveArtifactsCoordinates.size() + " used transitive dependencies as direct dependencies.");
                     for (Artifact usedUndeclaredArtifact : usedTransitiveArtifacts) {
                         model.addDependency(createDependency(usedUndeclaredArtifact));
                     }
@@ -387,7 +391,7 @@ public class DepCleanMojo extends AbstractMojo {
             /* Remove unused direct dependencies */
             try {
                 if (!unusedDirectArtifacts.isEmpty()) {
-                    getLog().info("Removing " + unusedDirectArtifacts.size() + " unused direct dependencies.");
+                    getLog().info("Removing " + unusedDirectArtifactsCoordinates.size() + " unused direct dependencies.");
                     for (Artifact unusedDeclaredArtifact : unusedDirectArtifacts) {
                         for (Dependency dependency : model.getDependencies()) {
                             if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId()) &&

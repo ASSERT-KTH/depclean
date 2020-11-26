@@ -34,6 +34,9 @@ public class NodeAdapter extends TypeAdapter<Node> {
         this.unusedInheritedArtifactsCoordinates = unusedInheritedArtifactsCoordinates;
         this.unusedTransitiveArtifactsCoordinates = unusedTransitiveArtifactsCoordinates;
         this.sizeOfDependencies = sizeOfDependencies;
+
+        // System.out.println(usedDirectArtifactsCoordinates);
+        // System.out.println(unusedDirectArtifactsCoordinates);
     }
 
     @Override
@@ -72,19 +75,15 @@ public class NodeAdapter extends TypeAdapter<Node> {
                 .jsonValue(String.valueOf(sizeOfDependencies.get(dependencyJar)))
 
                 .name("type")
-                .jsonValue(usedDirectArtifactsCoordinates.contains(coordinates) || unusedDirectArtifactsCoordinates.contains(coordinates) ? "\"" + "direct" + "\"" :
-                        usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates) ? "\"" + "inherited" + "\"" :
-                                usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates) ? "\"" + "transitive" + "\"" :
+                .jsonValue((usedDirectArtifactsCoordinates.contains(coordinates) || unusedDirectArtifactsCoordinates.contains(coordinates)) ? "\"" + "direct" + "\"" :
+                        (usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates)) ? "\"" + "inherited" + "\"" :
+                                (usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates)) ? "\"" + "transitive" + "\"" :
                                         "\"" + "unknown" + "\"")
 
                 .name("status")
-                .jsonValue(usedDirectArtifactsCoordinates.contains(coordinates) ||
-                        usedInheritedArtifactsCoordinates.contains(coordinates) ||
-                        usedTransitiveArtifactsCoordinates.contains(coordinates) ?
+                .jsonValue((usedDirectArtifactsCoordinates.contains(coordinates) || usedInheritedArtifactsCoordinates.contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates)) ?
                         "\"" + "used" + "\"" :
-                        unusedDirectArtifactsCoordinates.contains(coordinates) ||
-                                unusedInheritedArtifactsCoordinates.contains(coordinates) ||
-                                unusedTransitiveArtifactsCoordinates.contains(coordinates) ?
+                        (unusedDirectArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates)) ?
                                 "\"" + "bloated" + "\"" :
                                 "\"" + "unknown" + "\"")
 

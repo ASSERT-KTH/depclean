@@ -45,7 +45,7 @@ public class DefaultCallGraph {
     }
 
     public static Set<String> referencedClassMembers(Set<String> projectClasses) {
-        System.out.println("project classes: " + projectClasses);
+        // System.out.println("project classes: " + projectClasses);
         Set<String> allReferencedClassMembers = new HashSet<>();
         for (String projectClass : projectClasses) {
             allReferencedClassMembers.addAll(traverse(projectClass));
