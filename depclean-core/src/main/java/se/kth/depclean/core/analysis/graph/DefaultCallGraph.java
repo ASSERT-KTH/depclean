@@ -50,6 +50,8 @@ public class DefaultCallGraph {
         for (String projectClass : projectClasses) {
             allReferencedClassMembers.addAll(traverse(projectClass));
         }
+
+        // System.out.println("All referenced class members: " + allReferencedClassMembers);
         return allReferencedClassMembers;
     }
 

@@ -54,15 +54,11 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     @Requirement
     private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
 
-    private Map<Artifact, Set<String>> artifactClassMap = new HashMap<>();
-
-    public Map<String, Set<String>> getArtifactClassMap() {
-        Map<String, Set<String>> resultArtifactClassMap = new HashMap<>();
-        for (Artifact artifact : artifactClassMap.keySet()) {
-            resultArtifactClassMap.put(artifact.toString(), artifactClassMap.get(artifact));
-        }
-        return resultArtifactClassMap;
-    }
+    private final Map<Artifact, Set<String>> artifactUsedClassesMap = new HashMap<>();
+    /**
+     * A map [dependency] -> [dependency classes].
+     */
+    private Map<Artifact, Set<String>> artifactClassesMap = new HashMap<>();
 
     /**
      * Analyze the dependencies in a project.
@@ -74,11 +70,7 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
      */
     public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
         try {
-            // map of [dependency] -> [classes]
-            artifactClassMap = buildArtifactClassMap(project);
-
-            System.out.println("CLASSES IN DEPENDENCIES");
-            artifactClassMap.forEach((key, value) -> System.out.println(key + " -> " + value));
+            artifactClassesMap = buildArtifactClassMap(project);
 
             // direct dependencies of the project
             System.out.println(SEPARATOR);
@@ -96,19 +88,20 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
             Set<String> builtProjectDependencyClasses = buildProjectDependencyClasses(project);
             Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
 
-            System.out.println("PROJECT CLASSES: " + projectClasses);
-            System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
-            Set<String> builtDependenciesDependencyClasses = buildDependenciesDependencyClasses(project);
-            Set<String> dependencyClasses = DefaultCallGraph.getProjectVertices();
-            dependencyClasses.removeAll(projectClasses);
-            System.out.println("DEPENDENCY CLASSES: " + dependencyClasses);
-            System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
+            // System.out.println("PROJECT CLASSES: " + projectClasses);
+            // System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
+            // Set<String> builtDependenciesDependencyClasses = buildDependenciesDependencyClasses(project);
+            // Set<String> dependencyClasses = DefaultCallGraph.getProjectVertices();
+            // dependencyClasses.removeAll(projectClasses);
+            // System.out.println("DEPENDENCY CLASSES: " + dependencyClasses);
+            // System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
 
             /* ******************** usage analysis ********************* */
 
             // System.out.println("PROJECT CLASSES: " + projectClasses);
             // search for the dependencies used by the project
-            Set<Artifact> usedArtifacts = buildUsedArtifacts(artifactClassMap, DefaultCallGraph.referencedClassMembers(projectClasses));
+            Set<String> referencedClasses = DefaultCallGraph.referencedClassMembers(projectClasses);
+            Set<Artifact> usedArtifacts = collectUsedArtifacts(artifactClassesMap, referencedClasses);
 
             /* ******************** call graph analysis ******************** */
             System.out.println(SEPARATOR);
@@ -171,33 +164,43 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         String outputDirectory = project.getBuild().getOutputDirectory();
         String testOutputDirectory = project.getBuild().getTestOutputDirectory();
         /* construct the dependency classes */
-        dependencyClasses.addAll(buildDependencyClasses(outputDirectory));
-        dependencyClasses.addAll(buildDependencyClasses(testOutputDirectory));
-
+        dependencyClasses.addAll(collectDependencyClasses(outputDirectory));
+        dependencyClasses.addAll(collectDependencyClasses(testOutputDirectory));
         return dependencyClasses;
     }
 
     private Set<String> buildDependenciesDependencyClasses(MavenProject project) throws IOException {
         Set<String> dependencyClasses = new HashSet<>();
         String dependenciesDirectory = project.getBuild().getDirectory() + "/" + "dependency";
-        dependencyClasses.addAll(buildDependencyClasses(dependenciesDirectory));
-
+        dependencyClasses.addAll(collectDependencyClasses(dependenciesDirectory));
         return dependencyClasses;
     }
 
-    private Set<Artifact> buildUsedArtifacts(Map<Artifact, Set<String>> artifactClassMap, Set<String> dependencyClasses) {
+    private Set<Artifact> collectUsedArtifacts(Map<Artifact, Set<String>> artifactClassMap, Set<String> referencedClasses) {
         Set<Artifact> usedArtifacts = new HashSet<>();
-
         // find for used members in each class in the dependency classes
-        for (String className : dependencyClasses) {
-            Artifact artifact = findArtifactForClassName(artifactClassMap, className);
-
+        for (String clazz : referencedClasses) {
+            Artifact artifact = findArtifactForClassName(artifactClassMap, clazz);
             if (artifact != null) {
+
+                if (!artifactUsedClassesMap.containsKey(artifact)) {
+                    artifactUsedClassesMap.put(artifact, new HashSet<>());
+                }
+                artifactUsedClassesMap.get(artifact).add(clazz);
+
                 usedArtifacts.add(artifact);
             }
         }
-
         return usedArtifacts;
+    }
+
+    private Artifact findArtifactForClassName(Map<Artifact, Set<String>> artifactClassMap, String className) {
+        for (Map.Entry<Artifact, Set<String>> entry : artifactClassMap.entrySet()) {
+            if (entry.getValue().contains(className)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     /**
@@ -212,7 +215,6 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         Set<Artifact> results = new LinkedHashSet<>(start.size());
         for (Artifact artifact : start) {
             boolean found = false;
-
             for (Artifact artifact2 : remove) {
                 if (artifact.getDependencyConflictId().equals(artifact2.getDependencyConflictId())) {
                     found = true;
@@ -226,18 +228,9 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         return results;
     }
 
-    private Set<String> buildDependencyClasses(String path) throws IOException {
+    private Set<String> collectDependencyClasses(String path) throws IOException {
         URL url = new File(path).toURI().toURL();
         return dependencyAnalyzer.analyze(url);
-    }
-
-    private Artifact findArtifactForClassName(Map<Artifact, Set<String>> artifactClassMap, String className) {
-        for (Map.Entry<Artifact, Set<String>> entry : artifactClassMap.entrySet()) {
-            if (entry.getValue().contains(className)) {
-                return entry.getKey();
-            }
-        }
-        return null;
     }
 
     protected Set<Artifact> buildDeclaredArtifacts(MavenProject project) {
@@ -246,6 +239,27 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
             declaredArtifacts = Collections.emptySet();
         }
         return declaredArtifacts;
+    }
+
+    public Map<String, ArtifactTypes> getArtifactClassesMap() {
+        Map<String, ArtifactTypes> output = new HashMap<>();
+        for (Map.Entry<Artifact, Set<String>> entry : artifactClassesMap.entrySet()) {
+            Artifact key = entry.getKey();
+            Set<String> value = entry.getValue();
+
+            if (artifactUsedClassesMap.containsKey(key)) {
+                output.put(key.toString(), new ArtifactTypes(
+                        artifactClassesMap.get(key), // get all the types
+                        artifactUsedClassesMap.get(key) // get used types
+                ));
+            } else {
+                output.put(key.toString(), new ArtifactTypes(
+                        artifactClassesMap.get(key), // get all the types
+                        new HashSet<>() // get used types
+                ));
+            }
+        }
+        return output;
     }
 }
 

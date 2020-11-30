@@ -94,12 +94,17 @@ public class NodeAdapter extends TypeAdapter<Node> {
                 .name("parent")
                 .jsonValue(node.getParent() != null ?
                         "\"" + node.getParent().getArtifactCanonicalForm() + "\"" :
-                        "\"" + "null" + "\"")
+                        null)
 
-                .name("types")
-                .value(dependencyAnalyzer.getArtifactClassMap().containsKey(node.getArtifactCanonicalForm()) ?
-                        dependencyAnalyzer.getArtifactClassMap().get(node.getArtifactCanonicalForm()).toString() :
-                        "null")
+                .name("allTypes")
+                .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(node.getArtifactCanonicalForm()) ?
+                        dependencyAnalyzer.getArtifactClassesMap().get(node.getArtifactCanonicalForm()).getAllTypes().toString() :
+                        null)
+
+                .name("usedTypes")
+                .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(node.getArtifactCanonicalForm()) ?
+                        dependencyAnalyzer.getArtifactClassesMap().get(node.getArtifactCanonicalForm()).getUsedTypes().toString() :
+                        null)
 
                 .name("children")
                 .beginArray();
