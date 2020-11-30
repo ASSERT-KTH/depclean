@@ -46,10 +46,11 @@ public class NodeAdapter extends TypeAdapter<Node> {
     @Override
     public void write(JsonWriter jsonWriter, Node node) throws IOException {
         String coordinates = node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getVersion() + ":" + node.getScope();
+        String canonical = node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getPackaging() + ":" + node.getVersion() + ":" + node.getScope();
         String dependencyJar = node.getArtifactId() + "-" + node.getVersion() + ".jar";
         jsonWriter.beginObject()
                 .name("id")
-                .jsonValue("\"" + node.getArtifactCanonicalForm() + "\"")
+                .jsonValue("\"" + canonical + "\"")
 
                 .name("coordinates")
                 .jsonValue("\"" + node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getVersion() + "\"")
@@ -82,35 +83,35 @@ public class NodeAdapter extends TypeAdapter<Node> {
                 .jsonValue((usedDirectArtifactsCoordinates.contains(coordinates) || unusedDirectArtifactsCoordinates.contains(coordinates)) ? "\"" + "direct" + "\"" :
                         (usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates)) ? "\"" + "inherited" + "\"" :
                                 (usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates)) ? "\"" + "transitive" + "\"" :
-                                        "\"" + "unknown" + "\"")
+                                        "\"unknown\"")
 
                 .name("status")
                 .jsonValue((usedDirectArtifactsCoordinates.contains(coordinates) || usedInheritedArtifactsCoordinates.contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates)) ?
                         "\"" + "used" + "\"" :
                         (unusedDirectArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates)) ?
                                 "\"" + "bloated" + "\"" :
-                                "\"" + "unknown" + "\"")
+                                "\"unknown\"")
 
                 .name("parent")
                 .jsonValue(node.getParent() != null ?
                         "\"" + node.getParent().getArtifactCanonicalForm() + "\"" :
-                        null)
+                        "\"unknown\"")
 
                 .name("allTypes")
-                .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(node.getArtifactCanonicalForm()) ?
-                        dependencyAnalyzer.getArtifactClassesMap().get(node.getArtifactCanonicalForm()).getAllTypes().toString() :
-                        null)
+                .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
+                        dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().toString() :
+                        "unknown")
 
                 .name("usedTypes")
-                .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(node.getArtifactCanonicalForm()) ?
-                        dependencyAnalyzer.getArtifactClassesMap().get(node.getArtifactCanonicalForm()).getUsedTypes().toString() :
-                        null)
+                .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
+                        dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().toString() :
+                        "unknown")
 
                 .name("usageRatio")
-                .jsonValue(dependencyAnalyzer.getArtifactClassesMap().containsKey(node.getArtifactCanonicalForm()) ?
-                        Double.toString((double) dependencyAnalyzer.getArtifactClassesMap().get(node.getArtifactCanonicalForm()).getUsedTypes().size() /
-                                dependencyAnalyzer.getArtifactClassesMap().get(node.getArtifactCanonicalForm()).getAllTypes().size()) :
-                        null)
+                .jsonValue(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
+                        Double.toString((double) dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().size() /
+                                dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().size()) :
+                        "\"unknown\"")
 
                 .name("children")
                 .beginArray();
