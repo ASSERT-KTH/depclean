@@ -106,6 +106,12 @@ public class NodeAdapter extends TypeAdapter<Node> {
                         dependencyAnalyzer.getArtifactClassesMap().get(node.getArtifactCanonicalForm()).getUsedTypes().toString() :
                         null)
 
+                .name("usageRatio")
+                .jsonValue(dependencyAnalyzer.getArtifactClassesMap().containsKey(node.getArtifactCanonicalForm()) ?
+                        Double.toString((double) dependencyAnalyzer.getArtifactClassesMap().get(node.getArtifactCanonicalForm()).getUsedTypes().size() /
+                                dependencyAnalyzer.getArtifactClassesMap().get(node.getArtifactCanonicalForm()).getAllTypes().size()) :
+                        null)
+
                 .name("children")
                 .beginArray();
 
