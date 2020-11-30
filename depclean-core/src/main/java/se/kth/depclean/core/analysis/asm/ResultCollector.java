@@ -1,5 +1,3 @@
-package se.kth.depclean.core.analysis.asm;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,87 +17,72 @@ package se.kth.depclean.core.analysis.asm;
  * under the License.
  */
 
-import java.util.HashSet;
-import java.util.Set;
+package se.kth.depclean.core.analysis.asm;
 
 import org.objectweb.asm.Type;
 
-public class ResultCollector
-{
+import java.util.HashSet;
+import java.util.Set;
 
-   private final Set<String> classes = new HashSet<>();
+public class ResultCollector {
 
-   public Set<String> getDependencies()
-   {
-      return classes;
-   }
+    private final Set<String> classes = new HashSet<>();
 
-   public void clearClasses()
-   {
-      classes.clear();
-   }
+    public Set<String> getDependencies() {
+        return classes;
+    }
 
-   void addDesc(final String desc)
-   {
-      addType(Type.getType(desc));
-   }
+    public void clearClasses() {
+        classes.clear();
+    }
 
-   void addType(final Type t)
-   {
-      switch (t.getSort()) {
-         case Type.ARRAY:
-            addType(t.getElementType());
-            break;
+    void addDesc(final String desc) {
+        addType(Type.getType(desc));
+    }
 
-         case Type.OBJECT:
-            addName(t.getClassName().replace('.', '/'));
-            break;
+    void addType(final Type t) {
+        switch (t.getSort()) {
+            case Type.ARRAY:
+                addType(t.getElementType());
+                break;
+            case Type.OBJECT:
+                addName(t.getClassName().replace('.', '/'));
+                break;
+            default:
+        }
+    }
 
-         default:
-      }
-   }
+    public void add(String name) {
+        classes.add(name);
+    }
 
-   public void add(String name)
-   {
-      classes.add(name);
-   }
+    void addNames(final String[] names) {
+        if (names == null) {
+            return;
+        }
+        for (String name : names) {
+            addName(name);
+        }
+    }
 
-   void addNames(final String[] names)
-   {
-      if (names == null) {
-         return;
-      }
+    public void addName(String name) {
+        if (name == null) {
+            return;
+        }
+        // decode arrays
+        if (name.startsWith("[L") && name.endsWith(";")) {
+            name = name.substring(2, name.length() - 1);
+        }
+        // decode internal representation
+        name = name.replace('/', '.');
+        classes.add(name);
+    }
 
-      for (String name : names) {
-         addName(name);
-      }
-   }
-
-   public void addName(String name)
-   {
-      if (name == null) {
-         return;
-      }
-
-      // decode arrays
-      if (name.startsWith("[L") && name.endsWith(";")) {
-         name = name.substring(2, name.length() - 1);
-      }
-
-      // decode internal representation
-      name = name.replace('/', '.');
-
-      classes.add(name);
-   }
-
-   void addMethodDesc(final String desc)
-   {
-      addType(Type.getReturnType(desc));
-
-      Type[] types = Type.getArgumentTypes(desc);
-
-      for (Type type : types) {
-         addType(type);
-      }
-   }
+    void addMethodDesc(final String desc) {
+        addType(Type.getReturnType(desc));
+        Type[] types = Type.getArgumentTypes(desc);
+        for (Type type : types) {
+            addType(type);
+        }
+    }
 }

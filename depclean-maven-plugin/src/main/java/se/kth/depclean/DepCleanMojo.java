@@ -46,7 +46,6 @@ import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
-import se.kth.depclean.core.analysis.ProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.util.JarUtils;
 import se.kth.depclean.util.MavenInvoker;
@@ -221,8 +220,8 @@ public class DepCleanMojo extends AbstractMojo {
 
         /* Analyze dependencies usage status */
         ProjectDependencyAnalysis projectDependencyAnalysis;
+        DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer();
         try {
-            ProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer();
             projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
         } catch (ProjectDependencyAnalyzerException e) {
             getLog().error("Unable to analyze dependencies.");
@@ -454,6 +453,7 @@ public class DepCleanMojo extends AbstractMojo {
             ParsedDependencies parsedDependencies = new ParsedDependencies(
                     treeFile,
                     sizeOfDependencies,
+                    dependencyAnalyzer,
                     usedDirectArtifactsCoordinates,
                     usedInheritedArtifactsCoordinates,
                     usedTransitiveArtifactsCoordinates,

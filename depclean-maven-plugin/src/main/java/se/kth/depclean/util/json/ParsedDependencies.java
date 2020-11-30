@@ -7,6 +7,7 @@ import fr.dutra.tools.maven.deptree.core.Node;
 import fr.dutra.tools.maven.deptree.core.ParseException;
 import fr.dutra.tools.maven.deptree.core.Parser;
 import lombok.extern.slf4j.Slf4j;
+import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -21,6 +22,7 @@ import java.util.Set;
 public class ParsedDependencies {
 
     private final String treeTextFilePath;
+    private final DefaultProjectDependencyAnalyzer dependencyAnalyzer;
     private final Set<String> usedDirectArtifactsCoordinates;
     private final Set<String> usedInheritedArtifactsCoordinates;
     private final Set<String> usedTransitiveArtifactsCoordinates;
@@ -32,6 +34,7 @@ public class ParsedDependencies {
 
     public ParsedDependencies(String treeTextFilePath,
                               Map<String, Long> sizeOfDependencies,
+                              DefaultProjectDependencyAnalyzer dependencyAnalyzer,
                               Set<String> usedDirectArtifactsCoordinates,
                               Set<String> usedInheritedArtifactsCoordinates,
                               Set<String> usedUndeclaredArtifactsCoordinates,
@@ -41,6 +44,7 @@ public class ParsedDependencies {
                              ) {
         this.treeTextFilePath = treeTextFilePath;
         this.sizeOfDependencies = sizeOfDependencies;
+        this.dependencyAnalyzer = dependencyAnalyzer;
         this.usedDirectArtifactsCoordinates = usedDirectArtifactsCoordinates;
         this.usedInheritedArtifactsCoordinates = usedInheritedArtifactsCoordinates;
         this.usedTransitiveArtifactsCoordinates = usedUndeclaredArtifactsCoordinates;
@@ -63,7 +67,8 @@ public class ParsedDependencies {
                 unusedDirectArtifactsCoordinates,
                 unusedInheritedArtifactsCoordinates,
                 unusedTransitiveArtifactsCoordinates,
-                sizeOfDependencies
+                sizeOfDependencies,
+                dependencyAnalyzer
         );
         GsonBuilder gsonBuilder = new GsonBuilder()
                 .registerTypeAdapter(Node.class, nodeAdapter);

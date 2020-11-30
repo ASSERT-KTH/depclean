@@ -1,5 +1,3 @@
-package se.kth.depclean.core.analysis.asm;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,6 +17,10 @@ package se.kth.depclean.core.analysis.asm;
  * under the License.
  */
 
+package se.kth.depclean.core.analysis.asm;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Collections;
@@ -26,8 +28,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.jetbrains.annotations.NotNull;
 
 /**
  * A small parser to read the constant pool directly, in case it contains references
@@ -40,8 +40,8 @@ import org.jetbrains.annotations.NotNull;
  * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.4">JVM 9 Sepc</a>
  * @see <a href="https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.4">JVM 10 Sepc</a>
  */
-public class ConstantPoolParser
-{
+public class ConstantPoolParser {
+
     public static final int HEAD = 0xcafebabe;
 
     // Constant pool types
@@ -83,15 +83,17 @@ public class ConstantPoolParser
 
     private static final int OX3F = 0x3F;
 
-    static Set<String> getConstantPoolClassReferences(byte[] b)
-    {
+    private ConstantPoolParser() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    static Set<String> getConstantPoolClassReferences(byte[] b) {
         return parseConstantPoolClassReferences(ByteBuffer.wrap(b));
     }
 
-    static Set<String> parseConstantPoolClassReferences(ByteBuffer buf)
-    {
+    static Set<String> parseConstantPoolClassReferences(ByteBuffer buf) {
         if (buf.order(ByteOrder.BIG_ENDIAN)
-            .getInt() != HEAD) {
+                .getInt() != HEAD) {
             return Collections.emptySet();
         }
         buf.getChar();
@@ -155,14 +157,8 @@ public class ConstantPoolParser
         return result;
     }
 
-    private ConstantPoolParser()
-    {
-        throw new IllegalStateException("Utility class");
-    }
-
     @NotNull
-    private static String decodeString(ByteBuffer buf)
-    {
+    private static String decodeString(ByteBuffer buf) {
         int size = buf.getChar();
         // Explicit cast for compatibility with covariant return type on JDK 9's ByteBuffer
         int oldLimit = buf.limit();

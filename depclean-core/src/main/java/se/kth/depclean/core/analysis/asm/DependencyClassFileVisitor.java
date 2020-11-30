@@ -1,5 +1,3 @@
-package se.kth.depclean.core.analysis.asm;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,18 +17,19 @@ package se.kth.depclean.core.analysis.asm;
  * under the License.
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Set;
+package se.kth.depclean.core.analysis.asm;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.signature.SignatureVisitor;
-
 import se.kth.depclean.core.analysis.ClassFileVisitor;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
 
 /**
  * Computes the set of classes referenced by visited class files, using
@@ -38,67 +37,64 @@ import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
  *
  * @see #getDependencies()
  */
-public class DependencyClassFileVisitor implements ClassFileVisitor
-{
-   // fields -----------------------------------------------------------------
+public class DependencyClassFileVisitor implements ClassFileVisitor {
 
-   private final ResultCollector resultCollector = new ResultCollector();
+    // fields -----------------------------------------------------------------
 
-   // constructors -----------------------------------------------------------
+    private final ResultCollector resultCollector = new ResultCollector();
 
-   public DependencyClassFileVisitor()
-   {
-   }
+    // constructors -----------------------------------------------------------
 
-   // ClassFileVisitor methods -----------------------------------------------
+    public DependencyClassFileVisitor() {
+    }
 
-   /*
-    * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String,
-    *      java.io.InputStream)
-    */
-   public void visitClass(String className, InputStream in)
-   {
-      try {
-         ClassReader reader = new ClassReader(in);
+    // ClassFileVisitor methods -----------------------------------------------
 
-         // System.out.println("**************************************************");
-         // System.out.println("Reading class: " + className);
+    /*
+     * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String,
+     *      java.io.InputStream)
+     */
+    public void visitClass(String className, InputStream in) {
+        try {
+            ClassReader reader = new ClassReader(in);
 
-         final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
-         for (String string : constantPoolClassRefs) {
-            resultCollector.addName(string);
-         }
+            // System.out.println("**************************************************");
+            // System.out.println("Reading class: " + className);
 
-         /* visit class members */
-         AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(resultCollector);
-         SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(resultCollector);
-         FieldVisitor fieldVisitor = new DefaultFieldVisitor(annotationVisitor, resultCollector);
-         MethodVisitor methodVisitor = new DefaultMethodVisitor(annotationVisitor, signatureVisitor, resultCollector);
+            final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
+            for (String string : constantPoolClassRefs) {
+                resultCollector.addName(string);
+            }
 
-         DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(signatureVisitor, annotationVisitor, fieldVisitor, methodVisitor, resultCollector);
+            /* visit class members */
+            AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(resultCollector);
+            SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(resultCollector);
+            FieldVisitor fieldVisitor = new DefaultFieldVisitor(annotationVisitor, resultCollector);
+            MethodVisitor methodVisitor = new DefaultMethodVisitor(annotationVisitor, signatureVisitor, resultCollector);
 
-         reader.accept(defaultClassVisitor, 0);
+            DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(signatureVisitor, annotationVisitor, fieldVisitor, methodVisitor, resultCollector);
 
-         // inset edge in the graph based on the bytecode analysis
-         DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
-         resultCollector.clearClasses();
+            reader.accept(defaultClassVisitor, 0);
 
-      } catch (IOException exception) {
-         exception.printStackTrace();
-      } catch (IndexOutOfBoundsException e) {
-         // some bug inside ASM causes an IOB exception. Log it and move on?
-         // this happens when the class isn't valid.
-         System.out.println("Unable to process: " + className);
-      }
-   }
+            // inset edge in the graph based on the bytecode analysis
+            DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
+            resultCollector.clearClasses();
 
-   // public methods ---------------------------------------------------------
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        } catch (IndexOutOfBoundsException e) {
+            // some bug inside ASM causes an IOB exception. Log it and move on?
+            // this happens when the class isn't valid.
+            System.out.println("Unable to process: " + className);
+        }
+    }
 
-   /**
-    * @return the set of classes referenced by visited class files
-    */
-   public Set<String> getDependencies()
-   {
-      return resultCollector.getDependencies();
-   }
+    // public methods ---------------------------------------------------------
+
+    /**
+     * @return the set of classes referenced by visited class files
+     */
+    public Set<String> getDependencies() {
+        return resultCollector.getDependencies();
+    }
 }

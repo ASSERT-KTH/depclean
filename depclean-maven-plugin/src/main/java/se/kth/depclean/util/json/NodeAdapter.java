@@ -4,6 +4,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import fr.dutra.tools.maven.deptree.core.Node;
+import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 
 import java.io.IOException;
 import java.util.Map;
@@ -17,6 +18,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
     private final Set<String> unusedDirectArtifactsCoordinates;
     private final Set<String> unusedInheritedArtifactsCoordinates;
     private final Set<String> unusedTransitiveArtifactsCoordinates;
+    private final DefaultProjectDependencyAnalyzer dependencyAnalyzer;
 
     private final Map<String, Long> sizeOfDependencies;
 
@@ -26,7 +28,8 @@ public class NodeAdapter extends TypeAdapter<Node> {
                        Set<String> unusedDirectArtifactsCoordinates,
                        Set<String> unusedInheritedArtifactsCoordinates,
                        Set<String> unusedTransitiveArtifactsCoordinates,
-                       Map<String, Long> sizeOfDependencies) {
+                       Map<String, Long> sizeOfDependencies,
+                       DefaultProjectDependencyAnalyzer dependencyAnalyzer) {
         this.usedDirectArtifactsCoordinates = usedDirectArtifactsCoordinates;
         this.usedInheritedArtifactsCoordinates = usedInheritedArtifactsCoordinates;
         this.usedTransitiveArtifactsCoordinates = usedTransitiveArtifactsCoordinates;
@@ -34,6 +37,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
         this.unusedInheritedArtifactsCoordinates = unusedInheritedArtifactsCoordinates;
         this.unusedTransitiveArtifactsCoordinates = unusedTransitiveArtifactsCoordinates;
         this.sizeOfDependencies = sizeOfDependencies;
+        this.dependencyAnalyzer = dependencyAnalyzer;
 
         // System.out.println(usedDirectArtifactsCoordinates);
         // System.out.println(unusedDirectArtifactsCoordinates);
@@ -88,10 +92,18 @@ public class NodeAdapter extends TypeAdapter<Node> {
                                 "\"" + "unknown" + "\"")
 
                 .name("parent")
-                .jsonValue(node.getParent() != null ? "\"" + node.getParent().getArtifactCanonicalForm() + "\"" : "\"" + "null" + "\"")
+                .jsonValue(node.getParent() != null ?
+                        "\"" + node.getParent().getArtifactCanonicalForm() + "\"" :
+                        "\"" + "null" + "\"")
+
+                .name("types")
+                .value(dependencyAnalyzer.getArtifactClassMap().containsKey(node.getArtifactCanonicalForm()) ?
+                        dependencyAnalyzer.getArtifactClassMap().get(node.getArtifactCanonicalForm()).toString() :
+                        "null")
 
                 .name("children")
                 .beginArray();
+
         for (Node c : node.getChildNodes()) {
             this.write(jsonWriter, c);
         }

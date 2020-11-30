@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -53,15 +54,31 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     @Requirement
     private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
 
-    // ProjectDependencyAnalyzer methods --------------------------------------
+    private Map<Artifact, Set<String>> artifactClassMap = new HashMap<>();
 
-    /*
-     * @see ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)
+    public Map<String, Set<String>> getArtifactClassMap() {
+        Map<String, Set<String>> resultArtifactClassMap = new HashMap<>();
+        for (Artifact artifact : artifactClassMap.keySet()) {
+            resultArtifactClassMap.put(artifact.toString(), artifactClassMap.get(artifact));
+        }
+        return resultArtifactClassMap;
+    }
+
+    /**
+     * Analyze the dependencies in a project.
+     *
+     * @param project The Maven project to be analyzed.
+     * @return An object with the usedDeclaredArtifacts, usedUndeclaredArtifacts, and unusedDeclaredArtifacts.
+     * @throws ProjectDependencyAnalyzerException
+     * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
      */
     public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
         try {
             // map of [dependency] -> [classes]
-            Map<Artifact, Set<String>> artifactClassMap = buildArtifactClassMap(project);
+            artifactClassMap = buildArtifactClassMap(project);
+
+            System.out.println("CLASSES IN DEPENDENCIES");
+            artifactClassMap.forEach((key, value) -> System.out.println(key + " -> " + value));
 
             // direct dependencies of the project
             System.out.println(SEPARATOR);
@@ -78,16 +95,18 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
             // set of classes in project
             Set<String> builtProjectDependencyClasses = buildProjectDependencyClasses(project);
             Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
-            // System.out.println("PROJECT CLASSES: " + projectClasses);
-            // System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
-            // Set<String> builtDependenciesDependencyClasses = buildDependenciesDependencyClasses(project);
-            //            HashSet dependencyClasses = new HashSet<>(DefaultCallGraph.getProjectVertices().removeAll(projectClasses));
-            //            System.out.println("DEPENDENCY CLASSES: " + dependencyClasses);
-            //            System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
+
+            System.out.println("PROJECT CLASSES: " + projectClasses);
+            System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
+            Set<String> builtDependenciesDependencyClasses = buildDependenciesDependencyClasses(project);
+            Set<String> dependencyClasses = DefaultCallGraph.getProjectVertices();
+            dependencyClasses.removeAll(projectClasses);
+            System.out.println("DEPENDENCY CLASSES: " + dependencyClasses);
+            System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
 
             /* ******************** usage analysis ********************* */
 
-            //            System.out.println("PROJECT CLASSES: " + projectClasses);
+            // System.out.println("PROJECT CLASSES: " + projectClasses);
             // search for the dependencies used by the project
             Set<Artifact> usedArtifacts = buildUsedArtifacts(artifactClassMap, DefaultCallGraph.referencedClassMembers(projectClasses));
 
@@ -116,7 +135,7 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         }
     }
 
-    private Map<Artifact, Set<String>> buildArtifactClassMap(MavenProject project) throws IOException {
+    public Map<Artifact, Set<String>> buildArtifactClassMap(MavenProject project) throws IOException {
         Map<Artifact, Set<String>> artifactClassMap = new LinkedHashMap<>();
         Set<Artifact> dependencyArtifacts = project.getArtifacts();
         for (Artifact artifact : dependencyArtifacts) {

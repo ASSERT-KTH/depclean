@@ -1,5 +1,3 @@
-package se.kth.depclean.core.analysis.asm;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,31 +17,30 @@ package se.kth.depclean.core.analysis.asm;
  * under the License.
  */
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Set;
+package se.kth.depclean.core.analysis.asm;
 
 import org.codehaus.plexus.component.annotations.Component;
-
 import se.kth.depclean.core.analysis.ClassFileVisitorUtils;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Set;
+
 @Component(role = DependencyAnalyzer.class)
-public class ASMDependencyAnalyzer implements DependencyAnalyzer
-{
+public class ASMDependencyAnalyzer implements DependencyAnalyzer {
 
-   // DependencyAnalyzer methods ---------------------------------------------
+    // DependencyAnalyzer methods ---------------------------------------------
 
-   /*
-    * @see org.apache.invoke.shared.dependency.analyzer.DependencyAnalyzer#analyze(java.net.URL)
-    */
-   @Override
-   public Set<String> analyze(URL url) throws IOException
-   {
-      ClassMembersVisitorCounter.resetClassCounters();
-      DependencyClassFileVisitor visitor = new DependencyClassFileVisitor();
-      ClassFileVisitorUtils.accept(url, visitor);
-      return visitor.getDependencies();
-   }
+    /*
+     * @see org.apache.invoke.shared.dependency.analyzer.DependencyAnalyzer#analyze(java.net.URL)
+     */
+    @Override
+    public Set<String> analyze(URL url) throws IOException {
+        ClassMembersVisitorCounter.resetClassCounters();
+        DependencyClassFileVisitor visitor = new DependencyClassFileVisitor();
+        ClassFileVisitorUtils.accept(url, visitor);
+        return visitor.getDependencies();
+    }
 }
