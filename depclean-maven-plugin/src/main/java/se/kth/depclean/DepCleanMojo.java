@@ -450,6 +450,12 @@ public class DepCleanMojo extends AbstractMojo {
                 getLog().error("Unable to generate dependency tree.");
                 return;
             }
+            File classUsageFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "class-usage.csv");
+            try {
+                FileUtils.write(classUsageFile, "ProjectClass,DependencyClass,Dependency\n", Charset.defaultCharset());
+            } catch (IOException e) {
+                getLog().error("Error writing the CSV header.");
+            }
             ParsedDependencies parsedDependencies = new ParsedDependencies(
                     treeFile,
                     sizeOfDependencies,
@@ -459,7 +465,8 @@ public class DepCleanMojo extends AbstractMojo {
                     usedTransitiveArtifactsCoordinates,
                     unusedDirectArtifactsCoordinates,
                     unusedInheritedArtifactsCoordinates,
-                    unusedTransitiveArtifactsCoordinates
+                    unusedTransitiveArtifactsCoordinates,
+                    classUsageFile
             );
             try {
                 FileUtils.write(new File(pathToJsonFile), parsedDependencies.parseTreeToJSON(), Charset.defaultCharset());

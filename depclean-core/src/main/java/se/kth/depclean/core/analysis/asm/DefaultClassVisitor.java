@@ -35,19 +35,11 @@ import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
  */
 public class DefaultClassVisitor extends ClassVisitor {
 
-    // fields -----------------------------------------------------------------
-
     private final ResultCollector resultCollector;
-
     private final SignatureVisitor signatureVisitor;
-
     private final AnnotationVisitor annotationVisitor;
-
     private final FieldVisitor fieldVisitor;
-
     private final MethodVisitor methodVisitor;
-
-    // constructors -----------------------------------------------------------
 
     public DefaultClassVisitor(SignatureVisitor signatureVisitor,
                                AnnotationVisitor annotationVisitor,
@@ -65,7 +57,7 @@ public class DefaultClassVisitor extends ClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
                       final String superName, final String[] interfaces) {
-        // System.out.println("\t" + "visiting class: " + name);
+        System.out.println("Visiting class: " + name);
         ClassMembersVisitorCounter.addVisitedClass();
         if (signature == null) {
             resultCollector.addName(superName);

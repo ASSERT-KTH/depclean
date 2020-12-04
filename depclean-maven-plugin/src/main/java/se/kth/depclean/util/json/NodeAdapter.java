@@ -4,9 +4,13 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import fr.dutra.tools.maven.deptree.core.Node;
+import org.apache.commons.io.FileUtils;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,6 +23,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
     private final Set<String> unusedInheritedArtifactsCoordinates;
     private final Set<String> unusedTransitiveArtifactsCoordinates;
     private final DefaultProjectDependencyAnalyzer dependencyAnalyzer;
+    private final File classUsageFile;
 
     private final Map<String, Long> sizeOfDependencies;
 
@@ -29,7 +34,8 @@ public class NodeAdapter extends TypeAdapter<Node> {
                        Set<String> unusedInheritedArtifactsCoordinates,
                        Set<String> unusedTransitiveArtifactsCoordinates,
                        Map<String, Long> sizeOfDependencies,
-                       DefaultProjectDependencyAnalyzer dependencyAnalyzer) {
+                       DefaultProjectDependencyAnalyzer dependencyAnalyzer,
+                       File classUsageFile) {
         this.usedDirectArtifactsCoordinates = usedDirectArtifactsCoordinates;
         this.usedInheritedArtifactsCoordinates = usedInheritedArtifactsCoordinates;
         this.usedTransitiveArtifactsCoordinates = usedTransitiveArtifactsCoordinates;
@@ -38,9 +44,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
         this.unusedTransitiveArtifactsCoordinates = unusedTransitiveArtifactsCoordinates;
         this.sizeOfDependencies = sizeOfDependencies;
         this.dependencyAnalyzer = dependencyAnalyzer;
-
-        // System.out.println(usedDirectArtifactsCoordinates);
-        // System.out.println(unusedDirectArtifactsCoordinates);
+        this.classUsageFile = classUsageFile;
     }
 
     @Override
@@ -48,7 +52,22 @@ public class NodeAdapter extends TypeAdapter<Node> {
         String coordinates = node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getVersion() + ":" + node.getScope();
         String canonical = node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getPackaging() + ":" + node.getVersion() + ":" + node.getScope();
         String dependencyJar = node.getArtifactId() + "-" + node.getVersion() + ".jar";
-        jsonWriter.beginObject()
+
+        // Write to the class-usage.csv file
+        DefaultCallGraph defaultCallGraph = new DefaultCallGraph();
+        for (Map.Entry<String, Set<String>> usagePerClassMap : defaultCallGraph.getUsagesPerClass().entrySet()) {
+            String key = usagePerClassMap.getKey();
+            Set<String> value = usagePerClassMap.getValue();
+            for (String s : value) {
+                if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) && dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().contains(s)) {
+                    // System.out.println(key + " uses " + s + " from " + canonical);
+                    String triplet = key + "," + s + "," + canonical + "\n";
+                    FileUtils.write(classUsageFile, triplet, Charset.defaultCharset(), true);
+                }
+            }
+        }
+
+        JsonWriter localWriter = jsonWriter.beginObject()
                 .name("id")
                 .jsonValue("\"" + canonical + "\"")
 
@@ -74,7 +93,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
                 .jsonValue("\"" + node.isOmitted() + "\"")
 
                 .name("classifier")
-                .jsonValue("\"" + node.getClassifier() + "\"")
+                .jsonValue(node.getClassifier())
 
                 .name("size")
                 .jsonValue(String.valueOf(sizeOfDependencies.get(dependencyJar)))
@@ -84,7 +103,6 @@ public class NodeAdapter extends TypeAdapter<Node> {
                         (usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates)) ? "\"" + "inherited" + "\"" :
                                 (usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates)) ? "\"" + "transitive" + "\"" :
                                         "\"unknown\"")
-
                 .name("status")
                 .jsonValue((usedDirectArtifactsCoordinates.contains(coordinates) || usedInheritedArtifactsCoordinates.contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates)) ?
                         "\"" + "used" + "\"" :
@@ -95,19 +113,25 @@ public class NodeAdapter extends TypeAdapter<Node> {
                 .name("parent")
                 .jsonValue(node.getParent() != null ?
                         "\"" + node.getParent().getArtifactCanonicalForm() + "\"" :
-                        "\"unknown\"")
+                        "\"unknown\"");
 
-                .name("allTypes")
-                .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
-                        dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().toString() :
-                        "unknown")
+        JsonWriter allTypes = localWriter.name("allTypes").beginArray();
+        if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
+            for (String allType : dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes()) {
+                allTypes.value(allType);
+            }
+        }
+        allTypes.endArray();
 
-                .name("usedTypes")
-                .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
-                        dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().toString() :
-                        "unknown")
+        JsonWriter usedTypes = localWriter.name("usedTypes").beginArray();
+        if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
+            for (String usedType : dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes()) {
+                usedTypes.value(usedType);
+            }
+        }
+        usedTypes.endArray();
 
-                .name("usageRatio")
+        localWriter.name("usageRatio")
                 .jsonValue(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
                         Double.toString((double) dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().size() /
                                 dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().size()) :

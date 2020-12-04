@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,6 +32,7 @@ public class ParsedDependencies {
     private final Set<String> unusedTransitiveArtifactsCoordinates;
 
     private final Map<String, Long> sizeOfDependencies;
+    private final File classUsageFile;
 
     public ParsedDependencies(String treeTextFilePath,
                               Map<String, Long> sizeOfDependencies,
@@ -40,8 +42,8 @@ public class ParsedDependencies {
                               Set<String> usedUndeclaredArtifactsCoordinates,
                               Set<String> unusedDirectArtifactsCoordinates,
                               Set<String> unusedInheritedArtifactsCoordinates,
-                              Set<String> unusedUndeclaredArtifactsCoordinates
-                             ) {
+                              Set<String> unusedUndeclaredArtifactsCoordinates,
+                              File classUsageFile) {
         this.treeTextFilePath = treeTextFilePath;
         this.sizeOfDependencies = sizeOfDependencies;
         this.dependencyAnalyzer = dependencyAnalyzer;
@@ -51,6 +53,7 @@ public class ParsedDependencies {
         this.unusedDirectArtifactsCoordinates = unusedDirectArtifactsCoordinates;
         this.unusedInheritedArtifactsCoordinates = unusedInheritedArtifactsCoordinates;
         this.unusedTransitiveArtifactsCoordinates = unusedUndeclaredArtifactsCoordinates;
+        this.classUsageFile = classUsageFile;
     }
 
     public String parseTreeToJSON() throws ParseException, IOException {
@@ -68,11 +71,14 @@ public class ParsedDependencies {
                 unusedInheritedArtifactsCoordinates,
                 unusedTransitiveArtifactsCoordinates,
                 sizeOfDependencies,
-                dependencyAnalyzer
+                dependencyAnalyzer,
+                classUsageFile
         );
         GsonBuilder gsonBuilder = new GsonBuilder()
+                .setPrettyPrinting()
                 .registerTypeAdapter(Node.class, nodeAdapter);
         Gson gson = gsonBuilder.create();
+
         return gson.toJson(tree);
     }
 }

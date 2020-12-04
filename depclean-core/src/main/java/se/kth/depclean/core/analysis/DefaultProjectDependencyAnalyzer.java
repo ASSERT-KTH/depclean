@@ -151,7 +151,6 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
             } else if (file != null && file.isDirectory()) {
                 URL url = file.toURI().toURL();
                 Set<String> classes = classAnalyzer.analyze(url);
-
                 artifactClassMap.put(artifact, classes);
             }
         }
@@ -182,12 +181,10 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         for (String clazz : referencedClasses) {
             Artifact artifact = findArtifactForClassName(artifactClassMap, clazz);
             if (artifact != null) {
-
                 if (!artifactUsedClassesMap.containsKey(artifact)) {
                     artifactUsedClassesMap.put(artifact, new HashSet<>());
                 }
                 artifactUsedClassesMap.get(artifact).add(clazz);
-
                 usedArtifacts.add(artifact);
             }
         }
@@ -245,8 +242,6 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
         Map<String, ArtifactTypes> output = new HashMap<>();
         for (Map.Entry<Artifact, Set<String>> entry : artifactClassesMap.entrySet()) {
             Artifact key = entry.getKey();
-            Set<String> value = entry.getValue();
-
             if (artifactUsedClassesMap.containsKey(key)) {
                 output.put(key.toString(), new ArtifactTypes(
                         artifactClassesMap.get(key), // get all the types

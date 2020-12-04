@@ -39,16 +39,10 @@ import java.util.Set;
  */
 public class DependencyClassFileVisitor implements ClassFileVisitor {
 
-    // fields -----------------------------------------------------------------
-
     private final ResultCollector resultCollector = new ResultCollector();
-
-    // constructors -----------------------------------------------------------
 
     public DependencyClassFileVisitor() {
     }
-
-    // ClassFileVisitor methods -----------------------------------------------
 
     /*
      * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String,
