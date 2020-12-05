@@ -69,51 +69,51 @@ public class NodeAdapter extends TypeAdapter<Node> {
 
         JsonWriter localWriter = jsonWriter.beginObject()
                 .name("id")
-                .jsonValue("\"" + canonical + "\"")
+                .value(canonical)
 
                 .name("coordinates")
-                .jsonValue("\"" + node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getVersion() + "\"")
+                .value(node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getVersion())
 
                 .name("groupId")
-                .jsonValue("\"" + node.getGroupId() + "\"")
+                .value(node.getGroupId())
 
                 .name("artifactId")
-                .jsonValue("\"" + node.getArtifactId() + "\"")
+                .value(node.getArtifactId())
 
                 .name("version")
-                .jsonValue("\"" + node.getVersion() + "\"")
+                .value(node.getVersion())
 
                 .name("scope")
-                .jsonValue("\"" + node.getScope() + "\"")
+                .value(node.getScope())
 
                 .name("packaging")
-                .jsonValue("\"" + node.getPackaging() + "\"")
+                .value(node.getPackaging())
 
                 .name("omitted")
-                .jsonValue("\"" + node.isOmitted() + "\"")
+                .value(node.isOmitted())
 
                 .name("classifier")
-                .jsonValue(node.getClassifier())
+                .value(node.getClassifier())
 
                 .name("size")
-                .jsonValue(String.valueOf(sizeOfDependencies.get(dependencyJar)))
+                .value(sizeOfDependencies.get(dependencyJar))
 
                 .name("type")
-                .jsonValue((usedDirectArtifactsCoordinates.contains(coordinates) || unusedDirectArtifactsCoordinates.contains(coordinates)) ? "\"" + "direct" + "\"" :
-                        (usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates)) ? "\"" + "inherited" + "\"" :
-                                (usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates)) ? "\"" + "transitive" + "\"" :
-                                        "\"unknown\"")
+                .value((usedDirectArtifactsCoordinates.contains(coordinates) || unusedDirectArtifactsCoordinates.contains(coordinates)) ? "direct" :
+                        (usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates)) ?  "inherited" :
+                                (usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates)) ? "transitive" :
+                                        "unknown")
                 .name("status")
-                .jsonValue((usedDirectArtifactsCoordinates.contains(coordinates) || usedInheritedArtifactsCoordinates.contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates)) ?
-                        "\"" + "used" + "\"" :
+                .value((usedDirectArtifactsCoordinates.contains(coordinates) || usedInheritedArtifactsCoordinates.contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates)) ?
+                        "used" :
                         (unusedDirectArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates)) ?
-                                "\"" + "bloated" + "\"" :
-                                "\"unknown\"")
+                                "bloated" :
+                                "unknown")
 
                 .name("parent")
-                .jsonValue(node.getParent() != null ?
-                        "\"" + node.getParent().getArtifactCanonicalForm() + "\"" :
-                        "\"unknown\"");
+                .value(node.getParent() != null ?
+                        node.getParent().getArtifactCanonicalForm():
+                        "unknown");
 
         JsonWriter allTypes = localWriter.name("allTypes").beginArray();
         if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
@@ -132,10 +132,10 @@ public class NodeAdapter extends TypeAdapter<Node> {
         usedTypes.endArray();
 
         localWriter.name("usageRatio")
-                .jsonValue(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
-                        Double.toString((double) dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().size() /
-                                dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().size()) :
-                        "\"unknown\"")
+                .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
+                        dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().size() /
+                                dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().size() :
+                        -1)
 
                 .name("children")
                 .beginArray();
