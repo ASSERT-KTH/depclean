@@ -135,7 +135,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
                 .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
                         dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().size() /
                                 dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().size() :
-                        "unknown")
+                        -1)
 
                 .name("children")
                 .beginArray();
