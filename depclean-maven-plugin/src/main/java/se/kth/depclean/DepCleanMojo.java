@@ -193,7 +193,8 @@ public class DepCleanMojo extends AbstractMojo {
 
         /* Copy direct dependencies locally */
         try {
-            MavenInvoker.runCommand("mvn dependency:copy-dependencies");
+            MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory=" +
+                    project.getBuild().getDirectory() + File.separator + "dependency");
         } catch (IOException e) {
             getLog().error("Unable to resolve all the dependencies.");
             return;
