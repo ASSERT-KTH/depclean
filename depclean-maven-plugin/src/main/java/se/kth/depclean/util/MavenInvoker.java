@@ -35,6 +35,7 @@ import java.util.Collections;
 
 @Slf4j
 public final class MavenInvoker {
+
     private MavenInvoker() {
     }
 

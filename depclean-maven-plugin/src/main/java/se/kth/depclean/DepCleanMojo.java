@@ -176,7 +176,6 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
-
         /* Build Maven model to manipulate the pom */
         Model model;
         FileReader reader;
@@ -190,7 +189,6 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
-
         /* Copy direct dependencies locally */
         try {
             MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory=" +
@@ -200,6 +198,16 @@ public class DepCleanMojo extends AbstractMojo {
             return;
         }
 
+        // TODO remove this workaround later
+        if (new File(project.getBuild().getDirectory() + File.separator + "libs").exists()) {
+            try {
+                FileUtils.copyDirectory(new File(project.getBuild().getDirectory() + File.separator + "libs"),
+                        new File(project.getBuild().getDirectory() + File.separator + "dependency")
+                                       );
+            } catch (IOException e) {
+                getLog().error("Error copying directory libs to dependency");
+            }
+        }
 
         /* Get the size of all the dependencies */
         Map<String, Long> sizeOfDependencies = new HashMap<>();
@@ -527,7 +535,7 @@ public class DepCleanMojo extends AbstractMojo {
             return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
         } else {
             // The size cannot be obtained.
-            return "unknown";
+            return "size unknown";
         }
     }
 
