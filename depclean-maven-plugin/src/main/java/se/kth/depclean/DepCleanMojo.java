@@ -125,11 +125,25 @@ public class DepCleanMojo extends AbstractMojo {
     private Set<String> ignoreScopes;
 
     /**
-     * If this is true, and DepClean reported any unused dependency in the dependency tree,
-     * the build fails immediately after running DepClean.
+     * If this is true, and DepClean reported any unused direct dependency in the dependency tree,
+     * then the project's build fails immediately after running DepClean.
      */
-    @Parameter(defaultValue = "false")
-    private boolean failIfUnusedDependency;
+    @Parameter(property = "fail.if.unused.direct", defaultValue = "false")
+    private boolean failIfUnusedDirect;
+
+    /**
+     * If this is true, and DepClean reported any unused transitive dependency in the dependency tree,
+     * then the project's build fails immediately after running DepClean.
+     */
+    @Parameter(property = "fail.if.unused.transitive", defaultValue = "false")
+    private boolean failIfUnusedTransitive;
+
+    /**
+     * If this is true, and DepClean reported any unused inherited dependency in the dependency tree,
+     * then the project's build fails immediately after running DepClean.
+     */
+    @Parameter(property = "fail.if.unused.inherited", defaultValue = "false")
+    private boolean failIfUnusedInherited;
 
     /**
      * Skip plugin execution completely.
@@ -156,6 +170,142 @@ public class DepCleanMojo extends AbstractMojo {
     private static void writePom(final Path pomFile, final Model model) throws IOException {
         MavenXpp3Writer writer = new MavenXpp3Writer();
         writer.write(Files.newBufferedWriter(pomFile), model);
+    }
+
+    /**
+     * Print the status of the depenencies to the standard output.
+     * The format is: "[coordinates][scope] [(size)]"
+     *
+     * @param sizeOfDependencies A map with the size of the dependencies.
+     * @param dependencies The set dependencies to print.
+     */
+    private void printDependencies(Map<String, Long> sizeOfDependencies, Set<String> dependencies) {
+        dependencies
+                .stream()
+                .sorted(Comparator.comparing(o -> getSizeOfDependency(sizeOfDependencies, o)))
+                .collect(Collectors.toCollection(LinkedList::new))
+                .descendingIterator()
+                .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
+    }
+
+    /**
+     * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size of the dependency
+     * cannot be obtained form the map (no key with the name of the dependency exists), then it returns 0.
+     *
+     * @param sizeOfDependencies A map of dependency -> size.
+     * @param dependency The coordinates of a dependency.
+     * @return The size of the dependency if its name is a key in the map, otherwise it returns 0.
+     */
+    private Long getSizeOfDependency(Map<String, Long> sizeOfDependencies, String dependency) {
+        Long size = sizeOfDependencies.get(dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar");
+        if (size != null) {
+            return size;
+        } else {
+            // The name of the dependency does not match with the name of the download jar, so we keep assume the size
+            // cannot be obtained and return 0.
+            return Long.valueOf(0);
+        }
+    }
+
+    /**
+     * Get the size of the dependency in human readable format.
+     *
+     * @param dependency The dependency.
+     * @param sizeOfDependencies A map with the size of the dependencies, keys are stored as the downloaded jar file
+     *                           i.e., [artifactId]-[version].jar
+     * @return The human readable representation of the dependency size.
+     */
+    private String getSize(String dependency, Map<String, Long> sizeOfDependencies) {
+        String dep = dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar";
+        if (sizeOfDependencies.containsKey(dep)) {
+            return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
+        } else {
+            // The size cannot be obtained.
+            return "size unknown";
+        }
+    }
+
+    /**
+     * Exclude artifacts with specific scopes from the analysis.
+     *
+     * @param artifacts The set of artifacts to analyze.
+     * @return The set of artifacts for which the scope has not been excluded.
+     */
+    private Set<Artifact> excludeScope(Set<Artifact> artifacts) {
+        Set<Artifact> nonExcludedArtifacts = new HashSet<>();
+        for (Artifact artifact : artifacts) {
+            if (!ignoreScopes.contains(artifact.getScope())) {
+                nonExcludedArtifacts.add(artifact);
+            }
+        }
+        return nonExcludedArtifacts;
+    }
+
+    /**
+     * Determine if an artifact is a direct or transitive child of a dependency.
+     *
+     * @param artifact   The artifact.
+     * @param dependency The dependency
+     * @return true if the artifact is a child of a dependency in the dependency tree.
+     * @throws DependencyGraphBuilderException If the graph cannot be constructed.
+     */
+    private boolean isChildren(Artifact artifact, Dependency dependency) throws DependencyGraphBuilderException {
+        List<DependencyNode> dependencyNodes = getDependencyNodes();
+        for (DependencyNode node : dependencyNodes) {
+            Dependency dependencyNode = createDependency(node.getArtifact());
+            if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
+                    dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
+                // now we are in the target dependency
+                for (DependencyNode child : node.getChildren()) {
+                    if (child.getArtifact().equals(artifact)) {
+                        // the dependency contains the artifact as a child node
+                        return true;
+                    }
+
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This method returns a list of dependency nodes from a graph of dependency tree.
+     *
+     * @return The nodes in the dependency graph.
+     * @throws DependencyGraphBuilderException If the graph cannot be built.
+     */
+    private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException {
+        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        buildingRequest.setProject(project);
+        DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
+        CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
+        rootNode.accept(visitor);
+        return visitor.getNodes();
+    }
+
+    /**
+     * This method creates a {@link org.apache.maven.model.Dependency} object from a
+     * Maven {@link org.apache.maven.artifact.Artifact}.
+     *
+     * @param artifact The artifact to create the dependency.
+     * @return The Dependency object.
+     */
+    private Dependency createDependency(final Artifact artifact) {
+        Dependency dependency = new Dependency();
+        dependency.setGroupId(artifact.getGroupId());
+        dependency.setArtifactId(artifact.getArtifactId());
+        dependency.setVersion(artifact.getVersion());
+        if (artifact.hasClassifier()) {
+            dependency.setClassifier(artifact.getClassifier());
+        }
+        dependency.setOptional(artifact.isOptional());
+        dependency.setScope(artifact.getScope());
+        dependency.setType(artifact.getType());
+        return dependency;
+    }
+
+    private void printString(String string) {
+        System.out.println(string); //NOSONAR avoid a warning of non-used logger
     }
 
     @Override
@@ -375,9 +525,22 @@ public class DepCleanMojo extends AbstractMojo {
             ignoreDependencies.stream().forEach(s -> printString("\t" + s));
         }
 
-        /* Fail the build if there are unused dependencies */
-        if (failIfUnusedDependency && (!unusedDirectArtifactsCoordinates.isEmpty() || !unusedTransitiveArtifactsCoordinates.isEmpty())) {
-            throw new MojoExecutionException("Build failed due to unused dependencies in the dependency tree.");
+        /* Fail the build if there are unused direct dependencies */
+        if (failIfUnusedDirect && !unusedDirectArtifactsCoordinates.isEmpty()) {
+            throw new MojoExecutionException("Build failed due to unused direct dependencies in the dependency tree " +
+                    "of the project.");
+        }
+
+        /* Fail the build if there are unused direct dependencies */
+        if (failIfUnusedTransitive && !unusedTransitiveArtifactsCoordinates.isEmpty()) {
+            throw new MojoExecutionException("Build failed due to unused transitive dependencies in the dependency " +
+                    "tree of the project.");
+        }
+
+        /* Fail the build if there are unused direct dependencies */
+        if (failIfUnusedInherited && !unusedInheritedArtifactsCoordinates.isEmpty()) {
+            throw new MojoExecutionException("Build failed due to unused inherited dependencies in the dependency " +
+                    "tree of the project.");
         }
 
         /* Writing the debloated version of the pom */
@@ -387,7 +550,8 @@ public class DepCleanMojo extends AbstractMojo {
             /* Add used transitive as direct dependencies */
             try {
                 if (!usedTransitiveArtifacts.isEmpty()) {
-                    getLog().info("Adding " + unusedTransitiveArtifactsCoordinates.size() + " used transitive dependencies as direct dependencies.");
+                    getLog().info("Adding " + unusedTransitiveArtifactsCoordinates.size() + " used transitive " +
+                            "dependencies as direct dependencies.");
                     for (Artifact usedUndeclaredArtifact : usedTransitiveArtifacts) {
                         model.addDependency(createDependency(usedUndeclaredArtifact));
                     }
@@ -484,141 +648,5 @@ public class DepCleanMojo extends AbstractMojo {
                 getLog().error("Unable to generate JSON file.");
             }
         }
-    }
-
-    /**
-     * Print the status of the depenencies to the standard output.
-     * The format is: "[coordinates][scope] [(size)]"
-     *
-     * @param sizeOfDependencies A map with the size of the dependencies.
-     * @param dependencies The set dependencies to print.
-     */
-    private void printDependencies(Map<String, Long> sizeOfDependencies, Set<String> dependencies) {
-        dependencies
-                .stream()
-                .sorted(Comparator.comparing(o -> getSizeOfDependency(sizeOfDependencies, o)))
-                .collect(Collectors.toCollection(LinkedList::new))
-                .descendingIterator()
-                .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
-    }
-
-    /**
-     * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size of the dependency
-     * cannot be obtained form the map (no key with the name of the dependency exists), then it returns 0.
-     *
-     * @param sizeOfDependencies A map of dependency -> size.
-     * @param dependency The coordinates of a dependency.
-     * @return The size of the dependency if its name is a key in the map, otherwise it returns 0.
-     */
-    private Long getSizeOfDependency(Map<String, Long> sizeOfDependencies, String dependency) {
-        Long size = sizeOfDependencies.get(dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar");
-        if (size != null) {
-            return size;
-        } else {
-            // The name of the dependency does not match with the name of the download jar, so we keep assume the size
-            // cannot be obtained and return 0.
-            return Long.valueOf(0);
-        }
-    }
-
-    /**
-     * Get the size of the dependency in human readable format.
-     *
-     * @param dependency The dependency.
-     * @param sizeOfDependencies A map with the size of the dependencies, keys are stored as the downloaded jar file
-     *                           i.e., [artifactId]-[version].jar
-     * @return The human readable representation of the dependency size.
-     */
-    private String getSize(String dependency, Map<String, Long> sizeOfDependencies) {
-        String dep = dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar";
-        if (sizeOfDependencies.containsKey(dep)) {
-            return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
-        } else {
-            // The size cannot be obtained.
-            return "size unknown";
-        }
-    }
-
-    /**
-     * Exclude artifacts with specific scopes from the analysis.
-     *
-     * @param artifacts The set of artifacts to analyze.
-     * @return The set of artifacts for which the scope has not been excluded.
-     */
-    private Set<Artifact> excludeScope(Set<Artifact> artifacts) {
-        Set<Artifact> nonExcludedArtifacts = new HashSet<>();
-        for (Artifact artifact : artifacts) {
-            if (!ignoreScopes.contains(artifact.getScope())) {
-                nonExcludedArtifacts.add(artifact);
-            }
-        }
-        return nonExcludedArtifacts;
-    }
-
-    /**
-     * Determine if an artifact is a direct or transitive child of a dependency.
-     *
-     * @param artifact   The artifact.
-     * @param dependency The dependency
-     * @return true if the artifact is a child of a dependency in the dependency tree.
-     * @throws DependencyGraphBuilderException If the graph cannot be constructed.
-     */
-    private boolean isChildren(Artifact artifact, Dependency dependency) throws DependencyGraphBuilderException {
-        List<DependencyNode> dependencyNodes = getDependencyNodes();
-        for (DependencyNode node : dependencyNodes) {
-            Dependency dependencyNode = createDependency(node.getArtifact());
-            if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
-                    dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
-                // now we are in the target dependency
-                for (DependencyNode child : node.getChildren()) {
-                    if (child.getArtifact().equals(artifact)) {
-                        // the dependency contains the artifact as a child node
-                        return true;
-                    }
-
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * This method returns a list of dependency nodes from a graph of dependency tree.
-     *
-     * @return The nodes in the dependency graph.
-     * @throws DependencyGraphBuilderException If the graph cannot be built.
-     */
-    private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException {
-        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-        buildingRequest.setProject(project);
-        DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
-        CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
-        rootNode.accept(visitor);
-        return visitor.getNodes();
-    }
-
-    /**
-     * This method creates a {@link org.apache.maven.model.Dependency} object from a
-     * Maven {@link org.apache.maven.artifact.Artifact}.
-     *
-     * @param artifact The artifact to create the dependency.
-     * @return The Dependency object.
-     */
-    private Dependency createDependency(final Artifact artifact) {
-        Dependency dependency = new Dependency();
-        dependency.setGroupId(artifact.getGroupId());
-        dependency.setArtifactId(artifact.getArtifactId());
-        dependency.setVersion(artifact.getVersion());
-        if (artifact.hasClassifier()) {
-            dependency.setClassifier(artifact.getClassifier());
-        }
-        dependency.setOptional(artifact.isOptional());
-        dependency.setScope(artifact.getScope());
-        dependency.setType(artifact.getType());
-        return dependency;
-    }
-
-    private void printString(String string) {
-        System.out.println(string); //NOSONAR avoid a warning of non-used logger
     }
 }
