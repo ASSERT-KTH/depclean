@@ -48,7 +48,7 @@ public class DefaultCallGraph {
     }
 
     private static void addReferencedClassMember(String clazz, String referencedClassMember) {
-        // System.out.println("\t" + clazz + " -> " + referencedClassMember);
+        System.out.println("\t" + clazz + " -> " + referencedClassMember);
         Set<String> s = usagesPerClass.computeIfAbsent(clazz, k -> new HashSet<>());
         s.add(referencedClassMember);
     }
