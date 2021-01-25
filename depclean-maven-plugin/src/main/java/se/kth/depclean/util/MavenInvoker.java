@@ -58,9 +58,7 @@ public final class MavenInvoker {
          return outputToConsole(process, list, br);
       } else if (isWindows(os)) {
          list = new ArrayList<>();
-         ProcessBuilder builder = new ProcessBuilder("cmd.exe", cmd);
-         builder.redirectErrorStream(true);
-         process = builder.start();
+         process = Runtime.getRuntime().exec("cmd /C " + cmd);
          BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
          return outputToConsole(process, list, br);
       }
@@ -79,7 +77,6 @@ public final class MavenInvoker {
          process.waitFor();
       } catch (InterruptedException e) {
          log.error("Process was interrupted");
-         Thread.currentThread().interrupt();
       }
       br.close();
       return list.toArray(new String[0]);
