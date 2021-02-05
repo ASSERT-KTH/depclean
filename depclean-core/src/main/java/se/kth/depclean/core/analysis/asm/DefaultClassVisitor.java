@@ -57,7 +57,7 @@ public class DefaultClassVisitor extends ClassVisitor {
    @Override
    public void visit(final int version, final int access, final String name, final String signature,
                      final String superName, final String[] interfaces) {
-      System.out.println("Visiting class: " + name);
+      // System.out.println("Visiting class: " + name);
       ClassMembersVisitorCounter.addVisitedClass();
       if (signature == null) {
          resultCollector.addName(superName);
@@ -74,7 +74,7 @@ public class DefaultClassVisitor extends ClassVisitor {
 
    @Override
    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-      System.out.println("\t" + "visiting annotation: " + desc);
+      // System.out.println("\t" + "visiting annotation: " + desc);
       ClassMembersVisitorCounter.addVisitedAnnotation();
       resultCollector.addDesc(desc);
       return annotationVisitor;
@@ -104,7 +104,7 @@ public class DefaultClassVisitor extends ClassVisitor {
    @Override
    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
                                     final String[] exceptions) {
-      System.out.println("\t" + "visiting method: " + name);
+      // System.out.println("\t" + "visiting method: " + name);
       ClassMembersVisitorCounter.addVisitedMethod();
       if (signature == null) {
          resultCollector.addMethodDesc(desc);

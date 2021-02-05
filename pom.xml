@@ -16,10 +16,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.release>8</maven.compiler.release>
-        <java.src.version>1.8</java.src.version>
-        <java.test.version>1.8</java.test.version>
-        <maven.javadoc.source>1.8</maven.javadoc.source>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.javadoc.source>11</maven.javadoc.source>
         <maven.maven-javadoc-plugin.version>3.2.0</maven.maven-javadoc-plugin.version>
         <maven.jacoco.plugin.version>0.8.5</maven.jacoco.plugin.version>
         <maven.coveralls.plugin.version>4.3.0</maven.coveralls.plugin.version>

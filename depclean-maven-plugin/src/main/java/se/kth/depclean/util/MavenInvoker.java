@@ -103,7 +103,7 @@ public final class MavenInvoker {
    }
 
    private static boolean isUnix(String os) {
-      return (os.contains("nix") || os.contains("nux") || os.indexOf("aix") > 0);
+      return (os.contains("nix") || os.contains("nux") || os.contains("mac os") || os.indexOf("aix") > 0);
    }
 
    private static boolean isWindows(String os) {

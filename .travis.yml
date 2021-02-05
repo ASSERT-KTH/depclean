@@ -6,7 +6,7 @@ os: linux
 
 dist: trusty
 
-jdk: openjdk8
+jdk: openjdk11
 
 env:
   global:
@@ -32,7 +32,6 @@ addons:
       secure: "RiCyn2GH1FqdhmHhuGfI6zSa8j4fekkp4MDsOwk16Hie4bDDwO0rDYF9GHx8RwpmuXN3C38yfqbWAbNnRkdbV7URUG18YSytMg1diM+WRawGaTmxS87zqEXaCN2PHu2rhmPSAsL7QZyf3+YFH6h2UCTzcIOf/HswALx2UOl2jpQVpe9A+mJhruBK2FLTmh7gfNAWdi8mrjLw6mUzS73SKV6T1Ell1pVUZrd8o3CAuQkFJTjy002rgicsL+I7aHT8XGASmW9yGr2hsReZCNhDKlqBfnADQmV5LO+mrT3XU3ivKQu36KosIomaDyikZqPFzzX1wa1KVXlds+oDaTesSRqdOVCB/BGbmV9bKnzGrHZZSi5kt91JDAqIoxUzvC8u5EEAvgVjLItsJflBUBlW6fIBYbjdec90bGaRU+A31iH5bDirWAeC5Z7JfvCpMr7W0pDqv6YJ7NKmpKXuZghDgQBmxPjp7tvEEB0YXXPUxoock9+SDB7E+6+JoEG3P0qU6Z6QZRwRqvRDXRlBXpz+cvhc04g+WrM9Ws15F6gzh2q2jAkGtGPtXjYX+rak2+gmjqXr16MMqd4eaJcW5X2rLBglk57+jhDGBdp3x1kC7kXraAKhhFNVCaLpwFS3pvzhxUxmGhKnLlU20qFA8BXtmwfyVEqMJxLxB5AHz3bitbc="
 
 script: ./.travis/$SCRIPT
-  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
 
 after_success:
   - mvn clean test jacoco:report coveralls:report

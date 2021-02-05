@@ -65,7 +65,7 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     *
     * @param project The Maven project to be analyzed.
     * @return An object with the usedDeclaredArtifacts, usedUndeclaredArtifacts, and unusedDeclaredArtifacts.
-    * @throws ProjectDependencyAnalyzerException
+    * @throws ProjectDependencyAnalyzerException if the analysis fails.
     * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
     */
    public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {

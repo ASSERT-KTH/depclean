@@ -361,13 +361,17 @@ public class DepCleanMojo extends AbstractMojo {
 
         /* Get the size of all the dependencies */
         Map<String, Long> sizeOfDependencies = new HashMap<>();
-        Iterator<File> iterator = FileUtils.iterateFiles(
-                new File(
-                        project.getBuild().getDirectory() + File.separator
-                                + "dependency"), new String[]{"jar"}, true);
-        while (iterator.hasNext()) {
-            File file = iterator.next();
-            sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
+        if (Files.exists(Path.of(project.getBuild().getDirectory() + File.separator + "dependency"))) {
+            Iterator<File> iterator = FileUtils.iterateFiles(
+                    new File(
+                            project.getBuild().getDirectory() + File.separator
+                                    + "dependency"), new String[]{"jar"}, true);
+            while (iterator.hasNext()) {
+                File file = iterator.next();
+                sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
+            }
+        } else {
+            log.warn("Dependencies where not copied locally");
         }
 
         /* Decompress dependencies */

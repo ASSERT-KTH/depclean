@@ -27,8 +27,6 @@ import org.objectweb.asm.signature.SignatureVisitor;
 import se.kth.depclean.core.analysis.ClassFileVisitor;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
@@ -62,8 +60,8 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
          }
 
          /* visit class members */
-         AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(resultCollector);
          SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(resultCollector);
+         AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(resultCollector);
          FieldVisitor fieldVisitor = new DefaultFieldVisitor(annotationVisitor, resultCollector);
          MethodVisitor methodVisitor = new DefaultMethodVisitor(annotationVisitor, signatureVisitor, resultCollector);
 
@@ -73,26 +71,27 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
 
          reader.accept(defaultClassVisitor, 0);
 
-         System.out.println("**************************************************");
-         System.out.println("Adding class: " + className);
-         System.out.println("With dependencies: " + resultCollector.getDependencies().toString());
-
+         // System.out.println("**************************************************");
+         // System.out.println("Adding class: " + className);
+         // System.out.println("With dependencies: " + resultCollector.getDependencies().toString());
+         //
          if (!DefaultCallGraph.getVertices().contains(className)) {
             // inset edge in the graph based on the bytecode analysis
             DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
          }
-
-         for (String referencedClass : resultCollector.getDependencies()) {
-            System.out.println("visiting recursive: " + referencedClass.replace(".", "/"));
-            if (new File("/Users/cesarsv/IdeaProjects/asr-simple-sample-master/target/dependency/" + referencedClass.replace(".", "/") + ".class").exists()) {
-               visitClass(referencedClass.replace(".", "/"),
-                       new FileInputStream(new File("/Users/cesarsv/IdeaProjects" +
-                               "/asr-simple-sample-master/target/dependency/" + referencedClass.replace(".", "/") +
-                               ".class"))
-                         );
-            }
-         }
-
+         //
+         // for (String referencedClass : resultCollector.getDependencies()) {
+         //    System.out.println("visiting recursive: " + referencedClass.replace(".", "/"));
+         //    if (new File("/Users/cesarsv/IdeaProjects/asr-simple-sample-master/target/dependency/" +
+         //    referencedClass.replace(".", "/") + ".class").exists()) {
+         //       visitClass(referencedClass.replace(".", "/"),
+         //               new FileInputStream(new File("/Users/cesarsv/IdeaProjects" +
+         //                       "/asr-simple-sample-master/target/dependency/" + referencedClass.replace(".", "/") +
+         //                       ".class"))
+         //                 );
+         //    }
+         // }
+         //
          resultCollector.clearClasses();
 
       } catch (IOException exception) {
