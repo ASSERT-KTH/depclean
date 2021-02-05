@@ -343,7 +343,7 @@ public class DepCleanMojo extends AbstractMojo {
         try {
             MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory=" +
                     project.getBuild().getDirectory() + File.separator + "dependency");
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             getLog().error("Unable to resolve all the dependencies.");
             return;
         }
@@ -623,7 +623,7 @@ public class DepCleanMojo extends AbstractMojo {
             /* Copy direct dependencies locally */
             try {
                 MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 getLog().error("Unable to generate dependency tree.");
                 return;
             }
