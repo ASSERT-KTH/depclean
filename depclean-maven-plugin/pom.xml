@@ -6,12 +6,12 @@
    <parent>
       <groupId>se.kth.castor</groupId>
       <artifactId>depclean-parent-pom</artifactId>
-      <version>1.1.2-SNAPSHOT</version>
+      <version>1.1.2</version>
    </parent>
 
    <!-- Coordinates -->
    <artifactId>depclean-maven-plugin</artifactId>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.1.2</version>
 
    <packaging>maven-plugin</packaging>
    <name>depclean-maven-plugin</name>

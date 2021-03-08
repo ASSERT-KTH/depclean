@@ -6,7 +6,7 @@
     <!-- Coordinates -->
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-parent-pom</artifactId>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.1.2</version>
     <packaging>pom</packaging>
     <modelVersion>4.0.0</modelVersion>
 
@@ -109,6 +109,17 @@
 
     <!-- Build options -->
     <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Coveralls plugin -->
+                <plugin>
+                    <groupId>org.eluder.coveralls</groupId>
+                    <artifactId>coveralls-maven-plugin</artifactId>
+                    <version>${maven.coveralls.plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <!-- Maven source plugin -->
             <plugin>
@@ -153,35 +164,6 @@
                 </executions>
             </plugin>
 
-            <!-- Maven GPG plugin to sign the components -->
-            <!--         <plugin>-->
-            <!--            <groupId>org.apache.maven.plugins</groupId>-->
-            <!--            <artifactId>maven-gpg-plugin</artifactId>-->
-            <!--            <version>1.5</version>-->
-            <!--            <executions>-->
-            <!--               <execution>-->
-            <!--                  <id>sign-artifacts</id>-->
-            <!--                  <phase>verify</phase>-->
-            <!--                  <goals>-->
-            <!--                     <goal>sign</goal>-->
-            <!--                  </goals>-->
-            <!--               </execution>-->
-            <!--            </executions>-->
-            <!--         </plugin>-->
-
-            <!-- Nexus Staging Maven plugin to deploy components to OSSRH -->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -206,27 +188,6 @@
                 </configuration>
             </plugin>
 
-            <!--Checkstyle plugin-->
-            <!--                     <plugin>-->
-            <!--                         <groupId>org.apache.maven.plugins</groupId>-->
-            <!--                         <artifactId>maven-checkstyle-plugin</artifactId>-->
-            <!--                         <version>3.0.0</version>-->
-            <!--                         <configuration>-->
-            <!--                             <configLocation>checkstyle.xml</configLocation>-->
-            <!--                             <failOnViolation>false</failOnViolation>-->
-            <!--                             <failsOnError>false</failsOnError>-->
-            <!--                             <consoleOutput>true</consoleOutput>-->
-            <!--                         </configuration>-->
-            <!--                         <executions>-->
-            <!--                             <execution>-->
-            <!--                                 <phase>deploy</phase>-->
-            <!--                                 <goals>-->
-            <!--                                     <goal>checkstyle</goal>-->
-            <!--                                 </goals>-->
-            <!--                             </execution>-->
-            <!--                         </executions>-->
-            <!--                     </plugin>-->
-
             <!--JaCoCo plugin-->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -248,43 +209,61 @@
                 </executions>
             </plugin>
 
+            <!-- Maven GPG plugin to sign the components -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Nexus Staging Maven plugin to deploy components to OSSRH -->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+
             <!-- Nexus Staging Maven plugin for deployment to Sonatype-->
-            <!--         <plugin>-->
-            <!--            <groupId>org.sonatype.plugins</groupId>-->
-            <!--            <artifactId>nexus-staging-maven-plugin</artifactId>-->
-            <!--            <version>1.6.7</version>-->
-            <!--            <extensions>true</extensions>-->
-            <!--            <configuration>-->
-            <!--               <serverId>ossrh</serverId>-->
-            <!--               <nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
-            <!--               <autoReleaseAfterClose>true</autoReleaseAfterClose>-->
-            <!--            </configuration>-->
-            <!--         </plugin>-->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
 
             <!-- Performing a release deployment with the Maven Release Plugin -->
             <!-- see https://central.sonatype.org/pages/apache-maven.html -->
-            <!--         <plugin>-->
-            <!--            <groupId>org.apache.maven.plugins</groupId>-->
-            <!--            <artifactId>maven-release-plugin</artifactId>-->
-            <!--            <version>2.5.3</version>-->
-            <!--            <configuration>-->
-            <!--               <autoVersionSubmodules>true</autoVersionSubmodules>-->
-            <!--               <useReleaseProfile>false</useReleaseProfile>-->
-            <!--               <releaseProfiles>release</releaseProfiles>-->
-            <!--               <goals>deploy</goals>-->
-            <!--            </configuration>-->
-            <!--         </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
         </plugins>
-
-        <!-- Coveralls plugin -->
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.eluder.coveralls</groupId>
-                    <artifactId>coveralls-maven-plugin</artifactId>
-                    <version>${maven.coveralls.plugin.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 </project>
