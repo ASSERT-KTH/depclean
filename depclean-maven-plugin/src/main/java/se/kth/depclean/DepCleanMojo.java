@@ -85,6 +85,7 @@ import java.util.stream.Collectors;
 public class DepCleanMojo extends AbstractMojo {
 
    private static final String SEPARATOR = "-------------------------------------------------------";
+   public static final String DIRECTORY_TO_COPY_DEPENDENCIES = "dependency";
 
    /**
     * The Maven project to analyze.
@@ -344,9 +345,10 @@ public class DepCleanMojo extends AbstractMojo {
       /* Copy direct dependencies locally */
       try {
          MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory=" +
-                 project.getBuild().getDirectory() + File.separator + "dependency");
+                 project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES);
       } catch (IOException | InterruptedException e) {
          getLog().error("Unable to resolve all the dependencies.");
+         Thread.currentThread().interrupt();
          return;
       }
 
@@ -354,7 +356,7 @@ public class DepCleanMojo extends AbstractMojo {
       if (new File(project.getBuild().getDirectory() + File.separator + "libs").exists()) {
          try {
             FileUtils.copyDirectory(new File(project.getBuild().getDirectory() + File.separator + "libs"),
-                    new File(project.getBuild().getDirectory() + File.separator + "dependency")
+                    new File(project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES)
                                    );
          } catch (IOException e) {
             getLog().error("Error copying directory libs to dependency");
@@ -363,11 +365,11 @@ public class DepCleanMojo extends AbstractMojo {
 
       /* Get the size of all the dependencies */
       Map<String, Long> sizeOfDependencies = new HashMap<>();
-      if (Files.exists(Path.of(project.getBuild().getDirectory() + File.separator + "dependency"))) {
+      if (Files.exists(Path.of(project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES))) {
          Iterator<File> iterator = FileUtils.iterateFiles(
                  new File(
                          project.getBuild().getDirectory() + File.separator
-                                 + "dependency"), new String[]{"jar"}, true);
+                                 + DIRECTORY_TO_COPY_DEPENDENCIES), new String[]{"jar"}, true);
          while (iterator.hasNext()) {
             File file = iterator.next();
             sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
@@ -377,7 +379,7 @@ public class DepCleanMojo extends AbstractMojo {
       }
 
       /* Decompress dependencies */
-      String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + "dependency";
+      String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
       File dependencyDirectory = new File(dependencyDirectoryName);
       if (dependencyDirectory.exists()) {
          JarUtils.decompressJars(dependencyDirectoryName);
@@ -639,6 +641,8 @@ public class DepCleanMojo extends AbstractMojo {
             MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
          } catch (IOException | InterruptedException e) {
             getLog().error("Unable to generate dependency tree.");
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
             return;
          }
          File classUsageFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "class-usage.csv");

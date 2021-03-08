@@ -63,7 +63,7 @@ public final class MavenInvoker {
          BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
          return outputToConsole(process, list, br);
       }
-      return null;
+      return new String[0]; // return an empty array otherwise
    }
 
    /**
