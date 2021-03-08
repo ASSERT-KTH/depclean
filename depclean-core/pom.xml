@@ -14,10 +14,9 @@
     <!-- Coordinates -->
     <artifactId>depclean-core</artifactId>
     <version>1.1.2</version>
-
-    <name>depclean-core</name>
     <packaging>jar</packaging>
     <description>Core library of DepClean</description>
+    <name>depclean-core</name>
 
     <dependencies>
         <!-- Bytecode manipulation -->
@@ -26,7 +25,6 @@
             <artifactId>asm</artifactId>
             <version>7.1</version>
         </dependency>
-
         <!-- Maven dependencies -->
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
@@ -46,7 +44,6 @@
             <version>3.6.2</version>
             <scope>compile</scope>
         </dependency>
-
         <!-- Graph construction and analysis -->
         <dependency>
             <groupId>org.jgrapht</groupId>
@@ -60,4 +57,5 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
 </project>

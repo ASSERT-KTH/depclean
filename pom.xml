@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Name of the parent module -->
     <name>depclean-parent-pom</name>
 
     <!-- Global properties -->
@@ -32,11 +33,13 @@
     <description>DepClean is a tool that automatically debloats dependencies in Java projects</description>
     <url>https://github.com/castor-software/depclean</url>
 
+    <!-- Issues are managed on GitHub -->
     <issueManagement>
         <system>GitHub Issues</system>
         <url>https://github.com/castor-software/depclean/issues</url>
     </issueManagement>
 
+    <!-- SCM -->
     <scm>
         <url>https://github.com/castor-software/depclean/</url>
         <connection>scm:git:git:github.com/castor-software/depclean.git</connection>
@@ -71,12 +74,7 @@
 
     <!-- List of global dependencies -->
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${maven.junit.version}</version>
-            <scope>test</scope>
-        </dependency>
+        <!-- Utils -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -93,6 +91,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${maven.slf4j-log4j12.version}</version>
+        </dependency>
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${maven.junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -121,21 +126,6 @@
         </pluginManagement>
 
         <plugins>
-            <!-- Maven source plugin -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Maven compiler plugin -->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -145,37 +135,18 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
-
-            <!-- Javadoc plugin -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven.maven-javadoc-plugin.version}</version>
-                <configuration>
-                    <source>${maven.javadoc.source}</source>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
+            <!-- Maven site -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.7.1</version>
             </plugin>
-
+            <!-- Maven project info -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
-
             <!-- Surefire plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -187,7 +158,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-
             <!--JaCoCo plugin-->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -208,62 +178,100 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Maven GPG plugin to sign the components -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Nexus Staging Maven plugin to deploy components to OSSRH -->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-
-            <!-- Nexus Staging Maven plugin for deployment to Sonatype-->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-
-            <!-- Performing a release deployment with the Maven Release Plugin -->
-            <!-- see https://central.sonatype.org/pages/apache-maven.html -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <useReleaseProfile>false</useReleaseProfile>
-                    <releaseProfiles>release</releaseProfiles>
-                    <goals>deploy</goals>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>deploy-artifacts</id>
+            <build>
+                <plugins>
+                    <!-- Maven source plugin -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Javadoc plugin -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven.maven-javadoc-plugin.version}</version>
+                        <configuration>
+                            <source>${maven.javadoc.source}</source>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Maven GPG plugin to sign the components -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Nexus Staging Maven plugin to deploy components to OSSRH -->
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <!-- Nexus Staging Maven plugin for deployment to Sonatype-->
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <!-- Performing a release deployment with the Maven Release Plugin -->
+                    <!-- see https://central.sonatype.org/pages/apache-maven.html -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>2.5.3</version>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <useReleaseProfile>false</useReleaseProfile>
+                            <releaseProfiles>release</releaseProfiles>
+                            <goals>deploy</goals>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
