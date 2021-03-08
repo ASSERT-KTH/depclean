@@ -47,55 +47,57 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
     */
    public void visitClass(String className, InputStream in) {
       try {
+         try {
+            ClassReader reader = new ClassReader(in);
 
-         ClassReader reader = new ClassReader(in);
+            // System.out.println("**************************************************");
+            // System.out.println("Reading class: " + className);
 
-         // System.out.println("**************************************************");
-         // System.out.println("Reading class: " + className);
+            final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
+            for (String string : constantPoolClassRefs) {
+               resultCollector.addName(string);
+            }
 
-         // Add the constant pool class references
-         final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
-         for (String string : constantPoolClassRefs) {
-            resultCollector.addName(string);
-         }
+            /* visit class members */
+            AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(
+                    resultCollector
+            );
+            SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(
+                    resultCollector
+            );
+            FieldVisitor fieldVisitor = new DefaultFieldVisitor(
+                    annotationVisitor,
+                    resultCollector
+            );
+            MethodVisitor methodVisitor = new DefaultMethodVisitor(
+                    annotationVisitor,
+                    signatureVisitor,
+                    resultCollector
+            );
 
-         /* visit class members */
-         SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(resultCollector);
-         AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(resultCollector);
-         FieldVisitor fieldVisitor = new DefaultFieldVisitor(annotationVisitor, resultCollector);
-         MethodVisitor methodVisitor = new DefaultMethodVisitor(annotationVisitor, signatureVisitor, resultCollector);
+            DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
+                    signatureVisitor,
+                    annotationVisitor,
+                    fieldVisitor,
+                    methodVisitor,
+                    resultCollector
+            );
 
-         DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
-                 signatureVisitor, annotationVisitor, fieldVisitor, methodVisitor, resultCollector
-         );
+            reader.accept(defaultClassVisitor, 0);
 
-         reader.accept(defaultClassVisitor, 0);
-
-         // System.out.println("**************************************************");
-         // System.out.println("Adding class: " + className);
-         // System.out.println("With dependencies: " + resultCollector.getDependencies().toString());
-         //
-         if (!DefaultCallGraph.getVertices().contains(className)) {
             // inset edge in the graph based on the bytecode analysis
             DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
+            resultCollector.clearClasses();
+
+         } catch (IOException exception) {
+            exception.printStackTrace();
+         } catch (IndexOutOfBoundsException e) {
+            // some bug inside ASM causes an IOB exception. Log it and move on?
+            // this happens when the class isn't valid.
+            System.out.println("Unable to process: " + className);
          }
-         //
-         // for (String referencedClass : resultCollector.getDependencies()) {
-         //    System.out.println("visiting recursive: " + referencedClass.replace(".", "/"));
-         //    if (new File("/Users/cesarsv/IdeaProjects/asr-simple-sample-master/target/dependency/" +
-         //    referencedClass.replace(".", "/") + ".class").exists()) {
-         //       visitClass(referencedClass.replace(".", "/"),
-         //               new FileInputStream(new File("/Users/cesarsv/IdeaProjects" +
-         //                       "/asr-simple-sample-master/target/dependency/" + referencedClass.replace(".", "/") +
-         //                       ".class"))
-         //                 );
-         //    }
-         // }
-         //
          resultCollector.clearClasses();
 
-      } catch (IOException exception) {
-         exception.printStackTrace();
       } catch (IndexOutOfBoundsException e) {
          // some bug inside ASM causes an IOB exception. Log it and move on?
          // this happens when the class isn't valid.

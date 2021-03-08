@@ -73,8 +73,10 @@ import java.util.stream.Collectors;
  * DepClean is built on top of the maven-dependency-analyzer component.
  * It produces a clean copy of the project's pom file, without bloated dependencies.
  *
- * @see <a href="https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin"></a>
- * @see <a href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html"></a>
+ * @see
+ * <a href="https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin"></a>
+ * @see
+ * <a href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html"></a>
  */
 @Mojo(name = "depclean", defaultPhase = LifecyclePhase.PACKAGE,
         requiresDependencyCollection = ResolutionScope.TEST,
@@ -82,575 +84,587 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DepCleanMojo extends AbstractMojo {
 
-    private static final String SEPARATOR = "-------------------------------------------------------";
+   private static final String SEPARATOR = "-------------------------------------------------------";
 
-    /**
-     * The Maven project to analyze.
-     */
-    @Parameter(defaultValue = "${project}", readonly = true)
-    private MavenProject project;
+   /**
+    * The Maven project to analyze.
+    */
+   @Parameter(defaultValue = "${project}", readonly = true)
+   private MavenProject project;
 
-    /**
-     * The Maven session to analyze.
-     */
-    @Parameter(defaultValue = "${session}", readonly = true)
-    private MavenSession session;
+   /**
+    * The Maven session to analyze.
+    */
+   @Parameter(defaultValue = "${session}", readonly = true)
+   private MavenSession session;
 
-    /**
-     * If this is true, DepClean creates a debloated version of the pom without unused dependencies,
-     * called "debloated-pom.xml", in root of the project.
-     */
-    @Parameter(property = "create.pom.debloated", defaultValue = "false")
-    private boolean createPomDebloated;
+   /**
+    * If this is true, DepClean creates a debloated version of the pom without unused dependencies,
+    * called "debloated-pom.xml", in root of the project.
+    */
+   @Parameter(property = "create.pom.debloated", defaultValue = "false")
+   private boolean createPomDebloated;
 
-    /**
-     * If this is true, DepClean creates a JSON file with the result of the analysis. The file is called
-     * "debloat-result.json" and it is located in the root of the project.
-     */
-    @Parameter(property = "create.result.json", defaultValue = "false")
-    private boolean createResultJson;
+   /**
+    * If this is true, DepClean creates a JSON file with the result of the analysis. The file is called
+    * "debloat-result.json" and it is located in the root of the project.
+    */
+   @Parameter(property = "create.result.json", defaultValue = "false")
+   private boolean createResultJson;
 
-    /**
-     * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
-     * considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis
-     * Dependency format is <code>groupId:artifactId:version</code>.
-     */
-    @Parameter(property = "ignore.dependencies")
-    private Set<String> ignoreDependencies;
+   /**
+    * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
+    * considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis
+    * Dependency format is <code>groupId:artifactId:version</code>.
+    */
+   @Parameter(property = "ignore.dependencies")
+   private Set<String> ignoreDependencies;
 
-    /**
-     * Ignore dependencies with specific scopes from the DepClean analysis.
-     */
-    @Parameter(property = "ignore.scopes")
-    private Set<String> ignoreScopes;
+   /**
+    * Ignore dependencies with specific scopes from the DepClean analysis.
+    */
+   @Parameter(property = "ignore.scopes")
+   private Set<String> ignoreScopes;
 
-    /**
-     * If this is true, and DepClean reported any unused direct dependency in the dependency tree,
-     * then the project's build fails immediately after running DepClean.
-     */
-    @Parameter(property = "fail.if.unused.direct", defaultValue = "false")
-    private boolean failIfUnusedDirect;
+   /**
+    * If this is true, and DepClean reported any unused direct dependency in the dependency tree,
+    * then the project's build fails immediately after running DepClean.
+    */
+   @Parameter(property = "fail.if.unused.direct", defaultValue = "false")
+   private boolean failIfUnusedDirect;
 
-    /**
-     * If this is true, and DepClean reported any unused transitive dependency in the dependency tree,
-     * then the project's build fails immediately after running DepClean.
-     */
-    @Parameter(property = "fail.if.unused.transitive", defaultValue = "false")
-    private boolean failIfUnusedTransitive;
+   /**
+    * If this is true, and DepClean reported any unused transitive dependency in the dependency tree,
+    * then the project's build fails immediately after running DepClean.
+    */
+   @Parameter(property = "fail.if.unused.transitive", defaultValue = "false")
+   private boolean failIfUnusedTransitive;
 
-    /**
-     * If this is true, and DepClean reported any unused inherited dependency in the dependency tree,
-     * then the project's build fails immediately after running DepClean.
-     */
-    @Parameter(property = "fail.if.unused.inherited", defaultValue = "false")
-    private boolean failIfUnusedInherited;
+   /**
+    * If this is true, and DepClean reported any unused inherited dependency in the dependency tree,
+    * then the project's build fails immediately after running DepClean.
+    */
+   @Parameter(property = "fail.if.unused.inherited", defaultValue = "false")
+   private boolean failIfUnusedInherited;
 
-    /**
-     * Skip plugin execution completely.
-     */
-    @Parameter(defaultValue = "false")
-    private boolean skipDepClean;
+   /**
+    * Skip plugin execution completely.
+    */
+   @Parameter(defaultValue = "false")
+   private boolean skipDepClean;
 
-    @Component
-    private ProjectBuilder mavenProjectBuilder;
+   @Component
+   private ProjectBuilder mavenProjectBuilder;
 
-    @Component
-    private RepositorySystem repositorySystem;
+   @Component
+   private RepositorySystem repositorySystem;
 
-    @Component(hint = "default")
-    private DependencyGraphBuilder dependencyGraphBuilder;
+   @Component(hint = "default")
+   private DependencyGraphBuilder dependencyGraphBuilder;
 
-    /**
-     * Write pom file to the filesystem.
-     *
-     * @param pomFile The path to the pom.
-     * @param model   The maven model to get the pom from.
-     * @throws IOException In case of any IO issue.
-     */
-    private static void writePom(final Path pomFile, final Model model) throws IOException {
-        MavenXpp3Writer writer = new MavenXpp3Writer();
-        writer.write(Files.newBufferedWriter(pomFile), model);
-    }
+   /**
+    * Write pom file to the filesystem.
+    *
+    * @param pomFile The path to the pom.
+    * @param model   The maven model to get the pom from.
+    * @throws IOException In case of any IO issue.
+    */
+   private static void writePom(final Path pomFile, final Model model) throws IOException {
+      MavenXpp3Writer writer = new MavenXpp3Writer();
+      writer.write(Files.newBufferedWriter(pomFile), model);
+   }
 
-    /**
-     * Print the status of the depenencies to the standard output.
-     * The format is: "[coordinates][scope] [(size)]"
-     *
-     * @param sizeOfDependencies A map with the size of the dependencies.
-     * @param dependencies The set dependencies to print.
-     */
-    private void printDependencies(Map<String, Long> sizeOfDependencies, Set<String> dependencies) {
-        dependencies
-                .stream()
-                .sorted(Comparator.comparing(o -> getSizeOfDependency(sizeOfDependencies, o)))
-                .collect(Collectors.toCollection(LinkedList::new))
-                .descendingIterator()
-                .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
-    }
+   /**
+    * Print the status of the depenencies to the standard output.
+    * The format is: "[coordinates][scope] [(size)]"
+    *
+    * @param sizeOfDependencies A map with the size of the dependencies.
+    * @param dependencies The set dependencies to print.
+    */
+   private void printDependencies(Map<String, Long> sizeOfDependencies, Set<String> dependencies) {
+      dependencies
+              .stream()
+              .sorted(Comparator.comparing(o -> getSizeOfDependency(sizeOfDependencies, o)))
+              .collect(Collectors.toCollection(LinkedList::new))
+              .descendingIterator()
+              .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
+   }
 
-    /**
-     * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size of the dependency
-     * cannot be obtained form the map (no key with the name of the dependency exists), then it returns 0.
-     *
-     * @param sizeOfDependencies A map of dependency -> size.
-     * @param dependency The coordinates of a dependency.
-     * @return The size of the dependency if its name is a key in the map, otherwise it returns 0.
-     */
-    private Long getSizeOfDependency(Map<String, Long> sizeOfDependencies, String dependency) {
-        Long size = sizeOfDependencies.get(dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar");
-        if (size != null) {
-            return size;
-        } else {
-            // The name of the dependency does not match with the name of the download jar, so we keep assume the size
-            // cannot be obtained and return 0.
-            return Long.valueOf(0);
-        }
-    }
+   /**
+    * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size of the dependency
+    * cannot be obtained form the map (no key with the name of the dependency exists), then it returns 0.
+    *
+    * @param sizeOfDependencies A map of dependency -> size.
+    * @param dependency The coordinates of a dependency.
+    * @return The size of the dependency if its name is a key in the map, otherwise it returns 0.
+    */
+   private Long getSizeOfDependency(Map<String, Long> sizeOfDependencies, String dependency) {
+      Long size = sizeOfDependencies.get(dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar");
+      if (size != null) {
+         return size;
+      } else {
+         // The name of the dependency does not match with the name of the download jar, so we keep assume the size
+         // cannot be obtained and return 0.
+         return Long.valueOf(0);
+      }
+   }
 
-    /**
-     * Get the size of the dependency in human readable format.
-     *
-     * @param dependency The dependency.
-     * @param sizeOfDependencies A map with the size of the dependencies, keys are stored as the downloaded jar file
-     *                           i.e., [artifactId]-[version].jar
-     * @return The human readable representation of the dependency size.
-     */
-    private String getSize(String dependency, Map<String, Long> sizeOfDependencies) {
-        String dep = dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar";
-        if (sizeOfDependencies.containsKey(dep)) {
-            return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
-        } else {
-            // The size cannot be obtained.
-            return "size unknown";
-        }
-    }
+   /**
+    * Get the size of the dependency in human readable format.
+    *
+    * @param dependency The dependency.
+    * @param sizeOfDependencies A map with the size of the dependencies, keys are stored as the downloaded jar file
+    *                           i.e., [artifactId]-[version].jar
+    * @return The human readable representation of the dependency size.
+    */
+   private String getSize(String dependency, Map<String, Long> sizeOfDependencies) {
+      String dep = dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar";
+      if (sizeOfDependencies.containsKey(dep)) {
+         return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
+      } else {
+         // The size cannot be obtained.
+         return "size unknown";
+      }
+   }
 
-    /**
-     * Exclude artifacts with specific scopes from the analysis.
-     *
-     * @param artifacts The set of artifacts to analyze.
-     * @return The set of artifacts for which the scope has not been excluded.
-     */
-    private Set<Artifact> excludeScope(Set<Artifact> artifacts) {
-        Set<Artifact> nonExcludedArtifacts = new HashSet<>();
-        for (Artifact artifact : artifacts) {
-            if (!ignoreScopes.contains(artifact.getScope())) {
-                nonExcludedArtifacts.add(artifact);
+   /**
+    * Exclude artifacts with specific scopes from the analysis.
+    *
+    * @param artifacts The set of artifacts to analyze.
+    * @return The set of artifacts for which the scope has not been excluded.
+    */
+   private Set<Artifact> excludeScope(Set<Artifact> artifacts) {
+      Set<Artifact> nonExcludedArtifacts = new HashSet<>();
+      for (Artifact artifact : artifacts) {
+         if (!ignoreScopes.contains(artifact.getScope())) {
+            nonExcludedArtifacts.add(artifact);
+         }
+      }
+      return nonExcludedArtifacts;
+   }
+
+   /**
+    * Determine if an artifact is a direct or transitive child of a dependency.
+    *
+    * @param artifact   The artifact.
+    * @param dependency The dependency
+    * @return true if the artifact is a child of a dependency in the dependency tree.
+    * @throws DependencyGraphBuilderException If the graph cannot be constructed.
+    */
+   private boolean isChildren(Artifact artifact, Dependency dependency) throws DependencyGraphBuilderException {
+      List<DependencyNode> dependencyNodes = getDependencyNodes();
+      for (DependencyNode node : dependencyNodes) {
+         Dependency dependencyNode = createDependency(node.getArtifact());
+         if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
+                 dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
+            // now we are in the target dependency
+            for (DependencyNode child : node.getChildren()) {
+               if (child.getArtifact().equals(artifact)) {
+                  // the dependency contains the artifact as a child node
+                  return true;
+               }
+
             }
-        }
-        return nonExcludedArtifacts;
-    }
+         }
+      }
+      return false;
+   }
 
-    /**
-     * Determine if an artifact is a direct or transitive child of a dependency.
-     *
-     * @param artifact   The artifact.
-     * @param dependency The dependency
-     * @return true if the artifact is a child of a dependency in the dependency tree.
-     * @throws DependencyGraphBuilderException If the graph cannot be constructed.
-     */
-    private boolean isChildren(Artifact artifact, Dependency dependency) throws DependencyGraphBuilderException {
-        List<DependencyNode> dependencyNodes = getDependencyNodes();
-        for (DependencyNode node : dependencyNodes) {
-            Dependency dependencyNode = createDependency(node.getArtifact());
-            if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
-                    dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
-                // now we are in the target dependency
-                for (DependencyNode child : node.getChildren()) {
-                    if (child.getArtifact().equals(artifact)) {
-                        // the dependency contains the artifact as a child node
-                        return true;
-                    }
+   /**
+    * This method returns a list of dependency nodes from a graph of dependency tree.
+    *
+    * @return The nodes in the dependency graph.
+    * @throws DependencyGraphBuilderException If the graph cannot be built.
+    */
+   private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException {
+      ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+      buildingRequest.setProject(project);
+      DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
+      CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
+      rootNode.accept(visitor);
+      return visitor.getNodes();
+   }
 
-                }
-            }
-        }
-        return false;
-    }
+   /**
+    * This method creates a {@link org.apache.maven.model.Dependency} object from a
+    * Maven {@link org.apache.maven.artifact.Artifact}.
+    *
+    * @param artifact The artifact to create the dependency.
+    * @return The Dependency object.
+    */
+   private Dependency createDependency(final Artifact artifact) {
+      Dependency dependency = new Dependency();
+      dependency.setGroupId(artifact.getGroupId());
+      dependency.setArtifactId(artifact.getArtifactId());
+      dependency.setVersion(artifact.getVersion());
+      if (artifact.hasClassifier()) {
+         dependency.setClassifier(artifact.getClassifier());
+      }
+      dependency.setOptional(artifact.isOptional());
+      dependency.setScope(artifact.getScope());
+      dependency.setType(artifact.getType());
+      return dependency;
+   }
 
-    /**
-     * This method returns a list of dependency nodes from a graph of dependency tree.
-     *
-     * @return The nodes in the dependency graph.
-     * @throws DependencyGraphBuilderException If the graph cannot be built.
-     */
-    private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException {
-        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-        buildingRequest.setProject(project);
-        DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
-        CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
-        rootNode.accept(visitor);
-        return visitor.getNodes();
-    }
+   private void printString(String string) {
+      System.out.println(string); //NOSONAR avoid a warning of non-used logger
+   }
 
-    /**
-     * This method creates a {@link org.apache.maven.model.Dependency} object from a
-     * Maven {@link org.apache.maven.artifact.Artifact}.
-     *
-     * @param artifact The artifact to create the dependency.
-     * @return The Dependency object.
-     */
-    private Dependency createDependency(final Artifact artifact) {
-        Dependency dependency = new Dependency();
-        dependency.setGroupId(artifact.getGroupId());
-        dependency.setArtifactId(artifact.getArtifactId());
-        dependency.setVersion(artifact.getVersion());
-        if (artifact.hasClassifier()) {
-            dependency.setClassifier(artifact.getClassifier());
-        }
-        dependency.setOptional(artifact.isOptional());
-        dependency.setScope(artifact.getScope());
-        dependency.setType(artifact.getType());
-        return dependency;
-    }
+   @Override
+   public void execute() throws MojoExecutionException, MojoFailureException {
+      if (skipDepClean) {
+         getLog().info("Skipping DepClean plugin execution");
+         return;
+      }
 
-    private void printString(String string) {
-        System.out.println(string); //NOSONAR avoid a warning of non-used logger
-    }
+      printString(SEPARATOR);
+      getLog().info("Starting DepClean dependency analysis");
 
-    @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        if (skipDepClean) {
-            getLog().info("Skipping DepClean plugin execution");
-            return;
-        }
+      File pomFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "pom.xml");
 
-        printString(SEPARATOR);
-        getLog().info("Starting DepClean dependency analysis");
+      String packaging = project.getPackaging();
+      if (packaging.equals("pom")) {
+         getLog().info("Skipping because packaging type " + packaging + ".");
+         return;
+      }
 
-        File pomFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "pom.xml");
+      /* Build Maven model to manipulate the pom */
+      Model model;
+      FileReader reader;
+      MavenXpp3Reader mavenReader = new MavenXpp3Reader();
+      try {
+         reader = new FileReader(pomFile);
+         model = mavenReader.read(reader);
+         model.setPomFile(pomFile);
+      } catch (Exception ex) {
+         getLog().error("Unable to build the maven project.");
+         return;
+      }
 
-        String packaging = project.getPackaging();
-        if (packaging.equals("pom")) {
-            getLog().info("Skipping because packaging type " + packaging + ".");
-            return;
-        }
+      /* Copy direct dependencies locally */
+      try {
+         MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory=" +
+                 project.getBuild().getDirectory() + File.separator + "dependency");
+      } catch (IOException | InterruptedException e) {
+         getLog().error("Unable to resolve all the dependencies.");
+         return;
+      }
 
-        /* Build Maven model to manipulate the pom */
-        Model model;
-        FileReader reader;
-        MavenXpp3Reader mavenReader = new MavenXpp3Reader();
-        try {
-            reader = new FileReader(pomFile);
-            model = mavenReader.read(reader);
-            model.setPomFile(pomFile);
-        } catch (Exception ex) {
-            getLog().error("Unable to build the maven project.");
-            return;
-        }
+      // TODO remove this workaround later
+      if (new File(project.getBuild().getDirectory() + File.separator + "libs").exists()) {
+         try {
+            FileUtils.copyDirectory(new File(project.getBuild().getDirectory() + File.separator + "libs"),
+                    new File(project.getBuild().getDirectory() + File.separator + "dependency")
+                                   );
+         } catch (IOException e) {
+            getLog().error("Error copying directory libs to dependency");
+         }
+      }
 
-        /* Copy direct dependencies locally */
-        try {
-            MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory=" +
-                    project.getBuild().getDirectory() + File.separator + "dependency");
-        } catch (IOException | InterruptedException e) {
-            getLog().error("Unable to resolve all the dependencies.");
-            return;
-        }
+      /* Get the size of all the dependencies */
+      Map<String, Long> sizeOfDependencies = new HashMap<>();
+      if (Files.exists(Path.of(project.getBuild().getDirectory() + File.separator + "dependency"))) {
+         Iterator<File> iterator = FileUtils.iterateFiles(
+                 new File(
+                         project.getBuild().getDirectory() + File.separator
+                                 + "dependency"), new String[]{"jar"}, true);
+         while (iterator.hasNext()) {
+            File file = iterator.next();
+            sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
+         }
+      } else {
+         log.warn("Dependencies where not copied locally");
+      }
 
-        // TODO remove this workaround later
-        if (new File(project.getBuild().getDirectory() + File.separator + "libs").exists()) {
-            try {
-                FileUtils.copyDirectory(new File(project.getBuild().getDirectory() + File.separator + "libs"),
-                        new File(project.getBuild().getDirectory() + File.separator + "dependency")
-                                       );
-            } catch (IOException e) {
-                getLog().error("Error copying directory libs to dependency");
-            }
-        }
+      /* Decompress dependencies */
+      String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + "dependency";
+      File dependencyDirectory = new File(dependencyDirectoryName);
+      if (dependencyDirectory.exists()) {
+         JarUtils.decompressJars(dependencyDirectoryName);
+      }
 
-        /* Get the size of all the dependencies */
-        Map<String, Long> sizeOfDependencies = new HashMap<>();
-        if (Files.exists(Path.of(project.getBuild().getDirectory() + File.separator + "dependency"))) {
-            Iterator<File> iterator = FileUtils.iterateFiles(
-                    new File(
-                            project.getBuild().getDirectory() + File.separator
-                                    + "dependency"), new String[]{"jar"}, true);
-            while (iterator.hasNext()) {
-                File file = iterator.next();
-                sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
-            }
-        } else {
-            log.warn("Dependencies where not copied locally");
-        }
+      /* Analyze dependencies usage status */
+      ProjectDependencyAnalysis projectDependencyAnalysis;
+      DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer();
+      try {
+         projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
+      } catch (ProjectDependencyAnalyzerException e) {
+         getLog().error("Unable to analyze dependencies.");
+         return;
+      }
 
-        /* Decompress dependencies */
-        String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + "dependency";
-        File dependencyDirectory = new File(dependencyDirectoryName);
-        if (dependencyDirectory.exists()) {
-            JarUtils.decompressJars(dependencyDirectoryName);
-        }
+      Set<Artifact> usedTransitiveArtifacts = projectDependencyAnalysis.getUsedUndeclaredArtifacts();
+      Set<Artifact> usedDirectArtifacts = projectDependencyAnalysis.getUsedDeclaredArtifacts();
+      Set<Artifact> unusedDirectArtifacts = projectDependencyAnalysis.getUnusedDeclaredArtifacts();
+      Set<Artifact> unusedTransitiveArtifacts = project.getArtifacts();
 
-        /* Analyze dependencies usage status */
-        ProjectDependencyAnalysis projectDependencyAnalysis;
-        DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer();
-        try {
-            projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
-        } catch (ProjectDependencyAnalyzerException e) {
-            getLog().error("Unable to analyze dependencies.");
-            return;
-        }
+      unusedTransitiveArtifacts.removeAll(usedDirectArtifacts);
+      unusedTransitiveArtifacts.removeAll(usedTransitiveArtifacts);
+      unusedTransitiveArtifacts.removeAll(unusedDirectArtifacts);
 
-        Set<Artifact> usedTransitiveArtifacts = projectDependencyAnalysis.getUsedUndeclaredArtifacts();
-        Set<Artifact> usedDirectArtifacts = projectDependencyAnalysis.getUsedDeclaredArtifacts();
-        Set<Artifact> unusedDirectArtifacts = projectDependencyAnalysis.getUnusedDeclaredArtifacts();
-        Set<Artifact> unusedTransitiveArtifacts = project.getArtifacts();
-
-        unusedTransitiveArtifacts.removeAll(usedDirectArtifacts);
-        unusedTransitiveArtifacts.removeAll(usedTransitiveArtifacts);
-        unusedTransitiveArtifacts.removeAll(unusedDirectArtifacts);
-
-        /* Exclude dependencies with specific scopes from the DepClean analysis */
-        if (!ignoreScopes.isEmpty()) {
+      /* Exclude dependencies with specific scopes from the DepClean analysis */
+      if (!ignoreScopes.isEmpty()) {
+         printString("Ignoring dependencies with scope(s): " + ignoreScopes.toString());
+         if (!ignoreScopes.isEmpty()) {
             usedTransitiveArtifacts = excludeScope(usedTransitiveArtifacts);
             usedDirectArtifacts = excludeScope(usedDirectArtifacts);
             unusedDirectArtifacts = excludeScope(unusedDirectArtifacts);
             unusedTransitiveArtifacts = excludeScope(unusedTransitiveArtifacts);
-        }
+         }
+      }
 
-        /* Use artifacts coordinates for the report instead of the Artifact object */
+      /* Use artifacts coordinates for the report instead of the Artifact object */
 
-        // List of dependencies declared in the POM
-        List<Dependency> dependencies = model.getDependencies();
-        Set<String> declaredArtifactsGAs = new HashSet<>();
-        for (Dependency dep : dependencies) {
-            declaredArtifactsGAs.add(dep.getGroupId() + ":" + dep.getArtifactId());
-        }
+      // List of dependencies declared in the POM
+      List<Dependency> dependencies = model.getDependencies();
+      Set<String> declaredArtifactsGAs = new HashSet<>();
+      for (Dependency dep : dependencies) {
+         declaredArtifactsGAs.add(dep.getGroupId() + ":" + dep.getArtifactId());
+      }
 
-        // --- used dependencies
-        Set<String> usedDirectArtifactsCoordinates = new HashSet<>();
-        Set<String> usedInheritedArtifactsCoordinates = new HashSet<>();
-        Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
+      // --- used dependencies
+      Set<String> usedDirectArtifactsCoordinates = new HashSet<>();
+      Set<String> usedInheritedArtifactsCoordinates = new HashSet<>();
+      Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
 
-        for (Artifact artifact : usedDirectArtifacts) {
-            String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
-            String artifactGAVS = artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
-            if (declaredArtifactsGAs.contains(artifactGA)) {
-                // the artifact is declared in the pom
-                usedDirectArtifactsCoordinates.add(artifactGAVS);
-            } else {
-                // the artifact is inherited
-                usedInheritedArtifactsCoordinates.add(artifactGAVS);
+      for (Artifact artifact : usedDirectArtifacts) {
+         String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
+         String artifactGAVS =
+                 artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
+         if (declaredArtifactsGAs.contains(artifactGA)) {
+            // the artifact is declared in the pom
+            usedDirectArtifactsCoordinates.add(artifactGAVS);
+         } else {
+            // the artifact is inherited
+            usedInheritedArtifactsCoordinates.add(artifactGAVS);
+         }
+      }
+
+      // TODO Fix: The used transitive dependencies induced by inherited dependencies should be considered as used
+      //  inherited
+      for (Artifact artifact : usedTransitiveArtifacts) {
+         String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
+         String artifactGAVS =
+                 artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
+         usedTransitiveArtifactsCoordinates.add(artifactGAVS);
+      }
+
+      // --- unused dependencies
+      Set<String> unusedDirectArtifactsCoordinates = new HashSet<>();
+      Set<String> unusedInheritedArtifactsCoordinates = new HashSet<>();
+      Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
+
+      for (Artifact artifact : unusedDirectArtifacts) {
+         String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
+         String artifactGAVS =
+                 artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
+         if (declaredArtifactsGAs.contains(artifactGA)) {
+            // the artifact is declared in the pom
+            unusedDirectArtifactsCoordinates.add(artifactGAVS);
+         } else {
+            // the artifact is inherited
+            unusedInheritedArtifactsCoordinates.add(artifactGAVS);
+         }
+      }
+
+      // TODO Fix: The unused transitive dependencies induced by inherited dependencies should be considered as
+      //  unused inherited
+      for (Artifact artifact : unusedTransitiveArtifacts) {
+         String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
+         String artifactGAVS =
+                 artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
+         unusedTransitiveArtifactsCoordinates.add(artifactGAVS);
+      }
+
+      /* Ignoring dependencies from the analysis */
+      if (ignoreDependencies != null) {
+         for (String ignoredDependency : ignoreDependencies) {
+            // if the ignored dependency is an unused direct dependency then add it to the set of used direct
+            // and remove it from the set of unused direct
+            for (Iterator<String> i = unusedDirectArtifactsCoordinates.iterator(); i.hasNext(); ) {
+               String unusedDirectArtifact = i.next();
+               if (ignoredDependency.equals(unusedDirectArtifact)) {
+                  usedDirectArtifactsCoordinates.add(unusedDirectArtifact);
+                  i.remove();
+                  break;
+               }
             }
-        }
-
-        // TODO Fix: The used transitive dependencies induced by inherited dependencies should be considered as used inherited
-        for (Artifact artifact : usedTransitiveArtifacts) {
-            String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
-            String artifactGAVS = artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
-            usedTransitiveArtifactsCoordinates.add(artifactGAVS);
-        }
-
-        // --- unused dependencies
-        Set<String> unusedDirectArtifactsCoordinates = new HashSet<>();
-        Set<String> unusedInheritedArtifactsCoordinates = new HashSet<>();
-        Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
-
-        for (Artifact artifact : unusedDirectArtifacts) {
-            String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
-            String artifactGAVS = artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
-            if (declaredArtifactsGAs.contains(artifactGA)) {
-                // the artifact is declared in the pom
-                unusedDirectArtifactsCoordinates.add(artifactGAVS);
-            } else {
-                // the artifact is inherited
-                unusedInheritedArtifactsCoordinates.add(artifactGAVS);
+            // if the ignored dependency is an unused inherited dependency then add it to the set of used inherited
+            // and remove it from the set of unused inherited
+            for (Iterator<String> j = unusedInheritedArtifactsCoordinates.iterator(); j.hasNext(); ) {
+               String unusedInheritedArtifact = j.next();
+               if (ignoredDependency.equals(unusedInheritedArtifact)) {
+                  usedInheritedArtifactsCoordinates.add(unusedInheritedArtifact);
+                  j.remove();
+                  break;
+               }
             }
-        }
+            // if the ignored dependency is an unused transitive dependency then add it to the set of used transitive
+            // and remove it from the set of unused transitive
+            for (Iterator<String> j = unusedTransitiveArtifactsCoordinates.iterator(); j.hasNext(); ) {
+               String unusedTransitiveArtifact = j.next();
+               if (ignoredDependency.equals(unusedTransitiveArtifact)) {
+                  usedTransitiveArtifactsCoordinates.add(unusedTransitiveArtifact);
+                  j.remove();
+                  break;
+               }
+            }
+         }
+      }
 
-        // TODO Fix: The unused transitive dependencies induced by inherited dependencies should be considered as unused inherited
-        for (Artifact artifact : unusedTransitiveArtifacts) {
-            String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
-            String artifactGAVS = artifactGA + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString().split(":")[4];
-            unusedTransitiveArtifactsCoordinates.add(artifactGAVS);
-        }
+      /* Printing the results to the console */
+      printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
+      printString(SEPARATOR);
 
-        /* Ignoring dependencies from the analysis */
-        if (ignoreDependencies != null) {
-            for (String ignoredDependency : ignoreDependencies) {
-                // if the ignored dependency is an unused direct dependency then add it to the set of used direct
-                // and remove it from the set of unused direct
-                for (Iterator<String> i = unusedDirectArtifactsCoordinates.iterator(); i.hasNext(); ) {
-                    String unusedDirectArtifact = i.next();
-                    if (ignoredDependency.equals(unusedDirectArtifact)) {
-                        usedDirectArtifactsCoordinates.add(unusedDirectArtifact);
-                        i.remove();
+      printString("Used direct dependencies".toUpperCase() + " [" + usedDirectArtifactsCoordinates.size() + "]" + ": ");
+      printDependencies(sizeOfDependencies, usedDirectArtifactsCoordinates);
+
+      printString("Used inherited dependencies".toUpperCase() + " [" + usedInheritedArtifactsCoordinates.size() + "]" + ": ");
+      printDependencies(sizeOfDependencies, usedInheritedArtifactsCoordinates);
+
+      printString("Used transitive dependencies".toUpperCase() + " [" + usedTransitiveArtifactsCoordinates.size() +
+              "]" + ": ");
+      printDependencies(sizeOfDependencies, usedTransitiveArtifactsCoordinates);
+
+      printString("Potentially unused direct dependencies".toUpperCase() + " [" + unusedDirectArtifactsCoordinates.size() + "]" + ": ");
+      printDependencies(sizeOfDependencies, unusedDirectArtifactsCoordinates);
+
+      printString("Potentially unused inherited dependencies".toUpperCase() + " [" + unusedInheritedArtifactsCoordinates.size() + "]" + ": ");
+      printDependencies(sizeOfDependencies, unusedInheritedArtifactsCoordinates);
+
+      printString("Potentially unused transitive dependencies".toUpperCase() + " [" + unusedTransitiveArtifactsCoordinates.size() + "]" + ": ");
+      printDependencies(sizeOfDependencies, unusedTransitiveArtifactsCoordinates);
+
+      if (!ignoreDependencies.isEmpty()) {
+         printString(SEPARATOR);
+         printString("Dependencies ignored in the analysis by the user" + " [" + ignoreDependencies.size() + "]" + ":" +
+                 " ");
+         ignoreDependencies.stream().forEach(s -> printString("\t" + s));
+      }
+
+      /* Fail the build if there are unused direct dependencies */
+      if (failIfUnusedDirect && !unusedDirectArtifactsCoordinates.isEmpty()) {
+         throw new MojoExecutionException("Build failed due to unused direct dependencies in the dependency tree " +
+                 "of the project.");
+      }
+
+      /* Fail the build if there are unused direct dependencies */
+      if (failIfUnusedTransitive && !unusedTransitiveArtifactsCoordinates.isEmpty()) {
+         throw new MojoExecutionException("Build failed due to unused transitive dependencies in the dependency " +
+                 "tree of the project.");
+      }
+
+      /* Fail the build if there are unused direct dependencies */
+      if (failIfUnusedInherited && !unusedInheritedArtifactsCoordinates.isEmpty()) {
+         throw new MojoExecutionException("Build failed due to unused inherited dependencies in the dependency " +
+                 "tree of the project.");
+      }
+
+      /* Writing the debloated version of the pom */
+      if (createPomDebloated) {
+         getLog().info("Starting debloating POM");
+
+         /* Add used transitive as direct dependencies */
+         try {
+            if (!usedTransitiveArtifacts.isEmpty()) {
+               getLog().info("Adding " + unusedTransitiveArtifactsCoordinates.size() + " used transitive " +
+                       "dependencies as direct dependencies.");
+               for (Artifact usedUndeclaredArtifact : usedTransitiveArtifacts) {
+                  model.addDependency(createDependency(usedUndeclaredArtifact));
+               }
+            }
+         } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+         }
+
+         /* Remove unused direct dependencies */
+         try {
+            if (!unusedDirectArtifacts.isEmpty()) {
+               getLog().info("Removing " + unusedDirectArtifactsCoordinates.size() + " unused direct dependencies.");
+               for (Artifact unusedDeclaredArtifact : unusedDirectArtifacts) {
+                  for (Dependency dependency : model.getDependencies()) {
+                     if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId()) &&
+                             dependency.getArtifactId().equals(unusedDeclaredArtifact.getArtifactId())) {
+                        model.removeDependency(dependency);
                         break;
-                    }
-                }
-                // if the ignored dependency is an unused inherited dependency then add it to the set of used inherited
-                // and remove it from the set of unused inherited
-                for (Iterator<String> j = unusedInheritedArtifactsCoordinates.iterator(); j.hasNext(); ) {
-                    String unusedInheritedArtifact = j.next();
-                    if (ignoredDependency.equals(unusedInheritedArtifact)) {
-                        usedInheritedArtifactsCoordinates.add(unusedInheritedArtifact);
-                        j.remove();
-                        break;
-                    }
-                }
-                // if the ignored dependency is an unused transitive dependency then add it to the set of used transitive
-                // and remove it from the set of unused transitive
-                for (Iterator<String> j = unusedTransitiveArtifactsCoordinates.iterator(); j.hasNext(); ) {
-                    String unusedTransitiveArtifact = j.next();
-                    if (ignoredDependency.equals(unusedTransitiveArtifact)) {
-                        usedTransitiveArtifactsCoordinates.add(unusedTransitiveArtifact);
-                        j.remove();
-                        break;
-                    }
-                }
+                     }
+                  }
+               }
             }
-        }
+         } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+         }
 
-        /* Printing the results to the console */
-        printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
-        printString(SEPARATOR);
-
-        printString("Used direct dependencies".toUpperCase() + " [" + usedDirectArtifactsCoordinates.size() + "]" + ": ");
-        printDependencies(sizeOfDependencies, usedDirectArtifactsCoordinates);
-
-        printString("Used inherited dependencies".toUpperCase() + " [" + usedInheritedArtifactsCoordinates.size() + "]" + ": ");
-        printDependencies(sizeOfDependencies, usedInheritedArtifactsCoordinates);
-
-        printString("Used transitive dependencies".toUpperCase() + " [" + usedTransitiveArtifactsCoordinates.size() + "]" + ": ");
-        printDependencies(sizeOfDependencies, usedTransitiveArtifactsCoordinates);
-
-        printString("Potentially unused direct dependencies".toUpperCase() + " [" + unusedDirectArtifactsCoordinates.size() + "]" + ": ");
-        printDependencies(sizeOfDependencies, unusedDirectArtifactsCoordinates);
-
-        printString("Potentially unused inherited dependencies".toUpperCase() + " [" + unusedInheritedArtifactsCoordinates.size() + "]" + ": ");
-        printDependencies(sizeOfDependencies, unusedInheritedArtifactsCoordinates);
-
-        printString("Potentially unused transitive dependencies".toUpperCase() + " [" + unusedTransitiveArtifactsCoordinates.size() + "]" + ": ");
-        printDependencies(sizeOfDependencies, unusedTransitiveArtifactsCoordinates);
-
-        if (!ignoreDependencies.isEmpty()) {
-            printString(SEPARATOR);
-            printString("Dependencies ignored in the analysis by the user" + " [" + ignoreDependencies.size() + "]" + ": ");
-            ignoreDependencies.stream().forEach(s -> printString("\t" + s));
-        }
-
-        /* Fail the build if there are unused direct dependencies */
-        if (failIfUnusedDirect && !unusedDirectArtifactsCoordinates.isEmpty()) {
-            throw new MojoExecutionException("Build failed due to unused direct dependencies in the dependency tree " +
-                    "of the project.");
-        }
-
-        /* Fail the build if there are unused direct dependencies */
-        if (failIfUnusedTransitive && !unusedTransitiveArtifactsCoordinates.isEmpty()) {
-            throw new MojoExecutionException("Build failed due to unused transitive dependencies in the dependency " +
-                    "tree of the project.");
-        }
-
-        /* Fail the build if there are unused direct dependencies */
-        if (failIfUnusedInherited && !unusedInheritedArtifactsCoordinates.isEmpty()) {
-            throw new MojoExecutionException("Build failed due to unused inherited dependencies in the dependency " +
-                    "tree of the project.");
-        }
-
-        /* Writing the debloated version of the pom */
-        if (createPomDebloated) {
-            getLog().info("Starting debloating POM");
-
-            /* Add used transitive as direct dependencies */
-            try {
-                if (!usedTransitiveArtifacts.isEmpty()) {
-                    getLog().info("Adding " + unusedTransitiveArtifactsCoordinates.size() + " used transitive " +
-                            "dependencies as direct dependencies.");
-                    for (Artifact usedUndeclaredArtifact : usedTransitiveArtifacts) {
-                        model.addDependency(createDependency(usedUndeclaredArtifact));
-                    }
-                }
-            } catch (Exception e) {
-                throw new MojoExecutionException(e.getMessage(), e);
+         /* Exclude unused transitive dependencies */
+         try {
+            if (!unusedTransitiveArtifacts.isEmpty()) {
+               getLog().info("Excluding " + unusedTransitiveArtifacts.size() + " unused transitive dependencies " +
+                       "one-by-one.");
+               for (Dependency dependency : model.getDependencies()) {
+                  for (Artifact artifact : unusedTransitiveArtifacts) {
+                     if (isChildren(artifact, dependency)) {
+                        getLog().info("Excluding " + artifact.toString() + " from dependency " + dependency.toString());
+                        Exclusion exclusion = new Exclusion();
+                        exclusion.setGroupId(artifact.getGroupId());
+                        exclusion.setArtifactId(artifact.getArtifactId());
+                        dependency.addExclusion(exclusion);
+                     }
+                  }
+               }
             }
+         } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+         }
 
-            /* Remove unused direct dependencies */
-            try {
-                if (!unusedDirectArtifacts.isEmpty()) {
-                    getLog().info("Removing " + unusedDirectArtifactsCoordinates.size() + " unused direct dependencies.");
-                    for (Artifact unusedDeclaredArtifact : unusedDirectArtifacts) {
-                        for (Dependency dependency : model.getDependencies()) {
-                            if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId()) &&
-                                    dependency.getArtifactId().equals(unusedDeclaredArtifact.getArtifactId())) {
-                                model.removeDependency(dependency);
-                                break;
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                throw new MojoExecutionException(e.getMessage(), e);
-            }
+         /* Write the debloated pom file */
+         String pathToDebloatedPom = project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
+         try {
+            Path path = Paths.get(pathToDebloatedPom);
+            writePom(path, model);
+         } catch (IOException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+         }
 
-            /* Exclude unused transitive dependencies */
-            try {
-                if (!unusedTransitiveArtifacts.isEmpty()) {
-                    getLog().info("Excluding " + unusedTransitiveArtifacts.size() + " unused transitive dependencies one-by-one.");
-                    for (Dependency dependency : model.getDependencies()) {
-                        for (Artifact artifact : unusedTransitiveArtifacts) {
-                            if (isChildren(artifact, dependency)) {
-                                getLog().info("Excluding " + artifact.toString() + " from dependency " + dependency.toString());
-                                Exclusion exclusion = new Exclusion();
-                                exclusion.setGroupId(artifact.getGroupId());
-                                exclusion.setArtifactId(artifact.getArtifactId());
-                                dependency.addExclusion(exclusion);
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                throw new MojoExecutionException(e.getMessage(), e);
-            }
-
-            /* Write the debloated pom file */
-            String pathToDebloatedPom = project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
-            try {
-                Path path = Paths.get(pathToDebloatedPom);
-                writePom(path, model);
-            } catch (IOException e) {
-                throw new MojoExecutionException(e.getMessage(), e);
-            }
-
-            getLog().info("POM debloated successfully");
-            getLog().info("pom-debloated.xml file created in: " + pathToDebloatedPom);
-        }
+         getLog().info("POM debloated successfully");
+         getLog().info("pom-debloated.xml file created in: " + pathToDebloatedPom);
+      }
 
 
-        /* Writing the JSON file with the debloat results */
-        if (createResultJson) {
-            String pathToJsonFile = project.getBasedir().getAbsolutePath() + File.separator + "depclean-results.json";
-            String treeFile = project.getBuild().getDirectory() + File.separator + "tree.txt";
-            /* Copy direct dependencies locally */
-            try {
-                MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
-            } catch (IOException | InterruptedException e) {
-                getLog().error("Unable to generate dependency tree.");
-                return;
-            }
-            File classUsageFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "class-usage.csv");
-            try {
-                FileUtils.write(classUsageFile, "ProjectClass,DependencyClass,Dependency\n", Charset.defaultCharset());
-            } catch (IOException e) {
-                getLog().error("Error writing the CSV header.");
-            }
-            ParsedDependencies parsedDependencies = new ParsedDependencies(
-                    treeFile,
-                    sizeOfDependencies,
-                    dependencyAnalyzer,
-                    usedDirectArtifactsCoordinates,
-                    usedInheritedArtifactsCoordinates,
-                    usedTransitiveArtifactsCoordinates,
-                    unusedDirectArtifactsCoordinates,
-                    unusedInheritedArtifactsCoordinates,
-                    unusedTransitiveArtifactsCoordinates,
-                    classUsageFile
-            );
-            try {
-                FileUtils.write(new File(pathToJsonFile), parsedDependencies.parseTreeToJSON(), Charset.defaultCharset());
-                getLog().info("depclean-results.json file created in: " + pathToJsonFile);
-            } catch (ParseException | IOException e) {
-                getLog().error("Unable to generate JSON file.");
-            }
-        }
-    }
+      /* Writing the JSON file with the debloat results */
+      if (createResultJson) {
+         String pathToJsonFile = project.getBasedir().getAbsolutePath() + File.separator + "depclean-results.json";
+         String treeFile = project.getBuild().getDirectory() + File.separator + "tree.txt";
+         /* Copy direct dependencies locally */
+         try {
+            MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
+         } catch (IOException | InterruptedException e) {
+            getLog().error("Unable to generate dependency tree.");
+            return;
+         }
+         File classUsageFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "class-usage.csv");
+         try {
+            FileUtils.write(classUsageFile, "ProjectClass,DependencyClass,Dependency\n", Charset.defaultCharset());
+         } catch (IOException e) {
+            getLog().error("Error writing the CSV header.");
+         }
+         ParsedDependencies parsedDependencies = new ParsedDependencies(
+                 treeFile,
+                 sizeOfDependencies,
+                 dependencyAnalyzer,
+                 usedDirectArtifactsCoordinates,
+                 usedInheritedArtifactsCoordinates,
+                 usedTransitiveArtifactsCoordinates,
+                 unusedDirectArtifactsCoordinates,
+                 unusedInheritedArtifactsCoordinates,
+                 unusedTransitiveArtifactsCoordinates,
+                 classUsageFile
+         );
+         try {
+            FileUtils.write(new File(pathToJsonFile), parsedDependencies.parseTreeToJSON(), Charset.defaultCharset());
+            getLog().info("depclean-results.json file created in: " + pathToJsonFile);
+         } catch (ParseException | IOException e) {
+            getLog().error("Unable to generate JSON file.");
+         }
+      }
+   }
 }

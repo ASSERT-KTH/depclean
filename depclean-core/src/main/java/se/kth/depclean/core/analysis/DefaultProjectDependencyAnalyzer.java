@@ -55,10 +55,11 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
    private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
 
    private final Map<Artifact, Set<String>> artifactUsedClassesMap = new HashMap<>();
+
    /**
     * A map [dependency] -> [dependency classes].
     */
-   private Map<Artifact, Set<String>> artifactClassesMap = new HashMap<>();
+   private final Map<Artifact, Set<String>> artifactClassesMap = new HashMap<>();
 
    /**
     * Analyze the dependencies in a project.
@@ -68,17 +69,19 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     * @throws ProjectDependencyAnalyzerException if the analysis fails.
     * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
     */
-   public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
+   public ProjectDependencyAnalysis analyze(MavenProject project)
+           throws ProjectDependencyAnalyzerException {
       try {
-         artifactClassesMap = buildArtifactClassMap(project);
+
+         // map of [dependency] -> [classes]
+         Map<Artifact, Set<String>> artifactClassMap = buildArtifactClassMap(project);
 
          // direct dependencies of the project
-         System.out.println(SEPARATOR);
+         System.out.println("-------------------------------------------------------");
          Set<Artifact> declaredArtifacts = project.getDependencyArtifacts();
          System.out.println("DIRECT DEPENDENCIES: " + declaredArtifacts);
 
          // transitive dependencies of the project
-         System.out.println(SEPARATOR);
          Set<Artifact> transitiveArtifacts = removeAll(project.getArtifacts(), declaredArtifacts);
          System.out.println("TRANSITIVE DEPENDENCIES: " + transitiveArtifacts);
 
@@ -87,26 +90,26 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
          // set of classes in project
          Set<String> builtProjectDependencyClasses = buildProjectDependencyClasses(project);
          Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
+         //            System.out.println("PROJECT CLASSES: " + projectClasses);
+         //            System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
 
-         // System.out.println("PROJECT CLASSES: " + projectClasses);
-         // System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
-         // Set<String> builtDependenciesDependencyClasses = buildDependenciesDependencyClasses(project);
-         // Set<String> dependencyClasses = DefaultCallGraph.getProjectVertices();
-         // dependencyClasses.removeAll(projectClasses);
-         // System.out.println("DEPENDENCY CLASSES: " + dependencyClasses);
-         // System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
+         Set<String> builtDependenciesDependencyClasses = buildDependenciesDependencyClasses(project);
+         //            HashSet dependencyClasses = new HashSet<>(DefaultCallGraph.getProjectVertices().removeAll
+         //            (projectClasses));
+         //            System.out.println("DEPENDENCY CLASSES: " + dependencyClasses);
+         //            System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
 
          /* ******************** usage analysis ********************* */
 
-         // System.out.println("PROJECT CLASSES: " + projectClasses);
+         //            System.out.println("PROJECT CLASSES: " + projectClasses);
          // search for the dependencies used by the project
-         Set<String> referencedClasses = DefaultCallGraph.referencedClassMembers(projectClasses);
-         Set<Artifact> usedArtifacts = collectUsedArtifacts(artifactClassesMap, referencedClasses);
+         Set<Artifact> usedArtifacts = collectUsedArtifacts(artifactClassMap,
+                 DefaultCallGraph.referencedClassMembers(projectClasses));
 
          /* ******************** call graph analysis ******************** */
-         System.out.println(SEPARATOR);
-         System.out.println("USED DEPENDENCIES: " + usedArtifacts);
-         System.out.println(SEPARATOR);
+         System.out.println("-------------------------------------------------------");
+         System.out.println("USED ARTIFACTS:" + usedArtifacts);
+         System.out.println("-------------------------------------------------------");
 
          /* ******************** results as statically used at the bytecode *********************** */
 
