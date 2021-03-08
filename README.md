@@ -53,7 +53,7 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 <plugin>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-maven-plugin</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.2</version>
     <executions>
         <execution>
             <goals>
@@ -68,17 +68,57 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 
 The Maven plugin can be configured with the following additional parameters.
 
+
+
 | Name   |  Type |   Description      | 
 |:----------|:-------------:| :-------------| 
-| `<ignoreDependencies>` | `Set<String>` | Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis. **Dependency format is:** `groupId:artifactId:version`.|
-| `<ignoreScopes>` | `Set<String>` | Add a list of scopes, to be ignored by DepClean during the analysis. Useful to not analyze dependencies with scopes that are not needed at runtime. **Valid scopes are:** `compile`, `provided`, `test`, `runtime`, `system`, `import`. An Empty string indicates no scopes (default).|
-| `<createPomDebloated>` | `boolean` | If this is true, DepClean creates a debloated version of the pom without unused dependencies called `debloated-pom.xml`, in the root of the project. **Default value is:** `false`.|
-| `<createResultJson>` | `boolean` | If this is true, DepClean creates a JSON file of the dependency tree along with metadata of each dependency. The file is called `depclean-results.json`, and is located in the root of the project. **Default value is:** `false`.|
-| `<failIfUnusedDirect>` | `boolean` | If this is true, and DepClean reported any unused direct dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.|
-| `<failIfUnusedTransitive>` | `boolean` | If this is true, and DepClean reported any unused transitive dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.|
-| `<failIfUnusedInherited>` | `boolean` | If this is true, and DepClean reported any unused inherited dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.|
+| `<ignoreDependencies>` | `Set<String>` | Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis. **
+Dependency format is:** `groupId:artifactId:version`.|
+| `<ignoreScopes>` | `Set<String>` | Add a list of scopes, to be ignored by DepClean during the analysis. Useful to not analyze dependencies with scopes that are not needed at runtime. **
+Valid scopes
+are:** `compile`, `provided`, `test`, `runtime`, `system`, `import`. An Empty string indicates no scopes (default).|
+| `<createPomDebloated>` | `boolean` | If this is true, DepClean creates a debloated version of the pom without unused dependencies called `debloated-pom.xml`, in the root of the project. **
+Default value is:** `false`.|
+| `<createResultJson>` | `boolean` | If this is true, DepClean creates a JSON file of the dependency tree along with metadata of each dependency. The file is called `depclean-results.json`, and is located in the root of the project. **
+Default value is:** `false`.|
+| `<failIfUnusedDirect>` | `boolean` | If this is true, and DepClean reported any unused direct dependency in the dependency tree, the build fails immediately after running DepClean. **
+Default value is:** `false`.|
+| `<failIfUnusedTransitive>` | `boolean` | If this is true, and DepClean reported any unused transitive dependency in the dependency tree, the build fails immediately after running DepClean. **
+Default value is:** `false`.|
+| `<failIfUnusedInherited>` | `boolean` | If this is true, and DepClean reported any unused inherited dependency in the dependency tree, the build fails immediately after running DepClean. **
+Default value is:** `false`.|
 | `<skipDepClean>` | `boolean` | Skip plugin execution completely. **Default value is:** `false`.|
 
+For example, to fail the build in the presence of unused direct dependencies and ignore all the scopes except the
+`compile` scope, use the following plugin configuration.
+
+```xml
+<plugin>
+    <groupId>se.kth.castor</groupId>
+    <artifactId>depclean-maven-plugin</artifactId>
+    <version>1.1.2</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>depclean</goal>
+            </goals>
+            <configuration>
+                <failIfUnusedDirect>true</failIfUnusedDirect>
+                <ignoreScopes>test,runtime,provided,test,runtime,system,import</ignoreScopes>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+Of course, it is also possible to execute DepClean with parameters directly from the command line. The previous example
+can be executed directly as follows:
+
+```bash
+mvn se.kth.castor:depclean-maven-plugin:1.1.2-SNAPSHOT:depclean -Dfail.if.unused.direct=true -Dignore.scopes=provided,
+test,
+runtime,system,import
+```
 
 ## Installing and building from source
 
