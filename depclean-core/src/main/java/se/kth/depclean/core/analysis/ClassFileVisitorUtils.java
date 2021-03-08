@@ -19,6 +19,8 @@ package se.kth.depclean.core.analysis;
  * under the License.
  */
 
+import org.codehaus.plexus.util.DirectoryScanner;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,8 +30,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-
-import org.codehaus.plexus.util.DirectoryScanner;
 
 /**
  * Utility to visit classes in a library given either as a jar file or an exploded directory.
@@ -82,7 +82,7 @@ public final class ClassFileVisitorUtils
     {
         try (JarInputStream in = new JarInputStream(url.openStream())) {
             JarEntry entry = null;
-            while ((entry = in.getNextJarEntry()) != null) {
+            while ((entry = in.getNextJarEntry()) != null) {//NOSONAR
                 String name = entry.getName();
                 // ignore files like package-info.class and module-info.class
                 if (name.endsWith(CLASS) && name.indexOf('-') == -1) {

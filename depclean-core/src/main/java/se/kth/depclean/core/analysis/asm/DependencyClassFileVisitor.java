@@ -19,6 +19,7 @@
 
 package se.kth.depclean.core.analysis.asm;
 
+import lombok.extern.slf4j.Slf4j;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
@@ -37,6 +38,7 @@ import java.util.Set;
  *
  * @see #getDependencies()
  */
+@Slf4j
 public class DependencyClassFileVisitor implements ClassFileVisitor {
 
    private final ResultCollector resultCollector = new ResultCollector();
@@ -47,62 +49,50 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
     */
    public void visitClass(String className, InputStream in) {
       try {
-         try {
-            ClassReader reader = new ClassReader(in);
+         ClassReader reader = new ClassReader(in);
 
-            // System.out.println("**************************************************");
-            // System.out.println("Reading class: " + className);
-
-            final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
-            for (String string : constantPoolClassRefs) {
-               resultCollector.addName(string);
-            }
-
-            /* visit class members */
-            AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(
-                    resultCollector
-            );
-            SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(
-                    resultCollector
-            );
-            FieldVisitor fieldVisitor = new DefaultFieldVisitor(
-                    annotationVisitor,
-                    resultCollector
-            );
-            MethodVisitor methodVisitor = new DefaultMethodVisitor(
-                    annotationVisitor,
-                    signatureVisitor,
-                    resultCollector
-            );
-
-            DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
-                    signatureVisitor,
-                    annotationVisitor,
-                    fieldVisitor,
-                    methodVisitor,
-                    resultCollector
-            );
-
-            reader.accept(defaultClassVisitor, 0);
-
-            // inset edge in the graph based on the bytecode analysis
-            DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
-            resultCollector.clearClasses();
-
-         } catch (IOException exception) {
-            exception.printStackTrace();
-         } catch (IndexOutOfBoundsException e) {
-            // some bug inside ASM causes an IOB exception. Log it and move on?
-            // this happens when the class isn't valid.
-            System.out.println("Unable to process: " + className);
+         final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
+         for (String string : constantPoolClassRefs) {
+            resultCollector.addName(string);
          }
+
+         /* visit class members */
+         AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(
+                 resultCollector
+         );
+         SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(
+                 resultCollector
+         );
+         FieldVisitor fieldVisitor = new DefaultFieldVisitor(
+                 annotationVisitor,
+                 resultCollector
+         );
+         MethodVisitor methodVisitor = new DefaultMethodVisitor(
+                 annotationVisitor,
+                 signatureVisitor,
+                 resultCollector
+         );
+
+         DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
+                 signatureVisitor,
+                 annotationVisitor,
+                 fieldVisitor,
+                 methodVisitor,
+                 resultCollector
+         );
+
+         reader.accept(defaultClassVisitor, 0);
+
+         // inset edge in the graph based on the bytecode analysis
+         DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
          resultCollector.clearClasses();
 
-      } catch (IndexOutOfBoundsException e) {
+      } catch (IndexOutOfBoundsException | IOException e) {
          // some bug inside ASM causes an IOB exception. Log it and move on?
          // this happens when the class isn't valid.
-         System.out.println("Unable to process: " + className);
+         log.warn("Unable to process: " + className);
       }
+      resultCollector.clearClasses();
    }
 
    // public methods ---------------------------------------------------------
