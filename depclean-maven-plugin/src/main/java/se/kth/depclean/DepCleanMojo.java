@@ -652,7 +652,7 @@ public class DepCleanMojo extends AbstractMojo {
          }
          File classUsageFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "class-usage.csv");
          try {
-            FileUtils.write(classUsageFile, "ProjectClass,DependencyClass,Dependency\n", Charset.defaultCharset());
+            FileUtils.write(classUsageFile, "OriginClass,TargetClass,Dependency\n", Charset.defaultCharset());
          } catch (IOException e) {
             getLog().error("Error writing the CSV header.");
          }
