@@ -13,9 +13,7 @@
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=castor-software_depclean&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=castor-software_depclean)
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=castor-software_depclean&metric=sqale_index)](https://sonarcloud.io/dashboard?id=castor-software_depclean)
 
-
 [comment]: <> ([![Coverage]&#40;https://sonarcloud.io/api/project_badges/measure?project=castor-software_depclean&metric=coverage&#41;]&#40;https://sonarcloud.io/dashboard?id=castor-software_depclean&#41;)
-
 
 ## What is DepClean?
 
@@ -52,7 +50,7 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 <plugin>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-maven-plugin</artifactId>
-    <version>1.1.3</version>
+    <version>2.0.0</version>
     <executions>
         <execution>
             <goals>
@@ -86,7 +84,7 @@ For example, to fail the build in the presence of unused direct dependencies and
 <plugin>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-maven-plugin</artifactId>
-    <version>1.1.3</version>
+    <version>2.0.0</version>
     <executions>
         <execution>
             <goals>
@@ -105,7 +103,7 @@ Of course, it is also possible to execute DepClean with parameters directly from
 can be executed directly as follows:
 
 ```bash
-mvn se.kth.castor:depclean-maven-plugin:1.1.3:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
+mvn se.kth.castor:depclean-maven-plugin:2.0.0:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
 
 ## Installing and building from source
@@ -133,7 +131,7 @@ Once the plugin is installed, you can execute the `depclean` plugin goal directl
 mvn compile   
 mvn compiler:testCompile
 # Then, executed DepClean
-mvn se.kth.castor:depclean-maven-plugin:1.1.3:depclean -DcreatePomDebloated=true -DcreateResultJson=true
+mvn se.kth.castor:depclean-maven-plugin:2.0.0:depclean -DcreatePomDebloated=true -DcreateResultJson=true
 ```
 
 This is an example of the output (note the dependencies are ordered according to the JAR size):
