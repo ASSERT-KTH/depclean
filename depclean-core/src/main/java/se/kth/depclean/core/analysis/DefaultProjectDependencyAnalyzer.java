@@ -69,47 +69,31 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     * @throws ProjectDependencyAnalyzerException if the analysis fails.
     * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
     */
-   public ProjectDependencyAnalysis analyze(MavenProject project)
-           throws ProjectDependencyAnalyzerException {
+   public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
       try {
-
          // map of [dependency] -> [classes]
          Map<Artifact, Set<String>> artifactClassMap = buildArtifactClassMap(project);
 
          // direct dependencies of the project
-         System.out.println("-------------------------------------------------------");
          Set<Artifact> declaredArtifacts = project.getDependencyArtifacts();
-         System.out.println("DIRECT DEPENDENCIES: " + declaredArtifacts);
 
          // transitive dependencies of the project
          Set<Artifact> transitiveArtifacts = removeAll(project.getArtifacts(), declaredArtifacts);
-         System.out.println("TRANSITIVE DEPENDENCIES: " + transitiveArtifacts);
 
          /* ******************** bytecode analysis ********************* */
 
          // set of classes in project
          Set<String> builtProjectDependencyClasses = buildProjectDependencyClasses(project);
          Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
-         //            System.out.println("PROJECT CLASSES: " + projectClasses);
-         //            System.out.println("Number of vertices before: " + DefaultCallGraph.getVertices().size());
-
          Set<String> builtDependenciesDependencyClasses = buildDependenciesDependencyClasses(project);
-         //            HashSet dependencyClasses = new HashSet<>(DefaultCallGraph.getProjectVertices().removeAll
-         //            (projectClasses));
-         //            System.out.println("DEPENDENCY CLASSES: " + dependencyClasses);
-         //            System.out.println("Number of vertices after: " + DefaultCallGraph.getVertices().size());
 
          /* ******************** usage analysis ********************* */
 
-         //            System.out.println("PROJECT CLASSES: " + projectClasses);
          // search for the dependencies used by the project
-         Set<Artifact> usedArtifacts = collectUsedArtifacts(artifactClassMap,
-                 DefaultCallGraph.referencedClassMembers(projectClasses));
-
-         /* ******************** call graph analysis ******************** */
-         System.out.println("-------------------------------------------------------");
-         System.out.println("USED ARTIFACTS:" + usedArtifacts);
-         System.out.println("-------------------------------------------------------");
+         Set<Artifact> usedArtifacts = collectUsedArtifacts(
+                 artifactClassMap,
+                 DefaultCallGraph.referencedClassMembers(projectClasses)
+                                                           );
 
          /* ******************** results as statically used at the bytecode *********************** */
 

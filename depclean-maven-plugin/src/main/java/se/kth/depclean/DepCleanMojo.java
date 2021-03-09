@@ -515,6 +515,7 @@ public class DepCleanMojo extends AbstractMojo {
       }
 
       /* Printing the results to the console */
+      printString(SEPARATOR);
       printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
       printString(SEPARATOR);
 
