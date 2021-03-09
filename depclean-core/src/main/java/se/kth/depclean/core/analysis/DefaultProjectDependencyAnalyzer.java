@@ -39,7 +39,10 @@ import java.util.jar.JarFile;
 @Component(role = ProjectDependencyAnalyzer.class)
 public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyzer {
 
-   public static final String SEPARATOR = "-------------------------------------------------------";
+   /**
+    * If true, the project's classes in target/test-classes are not going to be analyzed.
+    */
+   private boolean isIgnoredTest;
 
    /**
     * ClassAnalyzer
@@ -54,6 +57,13 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
    private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
 
    private final Map<Artifact, Set<String>> artifactUsedClassesMap = new HashMap<>();
+
+   /**
+    * Ctor.
+    */
+   public DefaultProjectDependencyAnalyzer(boolean isIgnoredTest) {
+      this.isIgnoredTest = isIgnoredTest;
+   }
 
    /**
     * A map [dependency] -> [dependency classes].
@@ -144,12 +154,14 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
    }
 
    private void buildProjectDependencyClasses(MavenProject project) throws IOException {
-      /* paths to project compiled classes */
+      // Analyze src classes in the project
       String outputDirectory = project.getBuild().getOutputDirectory();
-      String testOutputDirectory = project.getBuild().getTestOutputDirectory();
-      /* construct the dependency classes */
       collectDependencyClasses(outputDirectory);
-      collectDependencyClasses(testOutputDirectory);
+      // Analyze test classes in the project
+      if (!isIgnoredTest) {
+         String testOutputDirectory = project.getBuild().getTestOutputDirectory();
+         collectDependencyClasses(testOutputDirectory);
+      }
    }
 
    private void buildDependenciesDependencyClasses(MavenProject project) throws IOException {

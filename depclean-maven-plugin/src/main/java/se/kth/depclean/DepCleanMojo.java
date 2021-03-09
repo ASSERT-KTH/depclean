@@ -128,6 +128,15 @@ public class DepCleanMojo extends AbstractMojo {
    private Set<String> ignoreScopes;
 
    /**
+    * If this is true, DepClean will not analyze the test sources in the project,
+    * and, therefore, the dependencies that are only used for testing will be considered
+    * unused. This property is useful to detect dependencies that have a compile scope but
+    * are only used during testing. Hence, these dependencies should have a test scope.
+    */
+   @Parameter(property = "ignore.tests", defaultValue = "false")
+   private boolean ignoreTests;
+
+   /**
     * If this is true, and DepClean reported any unused direct dependency in the dependency tree,
     * then the project's build fails immediately after running DepClean.
     */
@@ -391,7 +400,7 @@ public class DepCleanMojo extends AbstractMojo {
 
       /* Analyze dependencies usage status */
       ProjectDependencyAnalysis projectDependencyAnalysis;
-      DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer();
+      DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer(ignoreTests);
       try {
          projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
       } catch (ProjectDependencyAnalyzerException e) {
@@ -639,6 +648,7 @@ public class DepCleanMojo extends AbstractMojo {
 
       /* Writing the JSON file with the debloat results */
       if (createResultJson) {
+         printString("Creating depclean-results.json, please wait...");
          String pathToJsonFile = project.getBasedir().getAbsolutePath() + File.separator + "depclean-results.json";
          String treeFile = project.getBuild().getDirectory() + File.separator + "tree.txt";
          /* Copy direct dependencies locally */

@@ -85,7 +85,6 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
 
          // inset edge in the graph based on the bytecode analysis
          DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
-         resultCollector.clearClasses();
 
       } catch (IndexOutOfBoundsException | IOException e) {
          // some bug inside ASM causes an IOB exception. Log it and move on?
