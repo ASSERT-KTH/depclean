@@ -27,7 +27,7 @@ this [plugin](https://maven.apache.org/plugins/maven-dependency-plugin/analyze-m
 original source code of the application nor its original `pom.xml`. It can be executed as a Maven goal through the
 command line or integrated directly into the Maven build lifecycle.
 
-For a visual idea of what DepClean can do for you, have a look at
+For a visual illustration of what DepClean can provide for your project, have a look at
 the [depclean-web](https://github.com/castor-software/depclean-web) project.
 
 ## How does it work?
@@ -43,7 +43,6 @@ With this usage information, DepClean constructs a new `pom.xml` based on the fo
 3. exclude all unused transitive dependencies
 
 If all the tests pass, and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
-
 
 ## Usage
 
@@ -106,7 +105,7 @@ Of course, it is also possible to execute DepClean with parameters directly from
 can be executed directly as follows:
 
 ```bash
-mvn se.kth.castor:depclean-maven-plugin:1.1.3:depclean -Dfail.if.unused.direct=true -Dignore.scopes=provided,test,runtime,system,import
+mvn se.kth.castor:depclean-maven-plugin:1.1.3:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
 
 ## Installing and building from source
@@ -134,7 +133,7 @@ Once the plugin is installed, you can execute the `depclean` plugin goal directl
 mvn compile   
 mvn compiler:testCompile
 # Then, executed DepClean
-mvn se.kth.castor:depclean-maven-plugin:1.1.3:depclean -Dcreate.pom.debloated=true -Dcreate.result.json=true
+mvn se.kth.castor:depclean-maven-plugin:1.1.3:depclean -DcreatePomDebloated=true -DcreateResultJson=true
 ```
 
 This is an example of the output (note the dependencies are ordered according to the JAR size):

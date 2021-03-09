@@ -103,14 +103,14 @@ public class DepCleanMojo extends AbstractMojo {
     * If this is true, DepClean creates a debloated version of the pom without unused dependencies,
     * called "debloated-pom.xml", in root of the project.
     */
-   @Parameter(property = "create.pom.debloated", defaultValue = "false")
+   @Parameter(property = "creatPomDebloated", defaultValue = "false")
    private boolean createPomDebloated;
 
    /**
     * If this is true, DepClean creates a JSON file with the result of the analysis. The file is called
     * "debloat-result.json" and it is located in the root of the project.
     */
-   @Parameter(property = "create.result.json", defaultValue = "false")
+   @Parameter(property = "createResultJson", defaultValue = "false")
    private boolean createResultJson;
 
    /**
@@ -118,13 +118,13 @@ public class DepCleanMojo extends AbstractMojo {
     * considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis
     * Dependency format is <code>groupId:artifactId:version</code>.
     */
-   @Parameter(property = "ignore.dependencies")
+   @Parameter(property = "ignoreDependencies")
    private Set<String> ignoreDependencies;
 
    /**
     * Ignore dependencies with specific scopes from the DepClean analysis.
     */
-   @Parameter(property = "ignore.scopes")
+   @Parameter(property = "ignoreScopes")
    private Set<String> ignoreScopes;
 
    /**
@@ -133,34 +133,34 @@ public class DepCleanMojo extends AbstractMojo {
     * unused. This property is useful to detect dependencies that have a compile scope but
     * are only used during testing. Hence, these dependencies should have a test scope.
     */
-   @Parameter(property = "ignore.tests", defaultValue = "false")
+   @Parameter(property = "ignoreTests", defaultValue = "false")
    private boolean ignoreTests;
 
    /**
     * If this is true, and DepClean reported any unused direct dependency in the dependency tree,
     * then the project's build fails immediately after running DepClean.
     */
-   @Parameter(property = "fail.if.unused.direct", defaultValue = "false")
+   @Parameter(property = "failIfUnusedDirect", defaultValue = "false")
    private boolean failIfUnusedDirect;
 
    /**
     * If this is true, and DepClean reported any unused transitive dependency in the dependency tree,
     * then the project's build fails immediately after running DepClean.
     */
-   @Parameter(property = "fail.if.unused.transitive", defaultValue = "false")
+   @Parameter(property = "failIfUnusedTransitive", defaultValue = "false")
    private boolean failIfUnusedTransitive;
 
    /**
     * If this is true, and DepClean reported any unused inherited dependency in the dependency tree,
     * then the project's build fails immediately after running DepClean.
     */
-   @Parameter(property = "fail.if.unused.inherited", defaultValue = "false")
+   @Parameter(property = "failIfUnusedInherited", defaultValue = "false")
    private boolean failIfUnusedInherited;
 
    /**
     * Skip plugin execution completely.
     */
-   @Parameter(defaultValue = "false")
+   @Parameter(property = "skipDepClean", defaultValue = "false")
    private boolean skipDepClean;
 
    @Component

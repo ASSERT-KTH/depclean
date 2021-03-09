@@ -18,6 +18,10 @@
     <description>Core library of DepClean</description>
     <name>depclean-core</name>
 
+    <properties>
+        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    </properties>
+
     <dependencies>
         <!-- Bytecode manipulation -->
         <dependency>
@@ -57,5 +61,4 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
-
 </project>
