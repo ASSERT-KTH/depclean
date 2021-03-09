@@ -26,7 +26,6 @@ import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -212,14 +211,6 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
    private Set<String> collectDependencyClasses(String path) throws IOException {
       URL url = new File(path).toURI().toURL();
       return dependencyAnalyzer.analyze(url);
-   }
-
-   protected Set<Artifact> buildDeclaredArtifacts(MavenProject project) {
-      Set<Artifact> declaredArtifacts = project.getArtifacts();
-      if (declaredArtifacts == null) {
-         declaredArtifacts = Collections.emptySet();
-      }
-      return declaredArtifacts;
    }
 
    public Map<String, ArtifactTypes> getArtifactClassesMap() {
