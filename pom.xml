@@ -121,6 +121,17 @@
                     <groupId>org.eluder.coveralls</groupId>
                     <artifactId>coveralls-maven-plugin</artifactId>
                     <version>${maven.coveralls.plugin.version}</version>
+                    <configuration>
+                        <jacocoReports>
+                            <jacocoReport>
+                                ${project.basedir}/depclean-core/target/site/jacoco/jacoco.xml
+                            </jacocoReport>
+                            <jacocoReport>
+                                ${project.basedir}/depclean-maven-plugin/target/site/jacoco/jacoco.xml
+                            </jacocoReport>
+                        </jacocoReports>
+                        <failOnServiceError>false</failOnServiceError>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
