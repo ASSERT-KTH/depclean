@@ -53,7 +53,7 @@ public final class JarUtils {
                     // delete the original dependency jar file
                     org.apache.commons.io.FileUtils.forceDelete(f);
                 } catch (IOException e) {
-                    log.error("Problem decompressing jar file.");
+                    log.warn("Problem decompressing jar file: " + f.getAbsolutePath());
                 }
             }
         }
