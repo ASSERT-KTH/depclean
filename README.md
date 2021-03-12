@@ -67,7 +67,7 @@ The Maven plugin can be configured with the following additional parameters.
 
 | Name   |  Type |   Description      | 
 |:----------|:-------------:| :-------------| 
-| `<ignoreDependencies>` | `Set<String>` | Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis. **Dependency format is:** `groupId:artifactId:version`.|
+| `<ignoreDependencies>` | `Set<String>` | Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis. **Dependency format is:** `groupId:artifactId:version:scope`.|
 | `<ignoreScopes>` | `Set<String>` | Add a list of scopes, to be ignored by DepClean during the analysis. Useful to not analyze dependencies with scopes that are not needed at runtime. **Valid scopes are:** `compile`, `provided`, `test`, `runtime`, `system`, `import`. An Empty string indicates no scopes (default).|
 | `<ignoreTests>` | `boolean` | If this is true, DepClean will not analyze the test classes in the project, and, therefore, the dependencies that are only used for testing will be considered unused. This parameter is useful to detect dependencies that have `compile` scope but are only used for testing. **Default value is:** `false`.|
 | `<createPomDebloated>` | `boolean` | If this is true, DepClean creates a debloated version of the pom without unused dependencies called `debloated-pom.xml`, in the root of the project. **Default value is:** `false`.|
