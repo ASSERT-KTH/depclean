@@ -19,6 +19,9 @@
 
 package se.kth.depclean.core.analysis.asm;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
@@ -27,10 +30,6 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.signature.SignatureVisitor;
 import se.kth.depclean.core.analysis.ClassFileVisitor;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Set;
 
 /**
  * Computes the set of classes referenced by visited class files, using
@@ -41,65 +40,65 @@ import java.util.Set;
 @Slf4j
 public class DependencyClassFileVisitor implements ClassFileVisitor {
 
-   private final ResultCollector resultCollector = new ResultCollector();
+  private final ResultCollector resultCollector = new ResultCollector();
 
-   /*
-    * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String,
-    *      java.io.InputStream)
-    */
-   public void visitClass(String className, InputStream in) {
-      try {
-         ClassReader reader = new ClassReader(in);
+  /*
+   * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String,
+   *      java.io.InputStream)
+   */
+  public void visitClass(String className, InputStream in) {
+    try {
+      ClassReader reader = new ClassReader(in);
 
-         final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
-         for (String string : constantPoolClassRefs) {
-            resultCollector.addName(string);
-         }
-
-         /* visit class members */
-         AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(
-                 resultCollector
-         );
-         SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(
-                 resultCollector
-         );
-         FieldVisitor fieldVisitor = new DefaultFieldVisitor(
-                 annotationVisitor,
-                 resultCollector
-         );
-         MethodVisitor methodVisitor = new DefaultMethodVisitor(
-                 annotationVisitor,
-                 signatureVisitor,
-                 resultCollector
-         );
-
-         DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
-                 signatureVisitor,
-                 annotationVisitor,
-                 fieldVisitor,
-                 methodVisitor,
-                 resultCollector
-         );
-
-         reader.accept(defaultClassVisitor, 0);
-
-         // inset edge in the graph based on the bytecode analysis
-         DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
-
-      } catch (IndexOutOfBoundsException | IOException e) {
-         // some bug inside ASM causes an IOB exception. Log it and move on?
-         // this happens when the class isn't valid.
-         log.warn("Unable to process: " + className);
+      final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
+      for (String string : constantPoolClassRefs) {
+        resultCollector.addName(string);
       }
-      resultCollector.clearClasses();
-   }
 
-   // public methods ---------------------------------------------------------
+      /* visit class members */
+      AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(
+          resultCollector
+      );
+      SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(
+          resultCollector
+      );
+      FieldVisitor fieldVisitor = new DefaultFieldVisitor(
+          annotationVisitor,
+          resultCollector
+      );
+      MethodVisitor methodVisitor = new DefaultMethodVisitor(
+          annotationVisitor,
+          signatureVisitor,
+          resultCollector
+      );
 
-   /**
-    * @return the set of classes referenced by visited class files
-    */
-   public Set<String> getDependencies() {
-      return resultCollector.getDependencies();
-   }
+      DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
+          signatureVisitor,
+          annotationVisitor,
+          fieldVisitor,
+          methodVisitor,
+          resultCollector
+      );
+
+      reader.accept(defaultClassVisitor, 0);
+
+      // inset edge in the graph based on the bytecode analysis
+      DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
+
+    } catch (IndexOutOfBoundsException | IOException e) {
+      // some bug inside ASM causes an IOB exception. Log it and move on?
+      // this happens when the class isn't valid.
+      log.warn("Unable to process: " + className);
+    }
+    resultCollector.clearClasses();
+  }
+
+  // public methods ---------------------------------------------------------
+
+  /**
+   * @return the set of classes referenced by visited class files
+   */
+  public Set<String> getDependencies() {
+    return resultCollector.getDependencies();
+  }
 }

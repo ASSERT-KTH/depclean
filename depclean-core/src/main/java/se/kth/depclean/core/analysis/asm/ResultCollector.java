@@ -19,70 +19,69 @@
 
 package se.kth.depclean.core.analysis.asm;
 
-import org.objectweb.asm.Type;
-
 import java.util.HashSet;
 import java.util.Set;
+import org.objectweb.asm.Type;
 
 public class ResultCollector {
 
-    private final Set<String> classes = new HashSet<>();
+  private final Set<String> classes = new HashSet<>();
 
-    public Set<String> getDependencies() {
-        return classes;
-    }
+  public Set<String> getDependencies() {
+    return classes;
+  }
 
-    public void clearClasses() {
-        classes.clear();
-    }
+  public void clearClasses() {
+    classes.clear();
+  }
 
-    void addDesc(final String desc) {
-        addType(Type.getType(desc));
-    }
+  void addDesc(final String desc) {
+    addType(Type.getType(desc));
+  }
 
-    void addType(final Type t) {
-        switch (t.getSort()) {
-            case Type.ARRAY:
-                addType(t.getElementType());
-                break;
-            case Type.OBJECT:
-                addName(t.getClassName().replace('.', '/'));
-                break;
-            default:
-        }
+  void addType(final Type t) {
+    switch (t.getSort()) {
+      case Type.ARRAY:
+        addType(t.getElementType());
+        break;
+      case Type.OBJECT:
+        addName(t.getClassName().replace('.', '/'));
+        break;
+      default:
     }
+  }
 
-    public void add(String name) {
-        classes.add(name);
-    }
+  public void add(String name) {
+    classes.add(name);
+  }
 
-    void addNames(final String[] names) {
-        if (names == null) {
-            return;
-        }
-        for (String name : names) {
-            addName(name);
-        }
+  void addNames(final String[] names) {
+    if (names == null) {
+      return;
     }
+    for (String name : names) {
+      addName(name);
+    }
+  }
 
-    public void addName(String name) {
-        if (name == null) {
-            return;
-        }
-        // decode arrays
-        if (name.startsWith("[L") && name.endsWith(";")) {
-            name = name.substring(2, name.length() - 1);
-        }
-        // decode internal representation
-        name = name.replace('/', '.');
-        classes.add(name);
+  public void addName(String name) {
+    if (name == null) {
+      return;
     }
+    // decode arrays
+    if (name.startsWith("[L") && name.endsWith(";")) {
+      name = name.substring(2, name.length() - 1);
+    }
+    // decode internal representation
+    name = name.replace('/', '.');
+    classes.add(name);
+  }
 
-    void addMethodDesc(final String desc) {
-        addType(Type.getReturnType(desc));
-        Type[] types = Type.getArgumentTypes(desc);
-        for (Type type : types) {
-            addType(type);
-        }
+  void addMethodDesc(final String desc) {
+    addType(Type.getReturnType(desc));
+    Type[] types = Type.getArgumentTypes(desc);
+    for (Type type : types) {
+      addType(type);
     }
+  }
 }

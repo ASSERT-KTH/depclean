@@ -7,16 +7,16 @@ import org.junit.Test;
 
 public class ClassFileVisitorUtilsTest {
 
-   @Before
-   public void setUp() throws Exception {
-   }
+  @Before
+  public void setUp() throws Exception {
+  }
 
-   @After
-   public void tearDown() throws Exception {
-   }
+  @After
+  public void tearDown() throws Exception {
+  }
 
-   @Test
-   public void accept() {
-      Assert.assertTrue(true);
-   }
+  @Test
+  public void accept() {
+    Assert.assertTrue(true);
+  }
 }

@@ -26,15 +26,14 @@ import java.util.Set;
 /**
  * Gets the set of classes contained in a library given either as a jar file or an exploded directory.
  */
-public interface ClassAnalyzer
-{
+public interface ClassAnalyzer {
 
-   // fields -----------------------------------------------------------------
+  // fields -----------------------------------------------------------------
 
-   String ROLE = ClassAnalyzer.class.getName();
+  String ROLE = ClassAnalyzer.class.getName();
 
-   // public methods ---------------------------------------------------------
+  // public methods ---------------------------------------------------------
 
-   Set<String> analyze(URL url)
+  Set<String> analyze(URL url)
       throws IOException;
 }

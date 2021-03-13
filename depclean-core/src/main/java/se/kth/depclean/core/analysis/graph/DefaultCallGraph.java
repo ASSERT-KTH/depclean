@@ -16,86 +16,87 @@
  */
 package se.kth.depclean.core.analysis.graph;
 
-import org.jgrapht.graph.AbstractBaseGraph;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.traverse.DepthFirstIterator;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.jgrapht.graph.AbstractBaseGraph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.traverse.DepthFirstIterator;
 
 public class DefaultCallGraph {
 
-    private static final AbstractBaseGraph<String, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
-    private static final Set<String> projectVertices = new HashSet<>();
-    private static final Map<String, Set<String>> usagesPerClass = new HashMap<>();
+  private static final AbstractBaseGraph<String, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(
+      DefaultEdge.class);
+  private static final Set<String> projectVertices = new HashSet<>();
+  private static final Map<String, Set<String>> usagesPerClass = new HashMap<>();
 
-    public static void addEdge(String clazz, Set<String> referencedClassMembers) {
-        directedGraph.addVertex(clazz);
-        for (String referencedClassMember : referencedClassMembers) {
-            if (!directedGraph.containsVertex(referencedClassMember)) {
-                directedGraph.addVertex(referencedClassMember);
-            }
-            directedGraph.addEdge(clazz, referencedClassMember);
-            projectVertices.add(clazz);
+  public static void addEdge(String clazz, Set<String> referencedClassMembers) {
+    directedGraph.addVertex(clazz);
+    for (String referencedClassMember : referencedClassMembers) {
+      if (!directedGraph.containsVertex(referencedClassMember)) {
+        directedGraph.addVertex(referencedClassMember);
+      }
+      directedGraph.addEdge(clazz, referencedClassMember);
+      projectVertices.add(clazz);
 
-            // Save the pair [class -> referencedClassMember] for further analysis
-            addReferencedClassMember(clazz, referencedClassMember);
-        }
+      // Save the pair [class -> referencedClassMember] for further analysis
+      addReferencedClassMember(clazz, referencedClassMember);
     }
+  }
 
-    private static void addReferencedClassMember(String clazz, String referencedClassMember) {
-        // System.out.println("\t" + clazz + " -> " + referencedClassMember);
-        Set<String> s = usagesPerClass.computeIfAbsent(clazz, k -> new HashSet<>());
-        s.add(referencedClassMember);
-    }
+  private static void addReferencedClassMember(String clazz, String referencedClassMember) {
+    // System.out.println("\t" + clazz + " -> " + referencedClassMember);
+    Set<String> s = usagesPerClass.computeIfAbsent(clazz, k -> new HashSet<>());
+    s.add(referencedClassMember);
+  }
 
-    public static Set<String> referencedClassMembers(Set<String> projectClasses) {
-        // System.out.println("project classes: " + projectClasses);
-        Set<String> allReferencedClassMembers = new HashSet<>();
-        for (String projectClass : projectClasses) {
-            allReferencedClassMembers.addAll(traverse(projectClass));
-        }
-        // System.out.println("All referenced class members: " + allReferencedClassMembers);
-        return allReferencedClassMembers;
+  public static Set<String> referencedClassMembers(Set<String> projectClasses) {
+    // System.out.println("project classes: " + projectClasses);
+    Set<String> allReferencedClassMembers = new HashSet<>();
+    for (String projectClass : projectClasses) {
+      allReferencedClassMembers.addAll(traverse(projectClass));
     }
+    // System.out.println("All referenced class members: " + allReferencedClassMembers);
+    return allReferencedClassMembers;
+  }
 
-    /**
-     * Traverse the graph using DFS.
-     * @param start The starting vertex.
-     * @return The set of all visited vertices.
-     */
-    private static Set<String> traverse(String start) {
-        Set<String> referencedClassMembers = new HashSet<>();
-        Iterator<String> iterator = new DepthFirstIterator<>(directedGraph, start);
-        while (iterator.hasNext()) {
-            referencedClassMembers.add(iterator.next());
-        }
-        return referencedClassMembers;
+  /**
+   * Traverse the graph using DFS.
+   *
+   * @param start The starting vertex.
+   * @return The set of all visited vertices.
+   */
+  private static Set<String> traverse(String start) {
+    Set<String> referencedClassMembers = new HashSet<>();
+    Iterator<String> iterator = new DepthFirstIterator<>(directedGraph, start);
+    while (iterator.hasNext()) {
+      referencedClassMembers.add(iterator.next());
     }
+    return referencedClassMembers;
+  }
 
-    public AbstractBaseGraph<String, DefaultEdge> getDirectedGraph() {
-        return directedGraph;
-    }
+  public AbstractBaseGraph<String, DefaultEdge> getDirectedGraph() {
+    return directedGraph;
+  }
 
-    public static Set<String> getProjectVertices() {
-        return projectVertices;
-    }
+  public static Set<String> getProjectVertices() {
+    return projectVertices;
+  }
 
-    public static Set<String> getVertices() {
-        return directedGraph.vertexSet();
-    }
+  public static Set<String> getVertices() {
+    return directedGraph.vertexSet();
+  }
 
-    public static void cleanDirectedGraph() {
-        directedGraph.vertexSet().clear();
-        directedGraph.edgeSet().clear();
-    }
+  public static void cleanDirectedGraph() {
+    directedGraph.vertexSet().clear();
+    directedGraph.edgeSet().clear();
+  }
 
-    public Map<String, Set<String>> getUsagesPerClass() {
-        return usagesPerClass;
-    }
+  public Map<String, Set<String>> getUsagesPerClass() {
+    return usagesPerClass;
+  }
 }
 

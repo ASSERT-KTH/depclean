@@ -19,21 +19,18 @@ package se.kth.depclean.core.analysis;
  * under the License.
  */
 
-public class ProjectDependencyAnalyzerException extends Exception
-{
+public class ProjectDependencyAnalyzerException extends Exception {
 
-   /**
-    * The serialisation unique ID.
-    */
-   private static final long serialVersionUID = -5954447543668196977L;
+  /**
+   * The serialisation unique ID.
+   */
+  private static final long serialVersionUID = -5954447543668196977L;
 
-   public ProjectDependencyAnalyzerException(String message)
-   {
-      super(message);
-   }
+  public ProjectDependencyAnalyzerException(String message) {
+    super(message);
+  }
 
-   public ProjectDependencyAnalyzerException(String message, Throwable cause)
-   {
-      super(message, cause);
-   }
+  public ProjectDependencyAnalyzerException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }
