@@ -21,7 +21,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.javadoc.source>11</maven.javadoc.source>
         <maven.maven-javadoc-plugin.version>3.2.0</maven.maven-javadoc-plugin.version>
-        <maven.jacoco.plugin.version>0.8.5</maven.jacoco.plugin.version>
+        <maven.jacoco.plugin.version>0.8.6</maven.jacoco.plugin.version>
         <maven.coveralls.plugin.version>4.3.0</maven.coveralls.plugin.version>
         <maven.junit.version>4.12</maven.junit.version>
         <maven.lombok.version>1.18.16</maven.lombok.version>
