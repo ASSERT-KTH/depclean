@@ -24,42 +24,42 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 /**
- * Computes the set of classes referenced by visited code.
- * Inspired by <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
+ * Computes the set of classes referenced by visited code. Inspired by
+ * <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
  */
 public class DefaultAnnotationVisitor extends AnnotationVisitor {
 
-    private final ResultCollector resultCollector;
+  private final ResultCollector resultCollector;
 
-    public DefaultAnnotationVisitor(ResultCollector resultCollector) {
-        super(Opcodes.ASM7);
-        this.resultCollector = resultCollector;
+  public DefaultAnnotationVisitor(ResultCollector resultCollector) {
+    super(Opcodes.ASM7);
+    this.resultCollector = resultCollector;
+  }
+
+  @Override
+  public void visit(final String name, final Object value) {
+    if (value instanceof Type) {
+      resultCollector.addType((Type) value);
     }
+  }
 
-    @Override
-    public void visit(final String name, final Object value) {
-        if (value instanceof Type) {
-            resultCollector.addType((Type) value);
-        }
-    }
+  @Override
+  public void visitEnum(final String name, final String desc, final String value) {
+    resultCollector.addDesc(desc);
+  }
 
-    @Override
-    public void visitEnum(final String name, final String desc, final String value) {
-        resultCollector.addDesc(desc);
-    }
+  @Override
+  public AnnotationVisitor visitAnnotation(final String name, final String desc) {
+    resultCollector.addDesc(desc);
 
-    @Override
-    public AnnotationVisitor visitAnnotation(final String name, final String desc) {
-        resultCollector.addDesc(desc);
+    return this;
+  }
 
-        return this;
-    }
-
-    /*
-     * @see org.objectweb.asm.AnnotationVisitor#visitArray(java.lang.String)
-     */
-    @Override
-    public AnnotationVisitor visitArray(final String name) {
-        return this;
-    }
+  /*
+   * @see org.objectweb.asm.AnnotationVisitor#visitArray(java.lang.String)
+   */
+  @Override
+  public AnnotationVisitor visitArray(final String name) {
+    return this;
+  }
 }

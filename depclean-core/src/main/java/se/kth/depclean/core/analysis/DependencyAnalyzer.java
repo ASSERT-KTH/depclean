@@ -28,6 +28,6 @@ import java.util.Set;
  */
 public interface DependencyAnalyzer {
 
-   Set<String> analyze(URL url) throws IOException;
+  Set<String> analyze(URL url) throws IOException;
 
 }

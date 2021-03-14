@@ -29,34 +29,30 @@ import java.util.Set;
  * @see #getClasses()
  */
 public class CollectorClassFileVisitor
-   implements ClassFileVisitor
-{
-   // fields -----------------------------------------------------------------
+    implements ClassFileVisitor {
+  // fields -----------------------------------------------------------------
 
-   private final Set<String> classes;
+  private final Set<String> classes;
 
-   // constructors -----------------------------------------------------------
+  // constructors -----------------------------------------------------------
 
-   public CollectorClassFileVisitor()
-   {
-      classes = new HashSet<>();
-   }
+  public CollectorClassFileVisitor() {
+    classes = new HashSet<>();
+  }
 
-   // ClassFileVisitor methods -----------------------------------------------
+  // ClassFileVisitor methods -----------------------------------------------
 
-   /*
-    * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String,
-    *      java.io.InputStream)
-    */
-   public void visitClass(String className, InputStream in)
-   {
-      classes.add(className);
-   }
+  /*
+   * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String,
+   *      java.io.InputStream)
+   */
+  public void visitClass(String className, InputStream in) {
+    classes.add(className);
+  }
 
-   // public methods ---------------------------------------------------------
+  // public methods ---------------------------------------------------------
 
-   public Set<String> getClasses()
-   {
-      return classes;
-   }
+  public Set<String> getClasses() {
+    return classes;
+  }
 }

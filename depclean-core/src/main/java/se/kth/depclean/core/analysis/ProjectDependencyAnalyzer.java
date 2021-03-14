@@ -22,15 +22,14 @@ package se.kth.depclean.core.analysis;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Analyze a project's declared dependencies and effective classes
+ * Analyze a project's declared dependencies and effective classes.
  */
-public interface ProjectDependencyAnalyzer
-{
-   // fields -----------------------------------------------------------------
+public interface ProjectDependencyAnalyzer {
+  // fields -----------------------------------------------------------------
 
-   String ROLE = ProjectDependencyAnalyzer.class.getName();
+  String ROLE = ProjectDependencyAnalyzer.class.getName();
 
-   // public methods ---------------------------------------------------------
+  // public methods ---------------------------------------------------------
 
-   ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException;
+  ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException;
 }

@@ -1,106 +1,145 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-   <modelVersion>4.0.0</modelVersion>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-   <!-- Parent -->
-   <parent>
-      <groupId>se.kth.castor</groupId>
-      <artifactId>depclean-parent-pom</artifactId>
-      <version>2.0.1-SNAPSHOT</version>
-   </parent>
+  <!-- Parent -->
+  <parent>
+    <groupId>se.kth.castor</groupId>
+    <artifactId>depclean-parent-pom</artifactId>
+    <version>2.0.1-SNAPSHOT</version>
+  </parent>
 
-   <!-- Coordinates -->
-   <artifactId>depclean-maven-plugin</artifactId>
-   <version>2.0.1-SNAPSHOT</version>
-   <packaging>maven-plugin</packaging>
-   <name>depclean-maven-plugin</name>
+  <!-- Coordinates -->
+  <artifactId>depclean-maven-plugin</artifactId>
+  <version>2.0.1-SNAPSHOT</version>
+  <packaging>maven-plugin</packaging>
+  <name>depclean-maven-plugin</name>
 
-   <properties>
-      <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-   </properties>
+  <properties>
+    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+  </properties>
 
-   <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
+  <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
 
-   <!-- Build options -->
-   <build>
-      <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-plugin-plugin</artifactId>
-            <version>3.6.0</version>
+  <!-- Build options -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <goalPrefix>depclean</goalPrefix>
+          <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
+        </configuration>
+        <executions>
+          <execution>
+            <id>mojo-descriptor</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>descriptor</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Checkstyle-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.1.2</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>8.41</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
             <configuration>
-               <goalPrefix>depclean</goalPrefix>
-               <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
+              <!-- Change to warning to enforce strong style rules -->
+              <violationSeverity>error</violationSeverity>
+              <failsOnError>true</failsOnError>
+              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <configLocation>../checkstyle.xml</configLocation>
+              <encoding>UTF-8</encoding>
+              <includeTestSourceDirectory>true</includeTestSourceDirectory>
+              <consoleOutput>true</consoleOutput>
             </configuration>
-            <executions>
-               <execution>
-                   <id>mojo-descriptor</id>
-                   <phase>process-classes</phase>
-                   <goals>
-                       <goal>descriptor</goal>
-                   </goals>
-               </execution>
-            </executions>
-         </plugin>
-      </plugins>
-   </build>
+            <id>checkstyle</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <!-- Generate a Checkstyle report -->
+              <goal>checkstyle</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
-    <dependencies>
-        <!-- Project module -->
-        <dependency>
-            <groupId>se.kth.castor</groupId>
-            <artifactId>depclean-core</artifactId>
-            <version>2.0.1-SNAPSHOT</version>
-        </dependency>
-        <!--Maven tools for plugin construction-->
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-core</artifactId>
-            <version>3.6.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-plugin-api</artifactId>
-            <version>3.6.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-project</artifactId>
-            <version>3.0-alpha-2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.plugin-tools</groupId>
-            <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.6.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.shared</groupId>
-            <artifactId>maven-dependency-tree</artifactId>
-            <version>3.0.1</version>
-        </dependency>
-        <!-- Utils -->
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.5</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-           <version>2.8.6</version>
-       </dependency>
-       <dependency>
-           <groupId>org.whitesource</groupId>
-           <artifactId>maven-dependency-tree-parser</artifactId>
-           <version>1.0.6</version>
-       </dependency>
-        <!-- Testing -->
-       <dependency>
-           <groupId>org.apache.maven.plugin-testing</groupId>
-           <artifactId>maven-plugin-testing-tools</artifactId>
-           <version>3.3.0</version>
-           <scope>compile</scope>
-       </dependency>
-   </dependencies>
+  <dependencies>
+    <!-- Project module -->
+    <dependency>
+      <groupId>se.kth.castor</groupId>
+      <artifactId>depclean-core</artifactId>
+      <version>2.0.1-SNAPSHOT</version>
+    </dependency>
+    <!--Maven tools for plugin construction-->
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>3.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>3.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <version>3.0-alpha-2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>3.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-dependency-tree</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+    <!-- Utils -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.whitesource</groupId>
+      <artifactId>maven-dependency-tree-parser</artifactId>
+      <version>1.0.6</version>
+    </dependency>
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.apache.maven.plugin-testing</groupId>
+      <artifactId>maven-plugin-testing-tools</artifactId>
+      <version>3.3.0</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
 
 </project>

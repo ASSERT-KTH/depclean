@@ -19,73 +19,73 @@ package se.kth.depclean.core.analysis.graph;
 
 public final class ClassMembersVisitorCounter {
 
-    /**
-     * Number of types.
-     */
-    private static long nbVisitedTypes;
+  /**
+   * Number of types.
+   */
+  private static long nbVisitedTypes;
 
-    /**
-     * Number of fields.
-     */
-    private static long nbVisitedFields;
+  /**
+   * Number of fields.
+   */
+  private static long nbVisitedFields;
 
-    /**
-     * Number of methods.
-     */
-    private static long nbVisitedMethods;
+  /**
+   * Number of methods.
+   */
+  private static long nbVisitedMethods;
 
-    /**
-     * Number of annotations.
-     */
-    private static long nbVisitedAnnotations;
+  /**
+   * Number of annotations.
+   */
+  private static long nbVisitedAnnotations;
 
-    private ClassMembersVisitorCounter() {
-        throw new IllegalStateException("Utility class");
-    }
+  private ClassMembersVisitorCounter() {
+    throw new IllegalStateException("Utility class");
+  }
 
-    public static void resetClassCounters() {
-        nbVisitedTypes = 0;
-        nbVisitedFields = 0;
-        nbVisitedMethods = 0;
-        nbVisitedAnnotations = 0;
-    }
+  public static void resetClassCounters() {
+    nbVisitedTypes = 0;
+    nbVisitedFields = 0;
+    nbVisitedMethods = 0;
+    nbVisitedAnnotations = 0;
+  }
 
-    public static void markAsNotFoundClassCounters() {
-        nbVisitedTypes = -1;
-        nbVisitedFields = -1;
-        nbVisitedMethods = -1;
-        nbVisitedAnnotations = -1;
-    }
+  public static void markAsNotFoundClassCounters() {
+    nbVisitedTypes = -1;
+    nbVisitedFields = -1;
+    nbVisitedMethods = -1;
+    nbVisitedAnnotations = -1;
+  }
 
-    public static void addVisitedClass() {
-        nbVisitedTypes++;
-    }
+  public static void addVisitedClass() {
+    nbVisitedTypes++;
+  }
 
-    public static void addVisitedField() {
-        nbVisitedFields++;
-    }
+  public static void addVisitedField() {
+    nbVisitedFields++;
+  }
 
-    public static void addVisitedMethod() {
-        nbVisitedMethods++;
-    }
+  public static void addVisitedMethod() {
+    nbVisitedMethods++;
+  }
 
-    public static void addVisitedAnnotation() {
-        nbVisitedAnnotations++;
-    }
+  public static void addVisitedAnnotation() {
+    nbVisitedAnnotations++;
+  }
 
-    public static long getNbVisitedTypes() {
-        return nbVisitedTypes;
-    }
+  public static long getNbVisitedTypes() {
+    return nbVisitedTypes;
+  }
 
-    public static long getNbVisitedFields() {
-        return nbVisitedFields;
-    }
+  public static long getNbVisitedFields() {
+    return nbVisitedFields;
+  }
 
-    public static long getNbVisitedMethods() {
-        return nbVisitedMethods;
-    }
+  public static long getNbVisitedMethods() {
+    return nbVisitedMethods;
+  }
 
-    public static long getNbVisitedAnnotations() {
-        return nbVisitedAnnotations;
-    }
+  public static long getNbVisitedAnnotations() {
+    return nbVisitedAnnotations;
+  }
 }
