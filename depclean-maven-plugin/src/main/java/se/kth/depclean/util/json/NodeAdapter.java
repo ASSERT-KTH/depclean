@@ -51,8 +51,8 @@ public class NodeAdapter extends TypeAdapter<Node> {
     String coordinates =
         node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getVersion() + ":" + node.getScope();
     String canonical =
-        node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getPackaging() + ":" + node.getVersion() +
-            ":" + node.getScope();
+        node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getPackaging() + ":" + node.getVersion()
+            + ":" + node.getScope();
     String dependencyJar = node.getArtifactId() + "-" + node.getVersion() + ".jar";
 
     // Write to the class-usage.csv file
@@ -107,21 +107,18 @@ public class NodeAdapter extends TypeAdapter<Node> {
             (usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates
                 .contains(coordinates)) ? "inherited" :
                 (usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates
-                    .contains(coordinates)) ? "transitive" :
-                    "unknown")
+                    .contains(coordinates)) ? "transitive" : "unknown")
         .name("status")
         .value((usedDirectArtifactsCoordinates.contains(coordinates) || usedInheritedArtifactsCoordinates
-            .contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates)) ?
-            "used" :
+            .contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates))
+            ? "used" :
             (unusedDirectArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates
-                .contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates)) ?
-                "bloated" :
-                "unknown")
+                .contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates))
+                ? "bloated" : "unknown")
 
         .name("parent")
-        .value(node.getParent() != null ?
-            node.getParent().getArtifactCanonicalForm() :
-            "unknown");
+        .value(node.getParent() != null
+            ? node.getParent().getArtifactCanonicalForm() : "unknown");
 
     JsonWriter allTypes = localWriter.name("allTypes").beginArray();
     if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
@@ -140,12 +137,11 @@ public class NodeAdapter extends TypeAdapter<Node> {
     usedTypes.endArray();
 
     localWriter.name("usageRatio")
-        .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) ?
-            dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().isEmpty() ?
-                0 : // handle division by zero
-                ((double) dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().size() /
-                    dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().size()) :
-            -1)
+        .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)
+            ? dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().isEmpty()
+            ? 0 : // handle division by zero
+            ((double) dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().size()
+                / dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().size()) : -1)
         .name("children")
         .beginArray();
 

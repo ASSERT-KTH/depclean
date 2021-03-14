@@ -96,6 +96,8 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
   // public methods ---------------------------------------------------------
 
   /**
+   * Getter.
+   *
    * @return the set of classes referenced by visited class files
    */
   public Set<String> getDependencies() {

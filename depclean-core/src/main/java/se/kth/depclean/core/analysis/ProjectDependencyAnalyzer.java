@@ -22,7 +22,7 @@ package se.kth.depclean.core.analysis;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Analyze a project's declared dependencies and effective classes
+ * Analyze a project's declared dependencies and effective classes.
  */
 public interface ProjectDependencyAnalyzer {
   // fields -----------------------------------------------------------------

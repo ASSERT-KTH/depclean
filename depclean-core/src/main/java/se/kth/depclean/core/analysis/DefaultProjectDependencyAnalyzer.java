@@ -1,3 +1,5 @@
+package se.kth.depclean.core.analysis;
+
 /*
  * Copyright (c) 2020, CASTOR Software Research Centre (www.castor.kth.se)
  *
@@ -14,7 +16,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package se.kth.depclean.core.analysis;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,15 +44,9 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
    */
   private boolean isIgnoredTest;
 
-  /**
-   * ClassAnalyzer
-   */
   @Requirement
   private final ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
 
-  /**
-   * DependencyAnalyzer
-   */
   @Requirement
   private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
 

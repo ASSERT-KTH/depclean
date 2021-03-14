@@ -77,7 +77,7 @@ public final class ClassFileVisitorUtils {
       throws IOException {
     try (JarInputStream in = new JarInputStream(url.openStream())) {
       JarEntry entry = null;
-      while ((entry = in.getNextJarEntry()) != null) {//NOSONAR
+      while ((entry = in.getNextJarEntry()) != null) { //NOSONAR
         String name = entry.getName();
         // ignore files like package-info.class and module-info.class
         if (name.endsWith(CLASS) && name.indexOf('-') == -1) {

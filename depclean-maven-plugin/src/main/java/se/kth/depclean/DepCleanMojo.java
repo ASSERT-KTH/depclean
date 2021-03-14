@@ -68,9 +68,8 @@ import se.kth.depclean.util.MavenInvoker;
 import se.kth.depclean.util.json.ParsedDependencies;
 
 /**
- * This Maven mojo is the main class of DepClean. DepClean is built on top of the
- * maven-dependency-analyzer component. It produces a clean copy of the project's pom file, without
- * bloated dependencies.
+ * This Maven mojo is the main class of DepClean. DepClean is built on top of the maven-dependency-analyzer component.
+ * It produces a clean copy of the project's pom file, without bloated dependencies.
  *
  * @see <a href="https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin"></a>
  * @see <a href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html"></a>
@@ -97,23 +96,23 @@ public class DepCleanMojo extends AbstractMojo {
   private MavenSession session;
 
   /**
-   * If this is true, DepClean creates a debloated version of the pom without unused dependencies,
-   * called "debloated-pom.xml", in root of the project.
+   * If this is true, DepClean creates a debloated version of the pom without unused dependencies, called
+   * "debloated-pom.xml", in root of the project.
    */
   @Parameter(property = "creatPomDebloated", defaultValue = "false")
   private boolean createPomDebloated;
 
   /**
-   * If this is true, DepClean creates a JSON file with the result of the analysis. The file is
-   * called "debloat-result.json" and it is located in the root of the project.
+   * If this is true, DepClean creates a JSON file with the result of the analysis. The file is called
+   * "debloat-result.json" and it is located in the root of the project.
    */
   @Parameter(property = "createResultJson", defaultValue = "false")
   private boolean createResultJson;
 
   /**
-   * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during
-   * the analysis and considered as used dependencies. Useful to override incomplete result caused
-   * by bytecode-level analysis Dependency format is <code>groupId:artifactId:version</code>.
+   * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
+   * considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis Dependency
+   * format is <code>groupId:artifactId:version</code>.
    */
   @Parameter(property = "ignoreDependencies")
   private Set<String> ignoreDependencies;
@@ -125,31 +124,30 @@ public class DepCleanMojo extends AbstractMojo {
   private Set<String> ignoreScopes;
 
   /**
-   * If this is true, DepClean will not analyze the test sources in the project, and, therefore, the
-   * dependencies that are only used for testing will be considered unused. This property is useful
-   * to detect dependencies that have a compile scope but are only used during testing. Hence, these
-   * dependencies should have a test scope.
+   * If this is true, DepClean will not analyze the test sources in the project, and, therefore, the dependencies that
+   * are only used for testing will be considered unused. This property is useful to detect dependencies that have a
+   * compile scope but are only used during testing. Hence, these dependencies should have a test scope.
    */
   @Parameter(property = "ignoreTests", defaultValue = "false")
   private boolean ignoreTests;
 
   /**
-   * If this is true, and DepClean reported any unused direct dependency in the dependency tree,
-   * then the project's build fails immediately after running DepClean.
+   * If this is true, and DepClean reported any unused direct dependency in the dependency tree, then the project's
+   * build fails immediately after running DepClean.
    */
   @Parameter(property = "failIfUnusedDirect", defaultValue = "false")
   private boolean failIfUnusedDirect;
 
   /**
-   * If this is true, and DepClean reported any unused transitive dependency in the dependency tree,
-   * then the project's build fails immediately after running DepClean.
+   * If this is true, and DepClean reported any unused transitive dependency in the dependency tree, then the project's
+   * build fails immediately after running DepClean.
    */
   @Parameter(property = "failIfUnusedTransitive", defaultValue = "false")
   private boolean failIfUnusedTransitive;
 
   /**
-   * If this is true, and DepClean reported any unused inherited dependency in the dependency tree,
-   * then the project's build fails immediately after running DepClean.
+   * If this is true, and DepClean reported any unused inherited dependency in the dependency tree, then the project's
+   * build fails immediately after running DepClean.
    */
   @Parameter(property = "failIfUnusedInherited", defaultValue = "false")
   private boolean failIfUnusedInherited;
@@ -182,8 +180,7 @@ public class DepCleanMojo extends AbstractMojo {
   }
 
   /**
-   * Print the status of the depenencies to the standard output. The format is:
-   * "[coordinates][scope] [(size)]"
+   * Print the status of the depenencies to the standard output. The format is: "[coordinates][scope] [(size)]"
    *
    * @param sizeOfDependencies A map with the size of the dependencies.
    * @param dependencies       The set dependencies to print.
@@ -198,9 +195,8 @@ public class DepCleanMojo extends AbstractMojo {
   }
 
   /**
-   * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size
-   * of the dependency cannot be obtained form the map (no key with the name of the dependency
-   * exists), then it returns 0.
+   * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size of the dependency
+   * cannot be obtained form the map (no key with the name of the dependency exists), then it returns 0.
    *
    * @param sizeOfDependencies A map of dependency -> size.
    * @param dependency         The coordinates of a dependency.
@@ -222,8 +218,8 @@ public class DepCleanMojo extends AbstractMojo {
    * Get the size of the dependency in human readable format.
    *
    * @param dependency         The dependency.
-   * @param sizeOfDependencies A map with the size of the dependencies, keys are stored as the
-   *                           downloaded jar file i.e., [artifactId]-[version].jar
+   * @param sizeOfDependencies A map with the size of the dependencies, keys are stored as the downloaded jar file i.e.,
+   *                           [artifactId]-[version].jar
    * @return The human readable representation of the dependency size.
    */
   private String getSize(String dependency, Map<String, Long> sizeOfDependencies) {
@@ -265,8 +261,8 @@ public class DepCleanMojo extends AbstractMojo {
     List<DependencyNode> dependencyNodes = getDependencyNodes();
     for (DependencyNode node : dependencyNodes) {
       Dependency dependencyNode = createDependency(node.getArtifact());
-      if (dependency.getGroupId().equals(dependencyNode.getGroupId()) &&
-          dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
+      if (dependency.getGroupId().equals(dependencyNode.getGroupId())
+          && dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
         // now we are in the target dependency
         for (DependencyNode child : node.getChildren()) {
           if (child.getArtifact().equals(artifact)) {
@@ -284,7 +280,8 @@ public class DepCleanMojo extends AbstractMojo {
    * This method returns a list of dependency nodes from a graph of dependency tree.
    *
    * @return The nodes in the dependency graph.
-   * @throws DependencyGraphBuilderException If the graph cannot be built.
+   * @throws {@link org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException} if the graph cannot be
+   *                built.
    */
   private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException {
     ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(
@@ -354,8 +351,8 @@ public class DepCleanMojo extends AbstractMojo {
 
     /* Copy direct dependencies locally */
     try {
-      MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory=" +
-          project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES);
+      MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory="
+          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES);
     } catch (IOException | InterruptedException e) {
       getLog().error("Unable to resolve all the dependencies.");
       Thread.currentThread().interrupt();
@@ -365,11 +362,9 @@ public class DepCleanMojo extends AbstractMojo {
     // TODO remove this workaround later
     if (new File(project.getBuild().getDirectory() + File.separator + "libs").exists()) {
       try {
-        FileUtils
-            .copyDirectory(new File(project.getBuild().getDirectory() + File.separator + "libs"),
-                new File(project.getBuild().getDirectory() + File.separator
-                    + DIRECTORY_TO_COPY_DEPENDENCIES)
-            );
+        FileUtils.copyDirectory(new File(project.getBuild().getDirectory() + File.separator + "libs"),
+            new File(project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES)
+        );
       } catch (IOException e) {
         getLog().error("Error copying directory libs to dependency");
       }
@@ -462,8 +457,8 @@ public class DepCleanMojo extends AbstractMojo {
       }
     }
 
-    // TODO Fix: The used transitive dependencies induced by inherited dependencies should be considered as used
-    //  inherited
+    // TODO Fix: The used transitive dependencies induced by inherited dependencies should be considered
+    //  as used inherited
     for (Artifact artifact : usedTransitiveArtifacts) {
       String artifactGA = artifact.getGroupId() + ":" + artifact.getArtifactId();
       String artifactGAVS =
@@ -542,62 +537,54 @@ public class DepCleanMojo extends AbstractMojo {
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
     printString(SEPARATOR);
 
-    printString(
-        "Used direct dependencies".toUpperCase() + " [" + usedDirectArtifactsCoordinates.size()
-            + "]" + ": ");
+    printString("Used direct dependencies".toUpperCase()
+        + " [" + usedDirectArtifactsCoordinates.size() + "]" + ": ");
     printDependencies(sizeOfDependencies, usedDirectArtifactsCoordinates);
 
-    printString(
-        "Used inherited dependencies".toUpperCase() + " [" + usedInheritedArtifactsCoordinates
-            .size() + "]" + ": ");
+    printString("Used inherited dependencies".toUpperCase()
+        + " [" + usedInheritedArtifactsCoordinates.size() + "]" + ": ");
     printDependencies(sizeOfDependencies, usedInheritedArtifactsCoordinates);
 
-    printString(
-        "Used transitive dependencies".toUpperCase() + " [" + usedTransitiveArtifactsCoordinates
-            .size() +
-            "]" + ": ");
+    printString("Used transitive dependencies".toUpperCase()
+        + " [" + usedTransitiveArtifactsCoordinates.size() + "]" + ": ");
     printDependencies(sizeOfDependencies, usedTransitiveArtifactsCoordinates);
 
-    printString("Potentially unused direct dependencies".toUpperCase() + " ["
-        + unusedDirectArtifactsCoordinates.size() + "]" + ": ");
+    printString("Potentially unused direct dependencies".toUpperCase()
+        + " [" + unusedDirectArtifactsCoordinates.size() + "]" + ": ");
     printDependencies(sizeOfDependencies, unusedDirectArtifactsCoordinates);
 
-    printString("Potentially unused inherited dependencies".toUpperCase() + " ["
-        + unusedInheritedArtifactsCoordinates.size() + "]" + ": ");
+    printString("Potentially unused inherited dependencies".toUpperCase()
+        + " [" + unusedInheritedArtifactsCoordinates.size() + "]" + ": ");
     printDependencies(sizeOfDependencies, unusedInheritedArtifactsCoordinates);
 
-    printString("Potentially unused transitive dependencies".toUpperCase() + " ["
-        + unusedTransitiveArtifactsCoordinates.size() + "]" + ": ");
+    printString("Potentially unused transitive dependencies".toUpperCase()
+        + " [" + unusedTransitiveArtifactsCoordinates.size() + "]" + ": ");
     printDependencies(sizeOfDependencies, unusedTransitiveArtifactsCoordinates);
 
     if (!ignoreDependencies.isEmpty()) {
       printString(SEPARATOR);
       printString(
-          "Dependencies ignored in the analysis by the user" + " [" + ignoreDependencies.size()
-              + "]" + ":" +
-              " ");
+          "Dependencies ignored in the analysis by the user"
+              + " [" + ignoreDependencies.size() + "]" + ":" + " ");
       ignoreDependencies.stream().forEach(s -> printString("\t" + s));
     }
 
     /* Fail the build if there are unused direct dependencies */
     if (failIfUnusedDirect && !unusedDirectArtifactsCoordinates.isEmpty()) {
       throw new MojoExecutionException(
-          "Build failed due to unused direct dependencies in the dependency tree " +
-              "of the project.");
+          "Build failed due to unused direct dependencies in the dependency tree of the project.");
     }
 
     /* Fail the build if there are unused direct dependencies */
     if (failIfUnusedTransitive && !unusedTransitiveArtifactsCoordinates.isEmpty()) {
       throw new MojoExecutionException(
-          "Build failed due to unused transitive dependencies in the dependency " +
-              "tree of the project.");
+          "Build failed due to unused transitive dependencies in the dependency tree of the project.");
     }
 
     /* Fail the build if there are unused direct dependencies */
     if (failIfUnusedInherited && !unusedInheritedArtifactsCoordinates.isEmpty()) {
       throw new MojoExecutionException(
-          "Build failed due to unused inherited dependencies in the dependency " +
-              "tree of the project.");
+          "Build failed due to unused inherited dependencies in the dependency tree of the project.");
     }
 
     /* Writing the debloated version of the pom */
@@ -608,8 +595,8 @@ public class DepCleanMojo extends AbstractMojo {
       try {
         if (!usedTransitiveArtifacts.isEmpty()) {
           getLog()
-              .info("Adding " + unusedTransitiveArtifactsCoordinates.size() + " used transitive " +
-                  "dependencies as direct dependencies.");
+              .info("Adding " + unusedTransitiveArtifactsCoordinates.size()
+                  + " used transitive dependencies as direct dependencies.");
           for (Artifact usedUndeclaredArtifact : usedTransitiveArtifacts) {
             model.addDependency(createDependency(usedUndeclaredArtifact));
           }
@@ -625,8 +612,8 @@ public class DepCleanMojo extends AbstractMojo {
               + " unused direct dependencies.");
           for (Artifact unusedDeclaredArtifact : unusedDirectArtifacts) {
             for (Dependency dependency : model.getDependencies()) {
-              if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId()) &&
-                  dependency.getArtifactId().equals(unusedDeclaredArtifact.getArtifactId())) {
+              if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId())
+                  && dependency.getArtifactId().equals(unusedDeclaredArtifact.getArtifactId())) {
                 model.removeDependency(dependency);
                 break;
               }
@@ -641,8 +628,8 @@ public class DepCleanMojo extends AbstractMojo {
       try {
         if (!unusedTransitiveArtifacts.isEmpty()) {
           getLog().info(
-              "Excluding " + unusedTransitiveArtifacts.size() + " unused transitive dependencies " +
-                  "one-by-one.");
+              "Excluding " + unusedTransitiveArtifacts.size()
+                  + " unused transitive dependencies one-by-one.");
           for (Dependency dependency : model.getDependencies()) {
             for (Artifact artifact : unusedTransitiveArtifacts) {
               if (isChildren(artifact, dependency)) {

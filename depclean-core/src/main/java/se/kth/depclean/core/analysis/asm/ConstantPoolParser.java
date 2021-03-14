@@ -30,10 +30,10 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * A small parser to read the constant pool directly, in case it contains references ASM does not support.
- * <p>
- * Adapted from http://stackoverflow.com/a/32278587/23691
- * <p>
- * Constant pool types:
+ *
+ * <p>Adapted from http://stackoverflow.com/a/32278587/23691
+ *
+ * <p>Constant pool types:
  *
  * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.4">JVM 9 Sepc</a>
  * @see <a href="https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.4">JVM 10 Sepc</a>
@@ -149,8 +149,8 @@ public class ConstantPoolParser {
       }
     }
     Set<String> result = new HashSet<>();
-    for (Integer aClass : classes) {
-      result.add(stringConstants.get(aClass));
+    for (Integer clazz : classes) {
+      result.add(stringConstants.get(clazz));
     }
     return result;
   }
