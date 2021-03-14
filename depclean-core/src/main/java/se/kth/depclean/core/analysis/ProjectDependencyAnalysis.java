@@ -19,155 +19,154 @@ package se.kth.depclean.core.analysis;
  * under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.apache.maven.artifact.Artifact;
 
 /**
  * Project dependencies analysis result.
  */
 public class ProjectDependencyAnalysis {
 
-    // fields -----------------------------------------------------------------
+  // fields -----------------------------------------------------------------
 
-    private final Set<Artifact> usedDeclaredArtifacts;
+  private final Set<Artifact> usedDeclaredArtifacts;
 
-    private final Set<Artifact> usedUndeclaredArtifacts;
+  private final Set<Artifact> usedUndeclaredArtifacts;
 
-    private final Set<Artifact> unusedDeclaredArtifacts;
+  private final Set<Artifact> unusedDeclaredArtifacts;
 
-    // constructors -----------------------------------------------------------
+  // constructors -----------------------------------------------------------
 
-    public ProjectDependencyAnalysis() {
-        this(null, null, null);
+  public ProjectDependencyAnalysis() {
+    this(null, null, null);
+  }
+
+  public ProjectDependencyAnalysis(Set<Artifact> usedDeclaredArtifacts,
+      Set<Artifact> usedUndeclaredArtifacts,
+      Set<Artifact> unusedDeclaredArtifacts) {
+    this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
+    this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
+    this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
+  }
+
+  // public methods ---------------------------------------------------------
+
+  private Set<Artifact> safeCopy(Set<Artifact> set) {
+    return (set == null) ? Collections.emptySet()
+        : Collections.unmodifiableSet(new LinkedHashSet<Artifact>(set));
+  }
+
+  /**
+   * Filter not-compile scoped artifacts from unused declared.
+   *
+   * @return updated project dependency analysis
+   * @since 1.3
+   */
+  public ProjectDependencyAnalysis ignoreNonCompile() {
+    Set<Artifact> filteredUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
+    for (Iterator<Artifact> iter = filteredUnusedDeclared.iterator(); iter.hasNext(); ) {
+      Artifact artifact = iter.next();
+      if (!artifact.getScope().equals(Artifact.SCOPE_COMPILE)) {
+        iter.remove();
+      }
     }
 
-    public ProjectDependencyAnalysis(Set<Artifact> usedDeclaredArtifacts,
-                                     Set<Artifact> usedUndeclaredArtifacts,
-                                     Set<Artifact> unusedDeclaredArtifacts) {
-        this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
-        this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
-        this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
+    return new ProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
+  }
+
+  /*
+   * @see java.lang.Object#hashCode()
+   */
+  public int hashCode() {
+    int hashCode = getUsedDeclaredArtifacts().hashCode();
+    hashCode = (hashCode * 37) + getUsedUndeclaredArtifacts().hashCode();
+    hashCode = (hashCode * 37) + getUnusedDeclaredArtifacts().hashCode();
+
+    return hashCode;
+  }
+
+  /**
+   * Used and declared artifacts.
+   *
+   * @return {@link Artifact}
+   */
+  public Set<Artifact> getUsedDeclaredArtifacts() {
+    return usedDeclaredArtifacts;
+  }
+
+  // Object methods ---------------------------------------------------------
+
+  /**
+   * Used but not declared artifacts.
+   *
+   * @return {@link Artifact}
+   */
+  public Set<Artifact> getUsedUndeclaredArtifacts() {
+    return usedUndeclaredArtifacts;
+  }
+
+  /**
+   * Unused but declared artifacts.
+   *
+   * @return {@link Artifact}
+   */
+  public Set<Artifact> getUnusedDeclaredArtifacts() {
+    return unusedDeclaredArtifacts;
+  }
+
+  /*
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  public boolean equals(Object object) {
+    if (object instanceof ProjectDependencyAnalysis) {
+      ProjectDependencyAnalysis analysis = (ProjectDependencyAnalysis) object;
+
+      return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
+          && getUsedUndeclaredArtifacts().equals(analysis.getUsedUndeclaredArtifacts())
+          && getUnusedDeclaredArtifacts().equals(analysis.getUnusedDeclaredArtifacts());
     }
 
-    // public methods ---------------------------------------------------------
+    return false;
+  }
 
-    private Set<Artifact> safeCopy(Set<Artifact> set) {
-        return (set == null) ? Collections.emptySet()
-                : Collections.unmodifiableSet(new LinkedHashSet<Artifact>(set));
+  //--------------------------------/
+  //------ PRIVATE METHOD/S -------/
+  //------------------------------/
+  /*
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    StringBuilder buffer = new StringBuilder();
+
+    if (!getUsedDeclaredArtifacts().isEmpty()) {
+      buffer.append("usedDeclaredArtifacts=").append(getUsedDeclaredArtifacts());
     }
 
-    /**
-     * Filter not-compile scoped artifacts from unused declared.
-     *
-     * @return updated project dependency analysis
-     * @since 1.3
-     */
-    public ProjectDependencyAnalysis ignoreNonCompile() {
-        Set<Artifact> filteredUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
-        for (Iterator<Artifact> iter = filteredUnusedDeclared.iterator(); iter.hasNext(); ) {
-            Artifact artifact = iter.next();
-            if (!artifact.getScope().equals(Artifact.SCOPE_COMPILE)) {
-                iter.remove();
-            }
-        }
+    if (!getUsedUndeclaredArtifacts().isEmpty()) {
+      if (buffer.length() > 0) {
+        buffer.append(",");
+      }
 
-        return new ProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
+      buffer.append("usedUndeclaredArtifacts=").append(getUsedUndeclaredArtifacts());
     }
 
-    /*
-     * @see java.lang.Object#hashCode()
-     */
-    public int hashCode() {
-        int hashCode = getUsedDeclaredArtifacts().hashCode();
-        hashCode = (hashCode * 37) + getUsedUndeclaredArtifacts().hashCode();
-        hashCode = (hashCode * 37) + getUnusedDeclaredArtifacts().hashCode();
+    if (!getUnusedDeclaredArtifacts().isEmpty()) {
+      if (buffer.length() > 0) {
+        buffer.append(",");
+      }
 
-        return hashCode;
+      buffer.append("unusedDeclaredArtifacts=").append(getUnusedDeclaredArtifacts());
     }
 
-    /**
-     * Used and declared artifacts.
-     *
-     * @return {@link Artifact}
-     */
-    public Set<Artifact> getUsedDeclaredArtifacts() {
-        return usedDeclaredArtifacts;
-    }
+    buffer.insert(0, "[");
+    buffer.insert(0, getClass().getName());
 
-    // Object methods ---------------------------------------------------------
+    buffer.append("]");
 
-    /**
-     * Used but not declared artifacts.
-     *
-     * @return {@link Artifact}
-     */
-    public Set<Artifact> getUsedUndeclaredArtifacts() {
-        return usedUndeclaredArtifacts;
-    }
-
-    /**
-     * Unused but declared artifacts.
-     *
-     * @return {@link Artifact}
-     */
-    public Set<Artifact> getUnusedDeclaredArtifacts() {
-        return unusedDeclaredArtifacts;
-    }
-
-    /*
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    public boolean equals(Object object) {
-        if (object instanceof ProjectDependencyAnalysis) {
-            ProjectDependencyAnalysis analysis = (ProjectDependencyAnalysis) object;
-
-            return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
-                    && getUsedUndeclaredArtifacts().equals(analysis.getUsedUndeclaredArtifacts())
-                    && getUnusedDeclaredArtifacts().equals(analysis.getUnusedDeclaredArtifacts());
-        }
-
-        return false;
-    }
-
-    //--------------------------------/
-    //------ PRIVATE METHOD/S -------/
-    //------------------------------/
-    /*
-     * @see java.lang.Object#toString()
-     */
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-
-        if (!getUsedDeclaredArtifacts().isEmpty()) {
-            buffer.append("usedDeclaredArtifacts=").append(getUsedDeclaredArtifacts());
-        }
-
-        if (!getUsedUndeclaredArtifacts().isEmpty()) {
-            if (buffer.length() > 0) {
-                buffer.append(",");
-            }
-
-            buffer.append("usedUndeclaredArtifacts=").append(getUsedUndeclaredArtifacts());
-        }
-
-        if (!getUnusedDeclaredArtifacts().isEmpty()) {
-            if (buffer.length() > 0) {
-                buffer.append(",");
-            }
-
-            buffer.append("unusedDeclaredArtifacts=").append(getUnusedDeclaredArtifacts());
-        }
-
-        buffer.insert(0, "[");
-        buffer.insert(0, getClass().getName());
-
-        buffer.append("]");
-
-        return buffer.toString();
-    }
+    return buffer.toString();
+  }
 }
