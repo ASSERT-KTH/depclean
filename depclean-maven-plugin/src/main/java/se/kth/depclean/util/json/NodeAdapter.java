@@ -13,6 +13,9 @@ import org.apache.commons.io.FileUtils;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
+/**
+ * Custom custom Gson type adapter to write a JSON file with information of the dependencies.
+ */
 public class NodeAdapter extends TypeAdapter<Node> {
 
   private final Set<String> usedDirectArtifactsCoordinates;
@@ -23,9 +26,11 @@ public class NodeAdapter extends TypeAdapter<Node> {
   private final Set<String> unusedTransitiveArtifactsCoordinates;
   private final DefaultProjectDependencyAnalyzer dependencyAnalyzer;
   private final File classUsageFile;
-
   private final Map<String, Long> sizeOfDependencies;
 
+  /**
+   * Ctor.
+   */
   public NodeAdapter(Set<String> usedDirectArtifactsCoordinates,
       Set<String> usedInheritedArtifactsCoordinates,
       Set<String> usedTransitiveArtifactsCoordinates,

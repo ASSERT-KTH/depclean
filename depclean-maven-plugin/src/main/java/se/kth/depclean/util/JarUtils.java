@@ -27,6 +27,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Utility class to handle JAR files.
+ */
 @Slf4j
 public final class JarUtils {
 
@@ -39,7 +42,7 @@ public final class JarUtils {
   }
 
   /**
-   * Decompress all jar files located in a given directory.
+   * Decompress all JAR files located in a given directory.
    *
    * @param outputDirectory The directory path to put the decompressed files.
    */
@@ -59,7 +62,7 @@ public final class JarUtils {
   }
 
   /**
-   * Decompress a jar file in a path to a directory (will be created if it doesn't exists).
+   * Decompress a JAR file in a path to a directory (will be created if it doesn't exists).
    *
    * @param destDirectory The destine directory.
    * @param jarFilePath   The path to the Jar file to be decompressed.

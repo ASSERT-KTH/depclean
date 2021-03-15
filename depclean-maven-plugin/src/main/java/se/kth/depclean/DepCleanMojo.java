@@ -697,7 +697,7 @@ public class DepCleanMojo extends AbstractMojo {
           classUsageFile
       );
       try {
-        FileUtils.write(new File(pathToJsonFile), parsedDependencies.parseTreeToJSON(),
+        FileUtils.write(new File(pathToJsonFile), parsedDependencies.parseTreeToJson(),
             Charset.defaultCharset());
         getLog().info("depclean-results.json file created in: " + pathToJsonFile);
       } catch (ParseException | IOException e) {

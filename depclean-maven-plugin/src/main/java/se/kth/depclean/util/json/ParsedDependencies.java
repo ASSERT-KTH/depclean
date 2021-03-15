@@ -18,6 +18,10 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 
+/**
+ * Uses the DepClean analysis results and the dependency tree of the project to produce a JSON file. This file represent
+ * the structure of the dependency tree enriched with metadata of the usage or not of each dependency.
+ */
 @Slf4j
 public class ParsedDependencies {
 
@@ -29,10 +33,12 @@ public class ParsedDependencies {
   private final Set<String> unusedDirectArtifactsCoordinates;
   private final Set<String> unusedInheritedArtifactsCoordinates;
   private final Set<String> unusedTransitiveArtifactsCoordinates;
-
   private final Map<String, Long> sizeOfDependencies;
   private final File classUsageFile;
 
+  /**
+   * Ctor.
+   */
   public ParsedDependencies(String treeTextFilePath,
       Map<String, Long> sizeOfDependencies,
       DefaultProjectDependencyAnalyzer dependencyAnalyzer,
@@ -55,7 +61,15 @@ public class ParsedDependencies {
     this.classUsageFile = classUsageFile;
   }
 
-  public String parseTreeToJSON() throws ParseException, IOException {
+  /**
+   * Creates string with the JSON representation of the enriched dependency tree of the Maven project.
+   *
+   * @return The JSON representation of the dependency tree of the project with additional metadata of the used/unused
+   *        dependencies.
+   * @throws ParseException if there are parsing errors.
+   * @throws IOException    if the JSON file cannot be written.
+   */
+  public String parseTreeToJson() throws ParseException, IOException {
     InputType type = InputType.TEXT;
     Reader r = new BufferedReader(new InputStreamReader(
         new FileInputStream(treeTextFilePath), StandardCharsets.UTF_8

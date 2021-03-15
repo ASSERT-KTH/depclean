@@ -32,6 +32,9 @@ import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 
+/**
+ * Utility class to execute Maven tasks from the command line.
+ */
 @Slf4j
 public final class MavenInvoker {
 
