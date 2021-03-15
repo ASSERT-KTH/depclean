@@ -17,12 +17,14 @@
 
   <properties>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <linkXRef>false</linkXRef>
   </properties>
 
   <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
 
   <!-- Build options -->
   <build>
+    <!-- Maven plugin to create Maven plugins-->
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -56,22 +58,30 @@
         </dependencies>
         <executions>
           <execution>
+            <id>check for errors</id>
             <configuration>
               <!-- Change to warning to enforce strong style rules -->
-              <violationSeverity>warning</violationSeverity>
+              <violationSeverity>error</violationSeverity>
               <failsOnError>true</failsOnError>
               <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
               <configLocation>../checkstyle.xml</configLocation>
               <encoding>UTF-8</encoding>
               <consoleOutput>true</consoleOutput>
             </configuration>
-            <id>checkstyle</id>
             <phase>validate</phase>
             <goals>
               <goal>check</goal>
             </goals>
           </execution>
           <execution>
+            <id>checkstyle report</id>
+            <configuration>
+              <failsOnError>true</failsOnError>
+              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <configLocation>../checkstyle.xml</configLocation>
+              <encoding>UTF-8</encoding>
+              <consoleOutput>true</consoleOutput>
+            </configuration>
             <phase>verify</phase>
             <goals>
               <!-- Generate a Checkstyle report -->
