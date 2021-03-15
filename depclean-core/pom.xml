@@ -45,7 +45,6 @@
                             <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
                             <configLocation>../checkstyle.xml</configLocation>
                             <encoding>UTF-8</encoding>
-                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
                             <consoleOutput>true</consoleOutput>
                         </configuration>
                         <id>checkstyle</id>
