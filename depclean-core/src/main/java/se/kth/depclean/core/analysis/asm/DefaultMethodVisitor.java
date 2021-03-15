@@ -38,6 +38,9 @@ public class DefaultMethodVisitor extends MethodVisitor {
   private final SignatureVisitor signatureVisitor;
   private final ResultCollector resultCollector;
 
+  /**
+   * Ctor.
+   */
   public DefaultMethodVisitor(AnnotationVisitor annotationVisitor, SignatureVisitor signatureVisitor,
       ResultCollector resultCollector) {
     super(Opcodes.ASM7);

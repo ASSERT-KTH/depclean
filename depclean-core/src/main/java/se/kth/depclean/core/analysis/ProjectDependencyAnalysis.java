@@ -31,20 +31,13 @@ import org.apache.maven.artifact.Artifact;
  */
 public class ProjectDependencyAnalysis {
 
-  // fields -----------------------------------------------------------------
-
   private final Set<Artifact> usedDeclaredArtifacts;
-
   private final Set<Artifact> usedUndeclaredArtifacts;
-
   private final Set<Artifact> unusedDeclaredArtifacts;
 
-  // constructors -----------------------------------------------------------
-
-  public ProjectDependencyAnalysis() {
-    this(null, null, null);
-  }
-
+  /**
+   * Ctor.
+   */
   public ProjectDependencyAnalysis(Set<Artifact> usedDeclaredArtifacts,
       Set<Artifact> usedUndeclaredArtifacts,
       Set<Artifact> unusedDeclaredArtifacts) {
@@ -52,8 +45,6 @@ public class ProjectDependencyAnalysis {
     this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
     this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
   }
-
-  // public methods ---------------------------------------------------------
 
   private Set<Artifact> safeCopy(Set<Artifact> set) {
     return (set == null) ? Collections.emptySet()
@@ -74,18 +65,16 @@ public class ProjectDependencyAnalysis {
         iter.remove();
       }
     }
-
     return new ProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
   }
 
-  /*
-   * @see java.lang.Object#hashCode()
+  /**
+   * Overrides the hash code value method of the object.
    */
   public int hashCode() {
     int hashCode = getUsedDeclaredArtifacts().hashCode();
     hashCode = (hashCode * 37) + getUsedUndeclaredArtifacts().hashCode();
     hashCode = (hashCode * 37) + getUnusedDeclaredArtifacts().hashCode();
-
     return hashCode;
   }
 
@@ -118,13 +107,12 @@ public class ProjectDependencyAnalysis {
     return unusedDeclaredArtifacts;
   }
 
-  /*
-   * @see java.lang.Object#equals(java.lang.Object)
+  /**
+   * Overrides the standard equals method of Object.
    */
   public boolean equals(Object object) {
     if (object instanceof ProjectDependencyAnalysis) {
       ProjectDependencyAnalysis analysis = (ProjectDependencyAnalysis) object;
-
       return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
           && getUsedUndeclaredArtifacts().equals(analysis.getUsedUndeclaredArtifacts())
           && getUnusedDeclaredArtifacts().equals(analysis.getUnusedDeclaredArtifacts());
@@ -133,11 +121,8 @@ public class ProjectDependencyAnalysis {
     return false;
   }
 
-  //--------------------------------/
-  //------ PRIVATE METHOD/S -------/
-  //------------------------------/
-  /*
-   * @see java.lang.Object#toString()
+  /**
+   * Overrides de toString standard method of class Object @see java.lang.Object#toString().
    */
   public String toString() {
     StringBuilder buffer = new StringBuilder();
@@ -150,7 +135,6 @@ public class ProjectDependencyAnalysis {
       if (buffer.length() > 0) {
         buffer.append(",");
       }
-
       buffer.append("usedUndeclaredArtifacts=").append(getUsedUndeclaredArtifacts());
     }
 
@@ -158,7 +142,6 @@ public class ProjectDependencyAnalysis {
       if (buffer.length() > 0) {
         buffer.append(",");
       }
-
       buffer.append("unusedDeclaredArtifacts=").append(getUnusedDeclaredArtifacts());
     }
 

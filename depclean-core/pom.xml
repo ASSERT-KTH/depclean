@@ -40,7 +40,7 @@
                     <execution>
                         <configuration>
                             <!-- Change to warning to enforce strong style rules -->
-                            <violationSeverity>error</violationSeverity>
+                            <violationSeverity>warning</violationSeverity>
                             <failsOnError>true</failsOnError>
                             <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
                             <configLocation>../checkstyle.xml</configLocation>

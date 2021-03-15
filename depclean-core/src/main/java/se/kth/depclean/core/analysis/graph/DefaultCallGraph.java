@@ -1,5 +1,3 @@
-package se.kth.depclean.core.analysis.graph;
-
 /*
  * Copyright (c) 2020, CASTOR Software Research Centre (www.castor.kth.se)
  *
@@ -17,23 +15,36 @@ package se.kth.depclean.core.analysis.graph;
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package se.kth.depclean.core.analysis.graph;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+/**
+ * A directed graph G = (V, E) where V is a set of classes and E is a set of edges representing class member calls
+ * between the classes in V.
+ */
 public class DefaultCallGraph {
 
-  private static final AbstractBaseGraph<String, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(
-      DefaultEdge.class);
+  private static final AbstractBaseGraph<String, DefaultEdge> directedGraph =
+      new DefaultDirectedGraph<>(DefaultEdge.class);
   private static final Set<String> projectVertices = new HashSet<>();
   private static final Map<String, Set<String>> usagesPerClass = new HashMap<>();
 
+  /**
+   * Add an edge to the call graph of classes.
+   *
+   * @param clazz                  The source.
+   * @param referencedClassMembers The target.
+   */
   public static void addEdge(String clazz, Set<String> referencedClassMembers) {
     directedGraph.addVertex(clazz);
     for (String referencedClassMember : referencedClassMembers) {
@@ -48,12 +59,13 @@ public class DefaultCallGraph {
     }
   }
 
-  private static void addReferencedClassMember(String clazz, String referencedClassMember) {
-    // System.out.println("\t" + clazz + " -> " + referencedClassMember);
-    Set<String> s = usagesPerClass.computeIfAbsent(clazz, k -> new HashSet<>());
-    s.add(referencedClassMember);
-  }
-
+  /**
+   * Traverses the call graph to obtain a set of all the reachable classes from a set of classes (ie., vertices in the
+   * graph).
+   *
+   * @param projectClasses The classes in the Maven project.
+   * @return All the referenced classes.
+   */
   public static Set<String> referencedClassMembers(Set<String> projectClasses) {
     // System.out.println("project classes: " + projectClasses);
     Set<String> allReferencedClassMembers = new HashSet<>();
@@ -79,6 +91,12 @@ public class DefaultCallGraph {
     return referencedClassMembers;
   }
 
+  private static void addReferencedClassMember(String clazz, String referencedClassMember) {
+    // System.out.println("\t" + clazz + " -> " + referencedClassMember);
+    Set<String> s = usagesPerClass.computeIfAbsent(clazz, k -> new HashSet<>());
+    s.add(referencedClassMember);
+  }
+
   public AbstractBaseGraph<String, DefaultEdge> getDirectedGraph() {
     return directedGraph;
   }
@@ -99,5 +117,5 @@ public class DefaultCallGraph {
   public Map<String, Set<String>> getUsagesPerClass() {
     return usagesPerClass;
   }
-}
 
+}

@@ -17,6 +17,9 @@
 
 package se.kth.depclean.core.analysis.graph;
 
+/**
+ * A counter to keep track of the class members in the dependencies.
+ */
 public final class ClassMembersVisitorCounter {
 
   /**
@@ -43,18 +46,14 @@ public final class ClassMembersVisitorCounter {
     throw new IllegalStateException("Utility class");
   }
 
+  /**
+   * Sets all the class counters to zero.
+   */
   public static void resetClassCounters() {
     nbVisitedTypes = 0;
     nbVisitedFields = 0;
     nbVisitedMethods = 0;
     nbVisitedAnnotations = 0;
-  }
-
-  public static void markAsNotFoundClassCounters() {
-    nbVisitedTypes = -1;
-    nbVisitedFields = -1;
-    nbVisitedMethods = -1;
-    nbVisitedAnnotations = -1;
   }
 
   public static void addVisitedClass() {

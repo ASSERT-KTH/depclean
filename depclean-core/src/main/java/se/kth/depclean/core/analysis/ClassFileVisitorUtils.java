@@ -34,19 +34,24 @@ import org.codehaus.plexus.util.DirectoryScanner;
  * Utility to visit classes in a library given either as a jar file or an exploded directory.
  */
 public final class ClassFileVisitorUtils {
-  // constants --------------------------------------------------------------
 
   private static final String[] CLASS_INCLUDES = {"**/*.class"};
   public static final String CLASS = ".class";
 
-  // constructors -----------------------------------------------------------
-
+  /**
+   * Ctor.
+   */
   private ClassFileVisitorUtils() {
     // private constructor for utility class
   }
 
-  // public methods ---------------------------------------------------------
-
+  /**
+   * Accepts a jar or directory to be analyzed.
+   *
+   * @param url     The jar or directory
+   * @param visitor A {@link ClassFileVisitor}.
+   * @throws IOException In case of any I/O problems.
+   */
   public static void accept(URL url, ClassFileVisitor visitor)
       throws IOException {
     if (url.getPath().endsWith(".jar")) {
@@ -56,7 +61,6 @@ public final class ClassFileVisitorUtils {
       if (url.getProtocol().equalsIgnoreCase("file")) {
         try {
           File file = new File(new URI(url.toString()));
-
           if (file.isDirectory()) {
             acceptDirectory(file, visitor);
           } else if (file.exists()) {
@@ -70,8 +74,6 @@ public final class ClassFileVisitorUtils {
       }
     }
   }
-
-  // private methods --------------------------------------------------------
 
   private static void acceptJar(URL url, ClassFileVisitor visitor)
       throws IOException {
@@ -92,21 +94,14 @@ public final class ClassFileVisitorUtils {
     if (!directory.isDirectory()) {
       throw new IllegalArgumentException("File is not a directory");
     }
-
     DirectoryScanner scanner = new DirectoryScanner();
-
     scanner.setBasedir(directory);
     scanner.setIncludes(CLASS_INCLUDES);
-
     scanner.scan();
-
     String[] paths = scanner.getIncludedFiles();
-
     for (String path : paths) {
       path = path.replace(File.separatorChar, '/');
-
       File file = new File(directory, path);
-
       try (FileInputStream in = new FileInputStream(file)) {
         visitClass(path, in, visitor);
       }
@@ -117,11 +112,9 @@ public final class ClassFileVisitorUtils {
     if (!path.endsWith(CLASS)) {
       throw new IllegalArgumentException("Path is not a class");
     }
-
     String className = path.substring(0, path.length() - CLASS.length());
-
     className = className.replace('/', '.');
-
     visitor.visitClass(className, in);
   }
+
 }

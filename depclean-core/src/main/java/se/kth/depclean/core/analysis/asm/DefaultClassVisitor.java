@@ -41,6 +41,9 @@ public class DefaultClassVisitor extends ClassVisitor {
   private final FieldVisitor fieldVisitor;
   private final MethodVisitor methodVisitor;
 
+  /**
+   * Ctor.
+   */
   public DefaultClassVisitor(SignatureVisitor signatureVisitor,
       AnnotationVisitor annotationVisitor,
       FieldVisitor fieldVisitor,

@@ -3,6 +3,9 @@ package se.kth.depclean.core.analysis;
 import java.util.Set;
 import lombok.Data;
 
+/**
+ * POJO containing the types in an artifact.
+ */
 @Data
 public class ArtifactTypes {
 

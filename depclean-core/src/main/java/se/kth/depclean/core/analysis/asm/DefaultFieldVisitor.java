@@ -32,6 +32,9 @@ public class DefaultFieldVisitor extends FieldVisitor {
   private final AnnotationVisitor annotationVisitor;
   private final ResultCollector resultCollector;
 
+  /**
+   * Ctor.
+   */
   public DefaultFieldVisitor(AnnotationVisitor annotationVisitor, ResultCollector resultCollector) {
     super(Opcodes.ASM7);
     this.annotationVisitor = annotationVisitor;

@@ -42,9 +42,10 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
 
   private final ResultCollector resultCollector = new ResultCollector();
 
-  /*
-   * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String,
-   *      java.io.InputStream)
+  /**
+   * Visit a class file.
+   *
+   * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String.java.io.InputStream)
    */
   public void visitClass(String className, InputStream in) {
     try {

@@ -1,5 +1,3 @@
-package se.kth.depclean.core.analysis;
-
 /*
  * Copyright (c) 2020, CASTOR Software Research Centre (www.castor.kth.se)
  *
@@ -16,6 +14,8 @@ package se.kth.depclean.core.analysis;
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+package se.kth.depclean.core.analysis;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,13 +36,16 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
+/**
+ * The principal class that perform the dependency analysis in a Maven project.
+ */
 @Component(role = ProjectDependencyAnalyzer.class)
 public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyzer {
 
   /**
    * If true, the project's classes in target/test-classes are not going to be analyzed.
    */
-  private boolean isIgnoredTest;
+  private final boolean isIgnoredTest;
 
   @Requirement
   private final ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
@@ -118,6 +121,13 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     }
   }
 
+  /**
+   * Returns a map with the artifacts (dependencies) in a Maven project and their corresponding classes.
+   *
+   * @param project A Maven project.
+   * @return A map of artifact -> classes.
+   * @throws IOException If the class cannot be analyzed.
+   */
   public Map<Artifact, Set<String>> buildArtifactClassMap(MavenProject project) throws IOException {
     Map<Artifact, Set<String>> artifactClassMap = new LinkedHashMap<>();
     Set<Artifact> dependencyArtifacts = project.getArtifacts();
@@ -219,6 +229,11 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     return dependencyAnalyzer.analyze(url);
   }
 
+  /**
+   * Computes a map of artifacts and their types.
+   *
+   * @return A map of artifact -> classes
+   */
   public Map<String, ArtifactTypes> getArtifactClassesMap() {
     Map<String, ArtifactTypes> output = new HashMap<>();
     for (Map.Entry<Artifact, Set<String>> entry : artifactClassesMap.entrySet()) {

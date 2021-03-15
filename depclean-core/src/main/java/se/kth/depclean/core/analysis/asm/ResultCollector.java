@@ -23,6 +23,9 @@ import java.util.HashSet;
 import java.util.Set;
 import org.objectweb.asm.Type;
 
+/**
+ * Used for storing the types visited statically.
+ */
 public class ResultCollector {
 
   private final Set<String> classes = new HashSet<>();
@@ -35,7 +38,7 @@ public class ResultCollector {
     classes.clear();
   }
 
-  void addDesc(final String desc) {
+  public void addDesc(final String desc) {
     addType(Type.getType(desc));
   }
 
@@ -64,7 +67,7 @@ public class ResultCollector {
     }
   }
 
-  public void addName(String name) {
+  void addName(String name) {
     if (name == null) {
       return;
     }
