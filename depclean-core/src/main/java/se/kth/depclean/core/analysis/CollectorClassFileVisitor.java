@@ -32,6 +32,9 @@ public class CollectorClassFileVisitor
     implements ClassFileVisitor {
   // fields -----------------------------------------------------------------
 
+  /**
+   * Set of all classes.
+   */
   private final Set<String> classes;
 
   // constructors -----------------------------------------------------------
@@ -42,16 +45,24 @@ public class CollectorClassFileVisitor
 
   // ClassFileVisitor methods -----------------------------------------------
 
-  /*
-   * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String,
-   *      java.io.InputStream)
+  /**
+   * {@link ClassFileVisitor}.
+   *
+   * @param className Name of the class
+   * @param in        To read the bytes.
    */
+  @Override
   public void visitClass(String className, InputStream in) {
     classes.add(className);
   }
 
   // public methods ---------------------------------------------------------
 
+  /**
+   * Getter for visited classes.
+   *
+   * @return A set of visited classes.
+   */
   public Set<String> getClasses() {
     return classes;
   }

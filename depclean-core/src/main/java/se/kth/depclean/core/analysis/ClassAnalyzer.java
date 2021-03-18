@@ -24,16 +24,27 @@ import java.net.URL;
 import java.util.Set;
 
 /**
- * Gets the set of classes contained in a library given either as a jar file or an exploded directory.
+ * Gets the set of classes contained in an artifact given either
+ * as a jar file or an exploded directory.
  */
 public interface ClassAnalyzer {
 
   // fields -----------------------------------------------------------------
 
+  /**
+   * To store the name of the class.
+   */
   String ROLE = ClassAnalyzer.class.getName();
 
   // public methods ---------------------------------------------------------
 
+  /**
+   * Analyze the classes of a given artifact.
+   *
+   * @param url The artifact.
+   * @return A set of classes.
+   * @throws IOException In case of IO issues.
+   */
   Set<String> analyze(URL url)
       throws IOException;
 }

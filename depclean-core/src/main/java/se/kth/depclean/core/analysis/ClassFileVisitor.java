@@ -26,5 +26,11 @@ import java.io.InputStream;
  */
 public interface ClassFileVisitor {
 
+  /**
+   * To visit the classes.
+   *
+   * @param className Name of the class
+   * @param in        To read the bytes.
+   */
   void visitClass(String className, InputStream in);
 }
