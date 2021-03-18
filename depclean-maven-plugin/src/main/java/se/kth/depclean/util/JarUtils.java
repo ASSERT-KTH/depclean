@@ -51,14 +51,16 @@ public final class JarUtils {
     for (File f : Objects.requireNonNull(files.listFiles())) {
       if (f.getName().endsWith(".jar")) {
         try {
+          log.info("Decompressing file: " + f.getName());
           JarUtils.decompressJarFile(outputDirectory, f.getAbsolutePath());
           // delete the original dependency jar file
           org.apache.commons.io.FileUtils.forceDelete(f);
         } catch (IOException e) {
-          log.warn("Problem decompressing jar file: " + f.getAbsolutePath());
+          log.error("Problem decompressing jar file: " + f.getAbsolutePath(), e);
         }
       }
     }
+    log.info("Jar Decompression phase is completed");
   }
 
   /**
@@ -80,8 +82,12 @@ public final class JarUtils {
         String filePath = destDirectory + File.separator + entry.getName();
         if (!entry.isDirectory()) {
           new File(filePath).getParentFile().mkdirs(); //NOSONAR Triggers a false warning of path traversal attack
-          // if the entry is a file, extracts it
-          extractFile(jarIn, filePath);
+          try {
+            // if the entry is a file, extracts it
+            extractFile(jarIn, filePath);
+          } catch (IOException e) {
+            log.warn("Could not extract file: " + filePath + " from jar " + jarFilePath);
+          }
         }
         jarIn.closeEntry();
         entry = jarIn.getNextJarEntry();
