@@ -51,16 +51,15 @@ public final class JarUtils {
     for (File f : Objects.requireNonNull(files.listFiles())) {
       if (f.getName().endsWith(".jar")) {
         try {
-          log.info("Decompressing file: " + f.getName());
           JarUtils.decompressJarFile(outputDirectory, f.getAbsolutePath());
           // delete the original dependency jar file
           org.apache.commons.io.FileUtils.forceDelete(f);
         } catch (IOException e) {
-          log.error("Problem decompressing jar file: " + f.getAbsolutePath(), e);
+          log.warn("Problem decompressing jar file: " + f.getAbsolutePath(), e);
         }
       }
     }
-    log.info("Jar Decompression phase is completed");
+    log.info("Jar decompression phase is completed");
   }
 
   /**
