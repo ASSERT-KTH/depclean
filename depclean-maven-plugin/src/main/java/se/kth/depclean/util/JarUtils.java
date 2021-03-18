@@ -59,7 +59,6 @@ public final class JarUtils {
         }
       }
     }
-    log.info("Jar decompression phase is completed");
   }
 
   /**
