@@ -24,7 +24,7 @@ import java.net.URL;
 import java.util.Set;
 
 /**
- * Gets the set of classes contained in a library given either
+ * Gets the set of classes contained in an artifact given either
  * as a jar file or an exploded directory.
  */
 public interface ClassAnalyzer {
@@ -39,9 +39,9 @@ public interface ClassAnalyzer {
   // public methods ---------------------------------------------------------
 
   /**
-   * Analyze the classes of a given library.
+   * Analyze the classes of a given artifact.
    *
-   * @param url url of the library.
+   * @param url The artifact.
    * @return A set of classes.
    * @throws IOException In case of IO issues.
    */
