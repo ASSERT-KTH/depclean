@@ -375,7 +375,7 @@ public class DepCleanMojo extends AbstractMojo {
     String projectJar = project.getArtifactId() + "-" + project.getVersion() + ".jar";
     long projectSize = FileUtils.sizeOf(new File(project.getBuild().getOutputDirectory()));
     sizeOfDependencies.put(projectJar, projectSize);
-    if (Files.exists(Path.of(
+    if (Files.exists(Paths.get(
         project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES))) {
       Iterator<File> iterator = FileUtils.iterateFiles(
           new File(
