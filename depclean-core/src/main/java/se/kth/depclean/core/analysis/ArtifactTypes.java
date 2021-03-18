@@ -10,20 +10,20 @@ import lombok.Data;
 public class ArtifactTypes {
 
   /**
-   * To store all types of artifacts.
+   * A HashSet to store the types.
    */
   private Set<String> allTypes;
 
   /**
-   * To store used types of artifacts.
+   * A HashSet to store the used types.
    */
   private Set<String> usedTypes;
 
   /**
-   * To initialize the types of artifacts.
+   * Ctor.
    *
-   * @param allTypes  All types of artifacts.
-   * @param usedTypes Used types of artifacts.
+   * @param allTypes  All types in the artifact.
+   * @param usedTypes Thew used types in the artifact.
    */
   public ArtifactTypes(Set<String> allTypes, Set<String> usedTypes) {
     this.allTypes = allTypes;
