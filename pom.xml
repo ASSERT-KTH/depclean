@@ -22,7 +22,7 @@
     <maven.maven-javadoc-plugin.version>3.2.0</maven.maven-javadoc-plugin.version>
     <maven.jacoco.plugin.version>0.8.6</maven.jacoco.plugin.version>
     <maven.coveralls.plugin.version>4.3.0</maven.coveralls.plugin.version>
-    <maven.junit.version>4.12</maven.junit.version>
+    <maven.junit.version>5.7.1</maven.junit.version>
     <maven.lombok.version>1.18.16</maven.lombok.version>
     <maven.slf4j-api.version>2.0.0-alpha1</maven.slf4j-api.version>
     <maven.slf4j-log4j12.version>1.8.0-beta4</maven.slf4j-log4j12.version>
@@ -93,9 +93,15 @@
     </dependency>
     <!-- Testing -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <version>${maven.junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.soebes.itf.jupiter.extension</groupId>
+      <artifactId>itf-jupiter-extension</artifactId>
+      <version>0.9.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
