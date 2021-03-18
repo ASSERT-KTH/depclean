@@ -75,6 +75,13 @@ public final class ClassFileVisitorUtils {
     }
   }
 
+  /**
+   * Accepts a jar to be analyzed.
+   *
+   * @param url     URL of jar
+   * @param visitor A {@link ClassFileVisitor}.
+   * @throws IOException In case of IO issues.
+   */
   private static void acceptJar(URL url, ClassFileVisitor visitor)
       throws IOException {
     try (JarInputStream in = new JarInputStream(url.openStream())) {
@@ -89,6 +96,13 @@ public final class ClassFileVisitorUtils {
     }
   }
 
+  /**
+   * Accepts a directory to be analyzed.
+   *
+   * @param directory Directory or File to be analyzed.
+   * @param visitor   A {@link ClassFileVisitor}.
+   * @throws IOException In case of IO issues.
+   */
   private static void acceptDirectory(File directory, ClassFileVisitor visitor)
       throws IOException {
     if (!directory.isDirectory()) {
@@ -108,6 +122,13 @@ public final class ClassFileVisitorUtils {
     }
   }
 
+  /**
+   * Visits the classes.
+   *
+   * @param path Path of the class.
+   * @param in   read the input bytes.
+   * @param visitor A {@link ClassFileVisitor}.
+   */
   private static void visitClass(String path, InputStream in, ClassFileVisitor visitor) {
     if (!path.endsWith(CLASS)) {
       throw new IllegalArgumentException("Path is not a class");
