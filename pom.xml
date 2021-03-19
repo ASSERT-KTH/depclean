@@ -6,7 +6,7 @@
   <!-- Coordinates -->
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-parent-pom</artifactId>
-  <version>2.0.1-SNAPSHOT</version>
+  <version>2.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modelVersion>4.0.0</modelVersion>
 
@@ -145,11 +145,11 @@
     <plugins>
       <!-- Maven compiler plugin -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
+          <release>8</release>
         </configuration>
       </plugin>
       <!-- Maven site -->
@@ -204,6 +204,15 @@
       <id>deploy-artifacts</id>
       <build>
         <plugins>
+          <!-- Maven compiler plugin -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
+              <release>8</release>
+            </configuration>
+          </plugin>
           <!-- Maven source plugin -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -225,6 +234,7 @@
             <version>${maven.maven-javadoc-plugin.version}</version>
             <configuration>
               <source>${maven.javadoc.source}</source>
+              <doclint>none</doclint>
             </configuration>
             <executions>
               <execution>
