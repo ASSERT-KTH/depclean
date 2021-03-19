@@ -80,8 +80,12 @@ public final class JarUtils {
         String filePath = destDirectory + File.separator + entry.getName();
         if (!entry.isDirectory()) {
           new File(filePath).getParentFile().mkdirs(); //NOSONAR Triggers a false warning of path traversal attack
-          // if the entry is a file, extracts it
-          extractFile(jarIn, filePath);
+          try {
+            // if the entry is a file, extracts it
+            extractFile(jarIn, filePath);
+          } catch (IOException e) {
+            log.warn("Could not extract file: " + filePath + " from jar " + jarFilePath);
+          }
         }
         jarIn.closeEntry();
         entry = jarIn.getNextJarEntry();
