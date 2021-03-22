@@ -1,6 +1,5 @@
 package se.kth.depclean.util;
 
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -8,9 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
@@ -58,7 +55,6 @@ class JarUtilsTest {
       assertFalse(FileUtils.directoryContains(copyDir, jcabiSSHJar));
       assertFalse(FileUtils.directoryContains(copyDir, jcabiSSHJar));
     }
-
   }
 
   @Test
