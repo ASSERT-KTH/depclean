@@ -23,9 +23,195 @@
   <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
 
   <!-- Build options -->
+  <dependencies>
+    <!-- Project module -->
+    <dependency>
+      <groupId>se.kth.castor</groupId>
+      <artifactId>depclean-core</artifactId>
+      <version>2.0.2-SNAPSHOT</version>
+    </dependency>
+    <!--Maven tools for plugin construction-->
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>3.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>3.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <version>3.0-alpha-2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>3.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-dependency-tree</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+    <!-- Utils -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.whitesource</groupId>
+      <artifactId>maven-dependency-tree-parser</artifactId>
+      <version>1.0.6</version>
+    </dependency>
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.apache.maven.plugin-testing</groupId>
+      <artifactId>maven-plugin-testing-tools</artifactId>
+      <version>3.3.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <!-- Integration tests -->
+    <dependency>
+      <groupId>com.soebes.itf.jupiter.extension</groupId>
+      <artifactId>itf-extension-maven</artifactId>
+      <version>0.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.soebes.itf.jupiter.extension</groupId>
+      <artifactId>itf-assertj</artifactId>
+      <version>0.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.soebes.itf.jupiter.extension</groupId>
+      <artifactId>itf-jupiter-extension</artifactId>
+      <version>0.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.19.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.6.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.6.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.6.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
   <build>
-    <!-- Maven plugin to create Maven plugins-->
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources-its</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+
     <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M3</version>
+        <configuration>
+          <!--
+          see: https://junit.org/junit5/docs/current/user-guide/#writing-tests-tagging-and-filtering
+          see: https://junit.org/junit5/docs/current/user-guide/#running-tests-tag-expressions
+          see: https://junit.org/junit5/docs/current/user-guide/#running-tests-build-maven-filter-tags
+          see: https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html
+
+          run all test cases except @Tag("tag2") tagged test cases.
+          -->
+          <!--<excludedGroups>tag2</excludedGroups>-->
+        </configuration>
+      </plugin>
+
+
+      <plugin>
+        <groupId>com.soebes.itf.jupiter.extension</groupId>
+        <artifactId>itf-maven-plugin</artifactId>
+        <version>0.9.0</version>
+        <executions>
+          <execution>
+            <id>installing</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>install</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--
+      see: https://maven.apache.org/surefire/maven-failsafe-plugin/usage.html
+      see: https://maven.apache.org/surefire/maven-failsafe-plugin/examples/junit-platform.html
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.0.0-M3</version>
+        <configuration>
+          <includes>
+            <!--
+            default target filename pattern, see: http://maven.apache.org/surefire/maven-failsafe-plugin/integration-test-mojo.html#includes
+            -->
+            <include>**/IT*.java</include>
+            <include>**/*IT.java</include>
+            <include>**/*ITCase.java</include>
+
+            <!--
+            add target filename pattern to run "TestDemo2.java" in maven-failsafe-plugin
+            see: http://maven.apache.org/surefire/maven-failsafe-plugin/examples/junit-platform.html
+            -->
+            <!--<include>**/Test*.java</include>-->
+          </includes>
+
+          <!-- only run @Tag("tag2") test cases -->
+          <!--<groups>tag2</groups>-->
+
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+
+      <!-- Maven plugin to create Maven plugins-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
@@ -92,63 +278,5 @@
       </plugin>
     </plugins>
   </build>
-
-  <dependencies>
-    <!-- Project module -->
-    <dependency>
-      <groupId>se.kth.castor</groupId>
-      <artifactId>depclean-core</artifactId>
-      <version>2.0.2-SNAPSHOT</version>
-    </dependency>
-    <!--Maven tools for plugin construction-->
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>3.6.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>3.6.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>3.0-alpha-2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.plugin-tools</groupId>
-      <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.6.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-dependency-tree</artifactId>
-      <version>3.0.1</version>
-    </dependency>
-    <!-- Utils -->
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.5</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.8.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.whitesource</groupId>
-      <artifactId>maven-dependency-tree-parser</artifactId>
-      <version>1.0.6</version>
-    </dependency>
-    <!-- Testing -->
-    <dependency>
-      <groupId>org.apache.maven.plugin-testing</groupId>
-      <artifactId>maven-plugin-testing-tools</artifactId>
-      <version>3.3.0</version>
-      <scope>compile</scope>
-    </dependency>
-  </dependencies>
 
 </project>
