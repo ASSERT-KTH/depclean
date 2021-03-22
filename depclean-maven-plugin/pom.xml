@@ -72,7 +72,6 @@
       <artifactId>maven-dependency-tree-parser</artifactId>
       <version>1.0.6</version>
     </dependency>
-    <!-- Testing -->
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-plugin-testing-tools</artifactId>
@@ -80,6 +79,7 @@
       <scope>compile</scope>
     </dependency>
     <!-- Integration tests -->
+    <!-- see https://khmarbaise.github.io/maven-it-extension/itf-documentation/usersguide/usersguide.html#_grouping_test_cases -->
     <dependency>
       <groupId>com.soebes.itf.jupiter.extension</groupId>
       <artifactId>itf-extension-maven</artifactId>
@@ -104,26 +104,6 @@
       <version>3.19.0</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- Testing -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>5.6.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.6.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>5.6.2</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -137,27 +117,7 @@
         <filtering>true</filtering>
       </testResource>
     </testResources>
-
     <plugins>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M3</version>
-        <configuration>
-          <!--
-          see: https://junit.org/junit5/docs/current/user-guide/#writing-tests-tagging-and-filtering
-          see: https://junit.org/junit5/docs/current/user-guide/#running-tests-tag-expressions
-          see: https://junit.org/junit5/docs/current/user-guide/#running-tests-build-maven-filter-tags
-          see: https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html
-
-          run all test cases except @Tag("tag2") tagged test cases.
-          -->
-          <!--<excludedGroups>tag2</excludedGroups>-->
-        </configuration>
-      </plugin>
-
-
       <plugin>
         <groupId>com.soebes.itf.jupiter.extension</groupId>
         <artifactId>itf-maven-plugin</artifactId>
@@ -172,34 +132,14 @@
           </execution>
         </executions>
       </plugin>
-
-      <!--
-      see: https://maven.apache.org/surefire/maven-failsafe-plugin/usage.html
-      see: https://maven.apache.org/surefire/maven-failsafe-plugin/examples/junit-platform.html
-      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>3.0.0-M3</version>
         <configuration>
           <includes>
-            <!--
-            default target filename pattern, see: http://maven.apache.org/surefire/maven-failsafe-plugin/integration-test-mojo.html#includes
-            -->
-            <include>**/IT*.java</include>
             <include>**/*IT.java</include>
-            <include>**/*ITCase.java</include>
-
-            <!--
-            add target filename pattern to run "TestDemo2.java" in maven-failsafe-plugin
-            see: http://maven.apache.org/surefire/maven-failsafe-plugin/examples/junit-platform.html
-            -->
-            <!--<include>**/Test*.java</include>-->
           </includes>
-
-          <!-- only run @Tag("tag2") test cases -->
-          <!--<groups>tag2</groups>-->
-
         </configuration>
         <executions>
           <execution>
@@ -209,8 +149,6 @@
           </execution>
         </executions>
       </plugin>
-
-
       <!-- Maven plugin to create Maven plugins-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
