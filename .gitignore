@@ -3,6 +3,7 @@ _site
 Gemfile.lock
 *.gem
 *.idea
+*.iml
 
 target/
 

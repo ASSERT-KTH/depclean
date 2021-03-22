@@ -1,22 +1,23 @@
 package se.kth.depclean.core.analysis;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class ClassFileVisitorUtilsTest {
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-  @Before
-  public void setUp() throws Exception {
+class ClassFileVisitorUtilsTest {
+
+  @BeforeEach
+  void setUp() {
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterEach
+  void tearDown() {
   }
 
   @Test
-  public void accept() {
-    Assert.assertTrue(true);
+  void dummy() {
+    assertTrue(true);
   }
 }

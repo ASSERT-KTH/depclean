@@ -17,15 +17,19 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.release>8</maven.compiler.release>
-    <maven.javadoc.source>8</maven.javadoc.source>
-    <maven.maven-javadoc-plugin.version>3.2.0</maven.maven-javadoc-plugin.version>
-    <maven.jacoco.plugin.version>0.8.6</maven.jacoco.plugin.version>
-    <maven.coveralls.plugin.version>4.3.0</maven.coveralls.plugin.version>
-    <maven.junit.version>4.12</maven.junit.version>
-    <maven.lombok.version>1.18.16</maven.lombok.version>
-    <maven.slf4j-api.version>2.0.0-alpha1</maven.slf4j-api.version>
-    <maven.slf4j-log4j12.version>1.8.0-beta4</maven.slf4j-log4j12.version>
+    <!-- plugins -->
+    <compiler.release>8</compiler.release>
+    <javadoc.source>8</javadoc.source>
+    <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
+    <jacoco.plugin.version>0.8.6</jacoco.plugin.version>
+    <coveralls.plugin.version>4.3.0</coveralls.plugin.version>
+    <surefire.plugin.version>3.0.0-M3</surefire.plugin.version>
+    <compiler.plugin.version>3.8.1</compiler.plugin.version>
+    <!-- dependencies -->
+    <lombok.version>1.18.16</lombok.version>
+    <slf4j-api.version>2.0.0-alpha1</slf4j-api.version>
+    <slf4j-log4j12.version>1.8.0-beta4</slf4j-log4j12.version>
+    <junit5.version>5.6.2</junit5.version>
   </properties>
 
   <!-- Project description-->
@@ -77,25 +81,31 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>${maven.lombok.version}</version>
+      <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>${maven.slf4j-api.version}</version>
+      <version>${slf4j-api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>${maven.slf4j-log4j12.version}</version>
+      <version>${slf4j-log4j12.version}</version>
     </dependency>
     <!-- Testing -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${maven.junit.version}</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit5.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit5.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -119,7 +129,7 @@
         <plugin>
           <groupId>org.eluder.coveralls</groupId>
           <artifactId>coveralls-maven-plugin</artifactId>
-          <version>${maven.coveralls.plugin.version}</version>
+          <version>${coveralls.plugin.version}</version>
           <dependencies>
             <dependency>
               <groupId>javax.xml.bind</groupId>
@@ -147,7 +157,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>${compiler.plugin.version}</version>
         <configuration>
           <release>8</release>
         </configuration>
@@ -168,7 +178,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.21.0</version>
+        <version>${surefire.plugin.version}</version>
         <configuration>
           <excludes>
             <exclude>**/resources/**/*.java</exclude>
@@ -179,7 +189,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${maven.jacoco.plugin.version}</version>
+        <version>${jacoco.plugin.version}</version>
         <executions>
           <execution>
             <goals>
@@ -208,7 +218,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.1</version>
+            <version>${compiler.plugin.version}</version>
             <configuration>
               <release>8</release>
             </configuration>
@@ -231,9 +241,9 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>${maven.maven-javadoc-plugin.version}</version>
+            <version>${javadoc.plugin.version}</version>
             <configuration>
-              <source>${maven.javadoc.source}</source>
+              <source>${javadoc.source}</source>
               <doclint>none</doclint>
             </configuration>
             <executions>
