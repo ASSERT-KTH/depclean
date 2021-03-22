@@ -9,18 +9,21 @@ import com.soebes.itf.jupiter.maven.MavenExecutionResult;
 import org.junit.jupiter.api.DisplayName;
 
 /**
- * This class executes integration tests against the DepCleanMojo.
+ * This class executes integration tests against the DepCleanMojo. The projects used for testing are in
+ * src/test/resources-its/se/kth/depclean/DepCleanMojoIT. The results of the DepClean executions for each project are in
+ * target/maven-it/se/kth/depclean/DepCleanMojoIT.
+ * <p>
+ * @see <a https://khmarbaise.github.io/maven-it-extension/itf-documentation/background/background.html#_assertions_in_maven_tests</a>
  */
 @MavenJupiterExtension
 public class DepCleanMojoIT {
 
   @MavenTest
   @MavenGoal("package")
-  @DisplayName("Test that DepClean runs in empty Maven project")
-  void first_very_simple(MavenExecutionResult result) {
-    assertThat(result).isSuccessful();
+  @DisplayName("Test that DepClean runs in an empty Maven project")
+  void empty_project(MavenExecutionResult result) {
+    assertThat(result).isFailure(); // should pass
   }
-
 
 }
 
