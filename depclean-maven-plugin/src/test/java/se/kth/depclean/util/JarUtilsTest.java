@@ -29,10 +29,10 @@ class JarUtilsTest {
     try {
       // make a copy of the directory containing the JAR files
       FileUtils.copyDirectory(
-          originalDir,
-          copyDir
+          originalDir,    // If directory is empty/Null then NPE will be thrown.
+          copyDir         // If directory is empty/Null then NPE will be thrown.
       );
-    } catch (IOException e) {
+    } catch (IOException | NullPointerException e) {
       log.error("Error copying the directory: src/test/resources/JarUtilsResources");
     }
   }
@@ -53,7 +53,7 @@ class JarUtilsTest {
     if (jcabiSSHJar.exists() && jcabiXMLJar.exists()) {
       decompress();
       assertFalse(FileUtils.directoryContains(copyDir, jcabiSSHJar));
-      assertFalse(FileUtils.directoryContains(copyDir, jcabiSSHJar));
+      assertFalse(FileUtils.directoryContains(copyDir, jcabiXMLJar));
     }
   }
 
