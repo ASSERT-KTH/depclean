@@ -13,8 +13,7 @@
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=castor-software_depclean&metric=ncloc)](https://sonarcloud.io/dashboard?id=castor-software_depclean)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=castor-software_depclean&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=castor-software_depclean)
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=castor-software_depclean&metric=sqale_index)](https://sonarcloud.io/dashboard?id=castor-software_depclean)
-
-[comment]: <> ([![Coverage]&#40;https://sonarcloud.io/api/project_badges/measure?project=castor-software_depclean&metric=coverage&#41;]&#40;https://sonarcloud.io/dashboard?id=castor-software_depclean&#41;)
+[![Coverage Status](https://coveralls.io/repos/github/castor-software/depclean/badge.svg?branch=master)](https://coveralls.io/github/castor-software/depclean?branch=master)
 
 ## What is DepClean?
 
