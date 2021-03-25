@@ -1,4 +1,4 @@
-name: Master Branch Workflow
+name: Master Branch
 
 on:
   pull_request:
@@ -11,13 +11,13 @@ on:
 jobs:
 
   #  Compile and package the Maven project.
-  package:
-    name: Package - Generate JARs
-    runs-on: ${{ matrix.os }}
+  compile:
+    name: Compile
     strategy:
       matrix:
-        java: [ 8, 11 ]
+        java: [ 1.8, 11 ]
         os: [ [ ubuntu-latest, windows-latest ] ]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -25,12 +25,12 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
-      - name: Maven Package
-        run: mvn -B clean package -DskipTests
+      - name: Maven Compile
+        run: mvn -q clean compile
 
   # Runs unit tests (via surefire-maven-plugin) and integration tests (via failsafe-maven-plugin).
   test:
-    name: Test - Unit & Integration
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -40,14 +40,14 @@ jobs:
         with:
           java-version: 11
       - name: Run Tests
-        run: mvn clean verify --batch-mode --fail-at-end
+        run: mvn -q clean verify --batch-mode --fail-at-end
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1
 
   # Collect JaCoCo test coverage and report to Coveralls
   coveralls:
-    name: Report - Coveralls
+    name: Coveralls
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -57,7 +57,7 @@ jobs:
         with:
           java-version: 11
       - name: Run Tests
-        run: mvn clean test
+        run: mvn -q clean test jacoco:report
       - name: Report to Coveralls
         uses: coverallsapp/github-action@v1.1.2
         with:
@@ -65,7 +65,7 @@ jobs:
 
   # Run SonarCloud static analysis.
   sonar:
-    name: Scan - SonarCloud
+    name: SonarCloud
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -75,13 +75,13 @@ jobs:
         with:
           java-version: 11
       - name: SonarCloud Scan
-        run: mvn -B clean verify -Psonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        run: mvn -q clean test coveralls:report -Psonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Publish the JAR artifacts to GitHub Packages.
   publish:
-    name: Publish - GitHub Packages
+    name: Publish
     runs-on: ubuntu-latest
     needs: [ package, test, sonar ]
     steps:
@@ -92,6 +92,6 @@ jobs:
         with:
           java-version: 11
       - name: Publish Artifact on GitHub Packages
-        run: mvn -B clean deploy -DskipTests
+        run: mvn -q clean deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
