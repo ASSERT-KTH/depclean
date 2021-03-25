@@ -21,7 +21,6 @@ package se.kth.depclean.core.analysis;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
@@ -31,8 +30,19 @@ import org.apache.maven.artifact.Artifact;
  */
 public class ProjectDependencyAnalysis {
 
+  /**
+   * Store all the usedDeclaredArtifacts.
+   */
   private final Set<Artifact> usedDeclaredArtifacts;
+
+  /**
+   * Store all the usedUndeclaredArtifacts.
+   */
   private final Set<Artifact> usedUndeclaredArtifacts;
+
+  /**
+   * Store all the unusedDeclaredArtifacts.
+   */
   private final Set<Artifact> unusedDeclaredArtifacts;
 
   /**
@@ -46,6 +56,11 @@ public class ProjectDependencyAnalysis {
     this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
   }
 
+  /**
+   * To prevent unnecessary and unexpected modification in the set.
+   * @param set Required set.
+   * @return an unmodifiable set corresponding to the provided set.
+   */
   private Set<Artifact> safeCopy(Set<Artifact> set) {
     return (set == null) ? Collections.emptySet()
         : Collections.unmodifiableSet(new LinkedHashSet<Artifact>(set));
@@ -59,18 +74,15 @@ public class ProjectDependencyAnalysis {
    */
   public ProjectDependencyAnalysis ignoreNonCompile() {
     Set<Artifact> filteredUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
-    for (Iterator<Artifact> iter = filteredUnusedDeclared.iterator(); iter.hasNext(); ) {
-      Artifact artifact = iter.next();
-      if (!artifact.getScope().equals(Artifact.SCOPE_COMPILE)) {
-        iter.remove();
-      }
-    }
+    // This loop will iterate over all the elements of the set and remove those elements whose scope is not compile.
+    filteredUnusedDeclared.removeIf(artifact -> !artifact.getScope().equals(Artifact.SCOPE_COMPILE));
     return new ProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
   }
 
   /**
    * Overrides the hash code value method of the object.
    */
+  @Override
   public int hashCode() {
     int hashCode = getUsedDeclaredArtifacts().hashCode();
     hashCode = (hashCode * 37) + getUsedUndeclaredArtifacts().hashCode();
@@ -110,6 +122,7 @@ public class ProjectDependencyAnalysis {
   /**
    * Overrides the standard equals method of Object.
    */
+  @Override
   public boolean equals(Object object) {
     if (object instanceof ProjectDependencyAnalysis) {
       ProjectDependencyAnalysis analysis = (ProjectDependencyAnalysis) object;
@@ -124,6 +137,7 @@ public class ProjectDependencyAnalysis {
   /**
    * Overrides de toString standard method of class Object @see java.lang.Object#toString().
    */
+  @Override
   public String toString() {
     StringBuilder buffer = new StringBuilder();
 
