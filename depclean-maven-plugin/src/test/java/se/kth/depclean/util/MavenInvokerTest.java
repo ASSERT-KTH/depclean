@@ -1,6 +1,5 @@
 package se.kth.depclean.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -29,7 +28,9 @@ class MavenInvokerTest {
   void testRunCommandToGetDependencyTree() throws IOException, InterruptedException {
     MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree + " -Dverbose=true");
     assertTrue(producedTree.exists());
-    assertThat(producedTree).hasSameTextualContentAs(expectedTree);
+    String expectedTreeContent = FileUtils.readFileToString(expectedTree, "UTF-8");
+    String producedTreeContent = FileUtils.readFileToString(producedTree, "UTF-8");
+    assertTrue(producedTreeContent.equals(expectedTreeContent));
   }
 
   @AfterAll

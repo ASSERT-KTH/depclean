@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: Compile
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
@@ -22,8 +21,8 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Unit Test
-        run: mvn clean test
+      - name: Test
+        run:  mvn clean verify --errors --batch-mode --fail-at-end
       - name: Generate coverage report
         run: mvn jacoco:report
 
