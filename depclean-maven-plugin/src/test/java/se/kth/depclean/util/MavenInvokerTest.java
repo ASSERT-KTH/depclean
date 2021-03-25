@@ -1,5 +1,6 @@
 package se.kth.depclean.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -16,6 +17,9 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class MavenInvokerTest {
 
+  static final File expectedTree = new File(
+      "src/test/resources/MavenInvokerResources/basic_spring_maven_project/tree_expected.txt"
+  );
   static final File producedTree = new File(
       "src/test/resources/MavenInvokerResources/basic_spring_maven_project/tree_produced.txt"
   );
@@ -23,12 +27,9 @@ class MavenInvokerTest {
   @Test
   @DisplayName("Test that the Maven dependency tree, then the dependency tree is obtained")
   void testRunCommandToGetDependencyTree() throws IOException, InterruptedException {
-    String[] strings = MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree + " -Dverbose=true");
-    for (String string : strings) {
-      System.out.println(string);
-
-    }
+    MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree + " -Dverbose=true");
     assertTrue(producedTree.exists());
+    assertThat(producedTree).hasSameTextualContentAs(expectedTree);
   }
 
   @AfterAll
