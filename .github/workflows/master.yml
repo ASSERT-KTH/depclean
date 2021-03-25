@@ -12,8 +12,8 @@ jobs:
     name: Compile
     strategy:
       matrix:
-        os: [ ubuntu-18.04, macOS-10.15, windows-2019 ]
-        java: [ 8, 11, 15 ]
+        os: [ ubuntu-latest, windows-latest ]
+        java: [ 8, 11 ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Repo
@@ -23,7 +23,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Maven Compile
-        run: mvn -q clean compile
+        run: mvn clean compile --errors --batch-mode
 
   # Runs unit tests (via surefire-maven-plugin) and integration tests (via failsafe-maven-plugin).
   test:
@@ -37,7 +37,7 @@ jobs:
         with:
           java-version: 11
       - name: Run Tests
-        run: mvn -q clean verify --batch-mode --fail-at-end
+        run: mvn clean verify --errors --batch-mode --fail-at-end
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1
@@ -54,7 +54,7 @@ jobs:
         with:
           java-version: 11
       - name: Run Tests
-        run: mvn -q clean test jacoco:report
+        run: mvn clean test jacoco:report --errors --batch-mode
       - name: Report to Coveralls
         uses: coverallsapp/github-action@v1.1.2
         with:
@@ -72,7 +72,7 @@ jobs:
         with:
           java-version: 11
       - name: SonarCloud Scan
-        run: mvn -q clean test coveralls:report -Psonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        run: mvn clean test coveralls:report -Psonar -Dsonar.login=${{ secrets.SONAR_TOKEN }} --errors --batch-mode
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -89,6 +89,6 @@ jobs:
         with:
           java-version: 11
       - name: Publish Artifact on GitHub Packages
-        run: mvn -q clean deploy -DskipTests
+        run: mvn clean deploy -DskipTests --errors --batch-mode
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
