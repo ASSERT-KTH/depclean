@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link MavenInvoker}.
  */
 @Slf4j
-@Ignore
 class MavenInvokerTest {
 
   static final File producedTree = new File(
@@ -25,7 +23,11 @@ class MavenInvokerTest {
   @Test
   @DisplayName("Test that the Maven dependency tree, then the dependency tree is obtained")
   void testRunCommandToGetDependencyTree() throws IOException, InterruptedException {
-    MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree + " -Dverbose=true");
+    String[] strings = MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree + " -Dverbose=true");
+    for (String string : strings) {
+      System.out.println(string);
+
+    }
     assertTrue(producedTree.exists());
   }
 

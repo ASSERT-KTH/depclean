@@ -46,12 +46,14 @@ public final class MavenInvoker {
     Process process;
     ArrayList<String> list;
     if (isUnix(os)) {
+      System.out.println("Running on Unix");
       list = new ArrayList<>();
       process = Runtime.getRuntime().exec(cmd);
       InputStream inputStream = process.getInputStream();
       BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
       return outputToConsole(process, list, br);
     } else if (isWindows(os)) {
+      System.out.println("Running on Windows");
       list = new ArrayList<>();
       process = Runtime.getRuntime().exec("cmd /C " + cmd);
       BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
