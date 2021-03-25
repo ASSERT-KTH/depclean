@@ -28,12 +28,20 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Test
-        run:  mvn clean install --errors --batch-mode --fail-at-end
-      - name: Publish Test Report
+        run: mvn clean install --errors --batch-mode --fail-at-end
+      - name: Publish test report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1
       - name: Generate coverage report
         run: mvn jacoco:report
+      - name: Coveralls
+        uses: coverallsapp/github-action@v1.1.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: SonarCloud
+        run: mvn clean test coveralls:report -Psonar -Dsonar.login=${{ secrets.SONAR_TOKEN }} --errors --batch-mode
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 #  # Runs unit tests (via surefire-maven-plugin) and integration tests (via failsafe-maven-plugin).
 #  test:
