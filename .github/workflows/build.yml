@@ -22,7 +22,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Test
-        run:  mvn clean verify --errors --batch-mode --fail-at-end
+        run:  mvn -X clean verify --errors --batch-mode --fail-at-end
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1
