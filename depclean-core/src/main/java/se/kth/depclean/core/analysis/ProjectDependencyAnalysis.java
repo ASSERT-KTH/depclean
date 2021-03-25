@@ -58,6 +58,7 @@ public class ProjectDependencyAnalysis {
 
   /**
    * To prevent unnecessary and unexpected modification in the set.
+   *
    * @param set Required set.
    * @return an unmodifiable set corresponding to the provided set.
    */
