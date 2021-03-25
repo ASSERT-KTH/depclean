@@ -38,12 +38,12 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./depclean-core/target/site/jacoco/jacoco.xml,./depclean-maven-plugin/target/site/jacoco/jacoco.xml
           flags: unittests
       - name: SonarCloud
-        run: mvn clean test coveralls:report -Psonar -Dsonar.login=${{ secrets.SONAR_TOKEN }} --errors --batch-mode
+        uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 #  # Runs unit tests (via surefire-maven-plugin) and integration tests (via failsafe-maven-plugin).
 #  test:
