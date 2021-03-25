@@ -16,9 +16,6 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class MavenInvokerTest {
 
-  static final File expectedTree = new File(
-      "src/test/resources/MavenInvokerResources/basic_spring_maven_project/tree_expected.txt"
-  );
   static final File producedTree = new File(
       "src/test/resources/MavenInvokerResources/basic_spring_maven_project/tree_produced.txt"
   );
@@ -28,9 +25,6 @@ class MavenInvokerTest {
   void testRunCommandToGetDependencyTree() throws IOException, InterruptedException {
     MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree + " -Dverbose=true");
     assertTrue(producedTree.exists());
-    String expectedTreeContent = FileUtils.readFileToString(expectedTree, "UTF-8");
-    String producedTreeContent = FileUtils.readFileToString(producedTree, "UTF-8");
-    assertTrue(producedTreeContent.equals(expectedTreeContent));
   }
 
   @AfterAll
