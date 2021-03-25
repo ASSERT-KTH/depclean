@@ -9,13 +9,13 @@ jobs:
         os: [ ubuntu-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout Repo
+      - name: Checkout repo
         uses: actions/checkout@v2
       - name: Setup Java ${{ matrix.java }}
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Cache the Maven packages to speed up build
+      - name: Cache the maven packages to speed up build
         uses: actions/cache@v1
         with:
           path: ~/.m2
@@ -23,6 +23,9 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Test
         run:  mvn clean verify --errors --batch-mode --fail-at-end
+      - name: Publish Test Report
+        if: ${{ always() }}
+        uses: scacap/action-surefire-report@v1
       - name: Generate coverage report
         run: mvn jacoco:report
 
