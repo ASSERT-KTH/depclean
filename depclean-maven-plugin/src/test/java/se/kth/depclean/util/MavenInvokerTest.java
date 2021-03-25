@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link MavenInvoker}.
  */
 @Slf4j
+@Ignore
 class MavenInvokerTest {
 
   static final File producedTree = new File(
@@ -22,7 +23,6 @@ class MavenInvokerTest {
   );
 
   @Test
-  @Ignore
   @DisplayName("Test that the Maven dependency tree, then the dependency tree is obtained")
   void testRunCommandToGetDependencyTree() throws IOException, InterruptedException {
     MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree + " -Dverbose=true");
