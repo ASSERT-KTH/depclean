@@ -1,21 +1,18 @@
 name: Jobs
 on:
-  pull_request:
-    branches:
-      - master
   push:
-    branches:
-      - master
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
-
   #  Compile and package the Maven project.
   compile:
     name: Compile
     strategy:
       matrix:
-        java: [ 1.8, 11 ]
-        os: [ [ ubuntu-latest, windows-latest ] ]
+        os: [ ubuntu-18.04, macOS-10.15, windows-2019 ]
+        java: [ 8, 11, 15 ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Repo
