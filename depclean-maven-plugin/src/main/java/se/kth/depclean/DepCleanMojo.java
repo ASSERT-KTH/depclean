@@ -194,6 +194,14 @@ public class DepCleanMojo extends AbstractMojo {
         .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
   }
 
+  //Just a util function to print the information on the console
+  private void print_info_Dependencies(String info,Map<String,Long> sizeOfDependencies,Set<String> dependencies)
+  {
+    printString(info.toUpperCase()
+        + " [" + dependencies.size() + "]" + ": ");
+    printDependencies(sizeOfDependencies, dependencies);
+  }
+
   /**
    * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size of the dependency
    * cannot be obtained form the map (no key with the name of the dependency exists), then it returns 0.
@@ -535,31 +543,13 @@ public class DepCleanMojo extends AbstractMojo {
     printString(SEPARATOR);
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
     printString(SEPARATOR);
-
-    printString("Used direct dependencies".toUpperCase()
-        + " [" + usedDirectArtifactsCoordinates.size() + "]" + ": ");
-    printDependencies(sizeOfDependencies, usedDirectArtifactsCoordinates);
-
-    printString("Used inherited dependencies".toUpperCase()
-        + " [" + usedInheritedArtifactsCoordinates.size() + "]" + ": ");
-    printDependencies(sizeOfDependencies, usedInheritedArtifactsCoordinates);
-
-    printString("Used transitive dependencies".toUpperCase()
-        + " [" + usedTransitiveArtifactsCoordinates.size() + "]" + ": ");
-    printDependencies(sizeOfDependencies, usedTransitiveArtifactsCoordinates);
-
-    printString("Potentially unused direct dependencies".toUpperCase()
-        + " [" + unusedDirectArtifactsCoordinates.size() + "]" + ": ");
-    printDependencies(sizeOfDependencies, unusedDirectArtifactsCoordinates);
-
-    printString("Potentially unused inherited dependencies".toUpperCase()
-        + " [" + unusedInheritedArtifactsCoordinates.size() + "]" + ": ");
-    printDependencies(sizeOfDependencies, unusedInheritedArtifactsCoordinates);
-
-    printString("Potentially unused transitive dependencies".toUpperCase()
-        + " [" + unusedTransitiveArtifactsCoordinates.size() + "]" + ": ");
-    printDependencies(sizeOfDependencies, unusedTransitiveArtifactsCoordinates);
-
+    print_info_Dependencies("Used direct dependencies", sizeOfDependencies, usedDirectArtifactsCoordinates);
+    print_info_Dependencies("Used inherited dependencies", sizeOfDependencies, usedInheritedArtifactsCoordinates);
+    print_info_Dependencies("Used transitive dependencies", sizeOfDependencies, usedTransitiveArtifactsCoordinates);
+    print_info_Dependencies("Potentially unused direct dependencies", sizeOfDependencies, unusedDirectArtifactsCoordinates);
+    print_info_Dependencies("Potentially unused inherited dependencies", sizeOfDependencies, unusedInheritedArtifactsCoordinates);
+    print_info_Dependencies("Potentially unused transitive dependencies", sizeOfDependencies, unusedTransitiveArtifactsCoordinates);
+  
     if (!ignoreDependencies.isEmpty()) {
       printString(SEPARATOR);
       printString(
