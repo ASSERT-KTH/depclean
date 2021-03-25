@@ -34,10 +34,12 @@ jobs:
         uses: scacap/action-surefire-report@v1
       - name: Generate coverage report
         run: mvn jacoco:report
-      - name: Coveralls
-        uses: coverallsapp/github-action@v1.1.2
+      - name: Codecov
+        uses: codecov/codecov-action@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./depclean-core/target/site/jacoco/jacoco.xml,./depclean-maven-plugin/target/site/jacoco/jacoco.xml
+          flags: unittests
       - name: SonarCloud
         run: mvn clean test coveralls:report -Psonar -Dsonar.login=${{ secrets.SONAR_TOKEN }} --errors --batch-mode
         env:
