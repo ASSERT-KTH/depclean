@@ -49,7 +49,7 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Build and analyze
-        uses: sonarsource/sonarcloud-github-action@master
+        run: mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         env:
           # Needed to get some information about the pull request, if any
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
