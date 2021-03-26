@@ -38,6 +38,7 @@ jobs:
         run: mvn test -Dcheckstyle.skip --errors --fail-at-end
       - name: "Integration Tests"
         run: mvn failsafe:integration-test --errors --fail-at-end
+        # The following is only executed on Ubuntu on Java 11
       - name: "Publish Test Report"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: scacap/action-surefire-report@v1
