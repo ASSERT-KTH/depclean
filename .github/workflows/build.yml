@@ -39,7 +39,7 @@ jobs:
       - name: "Integration Tests"
         run: mvn failsafe:integration-test --errors --fail-at-end
       - name: "JaCoCo"
-        run: mvn jacoco:report --errors --fail-at-end
+        run: mvn jacoco:report
       - name: "Publish Test Report"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: scacap/action-surefire-report@v1
