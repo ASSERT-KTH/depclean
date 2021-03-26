@@ -35,16 +35,11 @@ jobs:
         run: mvn validate --errors
       - name: "Install"
         run: mvn clean install -DskipTests -Dcheckstyle.skip --errors
-      - name: "Unit Tests"
-        run: mvn surefire:test --errors --fail-at-end
-      - name: "Integration Tests"
-        run: mvn failsafe:integration-test --errors --fail-at-end
+      - name: "Tests"
+        run: mvn verify --Dcheckstyle.skip -errors --fail-at-end
       - name: "Publish Test Report"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: scacap/action-surefire-report@v1
-      - name: "Generate Coverage Report"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
-        run: mvn jacoco:report
       - name: "CodeCov"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: codecov/codecov-action@v1
