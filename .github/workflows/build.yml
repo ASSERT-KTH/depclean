@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
-        java: [ 8, 11, 15 ]
+        java: [ 11 ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: "Checkout Repo"
@@ -40,9 +40,10 @@ jobs:
       - name: "Integration Tests"
         run: mvn failsafe:integration-test --errors --fail-at-end
       - name: "Publish Test Report"
-        if: ${{ always() }}
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: scacap/action-surefire-report@v1
       - name: "Generate Coverage Report"
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         run: mvn jacoco:report
       - name: "CodeCov"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
