@@ -13,42 +13,52 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
+        java: [ 8, 11, 15 ]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout repo
+      - name: "Checkout Repo"
         uses: actions/checkout@v2
         with:
-          # Shallow clones should be disabled for a better relevancy of analysis
           fetch-depth: 0
-      - name: Setup Java ${{ matrix.java }}
+      - name: "${{ runner.os }} with Java ${{ matrix.java }}"
         uses: actions/setup-java@v1
         with:
-          java-version: 11
-      - name: Cache the maven packages to speed up build
+          java-version: ${{ matrix.java }}
+      - name: "Cache Local Maven Repository"
         uses: actions/cache@v1
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Test
-        run: mvn clean install --errors --batch-mode --fail-at-end
-      - name: Publish test report
+      - name: "CheckStyle"
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
+        run: mvn validate --errors
+      - name: "Compile"
+        run: mvn clean install -DskipTests -Dcheckstyle.skip --errors
+      - name: "Unit Tests"
+        run: mvn surefire:test --errors --fail-at-end
+      - name: "Integration Tests"
+        run: mvn failsafe:integration-test --errors --fail-at-end
+      - name: "Publish Test Report"
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1
-      - name: Generate coverage report
+      - name: "Generate Coverage Report"
         run: mvn jacoco:report
-      - name: Codecov
+      - name: "CodeCov"
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
-      - name: Cache SonarCloud packages
+      - name: "Cache SonarCloud"
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: actions/cache@v1
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: SonarCloud
+      - name: "SonarCloud"
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         run: mvn sonar:sonar -Dsonar.projectKey=castor-software_depclean -Dsonar.organization=castor-software -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.java.source=11 -Dsonar.java.target=11
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
