@@ -16,6 +16,7 @@ jobs:
         os: [ ubuntu-latest, windows-latest ]
         java: [ 11 ]
     runs-on: ${{ matrix.os }}
+    name: Build with Java ${{ matrix.java }} on ${{ matrix.os }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
@@ -40,11 +41,12 @@ jobs:
       - name: "Integration Tests"
         run: mvn failsafe:integration-test --errors --fail-at-end
         # The following is only executed on Ubuntu on Java 11
-      - name: "CodeCov"
+      - name: "Codecov"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./depclean-maven-plugin/target/site/jacoco/jacoco.xml,./depclean-core/target/site/jacoco/jacoco.xml
           flags: unittests
       - name: "Cache SonarCloud"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
