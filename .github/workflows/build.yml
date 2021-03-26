@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     strategy:
+      max-parallel: 4
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         java: [ 11 ]
