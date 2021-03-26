@@ -34,9 +34,9 @@ jobs:
       - name: "CheckStyle"
         run: mvn validate --errors
       - name: "Compile and Install"
-        run: mvn clean install -DskipTests -Dcheckstyle.skip=true --errors
+        run: mvn clean install -DskipTests --errors
       - name: "Unit Tests"
-        run: mvn test -Dcheckstyle.skip=true --errors --fail-at-end
+        run: mvn test --errors --fail-at-end
       - name: "Integration Tests"
         run: mvn failsafe:integration-test --errors --fail-at-end
         # The following is only executed on Ubuntu on Java 11
