@@ -36,7 +36,7 @@ jobs:
       - name: "Install"
         run: mvn clean install -DskipTests -Dcheckstyle.skip --errors
       - name: "Tests"
-        run: mvn verify --Dcheckstyle.skip -errors --fail-at-end
+        run: mvn verify -Dcheckstyle.skip -errors --fail-at-end
       - name: "Publish Test Report"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: scacap/action-surefire-report@v1
