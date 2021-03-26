@@ -48,13 +48,13 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
-      - name: "Cache SonarCloud"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
-        uses: actions/cache@v1
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+#      - name: "Cache SonarCloud"
+#        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
+#        uses: actions/cache@v1
+#        with:
+#          path: ~/.sonar/cache
+#          key: ${{ runner.os }}-sonar
+#          restore-keys: ${{ runner.os }}-sonar
       - name: "SonarCloud"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         run: mvn sonar:sonar -Dsonar.projectKey=castor-software_depclean -Dsonar.organization=castor-software -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.java.source=11 -Dsonar.java.target=11
