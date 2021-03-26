@@ -31,10 +31,8 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: "CheckStyle"
-        run: mvn validate --errors
-      - name: "Compile and Install"
-        run: mvn clean install -DskipTests -Dcheckstyle.skip --errors
+      - name: "Compile and Install and CheckStyle"
+        run: mvn clean install -DskipTests --errors
       - name: "Unit Tests"
         run: mvn test -Dcheckstyle.skip --errors --fail-at-end
       - name: "Integration Tests"
