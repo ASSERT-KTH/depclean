@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: "Setup {{ runner.os }} with Java ${{ matrix.java }}"
+      - name: Setup {{ runner.os }} with Java ${{ matrix.java }}
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
@@ -38,7 +38,7 @@ jobs:
       - name: "Unit Tests"
         run: mvn surefire:test --errors --fail-at-end
       - name: "Integration Tests"
-        run: mvn -X failsafe:integration-test --errors --fail-at-end
+        run: mvn failsafe:integration-test --errors --fail-at-end
       - name: "Publish Test Report"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
         uses: scacap/action-surefire-report@v1
