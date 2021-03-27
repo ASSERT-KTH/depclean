@@ -38,6 +38,7 @@ public class DefaultClassAnalyzer implements ClassAnalyzer {
    * @return A set of visited classes.
    * @throws IOException If there is an error.
    */
+  @Override
   public Set<String> analyze(URL url) throws IOException {
     CollectorClassFileVisitor visitor = new CollectorClassFileVisitor();
     try {

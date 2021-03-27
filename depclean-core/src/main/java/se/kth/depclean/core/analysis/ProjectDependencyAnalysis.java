@@ -21,7 +21,6 @@ package se.kth.depclean.core.analysis;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
@@ -31,14 +30,26 @@ import org.apache.maven.artifact.Artifact;
  */
 public class ProjectDependencyAnalysis {
 
+  /**
+   * Store all the used declared artifacts (ie. used direct dependencies).
+   */
   private final Set<Artifact> usedDeclaredArtifacts;
+
+  /**
+   * Store all the used undeclared artifacts (ie. used transitive dependencies).
+   */
   private final Set<Artifact> usedUndeclaredArtifacts;
+
+  /**
+   * Store all the unused declared artifacts (ie. unused transitive dependencies).
+   */
   private final Set<Artifact> unusedDeclaredArtifacts;
 
   /**
    * Ctor.
    */
-  public ProjectDependencyAnalysis(Set<Artifact> usedDeclaredArtifacts,
+  public ProjectDependencyAnalysis(
+      Set<Artifact> usedDeclaredArtifacts,
       Set<Artifact> usedUndeclaredArtifacts,
       Set<Artifact> unusedDeclaredArtifacts) {
     this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
@@ -46,31 +57,33 @@ public class ProjectDependencyAnalysis {
     this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
   }
 
+  /**
+   * To prevent unnecessary and unexpected modification in the set.
+   *
+   * @param The required set.
+   * @return An unmodifiable set corresponding to the provided set.
+   */
   private Set<Artifact> safeCopy(Set<Artifact> set) {
     return (set == null) ? Collections.emptySet()
         : Collections.unmodifiableSet(new LinkedHashSet<Artifact>(set));
   }
 
   /**
-   * Filter not-compile scoped artifacts from unused declared.
+   * Filter out artifacts with scope other than compile from the set of unused declared artifacts.
    *
    * @return updated project dependency analysis
    * @since 1.3
    */
   public ProjectDependencyAnalysis ignoreNonCompile() {
     Set<Artifact> filteredUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
-    for (Iterator<Artifact> iter = filteredUnusedDeclared.iterator(); iter.hasNext(); ) {
-      Artifact artifact = iter.next();
-      if (!artifact.getScope().equals(Artifact.SCOPE_COMPILE)) {
-        iter.remove();
-      }
-    }
+    filteredUnusedDeclared.removeIf(artifact -> !artifact.getScope().equals(Artifact.SCOPE_COMPILE));
     return new ProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
   }
 
   /**
    * Overrides the hash code value method of the object.
    */
+  @Override
   public int hashCode() {
     int hashCode = getUsedDeclaredArtifacts().hashCode();
     hashCode = (hashCode * 37) + getUsedUndeclaredArtifacts().hashCode();
@@ -79,7 +92,7 @@ public class ProjectDependencyAnalysis {
   }
 
   /**
-   * Used and declared artifacts.
+   * Used declared artifacts.
    *
    * @return {@link Artifact}
    */
@@ -110,6 +123,7 @@ public class ProjectDependencyAnalysis {
   /**
    * Overrides the standard equals method of Object.
    */
+  @Override
   public boolean equals(Object object) {
     if (object instanceof ProjectDependencyAnalysis) {
       ProjectDependencyAnalysis analysis = (ProjectDependencyAnalysis) object;
@@ -124,6 +138,7 @@ public class ProjectDependencyAnalysis {
   /**
    * Overrides de toString standard method of class Object @see java.lang.Object#toString().
    */
+  @Override
   public String toString() {
     StringBuilder buffer = new StringBuilder();
 
