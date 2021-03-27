@@ -31,24 +31,25 @@ import org.apache.maven.artifact.Artifact;
 public class ProjectDependencyAnalysis {
 
   /**
-   * Store all the usedDeclaredArtifacts.
+   * Store all the used declared artifacts (ie. used direct dependencies).
    */
   private final Set<Artifact> usedDeclaredArtifacts;
 
   /**
-   * Store all the usedUndeclaredArtifacts.
+   * Store all the used undeclared artifacts (ie. used transitive dependencies).
    */
   private final Set<Artifact> usedUndeclaredArtifacts;
 
   /**
-   * Store all the unusedDeclaredArtifacts.
+   * Store all the unused declared artifacts (ie. unused transitive dependencies).
    */
   private final Set<Artifact> unusedDeclaredArtifacts;
 
   /**
    * Ctor.
    */
-  public ProjectDependencyAnalysis(Set<Artifact> usedDeclaredArtifacts,
+  public ProjectDependencyAnalysis(
+      Set<Artifact> usedDeclaredArtifacts,
       Set<Artifact> usedUndeclaredArtifacts,
       Set<Artifact> unusedDeclaredArtifacts) {
     this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
@@ -59,8 +60,8 @@ public class ProjectDependencyAnalysis {
   /**
    * To prevent unnecessary and unexpected modification in the set.
    *
-   * @param set Required set.
-   * @return an unmodifiable set corresponding to the provided set.
+   * @param The required set.
+   * @return An unmodifiable set corresponding to the provided set.
    */
   private Set<Artifact> safeCopy(Set<Artifact> set) {
     return (set == null) ? Collections.emptySet()
@@ -68,14 +69,13 @@ public class ProjectDependencyAnalysis {
   }
 
   /**
-   * Filter not-compile scoped artifacts from unused declared.
+   * Filter out artifacts with scope other than compile from the set of unused declared artifacts.
    *
    * @return updated project dependency analysis
    * @since 1.3
    */
   public ProjectDependencyAnalysis ignoreNonCompile() {
     Set<Artifact> filteredUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
-    // This loop will iterate over all the elements of the set and remove those elements whose scope is not compile.
     filteredUnusedDeclared.removeIf(artifact -> !artifact.getScope().equals(Artifact.SCOPE_COMPILE));
     return new ProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
   }
@@ -92,7 +92,7 @@ public class ProjectDependencyAnalysis {
   }
 
   /**
-   * Used and declared artifacts.
+   * Used declared artifacts.
    *
    * @return {@link Artifact}
    */
