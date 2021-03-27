@@ -28,6 +28,25 @@ command line or integrated directly into the Maven build lifecycle.
 For a visual illustration of what DepClean can provide for your project, have a look at
 the [depclean-web](https://github.com/castor-software/depclean-web) project.
 
+If you use DepClean in an academic context, please cite:
+
+```
+@Article{Soto-Valero2021,
+  author={Soto-Valero, C{\'e}sar and Harrand, Nicolas and Monperrus, Martin and Baudry, Benoit},
+  title={A comprehensive study of bloated dependencies in the Maven ecosystem},
+  journal={Empirical Software Engineering},
+  year={2021},
+  month={Mar},
+  day={25},
+  volume={26},
+  number={3},
+  pages={45},
+  issn={1573-7616},
+  doi={10.1007/s10664-020-09914-8},
+  url={https://doi.org/10.1007/s10664-020-09914-8}
+}
+```
+
 ## How does it work?
 
 DepClean runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types
