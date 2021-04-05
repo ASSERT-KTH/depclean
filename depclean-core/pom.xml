@@ -20,6 +20,7 @@
 
   <properties>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
     <linkXRef>false</linkXRef>
   </properties>
 
