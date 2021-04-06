@@ -47,6 +47,7 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
    *
    * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String.java.io.InputStream)
    */
+  @Override
   public void visitClass(String className, InputStream in) {
     try {
       ClassReader reader = new ClassReader(in);
