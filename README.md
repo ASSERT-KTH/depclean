@@ -81,7 +81,7 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 ```
 
 Or you can run DepClean directly from the command line.
-Let's see it in action with the project https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh:
+Let's see it in action with the project [Apache Commons Numbers](https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh)!
 
 ![Demo](https://github.com/castor-software/depclean/blob/master/.img/demo.gif)
 
