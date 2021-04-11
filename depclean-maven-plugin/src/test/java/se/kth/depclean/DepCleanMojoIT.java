@@ -1,12 +1,11 @@
 package se.kth.depclean;
 
-import static com.soebes.itf.extension.assertj.MavenITAssertions.assertThat;
-
-import com.soebes.itf.jupiter.extension.MavenGoal;
 import com.soebes.itf.jupiter.extension.MavenJupiterExtension;
 import com.soebes.itf.jupiter.extension.MavenTest;
 import com.soebes.itf.jupiter.maven.MavenExecutionResult;
 import org.junit.jupiter.api.DisplayName;
+
+import static com.soebes.itf.extension.assertj.MavenITAssertions.assertThat;
 
 /**
  * This class executes integration tests against the DepCleanMojo. The projects used for testing are in
@@ -19,10 +18,30 @@ import org.junit.jupiter.api.DisplayName;
 public class DepCleanMojoIT {
 
   @MavenTest
-  @MavenGoal("package")
   @DisplayName("Test that DepClean runs in an empty Maven project")
   void empty_project(MavenExecutionResult result) {
     assertThat(result).isFailure(); // should pass
+  }
+
+  @MavenTest
+  @DisplayName("Test that DepClean runs in a Maven project with processors")
+  void processor_used(MavenExecutionResult result) {
+    assertThat(result).isSuccessful().out()
+            .plain().contains(
+            "-------------------------------------------------------",
+            " D E P C L E A N   A N A L Y S I S   R E S U L T S",
+            "-------------------------------------------------------",
+            "USED DIRECT DEPENDENCIES [1]: ",
+            "	org.mapstruct:mapstruct-processor:1.4.2.Final:provided (1 MB)",
+            "USED INHERITED DEPENDENCIES [0]: ",
+            "USED TRANSITIVE DEPENDENCIES [1]: ",
+            "	com.fasterxml.jackson.core:jackson-core:2.12.2:compile (356 KB)",
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: ",
+            "	com.fasterxml.jackson.core:jackson-databind:2.12.2:compile (1 MB)",
+            "POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [1]: ",
+            "	com.fasterxml.jackson.core:jackson-annotations:2.12.2:compile (73 KB)"
+    );
   }
 
 }
