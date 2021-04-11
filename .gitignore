@@ -26,3 +26,4 @@ depclean-maven-plugin/depclean-maven-plugin.iml
 depclean-maven-plugin/target/generated-sources/
 depclean-maven-plugin/target/generated-test-sources/
 depclean-parent-pom.iml
+/.java-version
