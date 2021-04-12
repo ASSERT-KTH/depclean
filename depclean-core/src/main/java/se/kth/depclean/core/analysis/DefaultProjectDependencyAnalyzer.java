@@ -75,6 +75,7 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
    * @throws ProjectDependencyAnalyzerException if the analysis fails.
    * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
    */
+  @Override
   public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
     try {
       // a map of [dependency] -> [classes]

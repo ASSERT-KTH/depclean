@@ -64,13 +64,13 @@ public final class ClassFileVisitorUtils {
           if (file.isDirectory()) {
             acceptDirectory(file, visitor);
           } else if (file.exists()) {
-            throw new IllegalArgumentException(message + url);
+            throw new IllegalArgumentException(message + url + " because file is not a directory.");
           }
         } catch (URISyntaxException exception) {
           throw new IllegalArgumentException(message + url, exception);
         }
       } else {
-        throw new IllegalArgumentException(message + url);
+        throw new IllegalArgumentException(message + url + " because url isn't pointing a file.");
       }
     }
   }

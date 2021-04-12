@@ -20,6 +20,7 @@
 
   <properties>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
     <linkXRef>false</linkXRef>
   </properties>
 
@@ -79,7 +80,7 @@
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>7.1</version>
+      <version>9.1</version>
     </dependency>
     <!-- Maven dependencies -->
     <dependency>
