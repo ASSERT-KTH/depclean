@@ -32,10 +32,10 @@ class MavenInvokerTest {
     assertThat(producedTree).hasSameTextualContentAs(expectedTree);
   }
 
-//  @AfterAll
-//  public static void tearDown() throws IOException {
-//    if (producedTree.exists()) {
-//      FileUtils.forceDelete(producedTree);
-//    }
-//  }
+  @AfterAll
+  public static void tearDown() throws IOException {
+    if (producedTree.exists()) {
+      FileUtils.forceDelete(producedTree);
+    }
+  }
 }
