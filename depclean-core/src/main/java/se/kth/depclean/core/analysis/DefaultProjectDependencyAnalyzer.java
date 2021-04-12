@@ -151,21 +151,22 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
    * }
    * </pre>
    *
-   * @param project the maven project
+   * @param project            the maven project
    * @param artifactClassesMap previously built artifacts map
    * @return all used artifacts so far
    */
-  private Set<Artifact> collectUsedArtifactsFromProcessors(MavenProject project, Map<Artifact,
-          Set<String>> artifactClassesMap) {
+  private Set<Artifact> collectUsedArtifactsFromProcessors(MavenProject project,
+      Map<Artifact, Set<String>> artifactClassesMap) {
     final Xpp3Dom[] processors = Optional.ofNullable(project.getPlugin("org.bsc.maven:maven-processor-plugin"))
-            .map(plugin ->  plugin.getExecutionsAsMap().get("process"))
-            .map(exec -> (Xpp3Dom) exec.getConfiguration())
-            .map(config -> config.getChild("processors"))
-            .map(Xpp3Dom::getChildren)
-            .orElse(new Xpp3Dom[0]);
-
-    Arrays.stream(processors).forEach(processor -> findArtifactForClassName(artifactClassesMap, processor.getValue())
-            .ifPresent(artifact -> artifactUsedClassesMap.putIfAbsent(artifact, new HashSet<>())));
+        .map(plugin -> plugin.getExecutionsAsMap().get("process"))
+        .map(exec -> (Xpp3Dom) exec.getConfiguration())
+        .map(config -> config.getChild("processors"))
+        .map(Xpp3Dom::getChildren)
+        .orElse(new Xpp3Dom[0]);
+    Arrays.stream(processors)
+        .forEach(processor -> findArtifactForClassName(artifactClassesMap, processor.getValue())
+            .ifPresent(artifact -> artifactUsedClassesMap.putIfAbsent(artifact, new HashSet<>()))
+        );
     return artifactUsedClassesMap.keySet();
   }
 
