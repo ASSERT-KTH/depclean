@@ -15,6 +15,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 
@@ -23,9 +24,11 @@ import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
  * the structure of the dependency tree enriched with metadata of the usage or not of each dependency.
  */
 @Slf4j
+@AllArgsConstructor
 public class ParsedDependencies {
 
-  private final String treeTextFilePath;
+  private final File treeFile;
+  private final Map<String, Long> sizeOfDependencies;
   private final DefaultProjectDependencyAnalyzer dependencyAnalyzer;
   private final Set<String> usedDirectArtifactsCoordinates;
   private final Set<String> usedInheritedArtifactsCoordinates;
@@ -33,47 +36,21 @@ public class ParsedDependencies {
   private final Set<String> unusedDirectArtifactsCoordinates;
   private final Set<String> unusedInheritedArtifactsCoordinates;
   private final Set<String> unusedTransitiveArtifactsCoordinates;
-  private final Map<String, Long> sizeOfDependencies;
   private final File classUsageFile;
-
-  /**
-   * Ctor.
-   */
-  public ParsedDependencies(String treeTextFilePath,
-      Map<String, Long> sizeOfDependencies,
-      DefaultProjectDependencyAnalyzer dependencyAnalyzer,
-      Set<String> usedDirectArtifactsCoordinates,
-      Set<String> usedInheritedArtifactsCoordinates,
-      Set<String> usedUndeclaredArtifactsCoordinates,
-      Set<String> unusedDirectArtifactsCoordinates,
-      Set<String> unusedInheritedArtifactsCoordinates,
-      Set<String> unusedUndeclaredArtifactsCoordinates,
-      File classUsageFile) {
-    this.treeTextFilePath = treeTextFilePath;
-    this.sizeOfDependencies = sizeOfDependencies;
-    this.dependencyAnalyzer = dependencyAnalyzer;
-    this.usedDirectArtifactsCoordinates = usedDirectArtifactsCoordinates;
-    this.usedInheritedArtifactsCoordinates = usedInheritedArtifactsCoordinates;
-    this.usedTransitiveArtifactsCoordinates = usedUndeclaredArtifactsCoordinates;
-    this.unusedDirectArtifactsCoordinates = unusedDirectArtifactsCoordinates;
-    this.unusedInheritedArtifactsCoordinates = unusedInheritedArtifactsCoordinates;
-    this.unusedTransitiveArtifactsCoordinates = unusedUndeclaredArtifactsCoordinates;
-    this.classUsageFile = classUsageFile;
-  }
+  private final boolean createClassUsageCsv;
 
   /**
    * Creates string with the JSON representation of the enriched dependency tree of the Maven project.
    *
-   * @return The JSON representation of the dependency tree of the project with additional metadata of the used/unused
-   *        dependencies.
+   * @return The JSON representation of the dependency tree of the project with additional metadata of the
+   *         used/unused dependencies.
+   *
    * @throws ParseException if there are parsing errors.
    * @throws IOException    if the JSON file cannot be written.
    */
   public String parseTreeToJson() throws ParseException, IOException {
     InputType type = InputType.TEXT;
-    Reader r = new BufferedReader(new InputStreamReader(
-        new FileInputStream(treeTextFilePath), StandardCharsets.UTF_8
-    ));
+    Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(treeFile), StandardCharsets.UTF_8));
     Parser parser = type.newParser();
     Node tree = parser.parse(r);
     NodeAdapter nodeAdapter = new NodeAdapter(
@@ -85,13 +62,13 @@ public class ParsedDependencies {
         unusedTransitiveArtifactsCoordinates,
         sizeOfDependencies,
         dependencyAnalyzer,
-        classUsageFile
+        classUsageFile,
+        createClassUsageCsv
     );
     GsonBuilder gsonBuilder = new GsonBuilder()
         .setPrettyPrinting()
         .registerTypeAdapter(Node.class, nodeAdapter);
     Gson gson = gsonBuilder.create();
-
     return gson.toJson(tree);
   }
 }

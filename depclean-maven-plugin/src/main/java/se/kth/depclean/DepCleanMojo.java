@@ -104,10 +104,18 @@ public class DepCleanMojo extends AbstractMojo {
 
   /**
    * If this is true, DepClean creates a JSON file with the result of the analysis. The file is called
-   * "debloat-result.json" and it is located in the root of the project.
+   * "debloat-result.json" and it is located in /target.
    */
   @Parameter(property = "createResultJson", defaultValue = "false")
   private boolean createResultJson;
+
+
+  /**
+   * If this is true, DepClean creates a CSV file with the result of the analysis with the columns:
+   * OriginClass,TargetClass,Dependency. The file is called "class-usage.csv" and it is located in /target.
+   */
+  @Parameter(property = "createClassUsageCsv", defaultValue = "false")
+  private boolean createClassUsageCsv;
 
   /**
    * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
@@ -166,6 +174,7 @@ public class DepCleanMojo extends AbstractMojo {
 
   @Component(hint = "default")
   private DependencyGraphBuilder dependencyGraphBuilder;
+
 
   /**
    * Write pom file to the filesystem.
@@ -392,7 +401,7 @@ public class DepCleanMojo extends AbstractMojo {
       Iterator<File> iterator = FileUtils.iterateFiles(
           new File(
               project.getBuild().getDirectory() + File.separator
-                  + DIRECTORY_TO_COPY_DEPENDENCIES), new String[]{"jar"}, true);
+                  + DIRECTORY_TO_COPY_DEPENDENCIES), new String[] {"jar"}, true);
       while (iterator.hasNext()) {
         File file = iterator.next();
         sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
@@ -411,8 +420,7 @@ public class DepCleanMojo extends AbstractMojo {
 
     /* Analyze dependencies usage status */
     ProjectDependencyAnalysis projectDependencyAnalysis;
-    DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer(
-        ignoreTests);
+    DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer(ignoreTests);
     try {
       projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
     } catch (ProjectDependencyAnalyzerException e) {
@@ -543,7 +551,7 @@ public class DepCleanMojo extends AbstractMojo {
       }
     }
 
-    /* Printing the results to the console */
+    /* Printing the results to the terminal */
     printString(SEPARATOR);
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
     printString(SEPARATOR);
@@ -652,7 +660,6 @@ public class DepCleanMojo extends AbstractMojo {
       } catch (IOException e) {
         throw new MojoExecutionException(e.getMessage(), e);
       }
-
       getLog().info("POM debloated successfully");
       getLog().info("pom-debloated.xml file created in: " + pathToDebloatedPom);
     }
@@ -661,10 +668,9 @@ public class DepCleanMojo extends AbstractMojo {
     /* Writing the JSON file with the debloat results */
     if (createResultJson) {
       printString("Creating depclean-results.json, please wait...");
-      String pathToJsonFile =
-          project.getBasedir().getAbsolutePath() + File.separator + "depclean-results.json";
-      String treeFile = project.getBuild().getDirectory() + File.separator + "tree.txt";
-      /* Copy direct dependencies locally */
+      final File jsonFile = new File(project.getBuild().getDirectory() + File.separator + "depclean-results.json");
+      final File treeFile = new File(project.getBuild().getDirectory() + File.separator + "tree.txt");
+      final File classUsageFile = new File(project.getBuild().getDirectory() + File.separator + "class-usage.csv");
       try {
         MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
       } catch (IOException | InterruptedException e) {
@@ -673,13 +679,13 @@ public class DepCleanMojo extends AbstractMojo {
         Thread.currentThread().interrupt();
         return;
       }
-      File classUsageFile = new File(
-          project.getBasedir().getAbsolutePath() + File.separator + "class-usage.csv");
-      try {
-        FileUtils.write(classUsageFile, "OriginClass,TargetClass,Dependency\n",
-            Charset.defaultCharset());
-      } catch (IOException e) {
-        getLog().error("Error writing the CSV header.");
+      if (createClassUsageCsv) {
+        printString("Creating class-usage.csv, please wait...");
+        try {
+          FileUtils.write(classUsageFile, "OriginClass,TargetClass,Dependency\n", Charset.defaultCharset());
+        } catch (IOException e) {
+          getLog().error("Error writing the CSV header.");
+        }
       }
       ParsedDependencies parsedDependencies = new ParsedDependencies(
           treeFile,
@@ -691,14 +697,19 @@ public class DepCleanMojo extends AbstractMojo {
           unusedDirectArtifactsCoordinates,
           unusedInheritedArtifactsCoordinates,
           unusedTransitiveArtifactsCoordinates,
-          classUsageFile
+          classUsageFile,
+          createClassUsageCsv
       );
       try {
-        FileUtils.write(new File(pathToJsonFile), parsedDependencies.parseTreeToJson(),
-            Charset.defaultCharset());
-        getLog().info("depclean-results.json file created in: " + pathToJsonFile);
+        FileUtils.write(jsonFile, parsedDependencies.parseTreeToJson(), Charset.defaultCharset());
       } catch (ParseException | IOException e) {
         getLog().error("Unable to generate JSON file.");
+      }
+      if (jsonFile.exists()) {
+        getLog().info("depclean-results.json file created in: " + jsonFile.getAbsolutePath());
+      }
+      if (classUsageFile.exists()) {
+        getLog().info("class-usage.csv file created in: " + classUsageFile.getAbsolutePath());
       }
     }
   }

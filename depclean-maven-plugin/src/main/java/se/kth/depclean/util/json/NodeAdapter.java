@@ -9,13 +9,15 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
+import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
 /**
- * Custom custom Gson type adapter to write a JSON file with information of the dependencies.
+ * Custom Gson type adapter to write a JSON file with information of the dependencies.
  */
+@AllArgsConstructor
 public class NodeAdapter extends TypeAdapter<Node> {
 
   private final Set<String> usedDirectArtifactsCoordinates;
@@ -24,55 +26,21 @@ public class NodeAdapter extends TypeAdapter<Node> {
   private final Set<String> unusedDirectArtifactsCoordinates;
   private final Set<String> unusedInheritedArtifactsCoordinates;
   private final Set<String> unusedTransitiveArtifactsCoordinates;
+  private final Map<String, Long> sizeOfDependencies;
   private final DefaultProjectDependencyAnalyzer dependencyAnalyzer;
   private final File classUsageFile;
-  private final Map<String, Long> sizeOfDependencies;
-
-  /**
-   * Ctor.
-   */
-  public NodeAdapter(Set<String> usedDirectArtifactsCoordinates,
-      Set<String> usedInheritedArtifactsCoordinates,
-      Set<String> usedTransitiveArtifactsCoordinates,
-      Set<String> unusedDirectArtifactsCoordinates,
-      Set<String> unusedInheritedArtifactsCoordinates,
-      Set<String> unusedTransitiveArtifactsCoordinates,
-      Map<String, Long> sizeOfDependencies,
-      DefaultProjectDependencyAnalyzer dependencyAnalyzer,
-      File classUsageFile) {
-    this.usedDirectArtifactsCoordinates = usedDirectArtifactsCoordinates;
-    this.usedInheritedArtifactsCoordinates = usedInheritedArtifactsCoordinates;
-    this.usedTransitiveArtifactsCoordinates = usedTransitiveArtifactsCoordinates;
-    this.unusedDirectArtifactsCoordinates = unusedDirectArtifactsCoordinates;
-    this.unusedInheritedArtifactsCoordinates = unusedInheritedArtifactsCoordinates;
-    this.unusedTransitiveArtifactsCoordinates = unusedTransitiveArtifactsCoordinates;
-    this.sizeOfDependencies = sizeOfDependencies;
-    this.dependencyAnalyzer = dependencyAnalyzer;
-    this.classUsageFile = classUsageFile;
-  }
+  private boolean createClassUsageCsv;
 
   @Override
   public void write(JsonWriter jsonWriter, Node node) throws IOException {
-    String coordinates =
-        node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getVersion() + ":" + node.getScope();
-    String canonical =
-        node.getGroupId() + ":" + node.getArtifactId() + ":" + node.getPackaging() + ":" + node.getVersion()
-            + ":" + node.getScope();
+    String ga = node.getGroupId() + ":" + node.getArtifactId();
+    String vs = node.getVersion() + ":" + node.getScope();
+    String coordinates = ga + ":" + vs;
+    String canonical = ga + ":" + node.getPackaging() + ":" + vs;
     String dependencyJar = node.getArtifactId() + "-" + node.getVersion() + ".jar";
 
-    // Write to the class-usage.csv file
-    DefaultCallGraph defaultCallGraph = new DefaultCallGraph();
-    for (Map.Entry<String, Set<String>> usagePerClassMap : defaultCallGraph.getUsagesPerClass().entrySet()) {
-      String key = usagePerClassMap.getKey();
-      Set<String> value = usagePerClassMap.getValue();
-      for (String s : value) {
-        if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) && dependencyAnalyzer
-            .getArtifactClassesMap().get(canonical).getAllTypes().contains(s)) {
-          // System.out.println(key + " uses " + s + " from " + canonical);
-          String triplet = key + "," + s + "," + canonical + "\n";
-          FileUtils.write(classUsageFile, triplet, Charset.defaultCharset(), true);
-        }
-      }
+    if (createClassUsageCsv) {
+      writeClassUsageCsv(canonical);
     }
 
     JsonWriter localWriter = jsonWriter.beginObject()
@@ -155,6 +123,21 @@ public class NodeAdapter extends TypeAdapter<Node> {
     }
     jsonWriter.endArray()
         .endObject();
+  }
+
+  private void writeClassUsageCsv(String canonical) throws IOException {
+    DefaultCallGraph defaultCallGraph = new DefaultCallGraph();
+    for (Map.Entry<String, Set<String>> usagePerClassMap : defaultCallGraph.getUsagesPerClass().entrySet()) {
+      String key = usagePerClassMap.getKey();
+      Set<String> value = usagePerClassMap.getValue();
+      for (String s : value) {
+        if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) && dependencyAnalyzer
+            .getArtifactClassesMap().get(canonical).getAllTypes().contains(s)) {
+          String triplet = key + "," + s + "," + canonical + "\n";
+          FileUtils.write(classUsageFile, triplet, Charset.defaultCharset(), true);
+        }
+      }
+    }
   }
 
   @Override
