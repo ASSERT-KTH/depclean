@@ -1,6 +1,6 @@
 se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 +- se.kth.castor:depclean-core:jar:2.0.2-SNAPSHOT:compile
-|  +- org.ow2.asm:asm:jar:9.1:compile
+|  +- org.ow2.asm:asm:jar:7.1:compile
 |  +- org.codehaus.plexus:plexus-component-annotations:jar:2.0.0:compile
 |  +- org.codehaus.plexus:plexus-utils:jar:3.3.0:compile
 |  +- (org.apache.maven:maven-core:jar:3.6.2:compile - omitted for conflict with 3.6.0)
