@@ -51,7 +51,8 @@ public class DepCleanMojoIT {
   @DisplayName("Test that DepClean creates a proper depclean-results.json file")
   void json_should_be_correct(MavenExecutionResult result) {
     if (OsUtils.isUnix()) {
-      // Accessing the target directory, see https://stackoverflow.com/questions/4948457/junit-maven-accessing-project-build-directory-value
+      // Workaround for accessing the target directory.
+      // See https://stackoverflow.com/questions/4948457/junit-maven-accessing-project-build-directory-value
       File producedJson = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile()
           + "../../target/maven-it/se/kth/depclean/DepCleanMojoIT/json_should_be_correct/project/depclean-results.json");
       File expectedJson = new File("src/test/resources/depclean-results.json");
