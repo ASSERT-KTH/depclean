@@ -6,7 +6,12 @@ import com.soebes.itf.jupiter.extension.MavenJupiterExtension;
 import com.soebes.itf.jupiter.extension.MavenTest;
 import com.soebes.itf.jupiter.maven.MavenExecutionResult;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Paths;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.DisplayName;
+import se.kth.depclean.util.OsUtils;
 
 /**
  * This class executes integration tests against the DepCleanMojo. The projects used for testing are in
@@ -48,17 +53,25 @@ public class DepCleanMojoIT {
 
   @MavenTest
   @DisplayName("Test that DepClean creates a proper depclean-results.json file")
-  void json_should_be_correct(MavenExecutionResult result) {
-    File producedJson =
-        new File("target/maven-it/se/kth/depclean/DepCleanMojoIT/json_should_be_correct/project/depclean-results.json");
-    File expectedJson =
-        new File("src/test/resources/depclean-results.json");
-    assertThat(result).isSuccessful()
-        .out()
-        .plain().contains(
-        "Creating depclean-results.json, please wait...",
-        "[INFO] depclean-results.json file created in: " + producedJson.getAbsolutePath());
-    assertThat(expectedJson).hasSameTextualContentAs(producedJson);
+  void json_should_be_correct(MavenExecutionResult result) throws MalformedURLException {
+    if (OsUtils.isUnix()) {
+      URL producedJsonUrl = Paths.get("target",
+          "maven-it/se/kth/depclean/DepCleanMojoIT/json_should_be_correct/project/depclean-results.json")
+          .toUri()
+          .toURL();
+      URL expectedJsonUrl = Paths.get(
+          "src/test/resources/depclean-results.json")
+          .toUri()
+          .toURL();
+      File producedJson = FileUtils.toFile(producedJsonUrl);
+      File expectedJson = FileUtils.toFile(expectedJsonUrl);
+      assertThat(result).isSuccessful()
+          .out()
+          .plain().contains(
+          "Creating depclean-results.json, please wait...",
+          "[INFO] depclean-results.json file created in: " + producedJson.getAbsolutePath());
+      assertThat(expectedJson).hasSameTextualContentAs(producedJson);
+    }
   }
 }
 
