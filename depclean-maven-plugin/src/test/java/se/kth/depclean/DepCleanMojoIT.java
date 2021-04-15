@@ -6,6 +6,9 @@ import com.soebes.itf.jupiter.extension.MavenJupiterExtension;
 import com.soebes.itf.jupiter.extension.MavenTest;
 import com.soebes.itf.jupiter.maven.MavenExecutionResult;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.DisplayName;
 import se.kth.depclean.util.OsUtils;
 
@@ -49,18 +52,15 @@ public class DepCleanMojoIT {
 
   @MavenTest
   @DisplayName("Test that DepClean creates a proper depclean-results.json file")
-  void json_should_be_correct(MavenExecutionResult result) {
+  void json_should_be_correct(MavenExecutionResult result) throws IOException {
     if (OsUtils.isUnix()) {
-      // Workaround for accessing the target directory.
-      // See https://stackoverflow.com/questions/4948457/junit-maven-accessing-project-build-directory-value
-      File producedJson = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile()
-          + "../../target/maven-it/se/kth/depclean/DepCleanMojoIT/json_should_be_correct/project/depclean-results.json");
-      File expectedJson = new File("src/test/resources/depclean-results.json");
+      File expectedJsonFile = new File("src/test/resources/depclean-results.json");
+      String expectedJsonContent = FileUtils.readFileToString(expectedJsonFile, Charset.defaultCharset());
       assertThat(result).isSuccessful()
-          .out()
-          .plain().contains(
-          "Creating depclean-results.json, please wait...");
-      assertThat(expectedJson).hasSameTextualContentAs(producedJson);
+          .project()
+          .hasTarget()
+          .withFile("depclean-results.json")
+          .hasContent(expectedJsonContent);
     }
   }
 }
