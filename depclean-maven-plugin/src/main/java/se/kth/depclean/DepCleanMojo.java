@@ -45,7 +45,7 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
+//import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -53,9 +53,9 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilder;
+//import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.repository.RepositorySystem;
+//import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
@@ -99,7 +99,7 @@ public class DepCleanMojo extends AbstractMojo {
    * If this is true, DepClean creates a debloated version of the pom without unused dependencies, called
    * "debloated-pom.xml", in root of the project.
    */
-  @Parameter(property = "creatPomDebloated", defaultValue = "false")
+  @Parameter(property = "createPomDebloated", defaultValue = "false")
   private boolean createPomDebloated;
 
   /**
@@ -166,12 +166,6 @@ public class DepCleanMojo extends AbstractMojo {
   @Parameter(property = "skipDepClean", defaultValue = "false")
   private boolean skipDepClean;
 
-  @Component
-  private ProjectBuilder mavenProjectBuilder;
-
-  @Component
-  private RepositorySystem repositorySystem;
-
   @Component(hint = "default")
   private DependencyGraphBuilder dependencyGraphBuilder;
 
@@ -231,7 +225,7 @@ public class DepCleanMojo extends AbstractMojo {
     } else {
       // The name of the dependency does not match with the name of the download jar, so we keep assume the size
       // cannot be obtained and return 0.
-      return Long.valueOf(0);
+      return 0L;
     }
   }
 
@@ -339,7 +333,7 @@ public class DepCleanMojo extends AbstractMojo {
   }
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute() throws MojoExecutionException {
     if (skipDepClean) {
       getLog().info("Skipping DepClean plugin execution");
       return;
@@ -385,7 +379,7 @@ public class DepCleanMojo extends AbstractMojo {
         FileUtils.copyDirectory(new File(project.getBuild().getDirectory() + File.separator + "libs"),
             new File(project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES)
         );
-      } catch (IOException e) {
+      } catch (IOException | NullPointerException e) {
         getLog().error("Error copying directory libs to dependency");
       }
     }
@@ -439,7 +433,7 @@ public class DepCleanMojo extends AbstractMojo {
 
     /* Exclude dependencies with specific scopes from the DepClean analysis */
     if (!ignoreScopes.isEmpty()) {
-      printString("Ignoring dependencies with scope(s): " + ignoreScopes.toString());
+      printString("Ignoring dependencies with scope(s): " + ignoreScopes);
       if (!ignoreScopes.isEmpty()) {
         usedTransitiveArtifacts = excludeScope(usedTransitiveArtifacts);
         usedDirectArtifacts = excludeScope(usedDirectArtifacts);
@@ -518,6 +512,7 @@ public class DepCleanMojo extends AbstractMojo {
     /* Ignoring dependencies from the analysis */
     if (ignoreDependencies != null) {
       for (String ignoredDependency : ignoreDependencies) {
+        boolean found = false;
         // if the ignored dependency is an unused direct dependency then add it to the set of used direct
         // and remove it from the set of unused direct
         for (Iterator<String> i = unusedDirectArtifactsCoordinates.iterator(); i.hasNext(); ) {
@@ -525,9 +520,11 @@ public class DepCleanMojo extends AbstractMojo {
           if (ignoredDependency.equals(unusedDirectArtifact)) {
             usedDirectArtifactsCoordinates.add(unusedDirectArtifact);
             i.remove();
+            found = true;
             break;
           }
         }
+        if (found) continue;
         // if the ignored dependency is an unused inherited dependency then add it to the set of used inherited
         // and remove it from the set of unused inherited
         for (Iterator<String> j = unusedInheritedArtifactsCoordinates.iterator(); j.hasNext(); ) {
@@ -535,9 +532,11 @@ public class DepCleanMojo extends AbstractMojo {
           if (ignoredDependency.equals(unusedInheritedArtifact)) {
             usedInheritedArtifactsCoordinates.add(unusedInheritedArtifact);
             j.remove();
+            found = true;
             break;
           }
         }
+        if (found) continue;
         // if the ignored dependency is an unused transitive dependency then add it to the set of used transitive
         // and remove it from the set of unused transitive
         for (Iterator<String> j = unusedTransitiveArtifactsCoordinates.iterator(); j.hasNext(); ) {
