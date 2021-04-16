@@ -521,7 +521,9 @@ public class DepCleanMojo extends AbstractMojo {
             break;
           }
         }
-        if (found) continue;
+        if (found) {
+          continue;
+        }
         // if the ignored dependency is an unused inherited dependency then add it to the set of used inherited
         // and remove it from the set of unused inherited
         for (Iterator<String> j = unusedInheritedArtifactsCoordinates.iterator(); j.hasNext(); ) {
@@ -533,7 +535,9 @@ public class DepCleanMojo extends AbstractMojo {
             break;
           }
         }
-        if (found) continue;
+        if (found) {
+          continue;
+        }
         // if the ignored dependency is an unused transitive dependency then add it to the set of used transitive
         // and remove it from the set of unused transitive
         for (Iterator<String> j = unusedTransitiveArtifactsCoordinates.iterator(); j.hasNext(); ) {
