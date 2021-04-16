@@ -47,20 +47,6 @@ If you use DepClean in an academic context, please cite:
 }
 ```
 
-## How does it work?
-
-DepClean runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types
-referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the
-project actually use in the bytecode with respect to the class members belonging to its dependencies.
-
-With this usage information, DepClean constructs a new `pom.xml` based on the following steps:
-
-1. add all used transitive dependencies as direct dependencies
-2. remove all unused direct dependencies
-3. exclude all unused transitive dependencies
-
-If all the tests pass, and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
-
 ## Usage
 
 You can configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
@@ -84,6 +70,20 @@ Or you can run DepClean directly from the command line.
 Let's see it in action with the project [Apache Commons Numbers](https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh)!
 
 ![Demo](https://github.com/castor-software/depclean/blob/master/.img/demo.gif)
+
+## How does it work?
+
+DepClean runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types
+referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the
+project actually use in the bytecode with respect to the class members belonging to its dependencies.
+
+With this usage information, DepClean constructs a new `pom.xml` based on the following steps:
+
+1. add all used transitive dependencies as direct dependencies
+2. remove all unused direct dependencies
+3. exclude all unused transitive dependencies
+
+If all the tests pass, and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
 
 ### Optional Parameters
 
