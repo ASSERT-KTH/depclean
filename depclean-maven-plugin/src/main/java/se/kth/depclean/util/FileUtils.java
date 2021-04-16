@@ -85,7 +85,13 @@ public final class FileUtils {
     return files;
   }
 
-  private static void forceDelete(final File file) throws IOException {
+  /**
+   * Delete a file either if it is a directory or a file.
+   *
+   * @param file The file or directory to be deleted.
+   * @throws IOException In case of IO issues.
+   */
+  public static void forceDelete(final File file) throws IOException {
     if (file.isDirectory()) {
       deleteDirectory(file);
     } else {

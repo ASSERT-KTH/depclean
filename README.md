@@ -108,7 +108,7 @@ For example, to fail the build in the presence of unused direct dependencies and
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.0.1</version>
+  <version>2.0.2-SNAPSHOT</version>
   <executions>
     <execution>
       <goals>

@@ -162,6 +162,7 @@ public class DepCleanMojo extends AbstractMojo {
    */
   @Parameter(property = "skipDepClean", defaultValue = "false")
   private boolean skipDepClean;
+
   /**
    * To build the dependency graph.
    */

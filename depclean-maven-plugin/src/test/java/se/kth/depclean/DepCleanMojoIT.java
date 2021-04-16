@@ -1,11 +1,13 @@
 package se.kth.depclean;
 
 import static com.soebes.itf.extension.assertj.MavenITAssertions.assertThat;
-
 import com.soebes.itf.jupiter.extension.MavenJupiterExtension;
 import com.soebes.itf.jupiter.extension.MavenTest;
 import com.soebes.itf.jupiter.maven.MavenExecutionResult;
+import se.kth.depclean.util.FileUtils;
 import java.io.File;
+import java.io.IOException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 
 /**
@@ -59,6 +61,32 @@ public class DepCleanMojoIT {
         "Creating depclean-results.json, please wait...",
         "[INFO] depclean-results.json file created in: " + producedJson.getAbsolutePath());
     assertThat(expectedJson).hasSameTextualContentAs(producedJson);
+  }
+
+  @MavenTest
+  @DisplayName("Test that DepClean creates a proper pom-debloated.xml file")
+  void debloated_pom_is_correct(MavenExecutionResult result) throws IOException {
+
+    String path = "target/maven-it/se/kth/depclean/DepCleanMojoIT/debloated_pom_is_correct/project/pom-debloated.xml";
+    File generated_pom_debloated = new File(path);
+          assertThat(result).isSuccessful()
+              .out()
+              .plain().contains(
+              "[INFO] Starting debloating POM",
+              "[INFO] Adding 1 used transitive dependencies as direct dependencies.",
+              "[INFO] Removing 1 unused direct dependencies.",
+              "[INFO] Excluding 1 unused transitive dependencies one-by-one.",
+              "[INFO] POM debloated successfully",
+              "[INFO] pom-debloated.xml file created in: " + generated_pom_debloated.getAbsolutePath());
+
+    Assertions.assertTrue(generated_pom_debloated.exists());
+          assertThat(generated_pom_debloated).
+              hasSameTextualContentAs(new File(
+              "src/test/resources/DepCleanMojoResources/pom-debloated.xml"));
+
+    if (generated_pom_debloated.exists()) {
+      FileUtils.forceDelete(generated_pom_debloated);
+    }
   }
 }
 
