@@ -205,8 +205,8 @@ public class DepCleanMojo extends AbstractMojo {
    * @param dependencies       The GAV of the artifact.
    */
   private void printInfoOfDependencies(final String info, final Map<String,
-          Long> sizeOfDependencies,
-          final Set<String> dependencies) {
+      Long> sizeOfDependencies,
+      final Set<String> dependencies) {
     printString(info.toUpperCase() + " [" + dependencies.size() + "]" + ": ");
     printDependencies(sizeOfDependencies, dependencies);
   }
@@ -513,46 +513,16 @@ public class DepCleanMojo extends AbstractMojo {
 
     /* Ignoring dependencies from the analysis */
     if (ignoreDependencies != null) {
-      for (String ignoredDependency : ignoreDependencies) {
-        boolean found = false;
+      for (String dependencyToIgnore : ignoreDependencies) {
         // if the ignored dependency is an unused direct dependency then add it to the set of used direct
         // and remove it from the set of unused direct
-        for (Iterator<String> i = unusedDirectArtifactsCoordinates.iterator(); i.hasNext();) {
-          String unusedDirectArtifact = i.next();
-          if (ignoredDependency.equals(unusedDirectArtifact)) {
-            usedDirectArtifactsCoordinates.add(unusedDirectArtifact);
-            i.remove();
-            found = true;
-            break;
-          }
-        }
-        if (found) {
-          continue;
-        }
+        ignoreDependency(usedDirectArtifactsCoordinates, unusedDirectArtifactsCoordinates, dependencyToIgnore);
         // if the ignored dependency is an unused inherited dependency then add it to the set of used inherited
         // and remove it from the set of unused inherited
-        for (Iterator<String> j = unusedInheritedArtifactsCoordinates.iterator(); j.hasNext();) {
-          String unusedInheritedArtifact = j.next();
-          if (ignoredDependency.equals(unusedInheritedArtifact)) {
-            usedInheritedArtifactsCoordinates.add(unusedInheritedArtifact);
-            j.remove();
-            found = true;
-            break;
-          }
-        }
-        if (found) {
-          continue;
-        }
+        ignoreDependency(usedInheritedArtifactsCoordinates, unusedInheritedArtifactsCoordinates, dependencyToIgnore);
         // if the ignored dependency is an unused transitive dependency then add it to the set of used transitive
         // and remove it from the set of unused transitive
-        for (Iterator<String> j = unusedTransitiveArtifactsCoordinates.iterator(); j.hasNext();) {
-          String unusedTransitiveArtifact = j.next();
-          if (ignoredDependency.equals(unusedTransitiveArtifact)) {
-            usedTransitiveArtifactsCoordinates.add(unusedTransitiveArtifact);
-            j.remove();
-            break;
-          }
-        }
+        ignoreDependency(usedTransitiveArtifactsCoordinates, unusedTransitiveArtifactsCoordinates, dependencyToIgnore);
       }
     }
 
@@ -669,7 +639,6 @@ public class DepCleanMojo extends AbstractMojo {
       getLog().info("pom-debloated.xml file created in: " + pathToDebloatedPom);
     }
 
-
     /* Writing the JSON file with the debloat results */
     if (createResultJson) {
       printString("Creating depclean-results.json, please wait...");
@@ -715,6 +684,29 @@ public class DepCleanMojo extends AbstractMojo {
       }
       if (classUsageFile.exists()) {
         getLog().info("class-usage.csv file created in: " + classUsageFile.getAbsolutePath());
+      }
+    }
+  }
+
+
+  /**
+   * If the dependencyToIgnore is an unused dependency, then add it to the set of usedArtifactsCoordinates and remove it
+   * from the set of unusedArtifactsCoordinates.
+   *
+   * @param usedArtifactsCoordinates   The set of used artifacts where the dependency will be added.
+   * @param unusedArtifactsCoordinates The set of unused artifacts where the dependency will be removed.
+   * @param dependencyToIgnore         The dependency to ignore.
+   */
+  private void ignoreDependency(
+      Set<String> usedArtifactsCoordinates,
+      Set<String> unusedArtifactsCoordinates,
+      String dependencyToIgnore) {
+    for (Iterator<String> i = unusedArtifactsCoordinates.iterator(); i.hasNext(); ) {
+      String unusedDirectArtifact = i.next();
+      if (dependencyToIgnore.equals(unusedDirectArtifact)) {
+        usedArtifactsCoordinates.add(unusedDirectArtifact);
+        i.remove();
+        break;
       }
     }
   }
