@@ -9,60 +9,37 @@
   <properties>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
-    <mapstruct.version>1.4.2.Final</mapstruct.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
   <dependencies>
     <dependency>
-      <groupId>org.mapstruct</groupId>
-      <artifactId>mapstruct-processor</artifactId>
-      <version>${mapstruct.version}</version>
-      <scope>provided</scope>
+      <groupId>com.jcabi</groupId>
+      <artifactId>jcabi-manifests</artifactId>
+      <version>1.1</version>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>2.12.2</version>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.15</version>
+    </dependency>
+    <dependency>
+      <groupId>com.jcabi</groupId>
+      <artifactId>jcabi-log</artifactId>
+      <version>0.14</version>
+      <scope>compile</scope>
+      <optional>false</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.5</version>
       <scope>compile</scope>
       <optional>false</optional>
     </dependency>
   </dependencies>
   <build>
     <plugins>
-      <plugin>
-        <groupId>com.soebes.itf.jupiter.extension</groupId>
-        <artifactId>itf-failure-plugin</artifactId>
-        <version>0.9.0</version>
-        <executions>
-          <execution>
-            <id>first_very_simple</id>
-            <phase>initialize</phase>
-            <goals>
-              <goal>failure</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.bsc.maven</groupId>
-        <artifactId>maven-processor-plugin</artifactId>
-        <version>5.0-jdk8-rc1</version>
-        <executions>
-          <execution>
-            <id>process</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>process</goal>
-            </goals>
-            <configuration>
-              <processors>
-                <processor>org.mapstruct.ap.MappingProcessor</processor>
-              </processors>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>se.kth.castor</groupId>
         <artifactId>depclean-maven-plugin</artifactId>
