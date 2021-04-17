@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.NotNull;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
@@ -29,7 +30,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
   private final Map<String, Long> sizeOfDependencies;
   private final DefaultProjectDependencyAnalyzer dependencyAnalyzer;
   private final File classUsageFile;
-  private boolean createClassUsageCsv;
+  private final boolean createClassUsageCsv;
 
   @Override
   public void write(JsonWriter jsonWriter, Node node) throws IOException {
@@ -75,40 +76,50 @@ public class NodeAdapter extends TypeAdapter<Node> {
         .value(sizeOfDependencies.get(dependencyJar))
 
         .name("type")
-        .value((usedDirectArtifactsCoordinates.contains(coordinates) || unusedDirectArtifactsCoordinates
-            .contains(coordinates)) ? "direct" :
-            (usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates
-                .contains(coordinates)) ? "inherited" :
-                (usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates
-                    .contains(coordinates)) ? "transitive" : "unknown")
+        .value(getType(coordinates))
+
         .name("status")
-        .value((usedDirectArtifactsCoordinates.contains(coordinates) || usedInheritedArtifactsCoordinates
-            .contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates))
-            ? "used" :
-            (unusedDirectArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates
-                .contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates))
-                ? "bloated" : "unknown")
+        .value(getStatus(coordinates))
 
         .name("parent")
-        .value(node.getParent() != null
-            ? node.getParent().getArtifactCanonicalForm() : "unknown");
+        .value(getParent(node));
 
-    JsonWriter allTypes = localWriter.name("allTypes").beginArray();
-    if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
-      for (String allType : dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes()) {
-        allTypes.value(allType);
-      }
+    writeAllTypes(canonical, localWriter);
+    writeUsedTypes(canonical, localWriter);
+    writeUsageRatio(canonical, localWriter);
+
+    for (Node c : node.getChildNodes()) {
+      this.write(jsonWriter, c);
     }
-    allTypes.endArray();
+    jsonWriter.endArray()
+        .endObject();
+  }
 
-    JsonWriter usedTypes = localWriter.name("usedTypes").beginArray();
-    if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
-      for (String usedType : dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes()) {
-        usedTypes.value(usedType);
-      }
-    }
-    usedTypes.endArray();
+  private String getParent(Node node) {
+    return node.getParent() != null ? node.getParent().getArtifactCanonicalForm() : "unknown";
+  }
 
+  @NotNull
+  private String getStatus(String coordinates) {
+    return (usedDirectArtifactsCoordinates.contains(coordinates) || usedInheritedArtifactsCoordinates
+        .contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates))
+        ? "used" :
+        (unusedDirectArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates
+            .contains(coordinates) || unusedTransitiveArtifactsCoordinates.contains(coordinates))
+            ? "bloated" : "unknown";
+  }
+
+  @NotNull
+  private String getType(String coordinates) {
+    return (usedDirectArtifactsCoordinates.contains(coordinates) || unusedDirectArtifactsCoordinates
+        .contains(coordinates)) ? "direct" :
+        (usedInheritedArtifactsCoordinates.contains(coordinates) || unusedInheritedArtifactsCoordinates
+            .contains(coordinates)) ? "inherited" :
+            (usedTransitiveArtifactsCoordinates.contains(coordinates) || unusedTransitiveArtifactsCoordinates
+                .contains(coordinates)) ? "transitive" : "unknown";
+  }
+
+  private void writeUsageRatio(String canonical, JsonWriter localWriter) throws IOException {
     localWriter.name("usageRatio")
         .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)
             ? dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().isEmpty()
@@ -117,12 +128,26 @@ public class NodeAdapter extends TypeAdapter<Node> {
                 / dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().size()) : -1)
         .name("children")
         .beginArray();
+  }
 
-    for (Node c : node.getChildNodes()) {
-      this.write(jsonWriter, c);
+  private void writeUsedTypes(String canonical, JsonWriter localWriter) throws IOException {
+    JsonWriter usedTypes = localWriter.name("usedTypes").beginArray();
+    if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
+      for (String usedType : dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes()) {
+        usedTypes.value(usedType);
+      }
     }
-    jsonWriter.endArray()
-        .endObject();
+    usedTypes.endArray();
+  }
+
+  private void writeAllTypes(String canonical, JsonWriter localWriter) throws IOException {
+    JsonWriter allTypes = localWriter.name("allTypes").beginArray();
+    if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
+      for (String allType : dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes()) {
+        allTypes.value(allType);
+      }
+    }
+    allTypes.endArray();
   }
 
   private void writeClassUsageCsv(String canonical) throws IOException {

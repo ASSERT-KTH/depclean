@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import se.kth.depclean.util.OsUtils;
 
@@ -54,7 +55,7 @@ public class DepCleanMojoIT {
   @DisplayName("Test that DepClean creates a proper depclean-results.json file")
   void json_should_be_correct(MavenExecutionResult result) throws IOException {
     if (OsUtils.isUnix()) {
-      File expectedJsonFile = new File("src/test/resources/depclean-results.json");
+      File expectedJsonFile = new File("src/test/resources/DepCleanMojoResources/depclean-results.json");
       String expectedJsonContent = FileUtils.readFileToString(expectedJsonFile, Charset.defaultCharset());
       assertThat(result).isSuccessful()
           .project()
@@ -62,6 +63,26 @@ public class DepCleanMojoIT {
           .withFile("depclean-results.json")
           .hasContent(expectedJsonContent);
     }
+  }
+
+  @MavenTest
+  @DisplayName("Test that DepClean creates a proper pom-debloated.xml file")
+  void debloated_pom_is_correct(MavenExecutionResult result) throws IOException {
+    String path = "target/maven-it/se/kth/depclean/DepCleanMojoIT/debloated_pom_is_correct/project/pom-debloated.xml";
+    File generated_pom_debloated = new File(path);
+    assertThat(result).isSuccessful()
+        .out()
+        .plain().contains(
+        "[INFO] Starting debloating POM",
+        "[INFO] Adding 1 used transitive dependencies as direct dependencies.",
+        "[INFO] Removing 1 unused direct dependencies.",
+        "[INFO] Excluding 1 unused transitive dependencies one-by-one.",
+        "[INFO] POM debloated successfully",
+        "[INFO] pom-debloated.xml file created in: " + generated_pom_debloated.getAbsolutePath());
+    Assertions.assertTrue(generated_pom_debloated.exists());
+    assertThat(generated_pom_debloated).
+        hasSameTextualContentAs(new File(
+            "src/test/resources/DepCleanMojoResources/pom-debloated.xml"));
   }
 }
 
