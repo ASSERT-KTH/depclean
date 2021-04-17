@@ -42,16 +42,15 @@ public final class MavenInvoker {
    * @throws InterruptedException In case of IO issues.
    */
   public static String[] runCommand(String cmd) throws IOException, InterruptedException {
-    String os = System.getProperty("os.name").toLowerCase();
     Process process;
     ArrayList<String> list;
-    if (isUnix(os)) {
+    if (OsUtils.isUnix()) {
       list = new ArrayList<>();
       process = Runtime.getRuntime().exec(cmd);
       InputStream inputStream = process.getInputStream();
       BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
       return outputToConsole(process, list, br);
-    } else if (isWindows(os)) {
+    } else if (OsUtils.isWindows()) {
       list = new ArrayList<>();
       process = Runtime.getRuntime().exec("cmd /C " + cmd);
       BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -72,13 +71,5 @@ public final class MavenInvoker {
     process.waitFor();
     br.close();
     return list.toArray(new String[0]);
-  }
-
-  private static boolean isUnix(String os) {
-    return (os.contains("nix") || os.contains("nux") || os.contains("mac os"));
-  }
-
-  private static boolean isWindows(String os) {
-    return (os.contains("win"));
   }
 }
