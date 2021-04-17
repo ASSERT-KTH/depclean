@@ -6,7 +6,7 @@
   "version": "1.0.0-SNAPSHOT",
   "packaging": "jar",
   "omitted": false,
-  "size": 1693,
+  "size": 1284,
   "type": "unknown",
   "status": "unknown",
   "parent": "unknown",
@@ -172,7 +172,7 @@
       "omitted": false,
       "size": 285424,
       "type": "direct",
-      "status": "used",
+      "status": "bloated",
       "parent": "org.foo.bar:foobar:jar:1.0.0-SNAPSHOT",
       "allTypes": [
         "org.apache.commons.io.LineIterator",
@@ -358,10 +358,8 @@
         "org.apache.commons.io.filefilter.CanWriteFileFilter",
         "org.apache.commons.io.input.CircularInputStream"
       ],
-      "usedTypes": [
-        "org.apache.commons.io.Charsets"
-      ],
-      "usageRatio": 0.005494505494505495,
+      "usedTypes": [],
+      "usageRatio": 0.0,
       "children": []
     },
     {
@@ -375,7 +373,7 @@
       "omitted": false,
       "size": 353793,
       "type": "direct",
-      "status": "bloated",
+      "status": "used",
       "parent": "org.foo.bar:foobar:jar:1.0.0-SNAPSHOT",
       "allTypes": [
         "org.apache.commons.codec.EncoderException",
@@ -485,8 +483,10 @@
         "org.apache.commons.codec.language.bm.RuleType",
         "org.apache.commons.codec.language.bm.Languages$SomeLanguages"
       ],
-      "usedTypes": [],
-      "usageRatio": 0.0,
+      "usedTypes": [
+        "org.apache.commons.codec.Charsets"
+      ],
+      "usageRatio": 0.009433962264150943,
       "children": []
     }
   ]
