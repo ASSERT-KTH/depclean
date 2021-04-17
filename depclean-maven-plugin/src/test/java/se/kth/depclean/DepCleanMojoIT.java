@@ -55,7 +55,7 @@ public class DepCleanMojoIT {
   @DisplayName("Test that DepClean creates a proper depclean-results.json file")
   void json_should_be_correct(MavenExecutionResult result) throws IOException {
     if (OsUtils.isUnix()) {
-      File expectedJsonFile = new File("src/test/resources/depclean-results.json");
+      File expectedJsonFile = new File("src/test/resources/DepCleanMojoResources/depclean-results.json");
       String expectedJsonContent = FileUtils.readFileToString(expectedJsonFile, Charset.defaultCharset());
       assertThat(result).isSuccessful()
           .project()
@@ -83,9 +83,6 @@ public class DepCleanMojoIT {
     assertThat(generated_pom_debloated).
         hasSameTextualContentAs(new File(
             "src/test/resources/DepCleanMojoResources/pom-debloated.xml"));
-    if (generated_pom_debloated.exists()) {
-      FileUtils.forceDelete(generated_pom_debloated);
-    }
   }
 }
 
