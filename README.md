@@ -55,7 +55,7 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.0.1</version>
+  <version>2.0.2-SNAPSHOT</version>
   <executions>
     <execution>
       <goals>
@@ -127,7 +127,7 @@ Of course, it is also possible to execute DepClean with parameters directly from
 can be executed directly as follows:
 
 ```bash
-mvn se.kth.castor:depclean-maven-plugin:2.0.1:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
+mvn se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
 
 ## Installing and building from source
@@ -154,7 +154,7 @@ Once the plugin is installed, you can execute the `depclean` goal directly in th
 cd PATH_TO_MAVEN_PROJECT
 mvn compile   
 mvn compiler:testCompile
-mvn se.kth.castor:depclean-maven-plugin:2.0.1:depclean
+mvn se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT:depclean
 ```
 
 ## License
