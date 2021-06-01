@@ -1,0 +1,37 @@
+package unused_inherited_only
+
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.2'
+}
+task copyDependencies(type: Copy) {
+  from configurations.default
+  into 'build/dependencies'
+}
+group = 'org.foo.bar'
+version = '1.0.0-SNAPSHOT'
+description = 'foobar'
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

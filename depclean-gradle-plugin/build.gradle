@@ -1,35 +1,58 @@
+buildscript{
+  repositories {
+      mavenLocal()
+
+      dependencies{
+        classpath 'se.kth.castor:depclean-gradle-plugin:1.0-SNAPSHOT'
+      }
+  }
+}
+
 plugins {
     id 'java'
+    id 'groovy'
     id 'java-gradle-plugin'
-    id 'application'
+    id 'maven-publish'
 }
 
-applicationDistribution.from("some/dir") {
-  include "*.txt"
-}
-
+apply plugin: 'se.kth.castor.depclean-gradle-plugin'
 group 'se.kth.castor'
 version '1.0-SNAPSHOT'
 
 repositories {
+    mavenLocal()
     mavenCentral()
     jcenter()
 }
 
 dependencies {
     compile gradleApi()
-    compile 'se.kth.depclean:depclean-core:2.0.2-SNAPSHOT'
+    compile localGroovy()
+    testImplementation gradleTestKit()
+    compile 'se.kth.castor:depclean-core:2.0.2-SNAPSHOT'
+    compile 'se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT'
     compile 'org.jetbrains:annotations:16.0.2'
     compile 'org.codehaus.plexus:plexus-utils:3.3.0'
     compile 'org.codehaus.plexus:plexus-component-annotations:2.1.0'
     compile group: 'org.jgrapht', name: 'jgrapht-core', version: '1.5.1'
     compileOnly 'org.projectlombok:lombok:1.18.20'
-	annotationProcessor 'org.projectlombok:lombok:1.18.20'
-    implementation group: 'org.ow2.asm', name: 'asm', version: '9.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    implementation 'org.ow2.asm:asm:9.1'
+    testCompile("org.codehaus.groovy:groovy-all:2.4.15")
+    testCompile("org.spockframework:spock-core:1.1-groovy-2.4")
+    testImplementation('org.junit.jupiter:junit-jupiter-api')
 }
 
-test {
-    useJUnitPlatform()
+task copyDependencies(type: Copy) {
+  from configurations.default
+  into 'build/dependency'
+}
+
+gradlePlugin {
+    plugins {
+        demoPlugin {
+            id = 'se.kth.castor.depclean-gradle-plugin'
+            implementationClass  = 'se.kth.depclean.depcleanGradlePlugin'
+        }
+    }
 }
