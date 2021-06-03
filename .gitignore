@@ -27,7 +27,7 @@ depclean-maven-plugin/target/generated-sources/
 depclean-maven-plugin/target/generated-test-sources/
 depclean-parent-pom.iml
 /.java-version
-depclean-gradle-plugin/build
-depclean-gradle-plugin/.gradle
-depclean-gradle-plugin/resources
+depclean-gradle-plugin/build/
+depclean-gradle-plugin/.gradle/
+depclean-gradle-plugin/resources/
 .idea
