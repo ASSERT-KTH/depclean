@@ -1,2 +1,8 @@
 build/
 .gradle/
+src/Test/resources/all_dependencies_used/
+src/Test/resources/empty_project/
+src/Test/resources/processor_used/
+src/Test/resources/unused_direct_only/
+src/Test/resources/unused_inherited_only/
+src/Test/resources/unused_transitive_only/
