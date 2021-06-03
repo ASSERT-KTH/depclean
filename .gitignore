@@ -30,6 +30,4 @@ depclean-parent-pom.iml
 depclean-gradle-plugin/build/
 depclean-gradle-plugin/.gradle/
 depclean-gradle-plugin/resources/
-.idea
-depclean-gradle-plugin/.gradle/6.8/executionHistory/executionHistory.bin
 
