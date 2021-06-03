@@ -3,8 +3,9 @@ package se.kth.depclean.analysis;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.component.Artifact;
-import org.gradle.api.artifacts.*;
 
 public class GradleProjectDependencyAnalysis {
 

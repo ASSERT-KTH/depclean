@@ -15,9 +15,9 @@ plugins {
 apply plugin: 'se.kth.castor.depclean-gradle-plugin'
 
 repositories {
-    mavenLocal()
-    jcenter();
     mavenCentral()
+    mavenLocal()
+    jcenter()
 }
 
 dependencies {
@@ -32,15 +32,8 @@ task copyDependencies(type: Copy) {
 group = 'org.foo.bar'
 version = '1.0.0-SNAPSHOT'
 description = 'foobar'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+//java.sourceCompatibility = JavaVersion.VERSION_1_8
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from(components.java)
-        }
-    }
-}
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'

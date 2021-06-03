@@ -1,6 +1,7 @@
 package se.kth.depclean;
 
 import java.util.Locale;
+
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;

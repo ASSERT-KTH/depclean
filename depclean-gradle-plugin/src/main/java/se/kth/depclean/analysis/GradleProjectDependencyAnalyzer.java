@@ -1,6 +1,7 @@
 package se.kth.depclean.analysis;
 
 import org.gradle.api.Project;
+
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 
 public interface GradleProjectDependencyAnalyzer {

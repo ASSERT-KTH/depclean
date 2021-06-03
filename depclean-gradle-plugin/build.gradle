@@ -21,8 +21,8 @@ version '1.0-SNAPSHOT'
 
 repositories {
     mavenLocal()
-    mavenCentral()
     jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -38,15 +38,24 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
     implementation 'org.ow2.asm:asm:9.1'
-    testCompile("org.codehaus.groovy:groovy-all:2.4.15")
+    testCompile("org.codehaus.groovy:groovy-all:2.5.12")
     testCompile("org.spockframework:spock-core:1.1-groovy-2.4")
-    testImplementation('org.junit.jupiter:junit-jupiter-api')
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.3.0')
+}
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
 }
 
-task copyDependencies(type: Copy) {
-  from configurations.default
-  into 'build/dependency'
-}
+configurations.getByName("api").canBeResolved(true)
+configurations.getByName("apiElements").canBeResolved(true)
+configurations.getByName("runtimeOnly").canBeResolved(true)
+configurations.getByName("runtimeElements").canBeResolved(true)
+configurations.getByName("implementation").canBeResolved(true)
+configurations.getByName("testImplementation").canBeResolved(true)
+configurations.getByName("testRuntimeOnly").canBeResolved(true)
+configurations.getByName("compileOnlyApi").canBeResolved(true)
 
 gradlePlugin {
     plugins {
@@ -56,3 +65,10 @@ gradlePlugin {
         }
     }
 }
+
+
+task copyDependencies(type: Copy) {
+  from configurations.default
+  into 'build/dependency'
+}
+

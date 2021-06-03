@@ -14,12 +14,16 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.*;
-import org.gradle.api.component.Artifact;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.artifacts.ResolvableDependencies;
+import org.gradle.api.artifacts.ResolvedArtifact;
+import org.gradle.api.artifacts.ResolvedDependency;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -92,10 +96,10 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
       artifactClassesMap = buildArtifactClassMap(allArtifacts);
 
       // direct dependencies of the project
-      Set<Dependency> declaredDependencies = getDeclaredDependencies(configurations);
+      Set<ResolvedDependency> declaredDependencies = getDeclaredDependencies(configurations);
 
       // direct artifacts of the project
-      Set<ResolvedArtifact> declaredArtifacts = getDeclaredArtifacts(configurations);
+      Set<ResolvedArtifact> declaredArtifacts = getDeclaredArtifacts(declaredDependencies);
 
       /* ******************** bytecode analysis ********************* */
 
@@ -143,8 +147,14 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
   public Set<ResolvedDependency> getAllDependencies(Set<Configuration> configurations) {
     Set<ResolvedDependency> allDependencies = new HashSet<>();
     for (Configuration configuration : configurations) {
+//      configuration.setCanBeResolved(true);
       allDependencies.addAll(configuration.getResolvedConfiguration().getFirstLevelModuleDependencies());
     }
+    Set<ResolvedDependency> children = new HashSet<>();
+    for (ResolvedDependency dependency : allDependencies) {
+      children.addAll(dependency.getChildren());
+    }
+    allDependencies.addAll(children);
     return allDependencies;
   }
   /**
@@ -157,7 +167,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
   public Set<ResolvedArtifact> getAllArtifacts(Set<ResolvedDependency> allDependencies) {
     Set<ResolvedArtifact> allArtifacts = new HashSet<>();
     for (ResolvedDependency dependency : allDependencies) {
-      allArtifacts.addAll(dependency.getArtifacts(dependency));
+      allArtifacts.addAll(dependency.getAllModuleArtifacts());
     }
     return allArtifacts;
   }
@@ -204,23 +214,24 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    * @return A set of all dependencies.
    */
   @NonNull
-  public Set<Dependency> getDeclaredDependencies(Set<Configuration> configurations) {
-    Set<Dependency> declaredDependency = new HashSet<>();
+  public Set<ResolvedDependency> getDeclaredDependencies(Set<Configuration> configurations) {
+    Set<ResolvedDependency> declaredDependency = new HashSet<>();
     for (Configuration configuration : configurations) {
-      declaredDependency.addAll(configuration.getAllDependencies());
+//      configuration.setCanBeResolved(true);
+      declaredDependency.addAll(configuration.getResolvedConfiguration().getFirstLevelModuleDependencies());
     }
     return declaredDependency;
   }
   /**
    * To get the artifacts which are declared in the project.
    *
-   * @param configurations Project's configuration.
+   * @param declaredDependency Project's configuration.
    * @return A set of declared artifacts.
    */
-  public Set<ResolvedArtifact> getDeclaredArtifacts(Set<Configuration> configurations) {
+  public Set<ResolvedArtifact> getDeclaredArtifacts(Set<ResolvedDependency> declaredDependency) {
     Set<ResolvedArtifact> declaredArtifacts = new HashSet<>();
-    for (Configuration configuration : configurations) {
-      declaredArtifacts.add((ResolvedArtifact) configuration.getArtifacts());
+    for (ResolvedDependency dependency : declaredDependency) {
+      declaredArtifacts.addAll(dependency.getAllModuleArtifacts());
     }
     return declaredArtifacts;
   }
@@ -231,14 +242,26 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    * @param project The gradle project.
    * @throws IOException In case of IO issues.
    */
-  private void buildProjectDependencyClasses(Project project) throws IOException {
+  private void  buildProjectDependencyClasses(Project project) throws IOException {
+    String sep = File.separator;
+    String classesDir = project.getProjectDir().getAbsolutePath() +
+                                    sep + "build" +
+                                    sep + "classes";
     // Analyze src classes in the project
-    File outputDirectory = new File(project.getBuildDir() + File.separator + "classes" + File.separator + "java" + File.separator + "main");
-    collectDependencyClasses(outputDirectory);
+    File outputJavaDir = new File( classesDir + sep + "java" + sep + "main");
+    File outputGroovyDir = new File(classesDir + sep + "groovy" + sep + "main");
+    File outputKotlinDir = new File(classesDir + sep + "kotlin" + sep + "main");
+    checkThenCollectDependencyClasses(outputJavaDir);
+    checkThenCollectDependencyClasses(outputGroovyDir);
+    checkThenCollectDependencyClasses(outputKotlinDir);
     // Analyze test classes in the project
     if (!isIgnoredTest) {
-      File testResultsDir = new File( project.getBuildDir() + File.separator + "classes" + File.separator + "java" + File.separator + "test");
-      collectDependencyClasses(testResultsDir);
+      File testOutputJavaDir = new File( classesDir + sep + "java" + sep + "test");
+      File testOutputGroovyDir = new File(classesDir + sep + "groovy" + sep + "test");
+      File testOutputKotlinDir = new File(classesDir + sep + "kotlin" + sep + "test");
+      checkThenCollectDependencyClasses(testOutputJavaDir);
+      checkThenCollectDependencyClasses(testOutputGroovyDir);
+      checkThenCollectDependencyClasses(testOutputKotlinDir);
     }
   }
 
@@ -249,8 +272,22 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    * @throws IOException In case of IO issues.
    */
   private void buildDependenciesDependencyClasses(Project project) throws IOException {
-    File dependenciesDirectory = new File(project.getBuildDir() + File.separator + "dependencies");
-    collectDependencyClasses(dependenciesDirectory);
+    File dependenciesDirectory = new File(project.getProjectDir().getAbsolutePath() +
+                                          File.separator + "build" +
+                                          File.separator + "dependency");
+    checkThenCollectDependencyClasses(dependenciesDirectory);
+  }
+
+  /**
+   * It checks whether the provided directory exists or not.
+   *
+   * @param outputDirectory Directory from where classes has to be collected.
+   * @throws IOException In case of IO issues.
+   */
+  private void checkThenCollectDependencyClasses(File outputDirectory) throws IOException {
+    if(outputDirectory.exists()) {
+      collectDependencyClasses(outputDirectory);
+    }
   }
 
   /**

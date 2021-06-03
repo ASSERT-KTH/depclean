@@ -1,10 +1,11 @@
 package se.kth.depclean;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,21 +15,24 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ResolvedArtifact;
-import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.internal.tasks.testing.junit.result.TestOutputStore;
-import org.gradle.tooling.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import lombok.SneakyThrows;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
@@ -39,32 +43,38 @@ public class depcleanGradleAction implements Action<Project> {
 
     public static final Logger log = LoggerFactory.getLogger(depcleanGradleAction.class);
     private static final String SEPARATOR = "-------------------------------------------------------";
-    public static final String DIRECTORY_TO_COPY_DEPENDENCIES = "dependency";
 
+    @SneakyThrows
     @Override
     public void execute(Project project) {
 
         printString(SEPARATOR);
+        String sep = File.separator;
         log.info("Starting DepClean dependency analysis");
-
-        File buildFile = new File(project.getProjectDir().getAbsolutePath() + File.separator + "build.gradle");
-
-        project.setBuildDir(buildFile);
+        String projectDir = project.getProjectDir().getAbsolutePath() + sep;
+        String dependencyDirectoryName = projectDir + "build" + sep + "dependency";
+        String libsDirectoryName = projectDir + "build" + sep + "libs";
+        String classesDirectoryName = projectDir + "build" + sep + "classes";
+//        File buildFile = new File(projectDir + "build.gradle");
 
         /* Copy direct dependencies locally */
-        try {
-          MavenInvoker.runCommand("gradle copyDependencies");
-        } catch (IOException | InterruptedException e) {
-          log.error("Unable to resolve all the dependencies.");
-          Thread.currentThread().interrupt();
-          return;
-        }
+//        writeFile(buildFile);
+//        project.setBuildDir(buildFile);
+//        try {
+//            MavenInvoker.runCommand("gradle copyDependencies");
+//        } catch (IOException | InterruptedException e) {
+//          log.error("Unable to resolve all the dependencies.");
+//          Thread.currentThread().interrupt();
+//          return;
+//        }
+
+
 
         // TODO remove this workaround later
-        if (new File(project.getBuildDir().getAbsolutePath() + File.separator + "libs").exists()) {
+        if (new File(libsDirectoryName).exists()) {
           try {
-            FileUtils.copyDirectory(new File(project.getBuildDir().getAbsolutePath() + File.separator + "libs"),
-                new File(project.getBuildDir().getAbsolutePath() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES)
+            FileUtils.copyDirectory(new File(libsDirectoryName),
+                new File(dependencyDirectoryName)
             );
           } catch (IOException | NullPointerException e) {
             log.error("Error copying directory libs to dependency");
@@ -75,16 +85,15 @@ public class depcleanGradleAction implements Action<Project> {
         /* Get the size of all the dependencies */
         Map<String, Long> sizeOfDependencies = new HashMap<>();
         // First, add the size of the project, as the sum of all the files in target/classes
-        String projectJar = project.getDisplayName() + "-" + project.getVersion() + ".jar";
+        String projectJar = project.getName() + "-" + project.getVersion() + ".jar";
 
-        long projectSize = FileUtils.sizeOf(new File("build" + File.separator + "classes"));
+        long projectSize = FileUtils.sizeOf(new File(classesDirectoryName));
         sizeOfDependencies.put(projectJar, projectSize);
         if (Files.exists(Path.of(String.valueOf(Paths.get(
-                project.getBuildDir().getAbsolutePath() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES))))) {
+                dependencyDirectoryName))))) {
           Iterator<File> iterator = FileUtils.iterateFiles(
               new File(
-                  project.getBuildDir() + File.separator
-                      + DIRECTORY_TO_COPY_DEPENDENCIES), new String[] {"jar"}, true);
+                  dependencyDirectoryName), new String[] {"jar"}, true);
           while (iterator.hasNext()) {
             File file = iterator.next();
             sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
@@ -94,11 +103,11 @@ public class depcleanGradleAction implements Action<Project> {
         }
 
         /* Decompress dependencies */
-        String dependencyDirectoryName =
-        project.getBuildDir() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES;
         File dependencyDirectory = new File(dependencyDirectoryName);
         if (dependencyDirectory.exists()) {
             JarUtils.decompressJars(dependencyDirectoryName);
+        } else {
+            printString("Unable to decompress jars at " + dependencyDirectoryName);
         }
 
         /* Analyze dependencies usage status */
@@ -116,9 +125,11 @@ public class depcleanGradleAction implements Action<Project> {
         Set<ResolvedArtifact> unusedDirectArtifacts = projectDependencyAnalysis.getUnusedDeclaredArtifacts();
         Set<ResolvedArtifact> unusedTransitiveArtifacts = projectDependencyAnalysis.getAllArtifacts();
 
-        unusedTransitiveArtifacts.removeAll(usedDirectArtifacts);
-        unusedTransitiveArtifacts.removeAll(usedTransitiveArtifacts);
-        unusedTransitiveArtifacts.removeAll(unusedDirectArtifacts);
+//        // TODO Just for debugging purpose, will remove later.
+//        debug("used Transitive Artifacts", usedTransitiveArtifacts);
+//        debug("used Artifacts", usedDirectArtifacts);
+//        debug("Declared Artifacts", unusedDirectArtifacts);
+//        debug("all artifacts", unusedTransitiveArtifacts);
 
         ConfigurationContainer configurationContainer = project.getConfigurations();
         Set<Configuration> configurations = new HashSet<>(configurationContainer);
@@ -129,8 +140,16 @@ public class depcleanGradleAction implements Action<Project> {
             dependencyList.addAll(configuration.getAllDependencies());
         }
         for (Dependency dep : dependencyList) {
-          declaredArtifactsGroupArtifactIds.add(dep.getGroup() + ":" + dep.getName());
+          declaredArtifactsGroupArtifactIds.add("(" +
+                  dep.getGroup() + ":" +
+                  dep.getName() + ":" +
+                  dep.getVersion() + ")");
         }
+        // TODO Just for debugging purpose, will remove later.
+//        System.out.println("DECLARED ONES");
+//        for (String dep : declaredArtifactsGroupArtifactIds) {
+//            printString(dep);
+//        }
 
         // --- used dependencies
         Set<String> usedDirectArtifactsCoordinates = new HashSet<>();
@@ -138,27 +157,21 @@ public class depcleanGradleAction implements Action<Project> {
         Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
 
         for (ResolvedArtifact artifact : usedDirectArtifacts) {
-          String artifactGroupArtifactId = artifact.toString().split(":")[0] + ":" + artifact.getId();
-          String artifactGroupArtifactIds =
-            artifactGroupArtifactId + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString()
-                  .split(":")[4];
-          if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactId)) {
-            // the artifact is declared in the build file
-            usedDirectArtifactsCoordinates.add(artifactGroupArtifactIds);
-          } else {
-              // the artifact is inherited
-              usedInheritedArtifactsCoordinates.add(artifactGroupArtifactIds);
-          }
+            String artifactGroupArtifactIds = getName(artifact);
+            if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactIds)) {
+                // the artifact is declared in the build file
+                usedDirectArtifactsCoordinates.add(artifactGroupArtifactIds);
+            } else {
+                // the artifact is inherited
+                usedInheritedArtifactsCoordinates.add(artifactGroupArtifactIds);
+            }
         }
 
         // TODO Fix: The used transitive dependencies induced by inherited dependencies should be considered
         //  as used inherited
         for (ResolvedArtifact artifact : usedTransitiveArtifacts) {
-          String artifactGroupArtifactId = artifact.toString().split(":")[0] + ":" + artifact.getId();
-          String artifactGroupArtifactIds =
-              artifactGroupArtifactId + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString()
-                  .split(":")[4];
-          usedTransitiveArtifactsCoordinates.add(artifactGroupArtifactIds);
+            String artifactGroupArtifactIds = getName(artifact);
+            usedTransitiveArtifactsCoordinates.add(artifactGroupArtifactIds);
         }
 
         // --- unused dependencies
@@ -167,28 +180,27 @@ public class depcleanGradleAction implements Action<Project> {
         Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
 
         for (ResolvedArtifact artifact : unusedDirectArtifacts) {
-          String artifactGroupArtifactId = artifact.toString().split(":")[0] + ":" + artifact.getId();
-          String artifactGroupArtifactIds =
-              artifactGroupArtifactId + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString()
-                  .split(":")[4];
-          if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactId)) {
-              // artifact is declared in build file
-              unusedDirectArtifactsCoordinates.add(artifactGroupArtifactIds);
-          } else {
-              // the artifact is inherited
-              unusedInheritedArtifactsCoordinates.add(artifactGroupArtifactIds);
-          }
+            String artifactGroupArtifactIds = getName(artifact);
+            if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactIds)) {
+                // artifact is declared in build file
+                unusedDirectArtifactsCoordinates.add(artifactGroupArtifactIds);
+            } else {
+                // the artifact is inherited
+                unusedInheritedArtifactsCoordinates.add(artifactGroupArtifactIds);
+            }
         }
 
         // TODO Fix: The unused transitive dependencies induced by inherited dependencies should be considered as
         //  unused inherited
         for (ResolvedArtifact artifact : unusedTransitiveArtifacts) {
-          String artifactGroupArtifactId = artifact.toString().split(":")[0] + ":" + artifact.getId();
-          String artifactGroupArtifactIds =
-              artifactGroupArtifactId + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString()
-                  .split(":")[4];
-          unusedTransitiveArtifactsCoordinates.add(artifactGroupArtifactIds);
+            String artifactGroupArtifactIds = getName(artifact);
+            unusedTransitiveArtifactsCoordinates.add(artifactGroupArtifactIds);
         }
+
+        // Filtering with name cause removeAll function is not working on unusedDirectArtifact set.
+        unusedTransitiveArtifactsCoordinates.removeAll(usedDirectArtifactsCoordinates);
+        unusedTransitiveArtifactsCoordinates.removeAll(usedTransitiveArtifactsCoordinates);
+        unusedTransitiveArtifactsCoordinates.removeAll(unusedDirectArtifactsCoordinates);
 
         /* Printing the results to the terminal */
         printString(SEPARATOR);
@@ -203,6 +215,13 @@ public class depcleanGradleAction implements Action<Project> {
         unusedInheritedArtifactsCoordinates);
         printInfoOfDependencies("Potentially unused transitive dependencies", sizeOfDependencies,
             unusedTransitiveArtifactsCoordinates);
+
+        // TODO Just for debugging purpose.
+        System.out.println(SEPARATOR);
+        System.out.println("Debugging size of dependencies".toUpperCase(Locale.ROOT));
+        for (Map.Entry<String, Long> entry : sizeOfDependencies.entrySet()) {
+            System.out.println("\t" + entry.getKey() + "(" + entry.getValue() + ")");
+        }
     }
 
     /**
@@ -249,14 +268,8 @@ public class depcleanGradleAction implements Action<Project> {
      */
     private Long getSizeOfDependency(final Map<String, Long> sizeOfDependencies, final String dependency) {
         Long size = sizeOfDependencies
-            .get(dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar");
-        if (size != null) {
-          return size;
-        } else {
-          // The name of the dependency does not match with the name of the download jar, so we keep assume the size
-          // cannot be obtained and return 0.
-          return 0L;
-        }
+            .get(dependency + ".jar");
+        return Objects.requireNonNullElse(size, 0L);
     }
 
     /**
@@ -268,13 +281,51 @@ public class depcleanGradleAction implements Action<Project> {
      * @return The human readable representation of the dependency size.
      */
     private String getSize(final String dependency, final Map<String, Long> sizeOfDependencies) {
-        String dep = dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar";
-        if (sizeOfDependencies.containsKey(dep)) {
-          return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
+        String[] break1 = dependency.split("\\)");
+        String[] a = break1[0].split(":");
+        String dep = a[1] + "-" + a[2];
+        if (sizeOfDependencies.containsKey(dep + ".jar")) {
+          return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep + ".jar"));
         } else {
           // The size cannot be obtained.
           return "size unknown";
         }
     }
 
+
+//    private static void writeFile(File destination) throws IOException {
+//        BufferedReader br = new BufferedReader(new FileReader(destination));
+//        HashSet<String> destinationContent = new HashSet<>();
+//        String destinationLine = br.readLine();
+//        while(destinationLine != null) {
+//            destinationContent.add(destinationLine);
+//            destinationLine = br.readLine();
+//        }
+//        String contentLine1 = "task copyDependencies(type: Copy) {\n";
+//        String contentLine2 = "from configurations.default\n";
+//        String contentLine3 = "into 'build/dependency'\n";
+//        String contentLine4 = "}\n";
+//        String[] content = {contentLine1, contentLine2, contentLine3, contentLine4};
+//        for (String line : content) {
+//            if (destinationContent.contains(line)) continue;
+//            try (BufferedWriter output = new BufferedWriter(new FileWriter(destination, true))) {
+//                output.write(line + System.getProperty("line.separator"));
+//            }
+//        }
+//        br.close();
+//    }
+//    public void debug(String info, Set<ResolvedArtifact> set) {
+//        System.out.println(SEPARATOR);
+//        System.out.println(info.toUpperCase(Locale.ROOT));
+//        System.out.println(SEPARATOR);
+//        for (ResolvedArtifact artifact : set) {
+//            System.out.println(artifact.getId());
+//        }
+//        System.out.println(SEPARATOR);
+//    }
+
+    public String getName(ResolvedArtifact artifact) {
+        String[] artifactGroupArtifactId = artifact.toString().split(" ");
+        return artifactGroupArtifactId[1];
+    }
 }
