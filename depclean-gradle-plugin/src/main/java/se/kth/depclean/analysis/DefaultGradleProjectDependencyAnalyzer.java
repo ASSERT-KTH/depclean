@@ -3,7 +3,6 @@ package se.kth.depclean.analysis;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,18 +12,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
-import org.gradle.api.artifacts.Dependency;
-import org.gradle.api.artifacts.ResolvableDependencies;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
-import org.gradle.api.artifacts.dsl.DependencyHandler;
-
+import org.gradle.api.artifacts.UnresolvedDependency;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.ArtifactTypes;
@@ -85,12 +80,20 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
 
       // project's configurations.
       Set<Configuration> configurations = new HashSet<>(configurationContainer);
+      configurations.stream().iterator()
+              .forEachRemaining(
+                      configuration ->
+                              configuration.setCanBeResolved(true));
+
 
       // all resolved dependencies including transitive ones of the project.
       Set<ResolvedDependency> allDependencies = getAllDependencies(configurations);
 
       // all resolved artifacts of this project
       Set<ResolvedArtifact> allArtifacts = getAllArtifacts(allDependencies);
+
+      // all unresolved dependencies including transitive ones of the project.
+      Set<UnresolvedDependency> allUnresolvedDependency = getAllUnresolvedDependencies(configurations);
 
       // a map of [dependency] -> [classes]
       artifactClassesMap = buildArtifactClassMap(allArtifacts);
@@ -130,7 +133,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
       Set<ResolvedArtifact> unusedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
       unusedDeclaredArtifacts = removeAll(unusedDeclaredArtifacts, usedArtifacts);
 
-      return new GradleProjectDependencyAnalysis(allArtifacts, usedDeclaredArtifacts, usedUndeclaredArtifacts, unusedDeclaredArtifacts);
+      return new GradleProjectDependencyAnalysis(allArtifacts, usedDeclaredArtifacts, usedUndeclaredArtifacts, unusedDeclaredArtifacts, allUnresolvedDependency);
 
     } catch (IOException e) {
       throw new ProjectDependencyAnalyzerException("Cannot analyze dependencies", e);
@@ -147,16 +150,14 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
   public Set<ResolvedDependency> getAllDependencies(Set<Configuration> configurations) {
     Set<ResolvedDependency> allDependencies = new HashSet<>();
     for (Configuration configuration : configurations) {
-//      configuration.setCanBeResolved(true);
-      allDependencies.addAll(configuration.getResolvedConfiguration().getFirstLevelModuleDependencies());
+      allDependencies.addAll(configuration
+              .getResolvedConfiguration()
+              .getLenientConfiguration()
+              .getAllModuleDependencies());
     }
-    Set<ResolvedDependency> children = new HashSet<>();
-    for (ResolvedDependency dependency : allDependencies) {
-      children.addAll(dependency.getChildren());
-    }
-    allDependencies.addAll(children);
     return allDependencies;
   }
+
   /**
    * Returns all the artifacts of the project.
    *
@@ -167,9 +168,20 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
   public Set<ResolvedArtifact> getAllArtifacts(Set<ResolvedDependency> allDependencies) {
     Set<ResolvedArtifact> allArtifacts = new HashSet<>();
     for (ResolvedDependency dependency : allDependencies) {
-      allArtifacts.addAll(dependency.getAllModuleArtifacts());
+      allArtifacts.addAll(dependency.getModuleArtifacts());
     }
     return allArtifacts;
+  }
+
+  public Set<UnresolvedDependency> getAllUnresolvedDependencies(Set<Configuration> configurations) {
+    Set<UnresolvedDependency> allUnresolvedDependencies = new HashSet<>();
+    for (Configuration configuration : configurations) {
+      allUnresolvedDependencies.addAll(configuration
+              .getResolvedConfiguration()
+              .getLenientConfiguration()
+              .getUnresolvedModuleDependencies());
+    }
+    return allUnresolvedDependencies;
   }
 
   /**
@@ -217,8 +229,11 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
   public Set<ResolvedDependency> getDeclaredDependencies(Set<Configuration> configurations) {
     Set<ResolvedDependency> declaredDependency = new HashSet<>();
     for (Configuration configuration : configurations) {
-//      configuration.setCanBeResolved(true);
-      declaredDependency.addAll(configuration.getResolvedConfiguration().getFirstLevelModuleDependencies());
+//      if(!configuration.isCanBeResolved()) configuration.setCanBeResolved(true);
+      declaredDependency.addAll(configuration
+              .getResolvedConfiguration()
+              .getLenientConfiguration()
+              .getFirstLevelModuleDependencies());
     }
     return declaredDependency;
   }
@@ -231,7 +246,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
   public Set<ResolvedArtifact> getDeclaredArtifacts(Set<ResolvedDependency> declaredDependency) {
     Set<ResolvedArtifact> declaredArtifacts = new HashSet<>();
     for (ResolvedDependency dependency : declaredDependency) {
-      declaredArtifacts.addAll(dependency.getAllModuleArtifacts());
+      declaredArtifacts.addAll(dependency.getModuleArtifacts());
     }
     return declaredArtifacts;
   }
@@ -274,7 +289,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
   private void buildDependenciesDependencyClasses(Project project) throws IOException {
     File dependenciesDirectory = new File(project.getProjectDir().getAbsolutePath() +
                                           File.separator + "build" +
-                                          File.separator + "dependency");
+                                          File.separator + "Dependency");
     checkThenCollectDependencyClasses(dependenciesDirectory);
   }
 

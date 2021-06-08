@@ -9,11 +9,7 @@ public class depcleanGradlePlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-
-
         depcleanGradleTask task = createTask(project);
-//        project.getTasks().getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME).dependsOn(task);
-
     }
 
     public depcleanGradleTask createTask(Project project) {
