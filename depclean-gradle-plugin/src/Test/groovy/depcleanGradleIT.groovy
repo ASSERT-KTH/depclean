@@ -1,3 +1,4 @@
+import org.apache.maven.BuildFailureException
 import org.gradle.api.internal.tasks.TaskExecuterResult
 import org.gradle.api.tasks.TaskOutputs
 import org.gradle.internal.impldep.org.apache.maven.settings.building.SettingsBuilder
@@ -11,20 +12,17 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.Result
-
 import java.util.function.BooleanSupplier
 import java.util.logging.Logger
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.gradle.testkit.runner.TaskOutcome.*
 import spock.lang.Specification
-
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 class depcleanGradleIT extends Specification {
 
     File testProjectDir = new File("src/Test/resources/all_dependencies_unused")
-    File settingsFile
+
     @Test
     def "debloatTaskIsFormed"() {
         given:
@@ -37,27 +35,82 @@ class depcleanGradleIT extends Specification {
         project.tasks.findByName("debloat") != null
     }
 
-//    def setup() {
-//        settingsFile = new File(testProjectDir, 'settings.gradle')
-//    }
+    File emptyProjectFile = new File("src/Test/resources/empty_project")
+
+    @Test
+    def "pluginRunsOnEmptyProject"() {
+        given:
+        def project = ProjectBuilder.builder().withProjectDir(emptyProjectFile).build()
+
+        when:
+        project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+
+        then:
+        try {
+            BuildResult result =  GradleRunner.create()
+                .withProjectDir(emptyProjectFile)
+                .withArguments("debloat")
+                .buildAndFail()
+        } catch (Exception e) {
+            assertEquals(e, BuildFailureException)
+        }
+    }
+
+//    File allDependenciesUnused = new File("src/Test/resources/all_dependencies_unused")
 //    @Test
 //    def "all_dependencies_unused"() {
 //        given:
-//        def project = ProjectBuilder.builder().withProjectDir(testProjectDir).build()
-//        settingsFile << ""
+//        def project = ProjectBuilder.builder().withProjectDir(allDependenciesUnused).build()
 //
 //        when:
 //        project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
-//
 //        BuildResult result = GradleRunner.create()
-//            .withProjectDir(testProjectDir)
+//            .withProjectDir(allDependenciesUnused)
+//            .withArguments("copyDependenciesLocally")
 //            .withArguments("debloat")
 //            .build()
 //
 //        then:
-//        assertEquals(SUCCESS, result.task("debloat").getOutcome())
-//        assertTrue(result.output.toString().contains("Abhay"))
+//        File Dependency = new File(project.getProjectDir().getAbsolutePath() + File.separator + "build" + File.separator + "Dependency")
+//        assertTrue(Dependency.exists())
+//        println(result.task(":debloat").getOutcome().toString())
+//        assertEquals(SUCCESS, result.task(":debloat").getOutcome())
+//        result.output.stripIndent().trim().contains("-------------------------------------------------------".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("D E P C L E A N   A N A L Y S I S   R E S U L T S".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("-------------------------------------------------------".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("USED DIRECT DEPENDENCIES [0]:".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("USED INHERITED DEPENDENCIES [0]:".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("USED TRANSITIVE DEPENDENCIES [0]:".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]:".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("\tcom.fasterxml.jackson.core:jackson-databind:2.12.2 (1 MB)".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]:".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [2]:".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("\tcom.fasterxml.jackson.core:jackson-annotations:2.12.2 (73 KB)".stripIndent().trim())
+//        result.output.stripIndent().trim().contains("\tcom.fasterxml.jackson.core:jackson-core:2.12.2 (356 KB)".stripIndent().trim())
 //    }
+
+    // D E P C L E A N   A N A L Y S I S   R E S U L T S
+
+//-------------------------------------------------------
+
+//USED DIRECT DEPENDENCIES [0]:
+
+//USED INHERITED DEPENDENCIES [0]:
+
+//USED TRANSITIVE DEPENDENCIES [0]:
+
+//POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]:
+
+//	com.fasterxml.jackson.core:jackson-databind:2.12.2 (1 MB)
+
+//POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]:
+
+//POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [2]:
+
+//	com.fasterxml.jackson.core:jackson-annotations:2.12.2 (73 KB)
+
+//	com.fasterxml.jackson.core:jackson-core:2.12.2 (356 KB)
+
 //    private File settingsFile;
 //    private File buildFile;
 //
@@ -179,22 +232,38 @@ class depcleanGradleIT extends Specification {
 //USED TRANSITIVE DEPENDENCIES [0]:
 //POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]:
 //	com.fasterxml.jackson.core:jackson-databind:2.12.2 (1 MB)
-//POTENTIALLY UNUSED INHERITED DEPENDENCIES [2]:
-//	com.fasterxml.jackson.core:jackson-core:2.12.2 (356 KB)
+//POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]:
+//POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [2]:
 //	com.fasterxml.jackson.core:jackson-annotations:2.12.2 (73 KB)
-//POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [0]:
+//	com.fasterxml.jackson.core:jackson-core:2.12.2 (356 KB)
+
 
 //    allDependenciesUsed
-//    -------------------------------------------------------
+//-------------------------------------------------------
 // D E P C L E A N   A N A L Y S I S   R E S U L T S
 //-------------------------------------------------------
 //USED DIRECT DEPENDENCIES [1]:
 //	com.fasterxml.jackson.core:jackson-databind:2.12.2 (1 MB)
-//USED INHERITED DEPENDENCIES [2]:
+//USED INHERITED DEPENDENCIES [0]:
+//USED TRANSITIVE DEPENDENCIES [2]:
 //	com.fasterxml.jackson.core:jackson-core:2.12.2 (356 KB)
 //	com.fasterxml.jackson.core:jackson-annotations:2.12.2 (73 KB)
-//USED TRANSITIVE DEPENDENCIES [0]:
 //POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]:
 //POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]:
 //POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [0]:
+
+//    Processor used.
+//    -------------------------------------------------------
+// D E P C L E A N   A N A L Y S I S   R E S U L T S
+//-------------------------------------------------------
+//USED DIRECT DEPENDENCIES [0]:
+//USED INHERITED DEPENDENCIES [0]:
+//USED TRANSITIVE DEPENDENCIES [1]:
+//	com.fasterxml.jackson.core:jackson-core:2.12.2 (356 KB)
+//POTENTIALLY UNUSED DIRECT DEPENDENCIES [2]:
+//	org.mapstruct:mapstruct-processor:1.4.2.Final (size unknown)
+//	com.fasterxml.jackson.core:jackson-databind:2.12.2 (1 MB)
+//POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]:
+//POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [1]:
+//	com.fasterxml.jackson.core:jackson-annotations:2.12.2 (73 KB)
 }

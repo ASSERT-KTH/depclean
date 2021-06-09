@@ -1,2 +1,2 @@
-Main.java
+main.java
  Main

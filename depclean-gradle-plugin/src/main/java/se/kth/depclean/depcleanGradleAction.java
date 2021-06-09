@@ -140,9 +140,9 @@ public class depcleanGradleAction implements Action<Project> {
         }
 
         // --- used dependencies
-        Set<String> usedDirectArtifactsCoordinates = new TreeSet<>();
-        Set<String> usedInheritedArtifactsCoordinates = new TreeSet<>();
-        Set<String> usedTransitiveArtifactsCoordinates = new TreeSet<>();
+        Set<String> usedDirectArtifactsCoordinates = new HashSet<>();
+        Set<String> usedInheritedArtifactsCoordinates = new HashSet<>();
+        Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
 
         for (ResolvedArtifact artifact : usedDirectArtifacts) {
             String artifactGroupArtifactIds = getName(artifact);
@@ -163,9 +163,9 @@ public class depcleanGradleAction implements Action<Project> {
         }
 
         // --- unused dependencies
-        Set<String> unusedDirectArtifactsCoordinates = new TreeSet<>();
-        Set<String> unusedInheritedArtifactsCoordinates = new TreeSet<>();
-        Set<String> unusedTransitiveArtifactsCoordinates = new TreeSet<>();
+        Set<String> unusedDirectArtifactsCoordinates = new HashSet<>();
+        Set<String> unusedInheritedArtifactsCoordinates = new HashSet<>();
+        Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
 
         for (ResolvedArtifact artifact : unusedDirectArtifacts) {
             String artifactGroupArtifactIds = getName(artifact);

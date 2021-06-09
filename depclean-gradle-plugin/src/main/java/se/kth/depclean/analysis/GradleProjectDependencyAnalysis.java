@@ -3,7 +3,6 @@ package se.kth.depclean.analysis;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.UnresolvedDependency;
 import org.gradle.api.component.Artifact;
@@ -59,12 +58,12 @@ public class GradleProjectDependencyAnalysis {
    */
   private Set<ResolvedArtifact> safeCopy(Set<ResolvedArtifact> set) {
     return (set == null) ? Collections.emptySet()
-        : Collections.unmodifiableSet(new LinkedHashSet<ResolvedArtifact >(set));
+        : Collections.unmodifiableSet(new LinkedHashSet<ResolvedArtifact>(set));
   }
 
   private Set<UnresolvedDependency> safeCopyDependencies(Set<UnresolvedDependency> set) {
     return (set == null) ? Collections.emptySet()
-        : Collections.unmodifiableSet(new LinkedHashSet<UnresolvedDependency >(set));
+        : Collections.unmodifiableSet(new LinkedHashSet<UnresolvedDependency>(set));
   }
 
 //    /**
@@ -79,20 +78,6 @@ public class GradleProjectDependencyAnalysis {
 //    filteredUnusedDeclared.removeIf(resolvedArtifact -> !resolvedArtifact.get);
 //    return new GradleProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
 //  }
-
-  /**
-   * Overrides the hash code value method of the object.
-   */
-  @Override
-  public int hashCode() {
-    int hashCode = getAllArtifacts().hashCode();
-    hashCode = (hashCode * 37) + getUsedDeclaredArtifacts().hashCode();
-    hashCode = (hashCode * 37) + getUsedUndeclaredArtifacts().hashCode();
-    hashCode = (hashCode * 37) + getUnusedDeclaredArtifacts().hashCode();
-    hashCode = (hashCode * 37) + getAllUnresolvedDependency().hashCode();
-
-    return hashCode;
-  }
 
   /**
    * all artifacts.

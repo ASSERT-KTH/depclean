@@ -32,9 +32,9 @@ dependencies {
     compile 'se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT'
     compile 'org.codehaus.plexus:plexus-component-annotations:2.1.0'
     compileOnly 'org.projectlombok:lombok:1.18.20'
-    testCompile("org.codehaus.groovy:groovy-all:2.5.12")
-    testCompile("org.spockframework:spock-core:1.1-groovy-2.4")
-    testImplementation('org.junit.jupiter:junit-jupiter-api:5.3.0')
+    testCompile 'org.codehaus.groovy:groovy-all:2.5.12'
+    testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.0'
 }
 
 gradlePlugin {

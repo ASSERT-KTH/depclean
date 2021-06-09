@@ -2,7 +2,7 @@
 // import com.fasterxml.jackson.core.util.Separators;
 
 
-public class Main {
+class Main {
 //   private static final ObjectMapper converter = new ObjectMapper();
 //   Separators separators = new Separators();
    int field = 42;
