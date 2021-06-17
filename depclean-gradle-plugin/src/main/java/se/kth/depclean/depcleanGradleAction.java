@@ -1,11 +1,14 @@
 package se.kth.depclean;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,24 +18,28 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.apache.groovy.json.internal.IO;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ResolvedArtifact;
+import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.UnresolvedDependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.util.JarUtils;
-import se.kth.depclean.util.MavenInvoker;
 
 public class depcleanGradleAction implements Action<Project> {
 
@@ -50,22 +57,41 @@ public class depcleanGradleAction implements Action<Project> {
         String libsDirectoryName = projectDir + "build" + sep + "libs";
         String classesDirectoryName = projectDir + "build" + sep + "classes";
 
-//        File buildFile = new File(projectDir + "build.gradle");
 
-//      /* Copy direct dependencies locally */
-//        try {
-//            writeFile(buildFile);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        ProjectBuilder.builder().withProjectDir(project.getProjectDir()).build();
-//        project.setBuildDir(buildFile);
-        try {
-            MavenInvoker.runCommand("gradle :copyDependenciesLocally");
-        } catch (IOException | InterruptedException e) {
-            log.error("Unable to resolve all the dependencies.");
-            Thread.currentThread().interrupt();
-            return;
+        ConfigurationContainer configurationContainer = project.getConfigurations();
+        Set<Configuration> configurations = new HashSet<>(configurationContainer);
+        configurations.stream().iterator()
+              .forEachRemaining(
+                      configuration ->
+                              configuration.setCanBeResolved(true));
+
+
+        // all resolved dependencies including transitive ones of the project.
+        Set<ResolvedDependency> allDependencies = DefaultGradleProjectDependencyAnalyzer.getAllDependencies(configurations);
+
+        // all resolved artifacts of this project
+        Set<ResolvedArtifact> allArtifacts = DefaultGradleProjectDependencyAnalyzer.getAllArtifacts(allDependencies);
+
+        Set<ResolvedDependency> declaredDependencies = DefaultGradleProjectDependencyAnalyzer.getDeclaredDependencies(configurations);
+
+        Set<ResolvedArtifact> declaredArtifacts = DefaultGradleProjectDependencyAnalyzer.getDeclaredArtifacts(declaredDependencies);
+
+        Set<String> declaredArtifactsGroupArtifactIds = new HashSet<>();
+        for (ResolvedArtifact artifact : declaredArtifacts) {
+            declaredArtifactsGroupArtifactIds.add(getName(artifact));
+        }
+
+        // copy dependencies locally
+        File dependencyDirectory = new File(dependencyDirectoryName);
+        for (ResolvedArtifact artifact : allArtifacts) {
+            File jarFile = artifact.getFile();
+            if (jarFile.getAbsolutePath().endsWith(".jar")) {
+                try {
+                    FileUtils.copyFileToDirectory(jarFile, dependencyDirectory);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         // TODO remove this workaround later
@@ -101,7 +127,6 @@ public class depcleanGradleAction implements Action<Project> {
         }
 
         /* Decompress dependencies */
-        File dependencyDirectory = new File(dependencyDirectoryName);
         if (dependencyDirectory.exists()) {
             JarUtils.decompressJars(dependencyDirectoryName);
         } else {
@@ -121,23 +146,8 @@ public class depcleanGradleAction implements Action<Project> {
         Set<ResolvedArtifact> usedTransitiveArtifacts = projectDependencyAnalysis.getUsedUndeclaredArtifacts();
         Set<ResolvedArtifact> usedDirectArtifacts = projectDependencyAnalysis.getUsedDeclaredArtifacts();
         Set<ResolvedArtifact> unusedDirectArtifacts = projectDependencyAnalysis.getUnusedDeclaredArtifacts();
-        Set<ResolvedArtifact> unusedTransitiveArtifacts = projectDependencyAnalysis.getAllArtifacts();
+        Set<ResolvedArtifact> unusedTransitiveArtifacts = new HashSet<>(allArtifacts);
         Set<UnresolvedDependency> allUnresolvedDependencies = projectDependencyAnalysis.getAllUnresolvedDependency();
-
-
-        ConfigurationContainer configurationContainer = project.getConfigurations();
-        Set<Configuration> configurations = new HashSet<>(configurationContainer);
-
-        List<Dependency> dependencyList = new LinkedList<>();
-        Set<String> declaredArtifactsGroupArtifactIds = new HashSet<>();
-        for (Configuration configuration : configurations) {
-            dependencyList.addAll(configuration.getAllDependencies());
-        }
-        for (Dependency dep : dependencyList) {
-          declaredArtifactsGroupArtifactIds.add(dep.getGroup() + ":"
-                  + dep.getName() + ":"
-                  + dep.getVersion());
-        }
 
         // --- used dependencies
         Set<String> usedDirectArtifactsCoordinates = new HashSet<>();
@@ -196,15 +206,18 @@ public class depcleanGradleAction implements Action<Project> {
         printString(SEPARATOR);
         printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
         printString(SEPARATOR);
-        printInfoOfDependencies("Used direct dependencies", sizeOfDependencies, usedDirectArtifactsCoordinates);
-        printInfoOfDependencies("Used inherited dependencies", sizeOfDependencies, usedInheritedArtifactsCoordinates);
-        printInfoOfDependencies("Used transitive dependencies", sizeOfDependencies, usedTransitiveArtifactsCoordinates);
+        printInfoOfDependencies("Used direct dependencies", sizeOfDependencies,
+                usedDirectArtifactsCoordinates);
+        printInfoOfDependencies("Used inherited dependencies", sizeOfDependencies,
+                usedInheritedArtifactsCoordinates);
+        printInfoOfDependencies("Used transitive dependencies", sizeOfDependencies,
+                usedTransitiveArtifactsCoordinates);
         printInfoOfDependencies("Potentially unused direct dependencies", sizeOfDependencies,
-            unusedDirectArtifactsCoordinates);
+                unusedDirectArtifactsCoordinates);
         printInfoOfDependencies("Potentially unused inherited dependencies", sizeOfDependencies,
-        unusedInheritedArtifactsCoordinates);
+                unusedInheritedArtifactsCoordinates);
         printInfoOfDependencies("Potentially unused transitive dependencies", sizeOfDependencies,
-            unusedTransitiveArtifactsCoordinates);
+                unusedTransitiveArtifactsCoordinates);
         if (!allUnresolvedDependencies.isEmpty()) {
             printString("all unresolved dependencies".toUpperCase(Locale.ROOT)
                     + " [" + allUnresolvedDependencies.size()
@@ -282,22 +295,6 @@ public class depcleanGradleAction implements Action<Project> {
           return "size unknown";
         }
     }
-
-//    private static void writeFile(File destination) throws IOException {
-//        BufferedReader br = new BufferedReader(new FileReader(destination));
-//        String alreadyWritten = null, currentLine = br.readLine();
-//        while (currentLine != null) {
-//            alreadyWritten = currentLine;
-//            currentLine = br.readLine();
-//        }
-//        String contentLine = "task abhay(type: Copy) { from configurations.default into 'build/Dependency' }";
-//        if(alreadyWritten == null) return;
-//        if(!alreadyWritten.trim().equals(contentLine.trim())) {
-//            try (BufferedWriter output = new BufferedWriter(new FileWriter(destination, true))) {
-//                output.write(System.lineSeparator() + contentLine.stripIndent() + System.lineSeparator());
-//            }
-//        }
-//    }
 
     public String getName(ResolvedArtifact artifact) {
         String[] artifactGroupArtifactIds = artifact.toString().split(" \\(");

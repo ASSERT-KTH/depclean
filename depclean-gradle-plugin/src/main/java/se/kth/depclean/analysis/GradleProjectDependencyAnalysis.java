@@ -10,11 +10,6 @@ import org.gradle.api.component.Artifact;
 public class GradleProjectDependencyAnalysis {
 
   /**
-   * Store all the artifacts
-   */
-  private final Set<ResolvedArtifact> allArtifacts;
-
-  /**
    * Store all the used declared artifacts (ie. used direct dependencies).
    */
   private final Set<ResolvedArtifact> usedDeclaredArtifacts;
@@ -38,12 +33,10 @@ public class GradleProjectDependencyAnalysis {
    * Ctor.
    */
   public GradleProjectDependencyAnalysis(
-          Set<ResolvedArtifact> allArtifacts,
           Set<ResolvedArtifact> usedDeclaredArtifacts,
           Set<ResolvedArtifact> usedUndeclaredArtifacts,
           Set<ResolvedArtifact> unusedDeclaredArtifacts,
           Set<UnresolvedDependency> allUnresolvedDependency) {
-    this.allArtifacts = safeCopy(allArtifacts);
     this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
     this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
     this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
@@ -78,13 +71,6 @@ public class GradleProjectDependencyAnalysis {
 //    filteredUnusedDeclared.removeIf(resolvedArtifact -> !resolvedArtifact.get);
 //    return new GradleProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
 //  }
-
-  /**
-   * all artifacts.
-   *
-   * @return {@link Artifact}
-   */
-  public Set<ResolvedArtifact> getAllArtifacts() { return allArtifacts; }
 
   /**
    * Used declared artifacts.
@@ -128,8 +114,7 @@ public class GradleProjectDependencyAnalysis {
   public boolean equals(Object object) {
     if (object instanceof GradleProjectDependencyAnalysis) {
       GradleProjectDependencyAnalysis analysis = (GradleProjectDependencyAnalysis) object;
-      return getAllArtifacts().equals(analysis.getAllArtifacts())
-          && getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
+      return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
           && getUsedUndeclaredArtifacts().equals(analysis.getUsedUndeclaredArtifacts())
           && getUnusedDeclaredArtifacts().equals(analysis.getUnusedDeclaredArtifacts())
           && getAllUnresolvedDependency().equals(analysis.getAllUnresolvedDependency());
@@ -145,14 +130,7 @@ public class GradleProjectDependencyAnalysis {
   public String toString() {
     StringBuilder buffer = new StringBuilder();
 
-    if (!getAllArtifacts().isEmpty()) {
-      buffer.append("allArtifacts=").append(getAllArtifacts());
-    }
-
     if (!getUsedDeclaredArtifacts().isEmpty()) {
-      if(buffer.length() > 0) {
-        buffer.append(",");
-      }
       buffer.append("usedDeclaredArtifacts=").append(getUsedDeclaredArtifacts());
     }
 

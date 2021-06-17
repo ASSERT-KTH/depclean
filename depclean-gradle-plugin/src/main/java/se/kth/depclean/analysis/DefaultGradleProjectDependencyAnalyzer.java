@@ -80,11 +80,6 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
 
       // project's configurations.
       Set<Configuration> configurations = new HashSet<>(configurationContainer);
-      configurations.stream().iterator()
-              .forEachRemaining(
-                      configuration ->
-                              configuration.setCanBeResolved(true));
-
 
       // all resolved dependencies including transitive ones of the project.
       Set<ResolvedDependency> allDependencies = getAllDependencies(configurations);
@@ -133,7 +128,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
       Set<ResolvedArtifact> unusedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
       unusedDeclaredArtifacts = removeAll(unusedDeclaredArtifacts, usedArtifacts);
 
-      return new GradleProjectDependencyAnalysis(allArtifacts, usedDeclaredArtifacts, usedUndeclaredArtifacts, unusedDeclaredArtifacts, allUnresolvedDependency);
+      return new GradleProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, unusedDeclaredArtifacts, allUnresolvedDependency);
 
     } catch (IOException e) {
       throw new ProjectDependencyAnalyzerException("Cannot analyze dependencies", e);
@@ -147,7 +142,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    * @return A set of all dependencies.
    */
   @NonNull
-  public Set<ResolvedDependency> getAllDependencies(Set<Configuration> configurations) {
+  public static Set<ResolvedDependency> getAllDependencies(Set<Configuration> configurations) {
     Set<ResolvedDependency> allDependencies = new HashSet<>();
     for (Configuration configuration : configurations) {
       allDependencies.addAll(configuration
@@ -165,7 +160,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    * @return A set of all artifacts.
    */
   @NonNull
-  public Set<ResolvedArtifact> getAllArtifacts(Set<ResolvedDependency> allDependencies) {
+  public static Set<ResolvedArtifact> getAllArtifacts(Set<ResolvedDependency> allDependencies) {
     Set<ResolvedArtifact> allArtifacts = new HashSet<>();
     for (ResolvedDependency dependency : allDependencies) {
       allArtifacts.addAll(dependency.getModuleArtifacts());
@@ -226,7 +221,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    * @return A set of all dependencies.
    */
   @NonNull
-  public Set<ResolvedDependency> getDeclaredDependencies(Set<Configuration> configurations) {
+  public static Set<ResolvedDependency> getDeclaredDependencies(Set<Configuration> configurations) {
     Set<ResolvedDependency> declaredDependency = new HashSet<>();
     for (Configuration configuration : configurations) {
 //      if(!configuration.isCanBeResolved()) configuration.setCanBeResolved(true);
@@ -243,7 +238,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    * @param declaredDependency Project's configuration.
    * @return A set of declared artifacts.
    */
-  public Set<ResolvedArtifact> getDeclaredArtifacts(Set<ResolvedDependency> declaredDependency) {
+  public static Set<ResolvedArtifact> getDeclaredArtifacts(Set<ResolvedDependency> declaredDependency) {
     Set<ResolvedArtifact> declaredArtifacts = new HashSet<>();
     for (ResolvedDependency dependency : declaredDependency) {
       declaredArtifacts.addAll(dependency.getModuleArtifacts());

@@ -26,7 +26,6 @@ repositories {
 
 dependencies {
     compile gradleApi()
-    compile localGroovy()
     testImplementation gradleTestKit()
     compile 'se.kth.castor:depclean-core:2.0.2-SNAPSHOT'
     compile 'se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT'
@@ -35,6 +34,7 @@ dependencies {
     testCompile 'org.codehaus.groovy:groovy-all:2.5.12'
     testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.0'
+    testImplementation 'com.netflix.nebula:nebula-test:latest.release'
 }
 
 gradlePlugin {
@@ -44,9 +44,4 @@ gradlePlugin {
             implementationClass  = 'se.kth.depclean.depcleanGradlePlugin'
         }
     }
-}
-
-task copyDependenciesLocally(type: Copy) {
-    from configurations.default
-    into 'build/Dependency'
 }

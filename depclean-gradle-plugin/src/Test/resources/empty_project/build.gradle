@@ -35,7 +35,3 @@ publishing {
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
-task copyDependenciesLocally(type: Copy) {
-    from configurations.default
-    into 'build/Dependency'
-}
