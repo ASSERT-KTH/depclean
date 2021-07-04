@@ -1,47 +1,50 @@
 //buildscript{
 //  repositories {
-//      mavenLocal()
+//    mavenLocal()
 //
-//      dependencies{
-//        classpath 'se.kth.castor:depclean-gradle-plugin:1.0-SNAPSHOT'
-//      }
+//    dependencies {
+//      classpath 'se.kth.castor:depclean-gradle-plugin:1.0-SNAPSHOT'
+//    }
 //  }
 //}
 
 plugins {
-    id 'java'
-    id 'groovy'
-    id 'java-gradle-plugin'
-    id 'maven-publish'
+  id 'java'
+  id 'groovy'
+  id 'java-gradle-plugin'
+  id 'maven-publish'
 }
 
-//apply plugin: 'se.kth.castor.depclean-gradle-plugin'
+//apply plugin: ('se.kth.castor.depclean-gradle-plugin')
 group 'se.kth.castor'
 version '1.0-SNAPSHOT'
 
 repositories {
-    mavenLocal()
-    mavenCentral()
+  mavenLocal()
+  mavenCentral()
 }
 
 dependencies {
-    compile gradleApi()
-    testImplementation gradleTestKit()
-    compile 'se.kth.castor:depclean-core:2.0.2-SNAPSHOT'
-    compile 'se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT'
-    compile 'org.codehaus.plexus:plexus-component-annotations:2.1.0'
-    compileOnly 'org.projectlombok:lombok:1.18.20'
-    testCompile 'org.codehaus.groovy:groovy-all:2.5.12'
-    testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.0'
-    testImplementation 'com.netflix.nebula:nebula-test:latest.release'
+  implementation gradleApi()
+  testImplementation gradleTestKit()
+  implementation('se.kth.castor:depclean-core:2.0.2-SNAPSHOT')
+  implementation('se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT')
+  implementation('org.codehaus.plexus:plexus-component-annotations:2.1.0')
+  compileOnly('org.projectlombok:lombok:1.18.20')
+  testImplementation('org.spockframework:spock-core:2.0-groovy-3.0')
+  testImplementation('org.junit.jupiter:junit-jupiter-api:5.3.0')
+  testImplementation('com.netflix.nebula:nebula-test:latest.release')
+}
+
+test {
+  useJUnitPlatform()
 }
 
 gradlePlugin {
-    plugins {
-        demoPlugin {
-            id = 'se.kth.castor.depclean-gradle-plugin'
-            implementationClass  = 'se.kth.depclean.depcleanGradlePlugin'
-        }
+  plugins {
+    demoPlugin {
+      id = 'se.kth.castor.depclean-gradle-plugin'
+      implementationClass = 'se.kth.depclean.depcleanGradlePlugin'
     }
+  }
 }

@@ -2,14 +2,10 @@ build/
 .gradle/
 *.ar
 src/test/resources/all_dependencies_unused/.gradle/
-src/test/resources/all_dependencies_unused/build/
 src/test/resources/all_dependencies_unused/userHome/
 src/test/resources/all_dependencies_used/.gradle/
-src/test/resources/all_dependencies_used/build/
 src/test/resources/all_dependencies_used/userHome/
 src/test/resources/empty_project/.gradle/
-src/test/resources/empty_project/build/
 src/test/resources/empty_project/userHome/
 src/test/resources/processor_used/.gradle/
-src/test/resources/processor_used/build/
 src/test/resources/processor_used/userHome/

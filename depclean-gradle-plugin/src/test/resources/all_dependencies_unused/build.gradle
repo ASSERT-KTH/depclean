@@ -7,13 +7,12 @@ buildscript{
       }
   }
 }
-
 plugins {
     id 'java'
     id 'maven-publish'
 }
 
-apply plugin: 'se.kth.castor.depclean-gradle-plugin'
+apply plugin: ('se.kth.castor.depclean-gradle-plugin')
 repositories {
     mavenLocal()
     maven {

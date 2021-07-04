@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.gradle.api.artifacts.ResolvedArtifact;
-import org.gradle.api.artifacts.UnresolvedDependency;
 import org.gradle.api.component.Artifact;
 
 public class GradleProjectDependencyAnalysis {
@@ -25,22 +24,15 @@ public class GradleProjectDependencyAnalysis {
   private final Set<ResolvedArtifact> unusedDeclaredArtifacts;
 
   /**
-   * Store all the unresolved dependencies.
-   */
-  private final Set<UnresolvedDependency> allUnresolvedDependency;
-
-  /**
    * Ctor.
    */
   public GradleProjectDependencyAnalysis(
           Set<ResolvedArtifact> usedDeclaredArtifacts,
           Set<ResolvedArtifact> usedUndeclaredArtifacts,
-          Set<ResolvedArtifact> unusedDeclaredArtifacts,
-          Set<UnresolvedDependency> allUnresolvedDependency) {
+          Set<ResolvedArtifact> unusedDeclaredArtifacts) {
     this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
     this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
     this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
-    this.allUnresolvedDependency = safeCopyDependencies(allUnresolvedDependency);
   }
 
   /**
@@ -52,11 +44,6 @@ public class GradleProjectDependencyAnalysis {
   private Set<ResolvedArtifact> safeCopy(Set<ResolvedArtifact> set) {
     return (set == null) ? Collections.emptySet()
         : Collections.unmodifiableSet(new LinkedHashSet<ResolvedArtifact>(set));
-  }
-
-  private Set<UnresolvedDependency> safeCopyDependencies(Set<UnresolvedDependency> set) {
-    return (set == null) ? Collections.emptySet()
-        : Collections.unmodifiableSet(new LinkedHashSet<UnresolvedDependency>(set));
   }
 
 //    /**
@@ -73,13 +60,22 @@ public class GradleProjectDependencyAnalysis {
 //  }
 
   /**
+   * Overrides the hash code value method of the object.
+   */
+  @Override
+  public int hashCode() {
+    int hashCode = getUsedDeclaredArtifacts().hashCode();
+    hashCode = (hashCode * 37) + getUsedUndeclaredArtifacts().hashCode();
+    hashCode = (hashCode * 37) + getUnusedDeclaredArtifacts().hashCode();
+    return hashCode;
+  }
+
+  /**
    * Used declared artifacts.
    *
    * @return {@link Artifact}
    */
   public Set<ResolvedArtifact> getUsedDeclaredArtifacts() { return usedDeclaredArtifacts;   }
-
-  // Object methods ---------------------------------------------------------
 
   /**
    * Used but not declared artifacts.
@@ -100,14 +96,6 @@ public class GradleProjectDependencyAnalysis {
   }
 
   /**
-   * All unresolved dependencies.
-   *
-   * @return {@link Artifact}
-   */
-  public Set<UnresolvedDependency> getAllUnresolvedDependency() { return allUnresolvedDependency; }
-
-
-  /**
    * Overrides the standard equals method of Object.
    */
   @Override
@@ -116,10 +104,8 @@ public class GradleProjectDependencyAnalysis {
       GradleProjectDependencyAnalysis analysis = (GradleProjectDependencyAnalysis) object;
       return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
           && getUsedUndeclaredArtifacts().equals(analysis.getUsedUndeclaredArtifacts())
-          && getUnusedDeclaredArtifacts().equals(analysis.getUnusedDeclaredArtifacts())
-          && getAllUnresolvedDependency().equals(analysis.getAllUnresolvedDependency());
+          && getUnusedDeclaredArtifacts().equals(analysis.getUnusedDeclaredArtifacts());
     }
-
     return false;
   }
 
@@ -146,12 +132,6 @@ public class GradleProjectDependencyAnalysis {
         buffer.append(",");
       }
       buffer.append("unusedDeclaredArtifacts=").append(getUnusedDeclaredArtifacts());
-    }
-    if (!getAllUnresolvedDependency().isEmpty()) {
-      if (buffer.length() > 0) {
-        buffer.append(",");
-      }
-      buffer.append("allUnresolvedDependency=").append(getAllUnresolvedDependency());
     }
 
     buffer.insert(0, "[");
