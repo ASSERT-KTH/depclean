@@ -11,13 +11,14 @@ public class DepCleanGradleTask extends DefaultTask {
    * Action that analyzes the project dependencies and show the results.
    */
   @TaskAction
-  public void printDependencies() {
+  public void analyzeProject() {
+
+    getProject().getLogger().lifecycle("Starting DepClean dependency analysis");
 
     // Applying the only default action on the project and it's sub-projects (if any).
     Action<Project> defaultAction = new DepCleanGradleAction();
     getProject().allprojects(defaultAction);
 
-    getProject().getLogger().lifecycle("\nTask execution ends.");
   }
 
 }

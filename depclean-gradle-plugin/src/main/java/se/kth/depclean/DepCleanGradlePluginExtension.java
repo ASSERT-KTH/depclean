@@ -1,9 +1,20 @@
 package se.kth.depclean;
 
-import java.util.List;
 import java.util.Set;
 
+import org.gradle.api.Project;
+
 public class DepCleanGradlePluginExtension {
+
+  /**
+   * The Gradle project to analyze.
+   */
+  public Project project = null;
+
+  /**
+   * Skip plugin execution completely.
+   */
+  public boolean skipDepClean = false;
 
   /**
    * If this is true, DepClean will not analyze the test sources in the project, and, therefore, the dependencies that
@@ -33,7 +44,7 @@ public class DepCleanGradlePluginExtension {
   /**
    * Ignore dependencies with specific configurations from the DepClean analysis.
    */
-  public List<String> ignoreConfiguration;
+  public Set<String> ignoreConfiguration;
 
   /**
    * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
@@ -41,6 +52,12 @@ public class DepCleanGradlePluginExtension {
    * format is <code>groupId:artifactId:version</code>.
    */
   public Set<String> ignoreDependency;
+
+  // Getters ==========================================
+
+  public Project getProject() { return project; }
+
+  public boolean isSkipDepClean() { return skipDepClean; }
 
   public boolean isIgnoreTest() {
     return IgnoreTest;
@@ -58,8 +75,7 @@ public class DepCleanGradlePluginExtension {
     return failIfUnusedInherited;
   }
 
-  public List<String> getIgnoreConfiguration() { return ignoreConfiguration; }
+  public Set<String> getIgnoreConfiguration() { return ignoreConfiguration; }
 
   public Set<String> getIgnoreDependency() { return ignoreDependency; }
-
 }

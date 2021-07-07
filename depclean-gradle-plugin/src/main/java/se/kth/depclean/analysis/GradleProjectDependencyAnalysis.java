@@ -24,7 +24,7 @@ public class GradleProjectDependencyAnalysis {
   private final Set<ResolvedArtifact> unusedDeclaredArtifacts;
 
   /**
-   * Ctor.
+   * The only or default constructor to invoke this class object.
    */
   public GradleProjectDependencyAnalysis(
           Set<ResolvedArtifact> usedDeclaredArtifacts,
@@ -45,19 +45,6 @@ public class GradleProjectDependencyAnalysis {
     return (set == null) ? Collections.emptySet()
         : Collections.unmodifiableSet(new LinkedHashSet<ResolvedArtifact>(set));
   }
-
-//    /**
-//   * Filter out artifacts with scope other than compile from the set of unused declared artifacts.
-//   *
-//   * @return updated project dependency analysis
-//   * @since 1.3
-//   */
-//  public GradleProjectDependencyAnalysis ignoreNonCompile() {
-//    Set<ResolvedArtifact> filteredUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
-////    filteredUnusedDeclared.removeIf(resolvedArtifact -> !resolvedArtifact.getScope().equals(Artifact.SCOPE_COMPILE));
-//    filteredUnusedDeclared.removeIf(resolvedArtifact -> !resolvedArtifact.get);
-//    return new GradleProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
-//  }
 
   /**
    * Overrides the hash code value method of the object.

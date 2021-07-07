@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -44,7 +43,25 @@ public class DepCleanGradleAction implements Action<Project> {
   // To reduce some code(Frequent use)
   private static final String sep = File.separator;
 
+  /**
+   * A map [artifact] -> [configuration].
+   */
   public final Map<ResolvedArtifact, String> artifactConfigurationMap = new HashMap<>();
+
+  /**
+   * A map [dependencies] -> [size].
+   */
+  public Map<String, Long> sizeOfDependencies = new HashMap<>();
+
+  // Extensions fields =====================================
+  Project project;
+  private boolean skipDepClean;
+  private boolean isIgnoreTest;
+  private boolean failIfUnusedDirect;
+  private boolean failIfUnusedTransitive;
+  private boolean failIfUnusedInherited;
+  Set<String> ignoreConfiguration;
+  Set<String> ignoreDependencies;
 
   @SneakyThrows
   @Override
@@ -52,15 +69,20 @@ public class DepCleanGradleAction implements Action<Project> {
 
     Logger logger = project.getLogger();
 
-    DepCleanGradlePluginExtension extension = project.getExtensions().getByType(DepCleanGradlePluginExtension.class);
-    boolean isIgnoreTest = extension.isIgnoreTest();
-    boolean failIfUnusedDirect = extension.isFailIfUnusedDirect();
-    boolean failIfUnusedTransitive = extension.isFailIfUnusedTransitive();
-    boolean failIfUnusedInherited = extension.isFailIfUnusedInherited();
-    List<String> ignoreConfiguration = extension.getIgnoreConfiguration();
-    Set<String> ignoreDependencies = extension.getIgnoreDependency();
+    // If the user provided some configuration.
+    DepCleanGradlePluginExtension extension = project.getExtensions()
+            .getByType(DepCleanGradlePluginExtension.class);
+    getPluginExtensions(extension);
 
-    logger.lifecycle("Starting DepClean dependency analysis");
+    if (skipDepClean) {
+      logger.lifecycle("Skipping DepClean plugin execution");
+      return;
+    }
+
+    // If the project is not the default one.
+    if (this.project != null) {
+      project = this.project;
+    }
 
     // Path to the project directory.
     final String projectDirPath = project.getProjectDir().getAbsolutePath() + sep;
@@ -86,14 +108,7 @@ public class DepCleanGradleAction implements Action<Project> {
     Set<ResolvedDependency> allDependencies = getAllDependencies(configurations);
 
     // all resolved artifacts of this project
-    Set<ResolvedArtifact> allArtifacts = new HashSet<>();
-    for (ResolvedDependency dependency : allDependencies) {
-      Set<ResolvedArtifact> partialAllArtifacts = new HashSet<>(dependency.getModuleArtifacts());
-      for (ResolvedArtifact artifact : partialAllArtifacts) {
-        artifactConfigurationMap.put(artifact, dependency.getConfiguration());
-        allArtifacts.add(artifact);
-      }
-    }
+    Set<ResolvedArtifact> allArtifacts = getAllArtifacts(allDependencies);
 
     // all unresolved dependencies including transitive ones of the project.
     Set<UnresolvedDependency> allUnresolvedDependencies = getAllUnresolvedDependencies(configurations);
@@ -107,25 +122,12 @@ public class DepCleanGradleAction implements Action<Project> {
 
     Set<String> declaredArtifactsGroupArtifactIds = new HashSet<>();
     for (ResolvedArtifact artifact : declaredArtifacts) {
-      String name = getName(artifact, ignoreConfiguration);
-      if (name != null) {
-        declaredArtifactsGroupArtifactIds.add(name);
-      }
+      String name = getName(artifact);
+      declaredArtifactsGroupArtifactIds.add(name);
     }
 
     // Copying dependencies locally to get their size.
-    File dependencyDirectory = new File(dependencyDirPath);
-    for (ResolvedArtifact artifact : allArtifacts) {
-      // copying jar files directly from the user's .m2 directory
-      File jarFile = artifact.getFile();
-      if (jarFile.getAbsolutePath().endsWith(".jar")) {
-        try {
-          FileUtils.copyFileToDirectory(jarFile, dependencyDirectory);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-    }
+    File dependencyDirectory = copyDependenciesLocally(dependencyDirPath, allArtifacts);
 
     // Copying files from libs directory to dependency directory.
     if (new File(libsDirPath).exists()) {
@@ -136,34 +138,16 @@ public class DepCleanGradleAction implements Action<Project> {
       }
     }
 
-    /* Get the size of all the dependencies */
-    Map<String, Long> sizeOfDependencies = new HashMap<>();
-
     // First, add the size of the project, as the sum of all the files in target/classes
     String projectJar = project.getName() + "-" + project.getVersion() + ".jar";
     long projectSize = FileUtils.sizeOf(new File(classesDirPath));
     sizeOfDependencies.put(projectJar, projectSize);
 
     // Now adding the size of all the files one by one from the dependency directory (build/Dependency).
-    if (Files.exists(Path.of(String.valueOf(Paths.get(
-            dependencyDirPath))))) {
-      Iterator<File> iterator = FileUtils.iterateFiles(
-              new File(
-                      dependencyDirPath), new String[]{"jar"}, true);
-      while (iterator.hasNext()) {
-        File file = iterator.next();
-        sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
-      }
-    } else {
-      logger.warn("Dependencies where not copied locally");
-    }
+    addDependencySize(dependencyDirPath, logger);
 
     /* Decompress dependencies */
-    if (dependencyDirectory.exists()) {
-      JarUtils.decompressJars(dependencyDirPath);
-    } else {
-      printString("Unable to decompress jars at " + dependencyDirPath);
-    }
+    decompressDependencies(dependencyDirectory, dependencyDirPath);
 
     /* Analyze dependencies usage status */
     GradleProjectDependencyAnalysis projectDependencyAnalysis = null;
@@ -187,7 +171,7 @@ public class DepCleanGradleAction implements Action<Project> {
     Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
 
     for (ResolvedArtifact artifact : usedDirectArtifacts) {
-      String artifactGroupArtifactIds = getName(artifact, ignoreConfiguration);
+      String artifactGroupArtifactIds = getName(artifact);
       if (artifactGroupArtifactIds == null) continue;
       if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactIds)) {
         // the artifact is declared in the build file
@@ -201,7 +185,7 @@ public class DepCleanGradleAction implements Action<Project> {
     // TODO Fix: The used transitive dependencies induced by inherited dependencies should be considered
     //  as used inherited
     for (ResolvedArtifact artifact : usedTransitiveArtifacts) {
-      String artifactGroupArtifactIds = getName(artifact, ignoreConfiguration);
+      String artifactGroupArtifactIds = getName(artifact);
       if (artifactGroupArtifactIds == null) continue;
       usedTransitiveArtifactsCoordinates.add(artifactGroupArtifactIds);
     }
@@ -212,7 +196,7 @@ public class DepCleanGradleAction implements Action<Project> {
     Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
 
     for (ResolvedArtifact artifact : unusedDirectArtifacts) {
-      String artifactGroupArtifactIds = getName(artifact, ignoreConfiguration);
+      String artifactGroupArtifactIds = getName(artifact);
       if (artifactGroupArtifactIds == null) continue;
       if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactIds)) {
         // artifact is declared in build file
@@ -224,7 +208,7 @@ public class DepCleanGradleAction implements Action<Project> {
     }
 
     for (ResolvedArtifact artifact : unusedTransitiveArtifacts) {
-      String artifactGroupArtifactIds = getName(artifact, ignoreConfiguration);
+      String artifactGroupArtifactIds = getName(artifact);
       if (artifactGroupArtifactIds == null) continue;
       unusedTransitiveArtifactsCoordinates.add(artifactGroupArtifactIds);
     }
@@ -315,6 +299,22 @@ public class DepCleanGradleAction implements Action<Project> {
   }
 
   /**
+   * A utility method to get the additional configuration of the plugin.
+   *
+   * @param extension Plugin extension class.
+   */
+  public void getPluginExtensions(DepCleanGradlePluginExtension extension) {
+    this.project = extension.getProject();
+    this.skipDepClean = extension.isSkipDepClean();
+    this.isIgnoreTest = extension.isIgnoreTest();
+    this.failIfUnusedDirect = extension.isFailIfUnusedDirect();
+    this.failIfUnusedTransitive = extension.isFailIfUnusedTransitive();
+    this.failIfUnusedInherited = extension.isFailIfUnusedInherited();
+    this.ignoreConfiguration = extension.getIgnoreConfiguration();
+    this.ignoreDependencies = extension.getIgnoreDependency();
+  }
+
+  /**
    * Get project's configuration.
    *
    * @param project Project
@@ -341,6 +341,24 @@ public class DepCleanGradleAction implements Action<Project> {
               .getAllModuleDependencies());
     }
     return allDependencies;
+  }
+
+  /**
+   * Returns all the artifacts of the project.
+   *
+   * @param allDependencies All dependencies of the project.
+   * @return All artifacts of the project.
+   */
+  public Set<ResolvedArtifact> getAllArtifacts(Set<ResolvedDependency> allDependencies) {
+    Set<ResolvedArtifact> allArtifacts = new HashSet<>();
+    for (ResolvedDependency dependency : allDependencies) {
+      Set<ResolvedArtifact> partialAllArtifacts = new HashSet<>(dependency.getModuleArtifacts());
+      for (ResolvedArtifact artifact : partialAllArtifacts) {
+        this.artifactConfigurationMap.put(artifact, dependency.getConfiguration());
+        allArtifacts.add(artifact);
+      }
+    }
+    return allArtifacts;
   }
 
   /**
@@ -390,6 +408,64 @@ public class DepCleanGradleAction implements Action<Project> {
       declaredArtifacts.addAll(dependency.getModuleArtifacts());
     }
     return declaredArtifacts;
+  }
+
+  /**
+   * Copies the dependency locally inside the build/Dependency directory.
+   *
+   * @param dependencyDirPath Directory path
+   * @param allArtifacts All project's artifacts (all dependencies)
+   * @return A file which contain the copied dependencies.
+   */
+  public File copyDependenciesLocally(String dependencyDirPath, Set<ResolvedArtifact> allArtifacts) {
+    File dependencyDirectory = new File(dependencyDirPath);
+    for (ResolvedArtifact artifact : allArtifacts) {
+      // copying jar files directly from the user's .m2 directory
+      File jarFile = artifact.getFile();
+      if (jarFile.getAbsolutePath().endsWith(".jar")) {
+        try {
+          FileUtils.copyFileToDirectory(jarFile, dependencyDirectory);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return dependencyDirectory;
+  }
+
+  /**
+   * To get the size of each dependency (artifact).
+   *
+   * @param dependencyDirPath Directory path where all the copied dependencies are stored.
+   * @param logger To show some warnings.
+   */
+  public void addDependencySize(String dependencyDirPath, Logger logger) {
+    if (Files.exists(Path.of(String.valueOf(Paths.get(
+            dependencyDirPath))))) {
+      Iterator<File> iterator = FileUtils.iterateFiles(
+              new File(
+                      dependencyDirPath), new String[]{"jar"}, true);
+      while (iterator.hasNext()) {
+        File file = iterator.next();
+        sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
+      }
+    } else {
+      logger.warn("Dependencies where not copied locally");
+    }
+  }
+
+  /**
+   * Only decompress the jar files inside any directory.
+   *
+   * @param dependencyDirectory The directory.
+   * @param dependencyDirPath Path to the directory.
+   */
+  public void decompressDependencies(File dependencyDirectory, String dependencyDirPath) {
+    if (dependencyDirectory.exists()) {
+      JarUtils.decompressJars(dependencyDirPath);
+    } else {
+      printString("Unable to decompress jars at " + dependencyDirPath);
+    }
   }
 
   /**
@@ -469,18 +545,20 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param artifact Artifact
    * @return Name of artifact
    */
-  public String getName(ResolvedArtifact artifact, List<String> ignoreConfiguration) {
+  public String getName(ResolvedArtifact artifact) {
     String[] artifactGroupArtifactIds = artifact.toString().split(" \\(");
     String[] artifactGroupArtifactId = artifactGroupArtifactIds[1].split("\\)");
-    if(ignoreConfiguration != null) {
-      for (String configuration : ignoreConfiguration) {
-        if (artifactConfigurationMap.get(artifact).equals(configuration)) return null;
-      }
-    }
-    return artifactGroupArtifactId[0] + ":" + artifactConfigurationMap.get(artifact);
+    return artifactGroupArtifactId[0];
   }
 
-  public Set<String> excludeConfiguration(Set<String> artifactCoordinates, List<String> ignoreConfiguration) {
+  /**
+   * Remove those artifacts coordinates which belong to the configuration, ignored by the user.
+   *
+   * @param artifactCoordinates Coordinates of the artifact.
+   * @param ignoreConfiguration Ignored configurations.
+   * @return Un-ignored coordinates.
+   */
+  public Set<String> excludeConfiguration(Set<String> artifactCoordinates, Set<String> ignoreConfiguration) {
     Set<String> nonExcludedConfigurations = new HashSet<>();
     for (String coordinates : artifactCoordinates) {
       String configuration = coordinates.split(":")[3];
@@ -491,6 +569,13 @@ public class DepCleanGradleAction implements Action<Project> {
     return nonExcludedConfigurations;
   }
 
+  /**
+   * Remove those artifact coordinates which are ignores by the user.
+   *
+   * @param artifactCoordinates Coordinates of the artifact.
+   * @param ignoreDependencies Ignored dependencies in the form of coordinates.
+   * @return Un-ignored coordinates.
+   */
   public Set<String> excludeDependencies(Set<String> artifactCoordinates, Set<String> ignoreDependencies) {
     Set<String> nonExcludedDependencies = new HashSet<>();
     for (String coordinates : artifactCoordinates) {
@@ -501,6 +586,5 @@ public class DepCleanGradleAction implements Action<Project> {
     }
     return nonExcludedDependencies;
   }
-
 
 }
