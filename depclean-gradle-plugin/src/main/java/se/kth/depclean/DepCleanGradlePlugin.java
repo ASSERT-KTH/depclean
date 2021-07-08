@@ -20,7 +20,7 @@ public class DepCleanGradlePlugin implements Plugin<Project> {
     final String depCleanConfigurationName = "depclean";
 
     // Creating extra configurations for the plugin to provide more flexibility.
-    project.getExtensions().create("depCleanConfigurationName", DepCleanGradlePluginExtension.class);
+    project.getExtensions().create(depCleanConfigurationName, DepCleanGradlePluginExtension.class);
 
     // Creating the default task.
     createTask(project);
@@ -34,7 +34,7 @@ public class DepCleanGradlePlugin implements Plugin<Project> {
   public void createTask(final Project project) {
     final String depCleanTaskName = "debloat";
     DepCleanGradleTask task = project.getTasks().create(depCleanTaskName, DepCleanGradleTask.class);
-    task.setGroup("dependencyManagement");
+    task.setGroup("dependency management");
     task.setDescription("Analyze the project byte-code and configure out the debloated dependencies.");
   }
 }
