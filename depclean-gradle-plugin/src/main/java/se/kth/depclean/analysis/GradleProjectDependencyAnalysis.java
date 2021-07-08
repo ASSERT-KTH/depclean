@@ -27,9 +27,9 @@ public class GradleProjectDependencyAnalysis {
    * The only or default constructor to invoke this class object.
    */
   public GradleProjectDependencyAnalysis(
-          Set<ResolvedArtifact> usedDeclaredArtifacts,
-          Set<ResolvedArtifact> usedUndeclaredArtifacts,
-          Set<ResolvedArtifact> unusedDeclaredArtifacts) {
+          final Set<ResolvedArtifact> usedDeclaredArtifacts,
+          final Set<ResolvedArtifact> usedUndeclaredArtifacts,
+          final Set<ResolvedArtifact> unusedDeclaredArtifacts) {
     this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
     this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
     this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
@@ -41,7 +41,7 @@ public class GradleProjectDependencyAnalysis {
    * @param set required set.
    * @return An unmodifiable set corresponding to the provided set.
    */
-  private Set<ResolvedArtifact> safeCopy(Set<ResolvedArtifact> set) {
+  private Set<ResolvedArtifact> safeCopy(final Set<ResolvedArtifact> set) {
     return (set == null) ? Collections.emptySet()
         : Collections.unmodifiableSet(new LinkedHashSet<ResolvedArtifact>(set));
   }
@@ -62,7 +62,7 @@ public class GradleProjectDependencyAnalysis {
    *
    * @return {@link Artifact}
    */
-  public Set<ResolvedArtifact> getUsedDeclaredArtifacts() { return usedDeclaredArtifacts;   }
+  public Set<ResolvedArtifact> getUsedDeclaredArtifacts() { return usedDeclaredArtifacts; }
 
   /**
    * Used but not declared artifacts.
@@ -86,7 +86,7 @@ public class GradleProjectDependencyAnalysis {
    * Overrides the standard equals method of Object.
    */
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(final Object object) {
     if (object instanceof GradleProjectDependencyAnalysis) {
       GradleProjectDependencyAnalysis analysis = (GradleProjectDependencyAnalysis) object;
       return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
