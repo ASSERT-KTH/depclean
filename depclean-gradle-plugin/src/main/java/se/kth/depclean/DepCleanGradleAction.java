@@ -1,10 +1,16 @@
 package se.kth.depclean;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +63,10 @@ public class DepCleanGradleAction implements Action<Project> {
   // Extensions fields =====================================
   private Project project;
   private boolean skipDepClean;
+  private boolean createBuildDebloated;
+  // TODO : The implementation of next two parameters will be done later.
+  private boolean createResultJson;
+  private boolean createClassUsageCsv;
   private boolean isIgnoreTest;
   private boolean failIfUnusedDirect;
   private boolean failIfUnusedTransitive;
@@ -269,6 +279,7 @@ public class DepCleanGradleAction implements Action<Project> {
             unusedTransitiveArtifactsCoordinates);
 
     printString(SEPARATOR);
+
     // If there is any dependency which is unresolved during the analysis then reporting it.
     if (!allUnresolvedDependencies.isEmpty()) {
       printString(
@@ -310,6 +321,89 @@ public class DepCleanGradleAction implements Action<Project> {
       throw new GradleException("Build failed due to unused inherited dependencies"
               + " in the dependency tree of the project.");
     }
+
+    /* Writing the debloated version of the pom */
+    if (createBuildDebloated) {
+      logger.lifecycle("Starting debloating dependencies");
+
+      // All dependencies which will be added directly to the desired file.
+      Set<ResolvedArtifact> dependenciesToAdd = new HashSet<>();
+
+      /* Adding used direct dependencies */
+      try {
+        logger
+                .lifecycle("Adding " + usedDirectArtifacts.size()
+                        + " used direct dependencies");
+        dependenciesToAdd.addAll(usedDirectArtifacts);
+      } catch (Exception e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+
+      /* Add used transitive as direct dependencies */
+      try {
+        if (!usedTransitiveArtifacts.isEmpty()) {
+          logger
+                  .lifecycle("Adding " + usedTransitiveArtifacts.size()
+                          + " used transitive dependencies as direct dependencies.");
+          dependenciesToAdd.addAll(usedTransitiveArtifacts);
+        }
+      } catch (Exception e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+
+      /* Exclude unused transitive dependencies */
+
+      /* A multi-map [parent] -> [child] i.e. this will keep a track of from which dependency
+         the unused transitive dependencies should be excluded. Also, here multi-map is preferred
+         as one transitive dependency can have more than one parent. */
+      Multimap<String, String> excludedTransitiveArtifactsMap = ArrayListMultimap.create();
+
+      // A set that contains all the transitive children of project's dependencies.
+      Set<ResolvedDependency> allChildren = getAllChildren(allDependencies);
+      try {
+        if (!unusedTransitiveArtifacts.isEmpty()) {
+          logger
+                  .lifecycle("Excluding " + unusedTransitiveArtifactsCoordinates.size()
+                          + " unused transitive dependencies one-by-one.");
+          for (String artifact : unusedTransitiveArtifactsCoordinates) {
+            String unusedTransitiveDependencyId = getArtifactGroupArtifactId(artifact);
+            for (ResolvedDependency dependency : allChildren) {
+              if (dependency.getName().equals(unusedTransitiveDependencyId)) {
+                // i.e. this dependency should be excluded from all it's parents.
+                Set<ResolvedDependency> parents = dependency.getParents();
+                parents.forEach(s -> excludedTransitiveArtifactsMap
+                        .put(s.getName(), unusedTransitiveDependencyId));
+                break; // Not need to check further.
+              }
+            }
+          }
+        }
+      } catch (Exception e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+
+      /* Write the debloated-dependencies.gradle file */
+      String pathToDebloatedDependencies = projectDirPath + "debloated-dependencies.gradle";
+      File debloatedDependencies = new File(pathToDebloatedDependencies);
+      try {
+        // Delete the previous existence (if exist).
+        if (debloatedDependencies.exists()) {
+          se.kth.depclean.util.FileUtils.forceDelete(debloatedDependencies);
+          debloatedDependencies.createNewFile();
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      try {
+        writeGradle(debloatedDependencies, dependenciesToAdd, excludedTransitiveArtifactsMap);
+      } catch (IOException e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+      logger.lifecycle("Dependencies debloated successfully");
+      logger.lifecycle("debloated-dependencies.gradle file created in: "
+              + pathToDebloatedDependencies);
+    }
   }
 
   /**
@@ -320,6 +414,9 @@ public class DepCleanGradleAction implements Action<Project> {
   public void getPluginExtensions(final DepCleanGradlePluginExtension extension) {
     this.project = extension.getProject();
     this.skipDepClean = extension.isSkipDepClean();
+    this.createBuildDebloated = extension.isCreateBuildDebloated();
+    this.createResultJson = extension.isCreateResultJson();
+    this.createClassUsageCsv = extension.isCreateClassUsageCsv();
     this.isIgnoreTest = extension.isIgnoreTest();
     this.failIfUnusedDirect = extension.isFailIfUnusedDirect();
     this.failIfUnusedTransitive = extension.isFailIfUnusedTransitive();
@@ -606,6 +703,150 @@ public class DepCleanGradleAction implements Action<Project> {
       }
     }
     return nonExcludedDependencies;
+  }
+
+  /**
+   * Get coordinates(name) without scopes or configuration.
+   *
+   * @param artifact Artifact
+   * @return Name of artifact without scope.
+   */
+  public String getArtifactGroupArtifactId(final String artifact) {
+    String[] parts = artifact.split(":");
+    return parts[0] + ":" + parts[1] + ":" + parts[2];
+  }
+
+  /**
+   * Get all the transitive children of all the project's dependencies.
+   *
+   * @param allDependencies Set of all dependencies
+   * @return Set of all children
+   */
+  public Set<ResolvedDependency> getAllChildren(final Set<ResolvedDependency> allDependencies) {
+    Set<ResolvedDependency> allChildren = new HashSet<>();
+    for (ResolvedDependency dependency : allDependencies) {
+      allChildren.addAll(dependency.getChildren());
+    }
+    return allChildren;
+  }
+
+  /**
+   * Writes the debloated-dependencies.gradle.
+   *
+   * @param file Target
+   * @param dependenciesToAdd Direct dependencies to be written directly.
+   * @param excludedTransitiveArtifactsMap Map [dependency] -> [excluded transitive child]
+   * @throws IOException In case of IO issues.
+   */
+  public void writeGradle(final File file, final Set<ResolvedArtifact> dependenciesToAdd,
+                       final Multimap<String, String> excludedTransitiveArtifactsMap)
+          throws IOException {
+    /* A multi-map [configuration] -> [dependency] */
+    Multimap<String, String> configurationDependencyMap = getNewConfigurations(dependenciesToAdd);
+
+    /* Writing starts */
+    FileWriter fileWriter = new FileWriter(file, true);
+    BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+    PrintWriter writer = new PrintWriter(bufferedWriter);
+
+    writer.println("dependencies {");
+
+    for (String configuration : configurationDependencyMap.keySet()) {
+      writer.print("\t" + configuration);
+
+      /* Getting all the dependencies with specified configuration and converting
+         it to an array for ease in writing. */
+      Collection<String> dependency = configurationDependencyMap.get(configuration);
+      String[] dep = dependency.toArray(new String[dependency.size()]);
+
+      /* Writing those dependencies which do not have to exclude any dependency(s).
+         Simultaneously, also getting those dependencies which have to exclude
+         some transitive dependencies. */
+      Set<String> excludeChildrenDependencies =
+              writeNonExcluded(writer, dep, excludedTransitiveArtifactsMap);
+
+      /* Writing those dependencies which have to exclude any dependency(s). */
+      if (!excludeChildrenDependencies.isEmpty()) {
+        writeExcluded(writer, configuration,
+                excludeChildrenDependencies, excludedTransitiveArtifactsMap);
+      }
+    }
+    writer.println("}");
+    writer.close();
+  }
+
+  // TODO: To modify later.
+  /**
+   * There are some dependencies configurations that are removed by Gradle above 7.0.0,
+   * like runtime converted to implementation. To know more visit <a href =
+   * "https://docs.gradle.org/current/userguide/upgrading_version_6.html">here.</a>, but still
+   * $dependencies.getConfiguration() still returns those deprecated scopes. <br>
+   * So, currently we just divide dependencies into two parts i.e. implementation
+   * & testImplementation.
+   *
+   * @param dependenciesToAdd All dependencies to be added.
+   * @return A multi-map with value as a dependency and key as it's configuration.
+   */
+  public Multimap<String, String> getNewConfigurations(
+          final Set<ResolvedArtifact> dependenciesToAdd) {
+    Multimap<String, String> configurationDependencyMap = ArrayListMultimap.create();
+    for (ResolvedArtifact artifact : dependenciesToAdd) {
+      String dependency = getArtifactGroupArtifactId(getName(artifact));
+      String oldConfiguration = getName(artifact).split(":")[3];
+      String configuration =
+              oldConfiguration.startsWith("test") || oldConfiguration.endsWith("Elements")
+                      ? "testImplementation" : "implementation";
+      configurationDependencyMap.put(configuration, dependency);
+    }
+    return configurationDependencyMap;
+  }
+
+  /**
+   * Writes those dependencies which don't have to exclude any transitive dependencies of their own.
+   * Simultaneously, it also returns the set of dependencies which have to exclude some
+   * transitive dependencies to write them separately.
+   *
+   * @param writer For writing.
+   * @param dep Dependencies to be printed.
+   * @param excludedTransitiveArtifactsMap [dependency] -> [excluded transitive dependencies].
+   * @return A set of dependencies.
+   */
+  public Set<String> writeNonExcluded(final PrintWriter writer,
+                                      final String[] dep,
+                                      final Multimap<String, String> excludedTransitiveArtifactsMap) {
+    Set<String> excludeChildrenDependencies = new HashSet<>();
+    int size = dep.length - 1;
+    for (int i = 0; i < size; i++) {
+      if (excludedTransitiveArtifactsMap.containsKey(dep[i])) {
+        excludeChildrenDependencies.add(dep[i]);
+      } else {
+        writer.println("\t\t\t'" + dep[i] + "',");
+      }
+    }
+    writer.println("\t\t\t'" + dep[size] + "'\n");
+    return excludeChildrenDependencies;
+  }
+
+  /**
+   * Writes those dependencies which have to exclude some of their transitive dependency(s).
+   *
+   * @param writer For writing.
+   * @param configuration Corresponding configuration.
+   * @param excludeChildrenDependencies Transitive dependencies to be excluded.
+   * @param excludedTransitiveArtifactsMap [dependency] -> [excluded transitive dependencies].
+   */
+  public void writeExcluded(final PrintWriter writer,
+                            final String configuration,
+                            final Set<String> excludeChildrenDependencies,
+                            final Multimap<String, String> excludedTransitiveArtifactsMap) {
+    for (String excludeDep : excludeChildrenDependencies) {
+      writer.println("\t" + configuration + " ('" + excludeDep + "') {");
+      Collection<String> excludeDependencies = excludedTransitiveArtifactsMap.get(excludeDep);
+      excludeDependencies.forEach(s ->
+              writer.println("\t\t\texclude group: '" + s.split(":")[0]
+                      + "', module: '" + s.split(":")[1] + "'"));
+      writer.println("\t}");
+    }
   }
 
 }

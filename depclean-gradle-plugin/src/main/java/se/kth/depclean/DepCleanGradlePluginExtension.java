@@ -19,6 +19,26 @@ public class DepCleanGradlePluginExtension {
   public boolean skipDepClean = false;
 
   /**
+   * If this is true, DepClean creates a debloated version of the build.gradle without
+   * unused dependencies, called "debloated-build.gradle", in root of the project.
+   */
+  public boolean createBuildDebloated = false;
+
+  /**
+   * If this is true, DepClean creates a JSON file with the result of the analysis.
+   * The file is called "debloat-result.json" and it is located in /build.
+   */
+  public boolean createResultJson = false;
+
+  /**
+   * If this is true, DepClean creates a CSV file with the result of the analysis
+   * with the columns: OriginClass,TargetClass,Dependency. The file is called
+   * "class-usage.csv" and it is located in /target.
+   */
+  public boolean createClassUsageCsv;
+
+
+  /**
    * If this is true, DepClean will not analyze the test sources in the project, and, therefore,
    * the dependencies that are only used for testing will be considered unused. This property is
    * useful to detect dependencies that have a compile scope but are only used during testing.
@@ -66,13 +86,17 @@ public class DepCleanGradlePluginExtension {
     return skipDepClean;
   }
 
+  public boolean isCreateBuildDebloated() { return createBuildDebloated; }
+
+  public boolean isCreateResultJson() { return createResultJson; }
+
+  public boolean isCreateClassUsageCsv() { return createClassUsageCsv; }
+
   public boolean isIgnoreTest() {
     return ignoreTest;
   }
 
-  public boolean isFailIfUnusedDirect() {
-    return failIfUnusedDirect;
-  }
+  public boolean isFailIfUnusedDirect() { return failIfUnusedDirect; }
 
   public boolean isFailIfUnusedTransitive() {
     return failIfUnusedTransitive;

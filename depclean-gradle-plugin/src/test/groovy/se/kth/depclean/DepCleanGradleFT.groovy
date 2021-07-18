@@ -10,9 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.gradle.testkit.runner.TaskOutcome.*
 import spock.lang.Specification
 
+import static org.junit.jupiter.api.Assertions.assertTrue
+
 class DepCleanGradleFT extends Specification {
 
-  File emptyProjectFile = new File("src/Test/resources/empty_project")
+  File emptyProjectFile = new File("src/Test/resources-fts/empty_project")
   @Test
   @DisplayName("Test that depclean gradle plugin runs on an empty project.")
   def "pluginRunsOnEmptyProject"() {
@@ -33,7 +35,7 @@ class DepCleanGradleFT extends Specification {
     }
   }
 
-  File allDependenciesUnused = new File("src/Test/resources/all_dependencies_unused")
+  File allDependenciesUnused = new File("src/Test/resources-fts/all_dependencies_unused")
   @Test
   @DisplayName("Test that depclean gradle plugin runs on a project which has only unused dependencies.")
   def "all_dependencies_unused"() {
@@ -65,7 +67,7 @@ class DepCleanGradleFT extends Specification {
     }
   }
 
-  File allDependenciesUsed = new File("src/Test/resources/all_dependencies_used")
+  File allDependenciesUsed = new File("src/Test/resources-fts/all_dependencies_used")
   @Test
   @DisplayName("Test that depclean gradle plugin runs on a project which has only used dependencies.")
   def "all_dependencies_used"() {
@@ -95,6 +97,41 @@ class DepCleanGradleFT extends Specification {
     for (String expectedOutputLine : expectedOutput) {
       result.output.stripIndent().trim().contains(expectedOutputLine.stripIndent().trim())
     }
+  }
+
+  File debloatedDependenciesIsCorrect =
+          new File("src/test/resources-fts/debloated_dependencies.gradle_is_correct")
+  String path = "src/test/resources-fts/debloated_dependencies.gradle_is_correct/" +
+          "debloated-dependencies.gradle";
+  File generatedDebloatedDependenciesDotGradle = new File(path);
+  @Test
+  @DisplayName("Test that the depclean creates a proper debloated-dependencies.gradle file.")
+  def "debloated_dependencies.gradle_is_correct"() {
+    given:
+    def project = ProjectBuilder.builder().withProjectDir(debloatedDependenciesIsCorrect).build()
+
+    when:
+    project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+    BuildResult result = GradleRunner.create()
+            .withProjectDir(debloatedDependenciesIsCorrect)
+            .withArguments("debloat")
+            .build()
+
+    then:
+    assertEquals(SUCCESS, result.task(":debloat").getOutcome())
+    String[] expectedOutput = {
+      "Starting debloating dependencies"
+      "Adding 0 used direct dependencies"
+      "Adding 1 used transitive dependencies as direct dependencies."
+      "Excluding 1 unused transitive dependencies one-by-one."
+      "Dependencies debloated successfully"
+      "debloated-dependencies.gradle file created in: " +
+              generatedDebloatedDependenciesDotGradle.getAbsolutePath()
+    }
+    for (String expectedOutputLine : expectedOutput) {
+      result.output.stripIndent().trim().contains(expectedOutputLine.stripIndent().trim())
+    }
+    assertTrue(generatedDebloatedDependenciesDotGradle.exists())
   }
 
 }
