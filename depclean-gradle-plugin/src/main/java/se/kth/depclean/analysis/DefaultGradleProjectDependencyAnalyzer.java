@@ -3,6 +3,8 @@ package se.kth.depclean.analysis;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,7 +22,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
-import se.kth.depclean.DepCleanGradleAction;
+import se.kth.depclean.utils.DependencyUtils;
 import se.kth.depclean.core.analysis.ArtifactTypes;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
@@ -82,9 +84,9 @@ public class DefaultGradleProjectDependencyAnalyzer
       ConfigurationContainer configurationContainer = project.getConfigurations();
       Set<Configuration> configurations = new HashSet<>(configurationContainer);
 
+      DependencyUtils utils = new DependencyUtils();
       // all resolved dependencies including transitive ones of the project.
-      Set<ResolvedDependency> allDependencies = DepCleanGradleAction
-              .getAllDependencies(configurations);
+      Set<ResolvedDependency> allDependencies = utils.getAllDependencies(configurations);
 
       // all resolved artifacts of this project
       Set<ResolvedArtifact> allArtifacts = new HashSet<>();
@@ -96,12 +98,10 @@ public class DefaultGradleProjectDependencyAnalyzer
       artifactClassesMap = buildArtifactClassMap(allArtifacts);
 
       // direct dependencies of the project
-      Set<ResolvedDependency> declaredDependencies = DepCleanGradleAction
-              .getDeclaredDependencies(configurations);
+      Set<ResolvedDependency> declaredDependencies = utils.getDeclaredDependencies(configurations);
 
       // direct artifacts of the project
-      Set<ResolvedArtifact> declaredArtifacts = DepCleanGradleAction
-              .getDeclaredArtifacts(declaredDependencies);
+      Set<ResolvedArtifact> declaredArtifacts = utils.getDeclaredArtifacts(declaredDependencies);
 
       /* ******************** bytecode analysis ********************* */
 
@@ -184,24 +184,21 @@ public class DefaultGradleProjectDependencyAnalyzer
    * @throws IOException In case of IO issues.
    */
   private void  buildProjectDependencyClasses(final Project project) throws IOException {
-    String sep = File.separator;
-    String classesDir = project.getProjectDir().getAbsolutePath()
-            + sep + "build"
-            + sep + "classes";
+    Path classesDir = Paths.get(project.getProjectDir().getAbsolutePath(), "build", "classes");
 
     // Analyze src classes in the project
-    File outputJavaDir = new File(classesDir + sep + "java" + sep + "main");
-    File outputGroovyDir = new File(classesDir + sep + "groovy" + sep + "main");
-    File outputKotlinDir = new File(classesDir + sep + "kotlin" + sep + "main");
+    File outputJavaDir = classesDir.resolve("java").resolve("main").toFile();
+    File outputGroovyDir = classesDir.resolve("groovy").resolve("main").toFile();
+    File outputKotlinDir = classesDir.resolve("kotlin").resolve("main").toFile();
     checkThenCollectDependencyClasses(outputJavaDir);
     checkThenCollectDependencyClasses(outputGroovyDir);
     checkThenCollectDependencyClasses(outputKotlinDir);
 
     // Analyze test classes in the project
     if (!isIgnoredTest) {
-      File testOutputJavaDir = new File(classesDir + sep + "java" + sep + "test");
-      File testOutputGroovyDir = new File(classesDir + sep + "groovy" + sep + "test");
-      File testOutputKotlinDir = new File(classesDir + sep + "kotlin" + sep + "test");
+      File testOutputJavaDir = classesDir.resolve("java").resolve("test").toFile();
+      File testOutputGroovyDir = classesDir.resolve("groovy").resolve("test").toFile();
+      File testOutputKotlinDir = classesDir.resolve("kotlin").resolve("test").toFile();
       checkThenCollectDependencyClasses(testOutputJavaDir);
       checkThenCollectDependencyClasses(testOutputGroovyDir);
       checkThenCollectDependencyClasses(testOutputKotlinDir);
@@ -215,9 +212,8 @@ public class DefaultGradleProjectDependencyAnalyzer
    * @throws IOException In case of IO issues.
    */
   private void buildDependenciesDependencyClasses(final Project project) throws IOException {
-    File dependenciesDirectory = new File(project.getProjectDir().getAbsolutePath()
-            + File.separator + "build"
-            + File.separator + "Dependency");
+    Path path = Paths.get(project.getProjectDir().getAbsolutePath(),"build", "Dependency");
+    File dependenciesDirectory = path.toFile();
     checkThenCollectDependencyClasses(dependenciesDirectory);
   }
 
@@ -287,7 +283,6 @@ public class DefaultGradleProjectDependencyAnalyzer
     return null;
   }
 
-
   /**
    * This method defines a new way to remove the artifacts by using the conflict id.
    * We don't care about the version here because there can be only 1 for a given artifact anyway.
@@ -315,7 +310,6 @@ public class DefaultGradleProjectDependencyAnalyzer
     }
     return results;
   }
-
 
   /**
    * Computes a map of [artifact] -> [allTypes, usedTypes].

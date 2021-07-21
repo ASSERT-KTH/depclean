@@ -2,15 +2,10 @@ package se.kth.depclean;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,19 +15,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.UnresolvedDependency;
 import org.gradle.api.logging.Logger;
 import org.jetbrains.annotations.NotNull;
+import se.kth.depclean.utils.DependencyUtils;
+import se.kth.depclean.utils.GradleWritingUtils;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
@@ -46,13 +41,10 @@ public class DepCleanGradleAction implements Action<Project> {
   // To get some clear visible results.
   private static final String SEPARATOR = "-------------------------------------------------------";
 
-  // To reduce some code(Frequent use)
-  private static final String Sep = File.separator;
-
   /**
    * A map [artifact] -> [configuration].
    */
-  private static final Map<ResolvedArtifact,
+  private static Map<ResolvedArtifact,
           String> ArtifactConfigurationMap = new HashMap<>();
 
   /**
@@ -96,19 +88,21 @@ public class DepCleanGradleAction implements Action<Project> {
     }
 
     // Path to the project directory.
-    final String projectDirPath = project.getProjectDir().getAbsolutePath() + Sep;
+    final Path projectDirPath = Paths.get(project.getProjectDir().getAbsolutePath());
 
     // Path to the dependency directory.
-    final String dependencyDirPath = projectDirPath + "build" + Sep + "Dependency";
+    final Path dependencyDirPath = projectDirPath.resolve(Paths.get("build", "Dependency"));
 
     // Path to the libs directory.
-    final String libsDirPath = projectDirPath + "build" + Sep + "libs";
+    final Path libsDirPath = projectDirPath.resolve(Paths.get("build", "libs"));
 
     // Path to the build classes directory.
-    final String classesDirPath = projectDirPath + "build" + Sep + "classes";
+    final Path classesDirPath = projectDirPath.resolve(Paths.get("build", "classes"));
+
+    DependencyUtils utils = new DependencyUtils();
 
     // Project's configurations.
-    Set<Configuration> configurations = getProjectConfigurations(project);
+    Set<Configuration> configurations = utils.getProjectConfigurations(project);
 
     // Setting can be resolved to true to get transitive dependencies of the project's
     // configuration. Also, it is mandatory to change this parameter before runtime.
@@ -117,23 +111,25 @@ public class DepCleanGradleAction implements Action<Project> {
 
     // All resolved dependencies including transitive ones of the project.
     Set<ResolvedDependency> allDependencies =
-            getAllDependencies(configurations);
+            utils.getAllDependencies(configurations);
 
     // all resolved artifacts of this project
     Set<ResolvedArtifact> allArtifacts =
-            getAllArtifacts(allDependencies);
+            utils.getAllArtifacts(allDependencies);
 
     // all unresolved dependencies including transitive ones of the project.
     Set<UnresolvedDependency> allUnresolvedDependencies =
-            getAllUnresolvedDependencies(configurations);
+            utils.getAllUnresolvedDependencies(configurations);
 
     // All declared dependencies of the project.
     Set<ResolvedDependency> declaredDependencies =
-            getDeclaredDependencies(configurations);
+            utils.getDeclaredDependencies(configurations);
 
     // All declared artifacts of the project.
     Set<ResolvedArtifact> declaredArtifacts =
-            getDeclaredArtifacts(declaredDependencies);
+            utils.getDeclaredArtifacts(declaredDependencies);
+
+    ArtifactConfigurationMap = utils.getArtifactConfigurationMap();
 
     // Adding coordinates of the declared artifacts.
     Set<String> declaredArtifactsGroupArtifactIds = new HashSet<>();
@@ -146,9 +142,9 @@ public class DepCleanGradleAction implements Action<Project> {
     File dependencyDirectory = copyDependenciesLocally(dependencyDirPath, allArtifacts);
 
     // Copying files from libs directory to dependency directory.
-    if (new File(libsDirPath).exists()) {
+    if (libsDirPath.toFile().exists()) {
       try {
-        FileUtils.copyDirectory(new File(libsDirPath), new File(dependencyDirPath));
+        FileUtils.copyDirectory(libsDirPath.toFile(), dependencyDirPath.toFile());
       } catch (IOException | NullPointerException e) {
         logger.error("Error copying directory libs to dependency");
       }
@@ -156,7 +152,7 @@ public class DepCleanGradleAction implements Action<Project> {
 
     // First, add the size of the project, as the sum of all the files in target/classes
     String projectJar = project.getName() + "-" + project.getVersion() + ".jar";
-    long projectSize = FileUtils.sizeOf(new File(classesDirPath));
+    long projectSize = FileUtils.sizeOf(classesDirPath.toFile());
     SizeOfDependencies.put(projectJar, projectSize);
 
     /* Now adding the size of all the files one by one from the dependency
@@ -164,7 +160,7 @@ public class DepCleanGradleAction implements Action<Project> {
     addDependencySize(dependencyDirPath, logger);
 
     /* Decompress dependencies */
-    decompressDependencies(dependencyDirectory, dependencyDirPath);
+    decompressDependencies(dependencyDirectory, dependencyDirPath.toString());
 
     /* Analyze dependencies usage status */
     GradleProjectDependencyAnalysis projectDependencyAnalysis = null;
@@ -383,8 +379,8 @@ public class DepCleanGradleAction implements Action<Project> {
       }
 
       /* Write the debloated-dependencies.gradle file */
-      String pathToDebloatedDependencies = projectDirPath + "debloated-dependencies.gradle";
-      File debloatedDependencies = new File(pathToDebloatedDependencies);
+      final Path pathToDebloatedDependencies = projectDirPath.resolve("debloated-dependencies.gradle");
+      File debloatedDependencies = pathToDebloatedDependencies.toFile();
       try {
         // Delete the previous existence (if exist).
         if (debloatedDependencies.exists()) {
@@ -396,7 +392,9 @@ public class DepCleanGradleAction implements Action<Project> {
       }
 
       try {
-        writeGradle(debloatedDependencies, dependenciesToAdd, excludedTransitiveArtifactsMap);
+        GradleWritingUtils.writeGradle(debloatedDependencies,
+                dependenciesToAdd,
+                excludedTransitiveArtifactsMap);
       } catch (IOException e) {
         throw new GradleException(e.getMessage(), e);
       }
@@ -426,107 +424,6 @@ public class DepCleanGradleAction implements Action<Project> {
   }
 
   /**
-   * Get project's configuration.
-   *
-   * @param project Project
-   * @return Project's configuration.
-   */
-  public static Set<Configuration> getProjectConfigurations(final Project project) {
-    ConfigurationContainer configurationContainer = project.getConfigurations();
-    return new HashSet<>(configurationContainer);
-  }
-
-  /**
-   * Returns all the dependencies of the project.
-   *
-   * @param configurations All the configuration used in the project.
-   * @return A set of all dependencies.
-   */
-  @NonNull
-  public static Set<ResolvedDependency> getAllDependencies(
-          final Set<Configuration> configurations) {
-    Set<ResolvedDependency> allDependencies = new HashSet<>();
-    for (Configuration configuration : configurations) {
-      allDependencies.addAll(configuration
-              .getResolvedConfiguration()
-              .getLenientConfiguration()
-              .getAllModuleDependencies());
-    }
-    return allDependencies;
-  }
-
-  /**
-   * Returns all the artifacts of the project.
-   *
-   * @param allDependencies All dependencies of the project.
-   * @return All artifacts of the project.
-   */
-  public Set<ResolvedArtifact> getAllArtifacts(final Set<ResolvedDependency> allDependencies) {
-    Set<ResolvedArtifact> allArtifacts = new HashSet<>();
-    for (ResolvedDependency dependency : allDependencies) {
-      Set<ResolvedArtifact> partialAllArtifacts = new HashSet<>(dependency.getModuleArtifacts());
-      for (ResolvedArtifact artifact : partialAllArtifacts) {
-        ArtifactConfigurationMap.put(artifact, dependency.getConfiguration());
-        allArtifacts.add(artifact);
-      }
-    }
-    return allArtifacts;
-  }
-
-  /**
-   * If there is any dependency which remain unresolved during the analysis,
-   * then we should report them.
-   *
-   * @param configurations All configurations of the project.
-   * @return A set of all unresolved dependencies.
-   */
-  public static Set<UnresolvedDependency> getAllUnresolvedDependencies(
-          final Set<Configuration> configurations) {
-    Set<UnresolvedDependency> allUnresolvedDependencies = new HashSet<>();
-    for (Configuration configuration : configurations) {
-      allUnresolvedDependencies.addAll(configuration
-              .getResolvedConfiguration()
-              .getLenientConfiguration()
-              .getUnresolvedModuleDependencies());
-    }
-    return allUnresolvedDependencies;
-  }
-
-  /**
-   * Returns all the dependencies of the project.
-   *
-   * @param configurations All the configuration used in the project.
-   * @return A set of all dependencies.
-   */
-  @NonNull
-  public static Set<ResolvedDependency> getDeclaredDependencies(
-          final Set<Configuration> configurations) {
-    Set<ResolvedDependency> declaredDependency = new HashSet<>();
-    for (Configuration configuration : configurations) {
-      declaredDependency.addAll(configuration
-              .getResolvedConfiguration()
-              .getLenientConfiguration()
-              .getFirstLevelModuleDependencies());
-    }
-    return declaredDependency;
-  }
-
-  /**
-   * To get the artifacts which are declared in the project.
-   *
-   * @param declaredDependency Project's configuration.
-   * @return A set of declared artifacts.
-   */
-  public static Set<ResolvedArtifact> getDeclaredArtifacts(
-          final Set<ResolvedDependency> declaredDependency) {
-    Set<ResolvedArtifact> declaredArtifacts = new HashSet<>();
-    for (ResolvedDependency dependency : declaredDependency) {
-      declaredArtifacts.addAll(dependency.getModuleArtifacts());
-    }
-    return declaredArtifacts;
-  }
-
-  /**
    * Copies the dependency locally inside the build/Dependency directory.
    *
    * @param dependencyDirPath Directory path
@@ -534,9 +431,9 @@ public class DepCleanGradleAction implements Action<Project> {
    * @return A file which contain the copied dependencies.
    */
   public File copyDependenciesLocally(
-          final String dependencyDirPath,
+          final Path dependencyDirPath,
           final Set<ResolvedArtifact> allArtifacts) {
-    File dependencyDirectory = new File(dependencyDirPath);
+    File dependencyDirectory = dependencyDirPath.toFile();
     for (ResolvedArtifact artifact : allArtifacts) {
       // copying jar files directly from the user's .m2 directory
       File jarFile = artifact.getFile();
@@ -557,12 +454,10 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param dependencyDirPath Directory path where all the copied dependencies are stored.
    * @param logger To show some warnings.
    */
-  public void addDependencySize(final String dependencyDirPath, final Logger logger) {
-    if (Files.exists(Path.of(String.valueOf(Paths.get(
-            dependencyDirPath))))) {
+  public void addDependencySize(final Path dependencyDirPath, final Logger logger) {
+    if (dependencyDirPath.toFile().exists()) {
       Iterator<File> iterator = FileUtils.iterateFiles(
-              new File(
-                      dependencyDirPath), new String[]{"jar"}, true);
+                      dependencyDirPath.toFile(), new String[]{"jar"}, true);
       while (iterator.hasNext()) {
         File file = iterator.next();
         SizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
@@ -665,7 +560,7 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param artifact Artifact
    * @return Name of artifact
    */
-  public String getName(final ResolvedArtifact artifact) {
+  public static String getName(final ResolvedArtifact artifact) {
     String[] artifactGroupArtifactIds = artifact.toString().split(" \\(");
     String[] artifactGroupArtifactId = artifactGroupArtifactIds[1].split("\\)");
     return artifactGroupArtifactId[0] + ":" + ArtifactConfigurationMap.get(artifact);
@@ -711,7 +606,7 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param artifact Artifact
    * @return Name of artifact without scope.
    */
-  public String getArtifactGroupArtifactId(final String artifact) {
+  public static String getArtifactGroupArtifactId(final String artifact) {
     String[] parts = artifact.split(":");
     return parts[0] + ":" + parts[1] + ":" + parts[2];
   }
@@ -729,124 +624,4 @@ public class DepCleanGradleAction implements Action<Project> {
     }
     return allChildren;
   }
-
-  /**
-   * Writes the debloated-dependencies.gradle.
-   *
-   * @param file Target
-   * @param dependenciesToAdd Direct dependencies to be written directly.
-   * @param excludedTransitiveArtifactsMap Map [dependency] -> [excluded transitive child]
-   * @throws IOException In case of IO issues.
-   */
-  public void writeGradle(final File file, final Set<ResolvedArtifact> dependenciesToAdd,
-                       final Multimap<String, String> excludedTransitiveArtifactsMap)
-          throws IOException {
-    /* A multi-map [configuration] -> [dependency] */
-    Multimap<String, String> configurationDependencyMap = getNewConfigurations(dependenciesToAdd);
-
-    /* Writing starts */
-    FileWriter fileWriter = new FileWriter(file, true);
-    BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-    PrintWriter writer = new PrintWriter(bufferedWriter);
-
-    writer.println("dependencies {");
-
-    for (String configuration : configurationDependencyMap.keySet()) {
-      writer.print("\t" + configuration);
-
-      /* Getting all the dependencies with specified configuration and converting
-         it to an array for ease in writing. */
-      Collection<String> dependency = configurationDependencyMap.get(configuration);
-      String[] dep = dependency.toArray(new String[dependency.size()]);
-
-      /* Writing those dependencies which do not have to exclude any dependency(s).
-         Simultaneously, also getting those dependencies which have to exclude
-         some transitive dependencies. */
-      Set<String> excludeChildrenDependencies =
-              writeNonExcluded(writer, dep, excludedTransitiveArtifactsMap);
-
-      /* Writing those dependencies which have to exclude any dependency(s). */
-      if (!excludeChildrenDependencies.isEmpty()) {
-        writeExcluded(writer, configuration,
-                excludeChildrenDependencies, excludedTransitiveArtifactsMap);
-      }
-    }
-    writer.println("}");
-    writer.close();
-  }
-
-  // TODO: To modify later.
-  /**
-   * There are some dependencies configurations that are removed by Gradle above 7.0.0,
-   * like runtime converted to implementation. To know more visit <a href =
-   * "https://docs.gradle.org/current/userguide/upgrading_version_6.html">here.</a>, but still
-   * $dependencies.getConfiguration() still returns those deprecated scopes. <br>
-   * So, currently we just divide dependencies into two parts i.e. implementation
-   * & testImplementation.
-   *
-   * @param dependenciesToAdd All dependencies to be added.
-   * @return A multi-map with value as a dependency and key as it's configuration.
-   */
-  public Multimap<String, String> getNewConfigurations(
-          final Set<ResolvedArtifact> dependenciesToAdd) {
-    Multimap<String, String> configurationDependencyMap = ArrayListMultimap.create();
-    for (ResolvedArtifact artifact : dependenciesToAdd) {
-      String dependency = getArtifactGroupArtifactId(getName(artifact));
-      String oldConfiguration = getName(artifact).split(":")[3];
-      String configuration =
-              oldConfiguration.startsWith("test") || oldConfiguration.endsWith("Elements")
-                      ? "testImplementation" : "implementation";
-      configurationDependencyMap.put(configuration, dependency);
-    }
-    return configurationDependencyMap;
-  }
-
-  /**
-   * Writes those dependencies which don't have to exclude any transitive dependencies of their own.
-   * Simultaneously, it also returns the set of dependencies which have to exclude some
-   * transitive dependencies to write them separately.
-   *
-   * @param writer For writing.
-   * @param dep Dependencies to be printed.
-   * @param excludedTransitiveArtifactsMap [dependency] -> [excluded transitive dependencies].
-   * @return A set of dependencies.
-   */
-  public Set<String> writeNonExcluded(final PrintWriter writer,
-                                      final String[] dep,
-                                      final Multimap<String, String> excludedTransitiveArtifactsMap) {
-    Set<String> excludeChildrenDependencies = new HashSet<>();
-    int size = dep.length - 1;
-    for (int i = 0; i < size; i++) {
-      if (excludedTransitiveArtifactsMap.containsKey(dep[i])) {
-        excludeChildrenDependencies.add(dep[i]);
-      } else {
-        writer.println("\t\t\t'" + dep[i] + "',");
-      }
-    }
-    writer.println("\t\t\t'" + dep[size] + "'\n");
-    return excludeChildrenDependencies;
-  }
-
-  /**
-   * Writes those dependencies which have to exclude some of their transitive dependency(s).
-   *
-   * @param writer For writing.
-   * @param configuration Corresponding configuration.
-   * @param excludeChildrenDependencies Transitive dependencies to be excluded.
-   * @param excludedTransitiveArtifactsMap [dependency] -> [excluded transitive dependencies].
-   */
-  public void writeExcluded(final PrintWriter writer,
-                            final String configuration,
-                            final Set<String> excludeChildrenDependencies,
-                            final Multimap<String, String> excludedTransitiveArtifactsMap) {
-    for (String excludeDep : excludeChildrenDependencies) {
-      writer.println("\t" + configuration + " ('" + excludeDep + "') {");
-      Collection<String> excludeDependencies = excludedTransitiveArtifactsMap.get(excludeDep);
-      excludeDependencies.forEach(s ->
-              writer.println("\t\t\texclude group: '" + s.split(":")[0]
-                      + "', module: '" + s.split(":")[1] + "'"));
-      writer.println("\t}");
-    }
-  }
-
 }

@@ -3,5 +3,4 @@ dependencies {
 			'com.fasterxml.jackson.core:jackson-databind:2.12.2',
 			'com.fasterxml.jackson.core:jackson-annotations:2.12.2'
 
-
 }
