@@ -1,15 +1,19 @@
 plugins {
     id 'java'
+    id 'java-gradle-plugin'
 }
 
 group 'se.kth.castor'
 version '1.0-SNAPSHOT'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
+    implementation(gradleApi())
+    implementation('se.kth.castor:depclean-core:2.0.2-SNAPSHOT')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
