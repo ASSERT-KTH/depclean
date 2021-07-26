@@ -14,6 +14,7 @@ repositories {
 dependencies {
     implementation(gradleApi())
     implementation('se.kth.castor:depclean-core:2.0.2-SNAPSHOT')
+    compileOnly('org.projectlombok:lombok:1.18.20')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
