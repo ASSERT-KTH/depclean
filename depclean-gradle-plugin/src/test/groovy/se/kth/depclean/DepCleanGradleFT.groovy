@@ -6,8 +6,11 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import se.kth.depclean.util.FileUtils
 import spock.lang.Specification
 import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.gradle.testkit.runner.TaskOutcome.*
+import static org.junit.jupiter.api.Assertions.assertTrue
 
 class DepCleanGradleFT extends Specification {
 
@@ -29,6 +32,62 @@ class DepCleanGradleFT extends Specification {
               .buildAndFail()
     } catch (Exception e) {
       assertEquals(e, BuildFailureException)
+    }
+  }
+
+  String projectPath1 = "src/Test/resources-fts/all_dependencies_unused"
+  File allDependenciesUnused = new File(projectPath1)
+  File originalOutputFile1 = new File(projectPath1 + "/originalOutputFile.txt")
+  File expectedOutputFile1 = new File(projectPath1 + "/expectedOutputFile.txt")
+  @Test
+  @DisplayName("Test that depclean gradle plugin runs on a project which has only unused dependencies.")
+  def "all_dependencies_unused"() {
+    given:
+    def project = ProjectBuilder.builder().withProjectDir(allDependenciesUnused).build()
+
+    when:
+    project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+    BuildResult buildResult = createRunner(allDependenciesUnused, "build")
+    BuildResult debloatResult = createRunner(allDependenciesUnused, "debloat")
+
+    then:
+    assertEquals(SUCCESS, buildResult.task(":build").getOutcome())
+    assertEquals(SUCCESS, debloatResult.task(":debloat").getOutcome())
+
+    originalOutputFile1.write(debloatResult.getOutput())
+    assertTrue(compareOutputs(expectedOutputFile1, originalOutputFile1))
+    FileUtils.forceDelete(new File(projectPath1 + "/build"))
+  }
+
+  private static BuildResult createRunner(File project, String argument) {
+    BuildResult result = GradleRunner.create()
+            .withProjectDir(project)
+            .withArguments(argument)
+            .build()
+    return result
+  }
+
+  private static boolean compareOutputs(File expectedOutputFile, File originalOutputFile) {
+
+    FileReader fileReader1 = new FileReader(expectedOutputFile)
+    FileReader fileReader2 = new FileReader(originalOutputFile)
+    BufferedReader reader1 = new BufferedReader(fileReader1)
+    BufferedReader reader2 = new BufferedReader(fileReader2)
+
+    String line1, line2
+    while (true) {
+      // Continue while there are equal lines
+      line1 = reader1.readLine()
+      line2 = reader2.readLine()
+
+      if (line1 == null) {
+        // End of file 1
+        return 1
+      }
+      if (!line1.trim().equalsIgnoreCase(line2.trim())) {
+        // Different lines, or end of file 2
+        return 0
+      }
     }
   }
 }

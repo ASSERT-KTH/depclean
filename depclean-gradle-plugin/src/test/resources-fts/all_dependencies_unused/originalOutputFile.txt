@@ -1,0 +1,24 @@
+
+> Task :debloat
+Starting DepClean dependency analysis
+-------------------------------------------------------
+ D E P C L E A N   A N A L Y S I S   R E S U L T S
+-------------------------------------------------------
+-------------------------------------------------------
+USED DIRECT DEPENDENCIES [0]: 
+USED INHERITED DEPENDENCIES [0]: 
+USED TRANSITIVE DEPENDENCIES [0]: 
+POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: 
+	com.fasterxml.jackson.core:jackson-databind:2.12.2:compile (1 MB)
+POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]: 
+POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [2]: 
+	com.fasterxml.jackson.core:jackson-core:2.12.2:compile (356 KB)
+	com.fasterxml.jackson.core:jackson-annotations:2.12.2:compile (73 KB)
+-------------------------------------------------------
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.
+Use '--warning-mode all' to show the individual deprecation warnings.
+See https://docs.gradle.org/7.0.2/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 1s
+1 actionable task: 1 executed

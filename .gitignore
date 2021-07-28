@@ -5,6 +5,7 @@ Gemfile.lock
 *.idea
 *.iml
 *.gradle/
+build/
 
 target/
 
@@ -16,7 +17,6 @@ depclean-maven-plugin/target
 
 depclean-core/depclean-core.iml
 depclean-core/target/generated-sources/
-depclean-gradle-plugin/build/
 depclean-gradle-plugin/depclean-gradle-plugin.iml
 depclean-gradle-plugin/example/.gradle/4.10.2/vcsMetadata-1/
 depclean-gradle-plugin/example/build/dependencies/
