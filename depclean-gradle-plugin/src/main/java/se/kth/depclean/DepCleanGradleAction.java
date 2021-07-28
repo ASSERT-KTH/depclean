@@ -57,6 +57,7 @@ public class DepCleanGradleAction implements Action<Project> {
   private boolean failIfUnusedTransitive;
   private boolean failIfUnusedInherited;
   private Set<String> ignoreConfiguration;
+  private Set<String> ignoreDependencies;
 
   @SneakyThrows
   @Override
@@ -236,6 +237,18 @@ public class DepCleanGradleAction implements Action<Project> {
       unusedInheritedArtifactsCoordinates = excludeConfiguration(unusedInheritedArtifactsCoordinates);
     }
 
+    // Excluding dependencies ignored by the user from post analysis result.
+    // TODO : If a direct dependency is ignored by the user then it' corresponding
+    //  transitive and inherited dependencies should also be ignore.
+    if (ignoreDependencies != null) {
+      usedDirectArtifactsCoordinates = excludeDependencies(usedDirectArtifactsCoordinates);
+      usedTransitiveArtifactsCoordinates = excludeDependencies(usedTransitiveArtifactsCoordinates);
+      usedInheritedArtifactsCoordinates = excludeDependencies(usedInheritedArtifactsCoordinates);
+      unusedDirectArtifactsCoordinates = excludeDependencies(unusedDirectArtifactsCoordinates);
+      unusedTransitiveArtifactsCoordinates = excludeDependencies(unusedTransitiveArtifactsCoordinates);
+      unusedInheritedArtifactsCoordinates = excludeDependencies(unusedInheritedArtifactsCoordinates);
+    }
+
     /* Printing the results to the terminal */
     printString(SEPARATOR);
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
@@ -272,6 +285,14 @@ public class DepCleanGradleAction implements Action<Project> {
       ignoreConfiguration.forEach(s -> printString("\t" + s));
     }
 
+    // Dependencies ignored by depclean analysis on user's wish.
+    if (ignoreDependencies != null) {
+      printString(
+              "\nDependencies ignored in the analysis by the user"
+                      + " [" + ignoreDependencies.size() + "]" + ": ");
+      ignoreDependencies.forEach(s -> printString("\t" + s));
+    }
+
     /* Fail the build if there are unused direct dependencies */
     if (failIfUnusedDirect && !unusedDirectArtifactsCoordinates.isEmpty()) {
       throw new GradleException("Build failed due to unused direct dependencies"
@@ -304,6 +325,7 @@ public class DepCleanGradleAction implements Action<Project> {
     this.failIfUnusedTransitive = extension.isFailIfUnusedTransitive();
     this.failIfUnusedInherited = extension.isFailIfUnusedInherited();
     this.ignoreConfiguration = extension.getIgnoreConfiguration();
+    this.ignoreDependencies = extension.getIgnoreDependency();
   }
 
   /**
@@ -465,4 +487,22 @@ public class DepCleanGradleAction implements Action<Project> {
     }
     return nonExcludedConfigurations;
   }
+
+  /**
+   * Remove those artifact coordinates which are ignores by the user.
+   *
+   * @param artifactCoordinates Coordinates of the artifact.
+   * @return Un-ignored coordinates.
+   */
+  public Set<String> excludeDependencies(final Set<String> artifactCoordinates) {
+    Set<String> nonExcludedDependencies = new HashSet<>();
+    for (String coordinates : artifactCoordinates) {
+      if (!ignoreDependencies.contains(coordinates)) {
+        nonExcludedDependencies.add(coordinates);
+        ignoreDependencies.remove(coordinates);
+      }
+    }
+    return nonExcludedDependencies;
+  }
+
 }

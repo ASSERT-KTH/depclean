@@ -1,7 +1,6 @@
 package se.kth.depclean;
 
 import java.util.Set;
-
 import org.gradle.api.Project;
 
 /**
@@ -50,6 +49,13 @@ public class DepCleanGradlePluginExtension {
    */
   public Set<String> ignoreConfiguration;
 
+  /**
+   * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during
+   * the analysis and considered as used dependencies. Useful to override incomplete result caused
+   * by bytecode-level analysis Dependency format is <code>groupId:artifactId:version</code>.
+   */
+  public Set<String> ignoreDependency;
+
   // Getters ==========================================
 
   public Project getProject() {
@@ -76,5 +82,9 @@ public class DepCleanGradlePluginExtension {
 
   public Set<String> getIgnoreConfiguration() {
     return ignoreConfiguration;
+  }
+
+  public Set<String> getIgnoreDependency() {
+    return ignoreDependency;
   }
 }
