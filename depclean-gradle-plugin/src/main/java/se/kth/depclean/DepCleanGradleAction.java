@@ -54,6 +54,7 @@ public class DepCleanGradleAction implements Action<Project> {
   private boolean skipDepClean;
   private boolean isIgnoreTest;
   private boolean failIfUnusedDirect;
+  private boolean failIfUnusedTransitive;
 
   @SneakyThrows
   @Override
@@ -256,6 +257,12 @@ public class DepCleanGradleAction implements Action<Project> {
       throw new GradleException("Build failed due to unused direct dependencies"
               + " in the dependency tree of the project.");
     }
+
+    /* Fail the build if there are unused direct dependencies */
+    if (failIfUnusedTransitive && !unusedTransitiveArtifactsCoordinates.isEmpty()) {
+      throw new GradleException("Build failed due to unused transitive dependencies"
+              + " in the dependency tree of the project.");
+    }
   }
 
   /**
@@ -268,6 +275,7 @@ public class DepCleanGradleAction implements Action<Project> {
     this.skipDepClean = extension.isSkipDepClean();
     this.isIgnoreTest = extension.isIgnoreTest();
     this.failIfUnusedDirect = extension.isFailIfUnusedDirect();
+    this.failIfUnusedTransitive = extension.isFailIfUnusedTransitive();
   }
 
   /**

@@ -31,6 +31,12 @@ public class DepCleanGradlePluginExtension {
    */
   public boolean failIfUnusedDirect = false;
 
+  /**
+   * If this is true, and DepClean reported any unused transitive dependency in the dependency tree,
+   * then the project's build fails immediately after running DepClean.
+   */
+  public boolean failIfUnusedTransitive = false;
+
   // Getters ==========================================
 
   public Project getProject() {
@@ -46,4 +52,8 @@ public class DepCleanGradlePluginExtension {
   }
 
   public boolean isFailIfUnusedDirect() { return failIfUnusedDirect; }
+
+  public boolean isFailIfUnusedTransitive() {
+    return failIfUnusedTransitive;
+  }
 }
