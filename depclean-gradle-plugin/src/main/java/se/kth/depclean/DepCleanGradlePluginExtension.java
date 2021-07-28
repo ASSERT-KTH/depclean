@@ -17,6 +17,14 @@ public class DepCleanGradlePluginExtension {
    */
   public boolean skipDepClean = false;
 
+  /**
+   * If this is true, DepClean will not analyze the test sources in the project, and, therefore,
+   * the dependencies that are only used for testing will be considered unused. This property is
+   * useful to detect dependencies that have a compile scope but are only used during testing.
+   * Hence, these dependencies should have a test scope.
+   */
+  public boolean ignoreTest = false;
+
   // Getters ==========================================
 
   public Project getProject() {
@@ -27,4 +35,7 @@ public class DepCleanGradlePluginExtension {
     return skipDepClean;
   }
 
+  public boolean isIgnoreTest() {
+    return ignoreTest;
+  }
 }

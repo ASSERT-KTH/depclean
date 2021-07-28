@@ -51,6 +51,7 @@ public class DepCleanGradleAction implements Action<Project> {
   // Extensions fields =====================================
   private Project project;
   private boolean skipDepClean;
+  private boolean isIgnoreTest;
 
   @SneakyThrows
   @Override
@@ -148,7 +149,6 @@ public class DepCleanGradleAction implements Action<Project> {
     /* Decompress dependencies */
     decompressDependencies(dependencyDirectory, dependencyDirPath.toString());
 
-    final boolean isIgnoreTest = true;
     /* Analyze dependencies usage status */
     GradleProjectDependencyAnalysis projectDependencyAnalysis = null;
     DefaultGradleProjectDependencyAnalyzer dependencyAnalyzer =
@@ -258,6 +258,7 @@ public class DepCleanGradleAction implements Action<Project> {
   public void getPluginExtensions(final DepCleanGradlePluginExtension extension) {
     this.project = extension.getProject();
     this.skipDepClean = extension.isSkipDepClean();
+    this.isIgnoreTest = extension.isIgnoreTest();
   }
 
   /**
