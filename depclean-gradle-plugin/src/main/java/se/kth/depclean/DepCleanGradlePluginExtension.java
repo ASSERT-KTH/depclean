@@ -37,6 +37,12 @@ public class DepCleanGradlePluginExtension {
    */
   public boolean failIfUnusedTransitive = false;
 
+  /**
+   * If this is true, and DepClean reported any unused inherited dependency in the dependency tree,
+   * then the project's build fails immediately after running DepClean.
+   */
+  public boolean failIfUnusedInherited = false;
+
   // Getters ==========================================
 
   public Project getProject() {
@@ -55,5 +61,9 @@ public class DepCleanGradlePluginExtension {
 
   public boolean isFailIfUnusedTransitive() {
     return failIfUnusedTransitive;
+  }
+
+  public boolean isFailIfUnusedInherited() {
+    return failIfUnusedInherited;
   }
 }
