@@ -21,6 +21,8 @@ depclean-gradle-plugin/depclean-gradle-plugin.iml
 depclean-gradle-plugin/example/.gradle/4.10.2/vcsMetadata-1/
 depclean-gradle-plugin/example/build/dependencies/
 depclean-gradle-plugin/example/build/tmp/compileJava/
+depclean-gradle-plugin/src/test/resources-fts/*/originalOutputFile.txt
+depclean-gradle-plugin/src/test/resources-fts/*/debloated-dependencies.gradle
 depclean-maven-plugin/depclean-maven-plugin.iml
 depclean-maven-plugin/target/generated-sources/
 depclean-maven-plugin/target/generated-test-sources/
