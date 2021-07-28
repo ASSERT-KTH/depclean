@@ -56,6 +56,7 @@ public class DepCleanGradleAction implements Action<Project> {
   private boolean failIfUnusedDirect;
   private boolean failIfUnusedTransitive;
   private boolean failIfUnusedInherited;
+  private Set<String> ignoreConfiguration;
 
   @SneakyThrows
   @Override
@@ -225,6 +226,16 @@ public class DepCleanGradleAction implements Action<Project> {
     unusedTransitiveArtifactsCoordinates.removeAll(unusedDirectArtifactsCoordinates);
     unusedTransitiveArtifactsCoordinates.removeAll(unusedInheritedArtifactsCoordinates);
 
+    // Exclude dependencies with specific scopes from the post analysis result.
+    if (ignoreConfiguration != null) {
+      usedDirectArtifactsCoordinates = excludeConfiguration(usedDirectArtifactsCoordinates);
+      usedTransitiveArtifactsCoordinates = excludeConfiguration(usedTransitiveArtifactsCoordinates);
+      usedInheritedArtifactsCoordinates = excludeConfiguration(usedInheritedArtifactsCoordinates);
+      unusedDirectArtifactsCoordinates = excludeConfiguration(unusedDirectArtifactsCoordinates);
+      unusedTransitiveArtifactsCoordinates = excludeConfiguration(unusedTransitiveArtifactsCoordinates);
+      unusedInheritedArtifactsCoordinates = excludeConfiguration(unusedInheritedArtifactsCoordinates);
+    }
+
     /* Printing the results to the terminal */
     printString(SEPARATOR);
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
@@ -251,6 +262,14 @@ public class DepCleanGradleAction implements Action<Project> {
               "\nDependencies that can't be resolved during the analysis"
                       + " [" + allUnresolvedDependencies.size() + "]" + ": ");
       allUnresolvedDependencies.forEach(s -> printString("\t" + s));
+    }
+
+    // Configurations ignored by the depclean analysis on user's wish.
+    if (ignoreConfiguration != null) {
+      printString(
+              "\nConfigurations ignored in the analysis by the user : "
+                      + " [" + ignoreConfiguration.size() + "]" + ": ");
+      ignoreConfiguration.forEach(s -> printString("\t" + s));
     }
 
     /* Fail the build if there are unused direct dependencies */
@@ -284,6 +303,7 @@ public class DepCleanGradleAction implements Action<Project> {
     this.failIfUnusedDirect = extension.isFailIfUnusedDirect();
     this.failIfUnusedTransitive = extension.isFailIfUnusedTransitive();
     this.failIfUnusedInherited = extension.isFailIfUnusedInherited();
+    this.ignoreConfiguration = extension.getIgnoreConfiguration();
   }
 
   /**
@@ -427,5 +447,22 @@ public class DepCleanGradleAction implements Action<Project> {
     String[] artifactGroupArtifactIds = artifact.toString().split(" \\(");
     String[] artifactGroupArtifactId = artifactGroupArtifactIds[1].split("\\)");
     return artifactGroupArtifactId[0] + ":" + ArtifactConfigurationMap.get(artifact);
+  }
+
+  /**
+   * Remove those artifacts coordinates which belong to the configuration, ignored by the user.
+   *
+   * @param artifactCoordinates Coordinates of the artifact.
+   * @return Un-ignored coordinates.
+   */
+  public Set<String> excludeConfiguration(final Set<String> artifactCoordinates) {
+    Set<String> nonExcludedConfigurations = new HashSet<>();
+    for (String coordinates : artifactCoordinates) {
+      String configuration = coordinates.split(":")[3];
+      if (!ignoreConfiguration.contains(configuration)) {
+        nonExcludedConfigurations.add(coordinates);
+      }
+    }
+    return nonExcludedConfigurations;
   }
 }

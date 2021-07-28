@@ -1,5 +1,7 @@
 package se.kth.depclean;
 
+import java.util.Set;
+
 import org.gradle.api.Project;
 
 /**
@@ -43,6 +45,11 @@ public class DepCleanGradlePluginExtension {
    */
   public boolean failIfUnusedInherited = false;
 
+  /**
+   * Ignore dependencies with specific configurations from the DepClean analysis.
+   */
+  public Set<String> ignoreConfiguration;
+
   // Getters ==========================================
 
   public Project getProject() {
@@ -65,5 +72,9 @@ public class DepCleanGradlePluginExtension {
 
   public boolean isFailIfUnusedInherited() {
     return failIfUnusedInherited;
+  }
+
+  public Set<String> getIgnoreConfiguration() {
+    return ignoreConfiguration;
   }
 }
