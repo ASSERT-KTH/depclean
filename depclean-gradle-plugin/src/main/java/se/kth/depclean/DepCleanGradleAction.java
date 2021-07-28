@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
@@ -52,6 +53,7 @@ public class DepCleanGradleAction implements Action<Project> {
   private Project project;
   private boolean skipDepClean;
   private boolean isIgnoreTest;
+  private boolean failIfUnusedDirect;
 
   @SneakyThrows
   @Override
@@ -248,6 +250,12 @@ public class DepCleanGradleAction implements Action<Project> {
                       + " [" + allUnresolvedDependencies.size() + "]" + ": ");
       allUnresolvedDependencies.forEach(s -> printString("\t" + s));
     }
+
+    /* Fail the build if there are unused direct dependencies */
+    if (failIfUnusedDirect && !unusedDirectArtifactsCoordinates.isEmpty()) {
+      throw new GradleException("Build failed due to unused direct dependencies"
+              + " in the dependency tree of the project.");
+    }
   }
 
   /**
@@ -259,6 +267,7 @@ public class DepCleanGradleAction implements Action<Project> {
     this.project = extension.getProject();
     this.skipDepClean = extension.isSkipDepClean();
     this.isIgnoreTest = extension.isIgnoreTest();
+    this.failIfUnusedDirect = extension.isFailIfUnusedDirect();
   }
 
   /**

@@ -25,6 +25,12 @@ public class DepCleanGradlePluginExtension {
    */
   public boolean ignoreTest = false;
 
+  /**
+   * If this is true, and DepClean reported any unused direct dependency in the dependency tree,
+   * then the project's build fails immediately after running DepClean.
+   */
+  public boolean failIfUnusedDirect = false;
+
   // Getters ==========================================
 
   public Project getProject() {
@@ -38,4 +44,6 @@ public class DepCleanGradlePluginExtension {
   public boolean isIgnoreTest() {
     return ignoreTest;
   }
+
+  public boolean isFailIfUnusedDirect() { return failIfUnusedDirect; }
 }
