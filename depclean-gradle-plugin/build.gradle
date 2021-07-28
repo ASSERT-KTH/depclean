@@ -1,25 +1,34 @@
 plugins {
-    id 'java'
-    id 'java-gradle-plugin'
+  id 'java'
+  id 'java-gradle-plugin'
 }
 
 group 'se.kth.castor'
 version '1.0-SNAPSHOT'
 
 repositories {
-    mavenLocal()
-    mavenCentral()
+  mavenLocal()
+  mavenCentral()
 }
 
 dependencies {
-    implementation(gradleApi())
-    implementation('se.kth.castor:depclean-core:2.0.2-SNAPSHOT')
-    implementation('se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT')
-    compileOnly('org.projectlombok:lombok:1.18.20')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+  implementation(gradleApi())
+  implementation('se.kth.castor:depclean-core:2.0.2-SNAPSHOT')
+  implementation('se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT')
+  compileOnly('org.projectlombok:lombok:1.18.20')
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
 test {
-    useJUnitPlatform()
+  useJUnitPlatform()
+}
+
+gradlePlugin {
+  plugins {
+    demoPlugin {
+      id = 'se.kth.castor.depclean-gradle-plugin'
+      implementationClass = 'se.kth.depclean.DepCleanGradlePlugin'
+    }
+  }
 }
