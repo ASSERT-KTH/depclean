@@ -83,6 +83,28 @@ class DepCleanGradleFT extends Specification {
     FileUtils.forceDelete(new File(projectPath2 + "/build"))
   }
 
+  String projectPath3 = "src/test/resources-fts/debloated_dependencies.gradle_is_correct"
+  File debloatedDependenciesIsCorrect = new File(projectPath3)
+  File generatedDebloatedDependenciesDotGradle = new File(projectPath3 + "/debloated-dependencies.gradle");
+  @Test
+  @DisplayName("Test that the depclean creates a proper debloated-dependencies.gradle file.")
+  def "debloated_dependencies.gradle_is_correct"() {
+    given:
+    def project = ProjectBuilder.builder().withProjectDir(debloatedDependenciesIsCorrect).build()
+
+    when:
+    project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+    BuildResult buildResult = createRunner(debloatedDependenciesIsCorrect, "build")
+    BuildResult debloatResult = createRunner(debloatedDependenciesIsCorrect, "debloat")
+
+    then:
+    assertEquals(SUCCESS, buildResult.task(":build").getOutcome())
+    assertEquals(SUCCESS, debloatResult.task(":debloat").getOutcome())
+
+    assertTrue(generatedDebloatedDependenciesDotGradle.exists())
+    FileUtils.forceDelete(new File(projectPath3 + "/build"))
+  }
+
   private static BuildResult createRunner(File project, String argument) {
     BuildResult result = GradleRunner.create()
             .withProjectDir(project)
