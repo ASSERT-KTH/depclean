@@ -59,6 +59,30 @@ class DepCleanGradleFT extends Specification {
     FileUtils.forceDelete(new File(projectPath1 + "/build"))
   }
 
+  String projectPath2 = "src/Test/resources-fts/all_dependencies_used"
+  File allDependenciesUsed = new File(projectPath2)
+  File originalOutputFile2 = new File(projectPath2 + "/originalOutputFile.txt")
+  File expectedOutputFile2 = new File(projectPath2 + "/expectedOutputFile.txt")
+  @Test
+  @DisplayName("Test that depclean gradle plugin runs on a project which has only used dependencies.")
+  def "all_dependencies_used"() {
+    given:
+    def project = ProjectBuilder.builder().withProjectDir(allDependenciesUsed).build()
+
+    when:
+    project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+    BuildResult buildResult = createRunner(allDependenciesUsed, "build")
+    BuildResult debloatResult = createRunner(allDependenciesUsed, "debloat")
+
+    then:
+    assertEquals(SUCCESS, buildResult.task(":build").getOutcome())
+    assertEquals(SUCCESS, debloatResult.task(":debloat").getOutcome())
+
+    originalOutputFile2.write(debloatResult.getOutput())
+    assertTrue(compareOutputs(expectedOutputFile2, originalOutputFile2))
+    FileUtils.forceDelete(new File(projectPath2 + "/build"))
+  }
+
   private static BuildResult createRunner(File project, String argument) {
     BuildResult result = GradleRunner.create()
             .withProjectDir(project)
