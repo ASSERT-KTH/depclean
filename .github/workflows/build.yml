@@ -113,7 +113,7 @@ jobs:
       #   path: ~/depclean-gradle-plugin
 
       - name: Build with maven (Getting missing dependencies)
-        run: mvn clean install
+        run: mvn clean install -q
 
       - name: Build with Gradle
         run: |
