@@ -1,5 +1,7 @@
 package se.kth.depclean;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,6 +27,7 @@ import org.gradle.api.artifacts.UnresolvedDependency;
 import org.gradle.api.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 import se.kth.depclean.utils.DependencyUtils;
+import se.kth.depclean.utils.GradleWritingUtils;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
@@ -56,6 +59,10 @@ public class DepCleanGradleAction implements Action<Project> {
   private boolean failIfUnusedDirect;
   private boolean failIfUnusedTransitive;
   private boolean failIfUnusedInherited;
+  private boolean createBuildDebloated;
+  // TODO : The implementation of next two parameters will be done later.
+  private boolean createResultJson;
+  private boolean createClassUsageCsv;
   private Set<String> ignoreConfiguration;
   private Set<String> ignoreDependencies;
 
@@ -310,6 +317,91 @@ public class DepCleanGradleAction implements Action<Project> {
       throw new GradleException("Build failed due to unused inherited dependencies"
               + " in the dependency tree of the project.");
     }
+
+    /* Writing the debloated version of the pom */
+    if (createBuildDebloated) {
+      logger.lifecycle("Starting debloating dependencies");
+
+      // All dependencies which will be added directly to the desired file.
+      Set<ResolvedArtifact> dependenciesToAdd = new HashSet<>();
+
+      /* Adding used direct dependencies */
+      try {
+        logger
+                .lifecycle("Adding " + usedDirectArtifacts.size()
+                        + " used direct dependencies");
+        dependenciesToAdd.addAll(usedDirectArtifacts);
+      } catch (Exception e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+
+      /* Add used transitive as direct dependencies */
+      try {
+        if (!usedTransitiveArtifacts.isEmpty()) {
+          logger
+                  .lifecycle("Adding " + usedTransitiveArtifacts.size()
+                          + " used transitive dependencies as direct dependencies.");
+          dependenciesToAdd.addAll(usedTransitiveArtifacts);
+        }
+      } catch (Exception e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+
+      /* Exclude unused transitive dependencies */
+
+      /* A multi-map [parent] -> [child] i.e. this will keep a track of from which dependency
+         the unused transitive dependencies should be excluded. Also, here multi-map is preferred
+         as one transitive dependency can have more than one parent. */
+      Multimap<String, String> excludedTransitiveArtifactsMap = ArrayListMultimap.create();
+
+      // A set that contains all the transitive children of project's dependencies.
+      Set<ResolvedDependency> allChildren = getAllChildren(allDependencies);
+      try {
+        if (!unusedTransitiveArtifacts.isEmpty()) {
+          logger
+                  .lifecycle("Excluding " + unusedTransitiveArtifactsCoordinates.size()
+                          + " unused transitive dependencies one-by-one.");
+          for (String artifact : unusedTransitiveArtifactsCoordinates) {
+            String unusedTransitiveDependencyId = getArtifactGroupArtifactId(artifact);
+            for (ResolvedDependency dependency : allChildren) {
+              if (dependency.getName().equals(unusedTransitiveDependencyId)) {
+                // i.e. this dependency should be excluded from all it's parents.
+                Set<ResolvedDependency> parents = dependency.getParents();
+                parents.forEach(s -> excludedTransitiveArtifactsMap
+                        .put(s.getName(), unusedTransitiveDependencyId));
+                break; // Not need to check further.
+              }
+            }
+          }
+        }
+      } catch (Exception e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+
+      /* Write the debloated-dependencies.gradle file */
+      final Path pathToDebloatedDependencies = projectDirPath.resolve("debloated-dependencies.gradle");
+      File debloatedDependencies = pathToDebloatedDependencies.toFile();
+      try {
+        // Delete the previous existence (if exist).
+        if (debloatedDependencies.exists()) {
+          se.kth.depclean.util.FileUtils.forceDelete(debloatedDependencies);
+          debloatedDependencies.createNewFile();
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      try {
+        GradleWritingUtils.writeGradle(debloatedDependencies,
+                dependenciesToAdd,
+                excludedTransitiveArtifactsMap);
+      } catch (IOException e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+      logger.lifecycle("Dependencies debloated successfully");
+      logger.lifecycle("debloated-dependencies.gradle file created in: "
+              + pathToDebloatedDependencies);
+    }
   }
 
   /**
@@ -324,6 +416,9 @@ public class DepCleanGradleAction implements Action<Project> {
     this.failIfUnusedDirect = extension.isFailIfUnusedDirect();
     this.failIfUnusedTransitive = extension.isFailIfUnusedTransitive();
     this.failIfUnusedInherited = extension.isFailIfUnusedInherited();
+    this.createBuildDebloated = extension.isCreateBuildDebloated();
+    this.createResultJson = extension.isCreateResultJson();
+    this.createClassUsageCsv = extension.isCreateClassUsageCsv();
     this.ignoreConfiguration = extension.getIgnoreConfiguration();
     this.ignoreDependencies = extension.getIgnoreDependency();
   }
@@ -503,6 +598,31 @@ public class DepCleanGradleAction implements Action<Project> {
       }
     }
     return nonExcludedDependencies;
+  }
+
+  /**
+   * Get coordinates(name) without scopes or configuration.
+   *
+   * @param artifact Artifact
+   * @return Name of artifact without scope.
+   */
+  public static String getArtifactGroupArtifactId(final String artifact) {
+    String[] parts = artifact.split(":");
+    return parts[0] + ":" + parts[1] + ":" + parts[2];
+  }
+
+  /**
+   * Get all the transitive children of all the project's dependencies.
+   *
+   * @param allDependencies Set of all dependencies
+   * @return Set of all children
+   */
+  public Set<ResolvedDependency> getAllChildren(final Set<ResolvedDependency> allDependencies) {
+    Set<ResolvedDependency> allChildren = new HashSet<>();
+    for (ResolvedDependency dependency : allDependencies) {
+      allChildren.addAll(dependency.getChildren());
+    }
+    return allChildren;
   }
 
 }

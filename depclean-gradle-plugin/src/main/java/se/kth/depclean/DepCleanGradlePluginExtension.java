@@ -45,6 +45,25 @@ public class DepCleanGradlePluginExtension {
   public boolean failIfUnusedInherited = false;
 
   /**
+   * If this is true, DepClean creates a debloated version of the build.gradle without
+   * unused dependencies, called "debloated-build.gradle", in root of the project.
+   */
+  public boolean createBuildDebloated = false;
+
+  /**
+   * If this is true, DepClean creates a JSON file with the result of the analysis.
+   * The file is called "debloat-result.json" and it is located in /build.
+   */
+  public boolean createResultJson = false;
+
+  /**
+   * If this is true, DepClean creates a CSV file with the result of the analysis
+   * with the columns: OriginClass,TargetClass,Dependency. The file is called
+   * "class-usage.csv" and it is located in /target.
+   */
+  public boolean createClassUsageCsv;
+
+  /**
    * Ignore dependencies with specific configurations from the DepClean analysis.
    */
   public Set<String> ignoreConfiguration;
@@ -79,6 +98,12 @@ public class DepCleanGradlePluginExtension {
   public boolean isFailIfUnusedInherited() {
     return failIfUnusedInherited;
   }
+
+  public boolean isCreateBuildDebloated() { return createBuildDebloated; }
+
+  public boolean isCreateResultJson() { return createResultJson; }
+
+  public boolean isCreateClassUsageCsv() { return createClassUsageCsv; }
 
   public Set<String> getIgnoreConfiguration() {
     return ignoreConfiguration;
