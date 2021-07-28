@@ -1,6 +1,8 @@
 plugins {
   id 'java'
+  id 'groovy'
   id 'java-gradle-plugin'
+  id 'maven-publish'
 }
 
 group 'se.kth.castor'
@@ -13,11 +15,12 @@ repositories {
 
 dependencies {
   implementation(gradleApi())
+  implementation(gradleTestKit())
   implementation('se.kth.castor:depclean-core:2.0.2-SNAPSHOT')
   implementation('se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT')
   compileOnly('org.projectlombok:lombok:1.18.20')
+  testImplementation('org.spockframework:spock-core:2.0-groovy-3.0')
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
 test {
