@@ -1,5 +1,7 @@
 package se.kth.depclean;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
@@ -24,11 +27,11 @@ import org.gradle.api.artifacts.UnresolvedDependency;
 import org.gradle.api.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 import se.kth.depclean.utils.DependencyUtils;
+import se.kth.depclean.utils.GradleWritingUtils;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.util.JarUtils;
-
 
 /**
  * Depclean default and only action.
@@ -49,11 +52,40 @@ public class DepCleanGradleAction implements Action<Project> {
    */
   private static final Map<String, Long> SizeOfDependencies = new HashMap<>();
 
+  // Extensions fields =====================================
+  private Project project;
+  private boolean skipDepClean;
+  private boolean isIgnoreTest;
+  private boolean failIfUnusedDirect;
+  private boolean failIfUnusedTransitive;
+  private boolean failIfUnusedInherited;
+  private boolean createBuildDebloated;
+  // TODO : The implementation of next two parameters will be done later.
+  private boolean createResultJson;
+  private boolean createClassUsageCsv;
+  private Set<String> ignoreConfiguration;
+  private Set<String> ignoreDependencies;
+
   @SneakyThrows
   @Override
   public void execute(@NotNull Project project) {
 
     Logger logger = project.getLogger();
+
+    // If the user provided some configuration.
+    DepCleanGradlePluginExtension extension = project.getExtensions()
+            .getByType(DepCleanGradlePluginExtension.class);
+    getPluginExtensions(extension);
+
+    if (skipDepClean) {
+      logger.lifecycle("Skipping DepClean plugin execution");
+      return;
+    }
+
+    // If the project is not the default one.
+    if (this.project != null) {
+      project = this.project;
+    }
 
     // Path to the project directory.
     final Path projectDirPath = Paths.get(project.getProjectDir().getAbsolutePath());
@@ -130,7 +162,6 @@ public class DepCleanGradleAction implements Action<Project> {
     /* Decompress dependencies */
     decompressDependencies(dependencyDirectory, dependencyDirPath.toString());
 
-    final boolean isIgnoreTest = true;
     /* Analyze dependencies usage status */
     GradleProjectDependencyAnalysis projectDependencyAnalysis = null;
     DefaultGradleProjectDependencyAnalyzer dependencyAnalyzer =
@@ -203,6 +234,28 @@ public class DepCleanGradleAction implements Action<Project> {
     unusedTransitiveArtifactsCoordinates.removeAll(unusedDirectArtifactsCoordinates);
     unusedTransitiveArtifactsCoordinates.removeAll(unusedInheritedArtifactsCoordinates);
 
+    // Exclude dependencies with specific scopes from the post analysis result.
+    if (ignoreConfiguration != null) {
+      usedDirectArtifactsCoordinates = excludeConfiguration(usedDirectArtifactsCoordinates);
+      usedTransitiveArtifactsCoordinates = excludeConfiguration(usedTransitiveArtifactsCoordinates);
+      usedInheritedArtifactsCoordinates = excludeConfiguration(usedInheritedArtifactsCoordinates);
+      unusedDirectArtifactsCoordinates = excludeConfiguration(unusedDirectArtifactsCoordinates);
+      unusedTransitiveArtifactsCoordinates = excludeConfiguration(unusedTransitiveArtifactsCoordinates);
+      unusedInheritedArtifactsCoordinates = excludeConfiguration(unusedInheritedArtifactsCoordinates);
+    }
+
+    // Excluding dependencies ignored by the user from post analysis result.
+    // TODO : If a direct dependency is ignored by the user then it' corresponding
+    //  transitive and inherited dependencies should also be ignore.
+    if (ignoreDependencies != null) {
+      usedDirectArtifactsCoordinates = excludeDependencies(usedDirectArtifactsCoordinates);
+      usedTransitiveArtifactsCoordinates = excludeDependencies(usedTransitiveArtifactsCoordinates);
+      usedInheritedArtifactsCoordinates = excludeDependencies(usedInheritedArtifactsCoordinates);
+      unusedDirectArtifactsCoordinates = excludeDependencies(unusedDirectArtifactsCoordinates);
+      unusedTransitiveArtifactsCoordinates = excludeDependencies(unusedTransitiveArtifactsCoordinates);
+      unusedInheritedArtifactsCoordinates = excludeDependencies(unusedInheritedArtifactsCoordinates);
+    }
+
     /* Printing the results to the terminal */
     printString(SEPARATOR);
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
@@ -230,6 +283,144 @@ public class DepCleanGradleAction implements Action<Project> {
                       + " [" + allUnresolvedDependencies.size() + "]" + ": ");
       allUnresolvedDependencies.forEach(s -> printString("\t" + s));
     }
+
+    // Configurations ignored by the depclean analysis on user's wish.
+    if (ignoreConfiguration != null) {
+      printString(
+              "\nConfigurations ignored in the analysis by the user : "
+                      + " [" + ignoreConfiguration.size() + "]" + ": ");
+      ignoreConfiguration.forEach(s -> printString("\t" + s));
+    }
+
+    // Dependencies ignored by depclean analysis on user's wish.
+    if (ignoreDependencies != null) {
+      printString(
+              "\nDependencies ignored in the analysis by the user"
+                      + " [" + ignoreDependencies.size() + "]" + ": ");
+      ignoreDependencies.forEach(s -> printString("\t" + s));
+    }
+
+    /* Fail the build if there are unused direct dependencies */
+    if (failIfUnusedDirect && !unusedDirectArtifactsCoordinates.isEmpty()) {
+      throw new GradleException("Build failed due to unused direct dependencies"
+              + " in the dependency tree of the project.");
+    }
+
+    /* Fail the build if there are unused direct dependencies */
+    if (failIfUnusedTransitive && !unusedTransitiveArtifactsCoordinates.isEmpty()) {
+      throw new GradleException("Build failed due to unused transitive dependencies"
+              + " in the dependency tree of the project.");
+    }
+
+    /* Fail the build if there are unused direct dependencies */
+    if (failIfUnusedInherited && !unusedInheritedArtifactsCoordinates.isEmpty()) {
+      throw new GradleException("Build failed due to unused inherited dependencies"
+              + " in the dependency tree of the project.");
+    }
+
+    /* Writing the debloated version of the pom */
+    if (createBuildDebloated) {
+      logger.lifecycle("Starting debloating dependencies");
+
+      // All dependencies which will be added directly to the desired file.
+      Set<ResolvedArtifact> dependenciesToAdd = new HashSet<>();
+
+      /* Adding used direct dependencies */
+      try {
+        logger
+                .lifecycle("Adding " + usedDirectArtifacts.size()
+                        + " used direct dependencies");
+        dependenciesToAdd.addAll(usedDirectArtifacts);
+      } catch (Exception e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+
+      /* Add used transitive as direct dependencies */
+      try {
+        if (!usedTransitiveArtifacts.isEmpty()) {
+          logger
+                  .lifecycle("Adding " + usedTransitiveArtifacts.size()
+                          + " used transitive dependencies as direct dependencies.");
+          dependenciesToAdd.addAll(usedTransitiveArtifacts);
+        }
+      } catch (Exception e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+
+      /* Exclude unused transitive dependencies */
+
+      /* A multi-map [parent] -> [child] i.e. this will keep a track of from which dependency
+         the unused transitive dependencies should be excluded. Also, here multi-map is preferred
+         as one transitive dependency can have more than one parent. */
+      Multimap<String, String> excludedTransitiveArtifactsMap = ArrayListMultimap.create();
+
+      // A set that contains all the transitive children of project's dependencies.
+      Set<ResolvedDependency> allChildren = getAllChildren(allDependencies);
+      try {
+        if (!unusedTransitiveArtifacts.isEmpty()) {
+          logger
+                  .lifecycle("Excluding " + unusedTransitiveArtifactsCoordinates.size()
+                          + " unused transitive dependencies one-by-one.");
+          for (String artifact : unusedTransitiveArtifactsCoordinates) {
+            String unusedTransitiveDependencyId = getArtifactGroupArtifactId(artifact);
+            for (ResolvedDependency dependency : allChildren) {
+              if (dependency.getName().equals(unusedTransitiveDependencyId)) {
+                // i.e. this dependency should be excluded from all it's parents.
+                Set<ResolvedDependency> parents = dependency.getParents();
+                parents.forEach(s -> excludedTransitiveArtifactsMap
+                        .put(s.getName(), unusedTransitiveDependencyId));
+                break; // Not need to check further.
+              }
+            }
+          }
+        }
+      } catch (Exception e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+
+      /* Write the debloated-dependencies.gradle file */
+      final Path pathToDebloatedDependencies = projectDirPath.resolve("debloated-dependencies.gradle");
+      File debloatedDependencies = pathToDebloatedDependencies.toFile();
+      try {
+        // Delete the previous existence (if exist).
+        if (debloatedDependencies.exists()) {
+          se.kth.depclean.util.FileUtils.forceDelete(debloatedDependencies);
+          debloatedDependencies.createNewFile();
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      try {
+        GradleWritingUtils.writeGradle(debloatedDependencies,
+                dependenciesToAdd,
+                excludedTransitiveArtifactsMap);
+      } catch (IOException e) {
+        throw new GradleException(e.getMessage(), e);
+      }
+      logger.lifecycle("Dependencies debloated successfully");
+      logger.lifecycle("debloated-dependencies.gradle file created in: "
+              + pathToDebloatedDependencies);
+    }
+  }
+
+  /**
+   * A utility method to get the additional configuration of the plugin.
+   *
+   * @param extension Plugin extension class.
+   */
+  public void getPluginExtensions(final DepCleanGradlePluginExtension extension) {
+    this.project = extension.getProject();
+    this.skipDepClean = extension.isSkipDepClean();
+    this.isIgnoreTest = extension.isIgnoreTest();
+    this.failIfUnusedDirect = extension.isFailIfUnusedDirect();
+    this.failIfUnusedTransitive = extension.isFailIfUnusedTransitive();
+    this.failIfUnusedInherited = extension.isFailIfUnusedInherited();
+    this.createBuildDebloated = extension.isCreateBuildDebloated();
+    this.createResultJson = extension.isCreateResultJson();
+    this.createClassUsageCsv = extension.isCreateClassUsageCsv();
+    this.ignoreConfiguration = extension.getIgnoreConfiguration();
+    this.ignoreDependencies = extension.getIgnoreDependency();
   }
 
   /**
@@ -374,4 +565,64 @@ public class DepCleanGradleAction implements Action<Project> {
     String[] artifactGroupArtifactId = artifactGroupArtifactIds[1].split("\\)");
     return artifactGroupArtifactId[0] + ":" + ArtifactConfigurationMap.get(artifact);
   }
+
+  /**
+   * Remove those artifacts coordinates which belong to the configuration, ignored by the user.
+   *
+   * @param artifactCoordinates Coordinates of the artifact.
+   * @return Un-ignored coordinates.
+   */
+  public Set<String> excludeConfiguration(final Set<String> artifactCoordinates) {
+    Set<String> nonExcludedConfigurations = new HashSet<>();
+    for (String coordinates : artifactCoordinates) {
+      String configuration = coordinates.split(":")[3];
+      if (!ignoreConfiguration.contains(configuration)) {
+        nonExcludedConfigurations.add(coordinates);
+      }
+    }
+    return nonExcludedConfigurations;
+  }
+
+  /**
+   * Remove those artifact coordinates which are ignores by the user.
+   *
+   * @param artifactCoordinates Coordinates of the artifact.
+   * @return Un-ignored coordinates.
+   */
+  public Set<String> excludeDependencies(final Set<String> artifactCoordinates) {
+    Set<String> nonExcludedDependencies = new HashSet<>();
+    for (String coordinates : artifactCoordinates) {
+      if (!ignoreDependencies.contains(coordinates)) {
+        nonExcludedDependencies.add(coordinates);
+        ignoreDependencies.remove(coordinates);
+      }
+    }
+    return nonExcludedDependencies;
+  }
+
+  /**
+   * Get coordinates(name) without scopes or configuration.
+   *
+   * @param artifact Artifact
+   * @return Name of artifact without scope.
+   */
+  public static String getArtifactGroupArtifactId(final String artifact) {
+    String[] parts = artifact.split(":");
+    return parts[0] + ":" + parts[1] + ":" + parts[2];
+  }
+
+  /**
+   * Get all the transitive children of all the project's dependencies.
+   *
+   * @param allDependencies Set of all dependencies
+   * @return Set of all children
+   */
+  public Set<ResolvedDependency> getAllChildren(final Set<ResolvedDependency> allDependencies) {
+    Set<ResolvedDependency> allChildren = new HashSet<>();
+    for (ResolvedDependency dependency : allDependencies) {
+      allChildren.addAll(dependency.getChildren());
+    }
+    return allChildren;
+  }
+
 }
