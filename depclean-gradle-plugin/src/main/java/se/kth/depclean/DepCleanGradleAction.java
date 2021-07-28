@@ -29,7 +29,6 @@ import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.util.JarUtils;
 
-
 /**
  * Depclean default and only action.
  */
@@ -49,11 +48,30 @@ public class DepCleanGradleAction implements Action<Project> {
    */
   private static final Map<String, Long> SizeOfDependencies = new HashMap<>();
 
+  // Extensions fields =====================================
+  private Project project;
+  private boolean skipDepClean;
+
   @SneakyThrows
   @Override
   public void execute(@NotNull Project project) {
 
     Logger logger = project.getLogger();
+
+    // If the user provided some configuration.
+    DepCleanGradlePluginExtension extension = project.getExtensions()
+            .getByType(DepCleanGradlePluginExtension.class);
+    getPluginExtensions(extension);
+
+    if (skipDepClean) {
+      logger.lifecycle("Skipping DepClean plugin execution");
+      return;
+    }
+
+    // If the project is not the default one.
+    if (this.project != null) {
+      project = this.project;
+    }
 
     // Path to the project directory.
     final Path projectDirPath = Paths.get(project.getProjectDir().getAbsolutePath());
@@ -230,6 +248,16 @@ public class DepCleanGradleAction implements Action<Project> {
                       + " [" + allUnresolvedDependencies.size() + "]" + ": ");
       allUnresolvedDependencies.forEach(s -> printString("\t" + s));
     }
+  }
+
+  /**
+   * A utility method to get the additional configuration of the plugin.
+   *
+   * @param extension Plugin extension class.
+   */
+  public void getPluginExtensions(final DepCleanGradlePluginExtension extension) {
+    this.project = extension.getProject();
+    this.skipDepClean = extension.isSkipDepClean();
   }
 
   /**
