@@ -4,6 +4,7 @@ import org.apache.maven.BuildFailureException
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import se.kth.depclean.util.FileUtils
@@ -51,8 +52,8 @@ class DepCleanGradleFT extends Specification {
     BuildResult debloatResult = createRunner(allDependenciesUnused, "debloat")
 
     then:
-    assertEquals(SUCCESS, buildResult.task(":build").getOutcome())
-    assertEquals(SUCCESS, debloatResult.task(":debloat").getOutcome())
+    assertTrue(checkTaskOutcome(buildResult.task(":build").getOutcome()));
+    assertTrue(checkTaskOutcome(debloatResult.task(":debloat").getOutcome()));
 
     originalOutputFile1.write(debloatResult.getOutput())
     assertTrue(compareOutputs(expectedOutputFile1, originalOutputFile1))
@@ -75,8 +76,8 @@ class DepCleanGradleFT extends Specification {
     BuildResult debloatResult = createRunner(allDependenciesUsed, "debloat")
 
     then:
-    assertEquals(SUCCESS, buildResult.task(":build").getOutcome())
-    assertEquals(SUCCESS, debloatResult.task(":debloat").getOutcome())
+    assertTrue(checkTaskOutcome(buildResult.task(":build").getOutcome()));
+    assertTrue(checkTaskOutcome(debloatResult.task(":debloat").getOutcome()));
 
     originalOutputFile2.write(debloatResult.getOutput())
     assertTrue(compareOutputs(expectedOutputFile2, originalOutputFile2))
@@ -98,11 +99,32 @@ class DepCleanGradleFT extends Specification {
     BuildResult debloatResult = createRunner(debloatedDependenciesIsCorrect, "debloat")
 
     then:
-    assertEquals(SUCCESS, buildResult.task(":build").getOutcome())
-    assertEquals(SUCCESS, debloatResult.task(":debloat").getOutcome())
+    assertTrue(checkTaskOutcome(buildResult.task(":build").getOutcome()));
+    assertTrue(checkTaskOutcome(debloatResult.task(":debloat").getOutcome()));
 
     assertTrue(generatedDebloatedDependenciesDotGradle.exists())
     FileUtils.forceDelete(new File(projectPath3 + "/build"))
+  }
+
+  String projectPath4 = "src/test/resources-fts/json_should_be_correct"
+  File json_should_be_correct = new File(projectPath4)
+  File generatedResultDotJson = new File(projectPath4 + "/build/depclean-results.json");
+  @Test
+  @DisplayName("Test that the depclean creates a proper results.json file.")
+  def "json_should_be_correct"() {
+    given:
+    def project = ProjectBuilder.builder().withProjectDir(json_should_be_correct).build()
+
+    when:
+    project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+    BuildResult buildResult = createRunner(json_should_be_correct, "build")
+    BuildResult debloatResult = createRunner(json_should_be_correct, "debloat")
+
+    then:
+    assertTrue(checkTaskOutcome(buildResult.task(":build").getOutcome()));
+    assertTrue(checkTaskOutcome(debloatResult.task(":debloat").getOutcome()));
+
+    assertTrue(generatedResultDotJson.exists())
   }
 
   private static BuildResult createRunner(File project, String argument) {
@@ -135,5 +157,9 @@ class DepCleanGradleFT extends Specification {
         return 0
       }
     }
+  }
+
+  private static boolean checkTaskOutcome(TaskOutcome outcome) {
+    return outcome == SUCCESS || outcome == UP_TO_DATE;
   }
 }

@@ -3,7 +3,9 @@ package se.kth.depclean;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
@@ -32,6 +34,7 @@ import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.util.JarUtils;
+import se.kth.depclean.utils.json.writeJsonResult;
 
 /**
  * Depclean default and only action.
@@ -60,7 +63,6 @@ public class DepCleanGradleAction implements Action<Project> {
   private boolean failIfUnusedTransitive;
   private boolean failIfUnusedInherited;
   private boolean createBuildDebloated;
-  // TODO : The implementation of next two parameters will be done later.
   private boolean createResultJson;
   private boolean createClassUsageCsv;
   private Set<String> ignoreConfiguration;
@@ -402,6 +404,50 @@ public class DepCleanGradleAction implements Action<Project> {
       logger.lifecycle("debloated-dependencies.gradle file created in: "
               + pathToDebloatedDependencies);
     }
+
+    /* Writing the JSON file with the debloat results */
+    if (createResultJson) {
+      printString("Creating depclean-results.json, please wait...");
+      final File jsonFile = projectDirPath.resolve("build" + File.separator + "depclean-results.json").toFile();
+      final File classUsageFile = projectDirPath.resolve("build" + File.separator + "class-usage.csv").toFile();
+      if (createClassUsageCsv) {
+        printString("Creating class-usage.csv, please wait...");
+        try {
+          FileUtils.write(classUsageFile, "OriginClass,TargetClass,Dependency\n", Charset.defaultCharset());
+        } catch (IOException e) {
+          logger.error("Error writing the CSV header.");
+        }
+      }
+      writeJsonResult writeJsonResult = new writeJsonResult(
+              project,
+              classUsageFile,
+              dependencyAnalyzer,
+              SizeOfDependencies,
+              createClassUsageCsv,
+              declaredDependencies,
+              usedDirectArtifactsCoordinates,
+              usedInheritedArtifactsCoordinates,
+              usedTransitiveArtifactsCoordinates,
+              unusedDirectArtifactsCoordinates,
+              unusedInheritedArtifactsCoordinates,
+              unusedTransitiveArtifactsCoordinates
+      );
+      try {
+        FileWriter fw = new FileWriter(jsonFile, Charset.defaultCharset());
+        writeJsonResult.write(fw);
+        fw.flush();
+        fw.close();
+      } catch (IOException e) {
+        logger.error("Unable to generate JSON file.");
+      }
+      if (jsonFile.exists()) {
+        logger.lifecycle("depclean-results.json file created in: " + jsonFile.getAbsolutePath());
+      }
+      if (classUsageFile.exists()) {
+        logger.lifecycle("class-usage.csv file created in: " + classUsageFile.getAbsolutePath());
+      }
+    }
+
   }
 
   /**
@@ -561,9 +607,7 @@ public class DepCleanGradleAction implements Action<Project> {
    * @return Name of artifact
    */
   public static String getName(final ResolvedArtifact artifact) {
-    String[] artifactGroupArtifactIds = artifact.toString().split(" \\(");
-    String[] artifactGroupArtifactId = artifactGroupArtifactIds[1].split("\\)");
-    return artifactGroupArtifactId[0] + ":" + ArtifactConfigurationMap.get(artifact);
+    return artifact.getModuleVersion() + ":" + ArtifactConfigurationMap.get(artifact);
   }
 
   /**
@@ -624,5 +668,4 @@ public class DepCleanGradleAction implements Action<Project> {
     }
     return allChildren;
   }
-
 }

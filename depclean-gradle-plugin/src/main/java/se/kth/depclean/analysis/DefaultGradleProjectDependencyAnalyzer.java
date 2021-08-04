@@ -22,8 +22,8 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
-import se.kth.depclean.utils.DependencyUtils;
 import se.kth.depclean.core.analysis.ArtifactTypes;
+import se.kth.depclean.utils.DependencyUtils;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
@@ -311,4 +311,29 @@ public class DefaultGradleProjectDependencyAnalyzer
     return results;
   }
 
+  /**
+   * Computes a map of [artifact] -> [allTypes, usedTypes].
+   *
+   * @return A map of [artifact] -> [allTypes, usedTypes]
+   */
+  public Map<String, ArtifactTypes> getArtifactClassesMap() {
+    Map<String, ArtifactTypes> output = new HashMap<>();
+    for (Map.Entry<ResolvedArtifact, Set<String>> entry : artifactClassesMap.entrySet()) {
+      ResolvedArtifact key = entry.getKey();
+      if (artifactUsedClassesMap.containsKey(key)) {
+        output.put(key.getModuleVersion().toString(),
+            new ArtifactTypes(
+                artifactClassesMap.get(key), // get all the types
+                artifactUsedClassesMap.get(key) // get used types
+            ));
+      } else {
+        output.put(key.getModuleVersion().toString(),
+            new ArtifactTypes(
+                artifactClassesMap.get(key), // get all the types
+                new HashSet<>() // get used types
+            ));
+      }
+    }
+    return output;
+  }
 }
