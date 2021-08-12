@@ -509,7 +509,7 @@ public class DepCleanGradleAction implements Action<Project> {
         SizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
       }
     } else {
-      logger.warn("Dependencies where not copied locally");
+      logger.warn("Dependencies were not copied locally");
     }
   }
 

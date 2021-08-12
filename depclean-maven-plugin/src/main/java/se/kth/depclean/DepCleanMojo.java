@@ -60,8 +60,10 @@ import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNo
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
+import se.kth.depclean.util.ChangeDependencyResultUtils;
 import se.kth.depclean.util.JarUtils;
 import se.kth.depclean.util.MavenInvoker;
+import se.kth.depclean.util.ResultsUtils;
 import se.kth.depclean.util.json.ParsedDependencies;
 
 /**
@@ -79,6 +81,16 @@ public class DepCleanMojo extends AbstractMojo {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
   public static final String DIRECTORY_TO_COPY_DEPENDENCIES = "dependency";
+
+  /**
+   * A map [Module coordinates] -> [Depclean result].
+   */
+  private static final Map<String, ResultsUtils> ModuleResult = new HashMap<>();
+
+  /**
+   * A set to store module id.
+   */
+  private static final Set<String> ModuleDependency = new HashSet<>();
 
   /**
    * The Maven project to analyze.
@@ -403,7 +415,7 @@ public class DepCleanMojo extends AbstractMojo {
         sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
       }
     } else {
-      log.warn("Dependencies where not copied locally");
+      log.warn("Dependencies were not copied locally");
     }
 
     /* Decompress dependencies */
@@ -424,10 +436,20 @@ public class DepCleanMojo extends AbstractMojo {
       return;
     }
 
+    // Getting coordinates of all artifacts without version.
+    Set<String> allDependenciesCoordinates = new HashSet<>();
+    Set<Artifact> allArtifacts = project.getArtifacts();
+    for (Artifact artifact : allArtifacts) {
+      String coordinate = artifact.getGroupId() + ":"
+              + artifact.getArtifactId() + ":"
+              + artifact.getVersion();
+      allDependenciesCoordinates.add(coordinate);
+    }
+
     Set<Artifact> usedTransitiveArtifacts = projectDependencyAnalysis.getUsedUndeclaredArtifacts();
     Set<Artifact> usedDirectArtifacts = projectDependencyAnalysis.getUsedDeclaredArtifacts();
     Set<Artifact> unusedDirectArtifacts = projectDependencyAnalysis.getUnusedDeclaredArtifacts();
-    Set<Artifact> unusedTransitiveArtifacts = project.getArtifacts();
+    Set<Artifact> unusedTransitiveArtifacts = new HashSet<>(allArtifacts);
 
     unusedTransitiveArtifacts.removeAll(usedDirectArtifacts);
     unusedTransitiveArtifacts.removeAll(usedTransitiveArtifacts);
@@ -526,6 +548,17 @@ public class DepCleanMojo extends AbstractMojo {
       }
     }
 
+    // Adding module coordinates as a dependency.
+    String moduleId = project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
+
+    // Collecting the result.
+    ResultsUtils resultInfo = new ResultsUtils(
+            unusedDirectArtifactsCoordinates,
+            unusedInheritedArtifactsCoordinates,
+            unusedTransitiveArtifactsCoordinates);
+    // Mapping the result with module for further usage.
+    ModuleResult.put(moduleId, resultInfo);
+
     /* Printing the results to the terminal */
     printString(SEPARATOR);
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
@@ -546,6 +579,53 @@ public class DepCleanMojo extends AbstractMojo {
           "Dependencies ignored in the analysis by the user"
               + " [" + ignoreDependencies.size() + "]" + ":" + " ");
       ignoreDependencies.stream().forEach(s -> printString("\t" + s));
+    }
+
+    // Getting those dependencies from previous modules whose status might have been changed now.
+    Set<ChangeDependencyResultUtils> dependenciesResultChange = new HashSet<>();
+    for (String module : ModuleDependency) {
+      /* If the module is used as a dependency in the project,
+       then it will be present in allDependenciesCoordinates. */
+      if (allDependenciesCoordinates.contains(module)) {
+        // Getting the result of specified module.
+        ResultsUtils result = ModuleResult.get(module);
+        /* Build will only fail when status of any dependencies has been changed
+         from unused to used, so getting all the unused dependencies from the
+         previous modules and comparing that with all the used transitive
+         dependencies of the current module. */
+        Set<String> allUnusedDependency = result.getAllUnusedDependenciesCoordinates();
+        for (String usedDependency : usedTransitiveArtifactsCoordinates) {
+          if (allUnusedDependency.contains(usedDependency)) {
+            // This dependency status need to be changed.
+            dependenciesResultChange.add(
+                    new ChangeDependencyResultUtils(usedDependency,
+                            module,
+                            result.getType(usedDependency)));
+          }
+        }
+      }
+    }
+
+    // Adding the module whose result has been collected. (Alert: This position is specific for adding it)
+    ModuleDependency.add(moduleId);
+
+    // Printing those dependencies to the terminal whose status needs to be changed.
+    if (!dependenciesResultChange.isEmpty()) {
+      printString("\n" + SEPARATOR);
+      getLog().info("DEPENDENT MODULES FOUND");
+      printString("Due to dependent modules, the debloated result of some dependencies"
+              + " from previous modules has been changed now.");
+      printString("The dependency-module details of such dependencies with the"
+              + " new results are as follows :\n");
+      int serialNumber = 0;
+      for (ChangeDependencyResultUtils result : dependenciesResultChange) {
+        printString("\t" + ++serialNumber + ") ModuleCoordinates : " + result.getModule());
+        printString("\t   DependencyCoordinates : " + result.getDependencyCoordinate());
+        printString("\t   OldType : " + result.getType());
+        printString("\t   NewType : " + result.getNewType());
+        printString("");
+      }
+      printString(SEPARATOR);
     }
 
     /* Fail the build if there are unused direct dependencies */
