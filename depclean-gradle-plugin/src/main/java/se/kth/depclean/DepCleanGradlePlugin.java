@@ -16,6 +16,12 @@ public class DepCleanGradlePlugin implements Plugin<Project> {
 
   @Override
   public void apply(@NotNull Project project) {
+
+    final String depCleanConfigurationName = "depclean";
+
+    // Creating extra configurations for the plugin to provide more flexibility.
+    project.getExtensions().create(depCleanConfigurationName, DepCleanGradlePluginExtension.class);
+
     // Creating the default task.
     createTask(project);
   }

@@ -1,0 +1,18 @@
+
+> Task :debloat
+Starting DepClean dependency analysis
+-------------------------------------------------------
+ D E P C L E A N   A N A L Y S I S   R E S U L T S
+-------------------------------------------------------
+-------------------------------------------------------
+USED DIRECT DEPENDENCIES [1]:
+	com.fasterxml.jackson.core:jackson-databind:2.12.2:compile (1 MB)
+USED INHERITED DEPENDENCIES [0]:
+USED TRANSITIVE DEPENDENCIES [2]:
+	com.fasterxml.jackson.core:jackson-core:2.12.2:compile (356 KB)
+	com.fasterxml.jackson.core:jackson-annotations:2.12.2:compile (73 KB)
+POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]:
+POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]:
+POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [0]:
+-------------------------------------------------------
+

@@ -1,0 +1,44 @@
+buildscript{
+  repositories {
+      mavenLocal()
+
+      dependencies{
+        classpath 'se.kth.castor:depclean-gradle-plugin:1.0-SNAPSHOT'
+      }
+  }
+}
+
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+apply plugin: 'se.kth.castor.depclean-gradle-plugin'
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.2'
+}
+
+group = 'org.foo.bar'
+version = '1.0.0-SNAPSHOT'
+description = 'foobar'
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
