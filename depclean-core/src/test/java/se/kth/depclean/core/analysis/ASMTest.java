@@ -21,14 +21,14 @@ import se.kth.depclean.core.analysis.asm.ResultCollector;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
 @Slf4j
-public class ResultCollectorTest {
+public class ASMTest {
 
   // Resource class for testing.
   private static final File classFile = new File("src/test/resources/ClassFileVisitorResources/ExampleClass.class");
 
   @Test
   @DisplayName("Test that the default asm classes are working fine.")
-  void ResultTest() throws IOException {
+  void test_for_proper_asm_functioning() throws IOException {
 
     ResultCollector resultCollector = new ResultCollector();
     FileInputStream fileInputStream = new FileInputStream(classFile);
