@@ -1,4 +1,4 @@
-package se.kth.depclean.core.analysis;
+package se.kth.depclean.core.analysis.asmTest;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +24,8 @@ import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 public class ASMTest {
 
   // Resource class for testing.
-  private static final File classFile = new File("src/test/resources/ClassFileVisitorResources/ExampleClass.class");
+  private static final File classFile = new File(
+          "src/test/resources/asmAndGraphResources/ExampleClass.class");
 
   @Test
   @DisplayName("Test that the default asm classes are working fine.")

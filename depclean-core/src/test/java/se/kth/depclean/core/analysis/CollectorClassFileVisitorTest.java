@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class CollectorClassFileVisitorTest {
 
-  private static final File classFile = new File("src/test/resources/ClassFileVisitorResources/test.class");
+  private static final File classFile = new File(
+          "src/test/resources/analysisResources/test.class");
   private static final String className = "test";
   private static final CollectorClassFileVisitor collector = new CollectorClassFileVisitor();
 

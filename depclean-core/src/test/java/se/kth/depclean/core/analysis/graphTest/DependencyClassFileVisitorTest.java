@@ -1,4 +1,4 @@
-package se.kth.depclean.core.analysis;
+package se.kth.depclean.core.analysis.graphTest;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,7 +15,8 @@ import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 public class DependencyClassFileVisitorTest {
 
   // Resource class for testing.
-  private static final File classFile = new File("src/test/resources/ClassFileVisitorResources/ExampleClass.class");
+  private static final File classFile = new File(
+          "src/test/resources/asmAndGraphResources/ExampleClass.class");
   private static final String className = "ExampleClass";
 
   @Test
