@@ -11,7 +11,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.signature.SignatureVisitor;
-import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.asm.DefaultAnnotationVisitor;
 import se.kth.depclean.core.analysis.asm.DefaultClassVisitor;
 import se.kth.depclean.core.analysis.asm.DefaultFieldVisitor;
@@ -20,7 +19,6 @@ import se.kth.depclean.core.analysis.asm.DefaultSignatureVisitor;
 import se.kth.depclean.core.analysis.asm.ResultCollector;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
-@Slf4j
 public class ASMTest {
 
   // Resource class for testing.
