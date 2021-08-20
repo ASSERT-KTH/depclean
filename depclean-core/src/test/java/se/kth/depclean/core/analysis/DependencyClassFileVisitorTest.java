@@ -37,6 +37,6 @@ public class DependencyClassFileVisitorTest {
     }
 
     // Confirming the successful termination of DependencyClassFileVisitor object.
-    Assertions.assertTrue(resultCollector.classes.isEmpty());
+    Assertions.assertTrue(resultCollector.getDependencies().isEmpty());
   }
 }
