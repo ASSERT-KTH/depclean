@@ -22,15 +22,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 /**
- * A directed graph G = (V, E) where V is a set of classes and E is a set of edges representing class member calls
- * between the classes in V.
+ * A directed graph G = (V, E) where V is a set of classes and E is a set of edges
+ * representing class member calls between the classes in V.
  */
 public class DefaultCallGraph {
 
@@ -97,7 +96,7 @@ public class DefaultCallGraph {
     s.add(referencedClassMember);
   }
 
-  public AbstractBaseGraph<String, DefaultEdge> getDirectedGraph() {
+  public static AbstractBaseGraph<String, DefaultEdge> getDirectedGraph() {
     return directedGraph;
   }
 
