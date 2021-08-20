@@ -28,7 +28,7 @@ import org.objectweb.asm.Type;
  */
 public class ResultCollector {
 
-  public final Set<String> classes = new HashSet<>();
+  private final Set<String> classes = new HashSet<>();
 
   public Set<String> getDependencies() {
     return classes;
