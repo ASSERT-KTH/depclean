@@ -1,17 +1,24 @@
 cff-version: 1.2.0
 preferred-citation:
-  title: "A Comprehensive Study of Bloated Dependencies in the Maven Ecosystem"
-  doi: "10.1007/s10664-020-09914-8"
-  year: "2021"
   type: article
+  title: "A Comprehensive Study of Bloated Dependencies in the Maven Ecosystem"
   journal: "Empirical Software Engineering"
+  doi: "10.1007/s10664-020-09914-8"
+  year: 2021
+  volume: 26
+  issue: 3
+  start: 1
+  end: 44  
   authors:
     - family-names: Soto-Valero
       given-names: César
+      orcid: "https://orcid.org/0000-0003-0541-6411"
     - family-names: Harrand
       given-names: Nicolas
+      orcid: "https://orcid.org/ 0000-0002-2491-2771"
     - family-names: Monperrus
       given-names: Martin
+      orcid: "https://orcid.org/0000-0003-3505-3383"
     - family-names: Baudry
       given-names: Benoit
-      
+      orcid: "https://orcid.org/0000-0002-4015-4640"
