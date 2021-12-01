@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
@@ -346,6 +347,7 @@ public class DepCleanMojo extends AbstractMojo {
     System.out.println(string); //NOSONAR avoid a warning of non-used logger
   }
 
+  @SneakyThrows
   @Override
   public final void execute() throws MojoExecutionException {
     if (skipDepClean) {
@@ -423,7 +425,7 @@ public class DepCleanMojo extends AbstractMojo {
         project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
     File dependencyDirectory = new File(dependencyDirectoryName);
     if (dependencyDirectory.exists()) {
-      JarUtils.decompressJars(dependencyDirectoryName);
+      JarUtils.decompress(dependencyDirectoryName);
     }
 
     /* Analyze dependencies usage status */
