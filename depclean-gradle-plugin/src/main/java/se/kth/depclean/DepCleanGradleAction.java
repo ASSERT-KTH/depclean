@@ -523,7 +523,7 @@ public class DepCleanGradleAction implements Action<Project> {
           final File dependencyDirectory,
           final String dependencyDirPath) {
     if (dependencyDirectory.exists()) {
-      JarUtils.decompressJars(dependencyDirPath);
+      JarUtils.decompress(dependencyDirPath);
     } else {
       printString("Unable to decompress jars at " + dependencyDirPath);
     }
