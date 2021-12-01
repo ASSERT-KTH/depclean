@@ -1,9 +1,32 @@
 // import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.util.Separators;
+
+import java.io.IOException;
+import org.apache.commons.io.FileSystemUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.codec.binary.Base64;
 
 
 public class Main {
-   // private static final ObjectMapper converter = new ObjectMapper();
-   Separators separators = new Separators();
-   int field = 42;
+
+  int field = 42;
+
+
+  public static void useCommonsIO() throws IOException {
+    System.out.println(FileSystemUtils.freeSpaceKb("/"));
+  }
+
+  public boolean useCommonsLang() {
+    String[] array = {"a", "b", "c"};
+    return (ArrayUtils.toString(array)).equals("{a,b,c}");
+  }
+
+  public static String useCommonsCodec(String str) {
+    Base64 base64 = new Base64();
+    byte[] bytes = base64.decodeBase64(str);
+    String s = new String(bytes);
+    String trimmed = s.split("#")[0];
+    return trimmed;
+  }
+
+
 }
