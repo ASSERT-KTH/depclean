@@ -12,7 +12,7 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
-import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.ArtifactTypes;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
 /**
@@ -28,7 +28,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
   private final Set<String> unusedInheritedArtifactsCoordinates;
   private final Set<String> unusedTransitiveArtifactsCoordinates;
   private final Map<String, Long> sizeOfDependencies;
-  private final DefaultProjectDependencyAnalyzer dependencyAnalyzer;
+  private final Map<String, ArtifactTypes> artifactClassesMap;
   private final File classUsageFile;
   private final boolean createClassUsageCsv;
 
@@ -121,19 +121,19 @@ public class NodeAdapter extends TypeAdapter<Node> {
 
   private void writeUsageRatio(String canonical, JsonWriter localWriter) throws IOException {
     localWriter.name("usageRatio")
-        .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)
-            ? dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().isEmpty()
+        .value(artifactClassesMap.containsKey(canonical)
+            ? artifactClassesMap.get(canonical).getAllTypes().isEmpty()
             ? 0 : // handle division by zero
-            ((double) dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes().size()
-                / dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes().size()) : -1)
+            ((double) artifactClassesMap.get(canonical).getUsedTypes().size()
+                / artifactClassesMap.get(canonical).getAllTypes().size()) : -1)
         .name("children")
         .beginArray();
   }
 
   private void writeUsedTypes(String canonical, JsonWriter localWriter) throws IOException {
     JsonWriter usedTypes = localWriter.name("usedTypes").beginArray();
-    if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
-      for (String usedType : dependencyAnalyzer.getArtifactClassesMap().get(canonical).getUsedTypes()) {
+    if (artifactClassesMap.containsKey(canonical)) {
+      for (String usedType : artifactClassesMap.get(canonical).getUsedTypes()) {
         usedTypes.value(usedType);
       }
     }
@@ -142,8 +142,8 @@ public class NodeAdapter extends TypeAdapter<Node> {
 
   private void writeAllTypes(String canonical, JsonWriter localWriter) throws IOException {
     JsonWriter allTypes = localWriter.name("allTypes").beginArray();
-    if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical)) {
-      for (String allType : dependencyAnalyzer.getArtifactClassesMap().get(canonical).getAllTypes()) {
+    if (artifactClassesMap.containsKey(canonical)) {
+      for (String allType : artifactClassesMap.get(canonical).getAllTypes()) {
         allTypes.value(allType);
       }
     }
@@ -156,8 +156,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
       String key = usagePerClassMap.getKey();
       Set<String> value = usagePerClassMap.getValue();
       for (String s : value) {
-        if (dependencyAnalyzer.getArtifactClassesMap().containsKey(canonical) && dependencyAnalyzer
-            .getArtifactClassesMap().get(canonical).getAllTypes().contains(s)) {
+        if (artifactClassesMap.containsKey(canonical) && artifactClassesMap.get(canonical).getAllTypes().contains(s)) {
           String triplet = key + "," + s + "," + canonical + "\n";
           FileUtils.write(classUsageFile, triplet, Charset.defaultCharset(), true);
         }

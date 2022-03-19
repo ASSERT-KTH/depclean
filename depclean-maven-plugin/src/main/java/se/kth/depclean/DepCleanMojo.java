@@ -448,9 +448,9 @@ public class DepCleanMojo extends AbstractMojo {
       allDependenciesCoordinates.add(coordinate);
     }
 
-    Set<Artifact> usedTransitiveArtifacts = projectDependencyAnalysis.getUsedUndeclaredArtifacts();
-    Set<Artifact> usedDirectArtifacts = projectDependencyAnalysis.getUsedDeclaredArtifacts();
-    Set<Artifact> unusedDirectArtifacts = projectDependencyAnalysis.getUnusedDeclaredArtifacts();
+    Set<Artifact> usedDirectArtifacts = projectDependencyAnalysis.getUsedDirectArtifacts();
+    Set<Artifact> usedTransitiveArtifacts = projectDependencyAnalysis.getUsedTransitiveArtifacts();
+    Set<Artifact> unusedDirectArtifacts = projectDependencyAnalysis.getUnusedDirectArtifacts();
     Set<Artifact> unusedTransitiveArtifacts = new HashSet<>(allArtifacts);
 
     unusedTransitiveArtifacts.removeAll(usedDirectArtifacts);
@@ -460,12 +460,10 @@ public class DepCleanMojo extends AbstractMojo {
     /* Exclude dependencies with specific scopes from the DepClean analysis */
     if (!ignoreScopes.isEmpty()) {
       printString("Ignoring dependencies with scope(s): " + ignoreScopes);
-      if (!ignoreScopes.isEmpty()) {
-        usedTransitiveArtifacts = excludeScope(usedTransitiveArtifacts);
-        usedDirectArtifacts = excludeScope(usedDirectArtifacts);
-        unusedDirectArtifacts = excludeScope(unusedDirectArtifacts);
-        unusedTransitiveArtifacts = excludeScope(unusedTransitiveArtifacts);
-      }
+      usedTransitiveArtifacts = excludeScope(usedTransitiveArtifacts);
+      usedDirectArtifacts = excludeScope(usedDirectArtifacts);
+      unusedDirectArtifacts = excludeScope(unusedDirectArtifacts);
+      unusedTransitiveArtifacts = excludeScope(unusedTransitiveArtifacts);
     }
 
     /* Use artifacts coordinates for the report instead of the Artifact object */
@@ -474,7 +472,9 @@ public class DepCleanMojo extends AbstractMojo {
     List<Dependency> dependencies = model.getDependencies();
     Set<String> declaredArtifactsGroupArtifactIds = new HashSet<>();
     for (Dependency dep : dependencies) {
-      declaredArtifactsGroupArtifactIds.add(dep.getGroupId() + ":" + dep.getArtifactId());
+      final String artifactGroupArtifactId = dep.getGroupId() + ":" + dep.getArtifactId();
+      printString("#### Direct dependency " + artifactGroupArtifactId);
+      declaredArtifactsGroupArtifactIds.add(artifactGroupArtifactId);
     }
 
     // --- used dependencies
@@ -489,9 +489,11 @@ public class DepCleanMojo extends AbstractMojo {
               .split(":")[4];
       if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactId)) {
         // the artifact is declared in the pom
+        printString("#### Used Declared Artifact " + artifactGroupArtifactIds);
         usedDirectArtifactsCoordinates.add(artifactGroupArtifactIds);
       } else {
         // the artifact is inherited
+        printString("#### Used Declared Inherited Artifact " + artifactGroupArtifactIds);
         usedInheritedArtifactsCoordinates.add(artifactGroupArtifactIds);
       }
     }
@@ -518,9 +520,11 @@ public class DepCleanMojo extends AbstractMojo {
               .split(":")[4];
       if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactId)) {
         // the artifact is declared in the pom
+        printString("#### Unused Declared Artifact " + artifactGroupArtifactIds);
         unusedDirectArtifactsCoordinates.add(artifactGroupArtifactIds);
       } else {
         // the artifact is inherited
+        printString("#### Unused Declared Inherited Artifact " + artifactGroupArtifactIds);
         unusedInheritedArtifactsCoordinates.add(artifactGroupArtifactIds);
       }
     }
@@ -580,7 +584,7 @@ public class DepCleanMojo extends AbstractMojo {
       printString(
           "Dependencies ignored in the analysis by the user"
               + " [" + ignoreDependencies.size() + "]" + ":" + " ");
-      ignoreDependencies.stream().forEach(s -> printString("\t" + s));
+      ignoreDependencies.forEach(s -> printString("\t" + s));
     }
 
     // Getting those dependencies from previous modules whose status might have been changed now.
@@ -746,7 +750,7 @@ public class DepCleanMojo extends AbstractMojo {
       ParsedDependencies parsedDependencies = new ParsedDependencies(
           treeFile,
           sizeOfDependencies,
-          dependencyAnalyzer,
+          projectDependencyAnalysis.getArtifactClassesMap(),
           usedDirectArtifactsCoordinates,
           usedInheritedArtifactsCoordinates,
           usedTransitiveArtifactsCoordinates,

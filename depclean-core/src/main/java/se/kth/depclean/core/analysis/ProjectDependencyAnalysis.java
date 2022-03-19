@@ -19,9 +19,10 @@ package se.kth.depclean.core.analysis;
  * under the License.
  */
 
+
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 
@@ -33,51 +34,45 @@ public class ProjectDependencyAnalysis {
   /**
    * Store all the used declared artifacts (ie. used direct dependencies).
    */
-  private final Set<Artifact> usedDeclaredArtifacts;
+  private final Set<Artifact> usedDirectArtifacts;
 
   /**
    * Store all the used undeclared artifacts (ie. used transitive dependencies).
    */
-  private final Set<Artifact> usedUndeclaredArtifacts;
+  private final Set<Artifact> usedTransitiveArtifacts;
 
   /**
-   * Store all the unused declared artifacts (ie. unused transitive dependencies).
+   * Store all the unused declared artifacts (ie. unused direct dependencies).
    */
-  private final Set<Artifact> unusedDeclaredArtifacts;
+  private final Set<Artifact> unusedDirectArtifacts;
+  /**
+   * Store all the known artifact with their classes and their used classes.
+   */
+  private final Map<String, ArtifactTypes> artifactClassesMap;
 
   /**
    * Ctor.
    */
   public ProjectDependencyAnalysis(
-      Set<Artifact> usedDeclaredArtifacts,
-      Set<Artifact> usedUndeclaredArtifacts,
-      Set<Artifact> unusedDeclaredArtifacts) {
-    this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
-    this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
-    this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
+      Set<Artifact> usedDirectArtifacts,
+      Set<Artifact> usedTransitiveArtifacts,
+      Set<Artifact> unusedDirectArtifacts,
+      Map<String, ArtifactTypes> artifactClassesMap) {
+    this.usedDirectArtifacts = safeCopy(usedDirectArtifacts);
+    this.usedTransitiveArtifacts = safeCopy(usedTransitiveArtifacts);
+    this.unusedDirectArtifacts = safeCopy(unusedDirectArtifacts);
+    this.artifactClassesMap = artifactClassesMap;
   }
 
   /**
    * To prevent unnecessary and unexpected modification in the set.
    *
-   * @param The required set.
+   * @param set The required set.
    * @return An unmodifiable set corresponding to the provided set.
    */
   private Set<Artifact> safeCopy(Set<Artifact> set) {
     return (set == null) ? Collections.emptySet()
-        : Collections.unmodifiableSet(new LinkedHashSet<Artifact>(set));
-  }
-
-  /**
-   * Filter out artifacts with scope other than compile from the set of unused declared artifacts.
-   *
-   * @return updated project dependency analysis
-   * @since 1.3
-   */
-  public ProjectDependencyAnalysis ignoreNonCompile() {
-    Set<Artifact> filteredUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
-    filteredUnusedDeclared.removeIf(artifact -> !artifact.getScope().equals(Artifact.SCOPE_COMPILE));
-    return new ProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
+        : Collections.unmodifiableSet(new LinkedHashSet<>(set));
   }
 
   /**
@@ -85,9 +80,9 @@ public class ProjectDependencyAnalysis {
    */
   @Override
   public int hashCode() {
-    int hashCode = getUsedDeclaredArtifacts().hashCode();
-    hashCode = (hashCode * 37) + getUsedUndeclaredArtifacts().hashCode();
-    hashCode = (hashCode * 37) + getUnusedDeclaredArtifacts().hashCode();
+    int hashCode = getUsedDirectArtifacts().hashCode();
+    hashCode = (hashCode * 37) + getUsedTransitiveArtifacts().hashCode();
+    hashCode = (hashCode * 37) + getUnusedDirectArtifacts().hashCode();
     return hashCode;
   }
 
@@ -96,8 +91,8 @@ public class ProjectDependencyAnalysis {
    *
    * @return {@link Artifact}
    */
-  public Set<Artifact> getUsedDeclaredArtifacts() {
-    return usedDeclaredArtifacts;
+  public Set<Artifact> getUsedDirectArtifacts() {
+    return usedDirectArtifacts;
   }
 
   // Object methods ---------------------------------------------------------
@@ -107,8 +102,8 @@ public class ProjectDependencyAnalysis {
    *
    * @return {@link Artifact}
    */
-  public Set<Artifact> getUsedUndeclaredArtifacts() {
-    return usedUndeclaredArtifacts;
+  public Set<Artifact> getUsedTransitiveArtifacts() {
+    return usedTransitiveArtifacts;
   }
 
   /**
@@ -116,8 +111,17 @@ public class ProjectDependencyAnalysis {
    *
    * @return {@link Artifact}
    */
-  public Set<Artifact> getUnusedDeclaredArtifacts() {
-    return unusedDeclaredArtifacts;
+  public Set<Artifact> getUnusedDirectArtifacts() {
+    return unusedDirectArtifacts;
+  }
+
+  /**
+   * Artifacts with their classes and used classes.
+   *
+   * @return the artifact map
+   */
+  public Map<String, ArtifactTypes> getArtifactClassesMap() {
+    return artifactClassesMap;
   }
 
   /**
@@ -127,9 +131,9 @@ public class ProjectDependencyAnalysis {
   public boolean equals(Object object) {
     if (object instanceof ProjectDependencyAnalysis) {
       ProjectDependencyAnalysis analysis = (ProjectDependencyAnalysis) object;
-      return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
-          && getUsedUndeclaredArtifacts().equals(analysis.getUsedUndeclaredArtifacts())
-          && getUnusedDeclaredArtifacts().equals(analysis.getUnusedDeclaredArtifacts());
+      return getUsedDirectArtifacts().equals(analysis.getUsedDirectArtifacts())
+          && getUsedTransitiveArtifacts().equals(analysis.getUsedTransitiveArtifacts())
+          && getUnusedDirectArtifacts().equals(analysis.getUnusedDirectArtifacts());
     }
 
     return false;
@@ -142,22 +146,22 @@ public class ProjectDependencyAnalysis {
   public String toString() {
     StringBuilder buffer = new StringBuilder();
 
-    if (!getUsedDeclaredArtifacts().isEmpty()) {
-      buffer.append("usedDeclaredArtifacts=").append(getUsedDeclaredArtifacts());
+    if (!getUsedDirectArtifacts().isEmpty()) {
+      buffer.append("usedDeclaredArtifacts=").append(getUsedDirectArtifacts());
     }
 
-    if (!getUsedUndeclaredArtifacts().isEmpty()) {
+    if (!getUsedTransitiveArtifacts().isEmpty()) {
       if (buffer.length() > 0) {
         buffer.append(",");
       }
-      buffer.append("usedUndeclaredArtifacts=").append(getUsedUndeclaredArtifacts());
+      buffer.append("usedUndeclaredArtifacts=").append(getUsedTransitiveArtifacts());
     }
 
-    if (!getUnusedDeclaredArtifacts().isEmpty()) {
+    if (!getUnusedDirectArtifacts().isEmpty()) {
       if (buffer.length() > 0) {
         buffer.append(",");
       }
-      buffer.append("unusedDeclaredArtifacts=").append(getUnusedDeclaredArtifacts());
+      buffer.append("unusedDeclaredArtifacts=").append(getUnusedDirectArtifacts());
     }
 
     buffer.insert(0, "[");

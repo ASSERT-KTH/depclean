@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.ArtifactTypes;
 
 /**
  * Uses the DepClean analysis results and the dependency tree of the project to produce a JSON file. This file represent
@@ -29,7 +29,7 @@ public class ParsedDependencies {
 
   private final File treeFile;
   private final Map<String, Long> sizeOfDependencies;
-  private final DefaultProjectDependencyAnalyzer dependencyAnalyzer;
+  private final Map<String, ArtifactTypes> artifactClassesMap;
   private final Set<String> usedDirectArtifactsCoordinates;
   private final Set<String> usedInheritedArtifactsCoordinates;
   private final Set<String> usedTransitiveArtifactsCoordinates;
@@ -61,7 +61,7 @@ public class ParsedDependencies {
         unusedInheritedArtifactsCoordinates,
         unusedTransitiveArtifactsCoordinates,
         sizeOfDependencies,
-        dependencyAnalyzer,
+        artifactClassesMap,
         classUsageFile,
         createClassUsageCsv
     );
