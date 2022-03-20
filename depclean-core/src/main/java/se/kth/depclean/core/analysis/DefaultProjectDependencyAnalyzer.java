@@ -28,8 +28,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
@@ -38,10 +36,8 @@ import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
  * This is principal class that perform the dependency analysis in a Maven project.
  */
 @Slf4j
-@Component(role = ProjectDependencyAnalyzer.class)
 public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyzer {
 
-  @Requirement
   private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
 
   /**
@@ -138,11 +134,6 @@ public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyz
     // Analyze test classes in the project
     log.info("# getProjectTestDependencyClasses()");
     return collectDependencyClasses(project.getBuild().getTestOutputDirectory());
-  }
-
-  private Iterable<String> getDependenciesDependencyClasses(MavenProject project) throws IOException {
-    log.info("# getDependenciesDependencyClasses()");
-    return collectDependencyClasses(project.getBuild().getDirectory() + File.separator + "dependency");
   }
 
   private Iterable<String> collectDependencyClasses(String path) throws IOException {
