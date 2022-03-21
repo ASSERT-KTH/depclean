@@ -3,6 +3,8 @@ package se.kth.depclean.core.analysis;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import se.kth.depclean.core.analysis.model.ClassName;
+import se.kth.depclean.core.analysis.model.ProjectContext;
 
 /**
  * Contains the actual classes used in the project (i.e. in classes, processors, configurations, etc.)
@@ -10,33 +12,29 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ActualUsedClasses {
 
-  final Set<String> classes = new HashSet<>();
-  private final DeclaredDependencyGraph declaredDependencyGraph;
+  final Set<ClassName> classes = new HashSet<>();
+  private final ProjectContext context;
 
-  public ActualUsedClasses(DeclaredDependencyGraph declaredDependencyGraph) {
-    this.declaredDependencyGraph = declaredDependencyGraph;
+  public ActualUsedClasses(ProjectContext context) {
+    this.context = context;
   }
 
-  private void registerClass(String clazz) {
-    String className = clazz.replace('/', '.');
-    if (className.endsWith(".class")) {
-      className = className.substring(0, className.length() - ".class".length());
-    }
+  private void registerClass(ClassName className) {
 
     // Do not register class unknown to dependencies
-    if (declaredDependencyGraph.doesntKnow(className)) {
+    if (context.hasNoDependencyOnClass(className)) {
       return;
     }
 
-    log.info("## Register class {} as {}", clazz, className);
+    log.debug("## Register class {}", className);
     classes.add(className);
   }
 
-  public void registerClasses(Iterable<String> classes) {
+  public void registerClasses(Iterable<ClassName> classes) {
     classes.forEach(this::registerClass);
   }
 
-  public Set<String> getRegisteredClasses() {
+  public Set<ClassName> getRegisteredClasses() {
     return classes;
   }
 }

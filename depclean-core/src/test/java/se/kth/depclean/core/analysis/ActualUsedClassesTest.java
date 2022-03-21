@@ -1,35 +1,27 @@
 package se.kth.depclean.core.analysis;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import org.apache.maven.artifact.Artifact;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-
-import static com.google.common.collect.ImmutableSet.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.collect.ImmutableSet.of;
 
-class ActualUsedClassesTest implements ArtifactCreator {
-  private final Artifact exampleArtifact = createArtifact("ExampleClass");
-  private final ImmutableSet<Artifact> allArtifacts = of(exampleArtifact);
+import org.junit.jupiter.api.Test;
+import se.kth.depclean.core.analysis.model.ProjectContext;
+
+class ActualUsedClassesTest implements ProjectContextCreator {
 
   @Test
-  void shouldRegisterClasses() throws IOException {
-    final DeclaredDependencyGraph declaredDependencyGraph =
-        new DeclaredDependencyGraph(allArtifacts, of());
-    final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(declaredDependencyGraph);
-    actualUsedClasses.registerClasses(Sets.newHashSet("ExampleClass.class"));
+  void shouldRegisterClasses() {
+    final ProjectContext context = createContext();
+    final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(context);
+    actualUsedClasses.registerClasses(of(COMMONS_IO_CLASS));
 
-    assertThat(actualUsedClasses.getRegisteredClasses()).containsExactly("ExampleClass");
+    assertThat(actualUsedClasses.getRegisteredClasses()).containsExactly(COMMONS_IO_CLASS);
   }
 
   @Test
-  void shouldNotRegisterUnknownClasses() throws IOException {
-    final DeclaredDependencyGraph declaredDependencyGraph =
-        new DeclaredDependencyGraph(allArtifacts, of());
-    final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(declaredDependencyGraph);
-    actualUsedClasses.registerClasses(Sets.newHashSet("Unknown.class"));
+  void shouldNotRegisterUnknownClasses() {
+    final ProjectContext context = createContext();
+    final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(context);
+    actualUsedClasses.registerClasses(of(UNKNOWN_CLASS));
 
     assertThat(actualUsedClasses.getRegisteredClasses()).isEmpty();
   }

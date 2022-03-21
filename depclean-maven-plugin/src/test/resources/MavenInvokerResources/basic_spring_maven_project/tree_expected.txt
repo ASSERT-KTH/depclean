@@ -1,12 +1,17 @@
 se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 +- se.kth.castor:depclean-core:jar:2.0.2-SNAPSHOT:compile
 |  +- org.ow2.asm:asm:jar:9.1:compile
-|  +- org.codehaus.plexus:plexus-component-annotations:jar:2.0.0:compile
-|  +- org.codehaus.plexus:plexus-utils:jar:3.3.0:compile
-|  +- (org.apache.maven:maven-core:jar:3.6.2:compile - omitted for conflict with 3.6.0)
 |  +- org.jgrapht:jgrapht-core:jar:1.3.0:compile
 |  |  \- org.jheaps:jheaps:jar:0.9:compile
 |  +- org.jetbrains:annotations:jar:17.0.0:compile
+|  +- org.codehaus.plexus:plexus-utils:jar:3.3.0:compile
+|  +- com.google.guava:guava:jar:30.1-jre:compile
+|  |  +- com.google.guava:failureaccess:jar:1.0.1:compile
+|  |  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava:compile
+|  |  +- com.google.code.findbugs:jsr305:jar:3.0.2:compile
+|  |  +- org.checkerframework:checker-qual:jar:3.5.0:compile
+|  |  +- com.google.errorprone:error_prone_annotations:jar:2.3.4:compile
+|  |  \- com.google.j2objc:j2objc-annotations:jar:1.3:compile
 |  +- (org.slf4j:slf4j-api:jar:2.0.0-alpha1:compile - omitted for duplicate)
 |  \- (org.slf4j:slf4j-log4j12:jar:1.8.0-beta4:compile - omitted for duplicate)
 +- org.apache.maven:maven-core:jar:3.6.0:compile
@@ -18,7 +23,7 @@ se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 |  |  +- (org.apache.maven:maven-builder-support:jar:3.6.0:compile - omitted for duplicate)
 |  |  +- (org.codehaus.plexus:plexus-utils:jar:3.1.0:compile - omitted for conflict with 3.3.0)
 |  |  +- (org.codehaus.plexus:plexus-interpolation:jar:1.25:compile - omitted for conflict with 1.1)
-|  |  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.7.1:compile - omitted for conflict with 2.0.0)
+|  |  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.7.1:compile - omitted for duplicate)
 |  |  +- (org.apache.maven:maven-settings:jar:3.6.0:compile - omitted for duplicate)
 |  |  \- org.sonatype.plexus:plexus-sec-dispatcher:jar:1.4:compile
 |  |     +- (org.codehaus.plexus:plexus-utils:jar:1.5.5:compile - omitted for conflict with 3.3.0)
@@ -33,7 +38,7 @@ se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 |  +- org.apache.maven:maven-model-builder:jar:3.6.0:compile
 |  |  +- (org.codehaus.plexus:plexus-utils:jar:3.1.0:compile - omitted for conflict with 3.3.0)
 |  |  +- (org.codehaus.plexus:plexus-interpolation:jar:1.25:compile - omitted for duplicate)
-|  |  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.7.1:compile - omitted for conflict with 2.0.0)
+|  |  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.7.1:compile - omitted for duplicate)
 |  |  +- (org.apache.maven:maven-model:jar:3.6.0:compile - omitted for duplicate)
 |  |  +- (org.apache.maven:maven-artifact:jar:3.6.0:compile - omitted for duplicate)
 |  |  \- (org.apache.maven:maven-builder-support:jar:3.6.0:compile - omitted for duplicate)
@@ -65,23 +70,18 @@ se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 |  |  |  +- javax.annotation:jsr250-api:jar:1.0:compile
 |  |  |  \- (javax.inject:javax.inject:jar:1:compile - omitted for duplicate)
 |  |  +- (org.eclipse.sisu:org.eclipse.sisu.inject:jar:0.3.3:compile - omitted for duplicate)
-|  |  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.5.5:compile - omitted for conflict with 2.0.0)
+|  |  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.5.5:compile - omitted for conflict with 1.7.1)
 |  |  +- (org.codehaus.plexus:plexus-classworlds:jar:2.5.2:compile - omitted for duplicate)
 |  |  \- (org.codehaus.plexus:plexus-utils:jar:3.0.17:compile - omitted for conflict with 3.3.0)
 |  +- org.eclipse.sisu:org.eclipse.sisu.inject:jar:0.3.3:compile
 |  +- com.google.inject:guice:jar:no_aop:4.2.1:compile
 |  |  +- (javax.inject:javax.inject:jar:1:compile - omitted for duplicate)
 |  |  +- aopalliance:aopalliance:jar:1.0:compile
-|  |  \- com.google.guava:guava:jar:25.1-android:compile
-|  |     +- com.google.code.findbugs:jsr305:jar:3.0.2:compile
-|  |     +- org.checkerframework:checker-compat-qual:jar:2.0.0:compile
-|  |     +- com.google.errorprone:error_prone_annotations:jar:2.1.3:compile
-|  |     +- com.google.j2objc:j2objc-annotations:jar:1.1:compile
-|  |     \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile
+|  |  \- (com.google.guava:guava:jar:25.1-android:compile - omitted for conflict with 30.1-jre)
 |  +- javax.inject:javax.inject:jar:1:compile
 |  +- (org.codehaus.plexus:plexus-utils:jar:3.1.0:compile - omitted for conflict with 3.3.0)
 |  +- org.codehaus.plexus:plexus-classworlds:jar:2.5.2:compile
-|  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.7.1:compile - omitted for conflict with 2.0.0)
+|  +- org.codehaus.plexus:plexus-component-annotations:jar:1.7.1:compile
 |  \- org.apache.commons:commons-lang3:jar:3.8.1:compile
 +- org.apache.maven:maven-plugin-api:jar:3.6.0:compile
 |  +- (org.apache.maven:maven-model:jar:3.6.0:compile - omitted for duplicate)
@@ -96,7 +96,7 @@ se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 |  +- org.apache.maven:maven-compat:jar:3.0-alpha-2:compile
 |  |  +- (org.apache.maven:maven-model:jar:3.0-alpha-2:compile - omitted for conflict with 3.6.0)
 |  |  +- (org.codehaus.plexus:plexus-container-default:jar:1.0-beta-3.0.5:compile - omitted for duplicate)
-|  |  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.0-beta-3.0.5:compile - omitted for conflict with 2.0.0)
+|  |  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.0-beta-3.0.5:compile - omitted for conflict with 1.7.1)
 |  |  \- org.apache.maven.wagon:wagon-provider-api:jar:1.0-beta-4:compile
 |  |     \- (org.codehaus.plexus:plexus-utils:jar:1.4.2:compile - omitted for conflict with 3.3.0)
 |  +- org.codehaus.plexus:plexus-container-default:jar:1.0-beta-3.0.5:compile
@@ -117,7 +117,7 @@ se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 +- org.apache.maven.plugin-tools:maven-plugin-annotations:jar:3.6.0:compile
 |  \- (org.apache.maven:maven-artifact:jar:3.0:compile - omitted for conflict with 3.6.0)
 +- org.apache.maven.shared:maven-dependency-tree:jar:3.0.1:compile
-|  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.6:compile - omitted for conflict with 2.0.0)
+|  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.6:compile - omitted for conflict with 1.7.1)
 |  \- org.eclipse.aether:aether-util:jar:0.9.0.M2:compile
 +- commons-io:commons-io:jar:2.5:compile
 +- com.google.code.gson:gson:jar:2.8.6:compile

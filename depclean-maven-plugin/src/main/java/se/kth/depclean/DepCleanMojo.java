@@ -17,6 +17,9 @@
 
 package se.kth.depclean;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import com.google.common.collect.ImmutableSet;
 import fr.dutra.tools.maven.deptree.core.ParseException;
 import java.io.File;
 import java.io.FileReader;
@@ -25,6 +28,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +36,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -58,10 +65,14 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
-import se.kth.depclean.util.ChangeDependencyResultUtils;
+import se.kth.depclean.core.analysis.model.ClassName;
+import se.kth.depclean.core.analysis.model.DependencyCoordinate;
+import se.kth.depclean.core.analysis.model.ProjectContext;
+import se.kth.depclean.core.analysis.model.Scope;
 import se.kth.depclean.util.JarUtils;
 import se.kth.depclean.util.MavenInvoker;
 import se.kth.depclean.util.ResultsUtils;
@@ -201,13 +212,14 @@ public class DepCleanMojo extends AbstractMojo {
    * @param sizeOfDependencies A map with the size of the dependencies.
    * @param dependencies       The set dependencies to print.
    */
-  private void printDependencies(final Map<String, Long> sizeOfDependencies, final Set<String> dependencies) {
+  private void printDependencies(final Map<String, Long> sizeOfDependencies,
+                                 final Set<DependencyCoordinate> dependencies) {
     dependencies
         .stream()
-        .sorted(Comparator.comparing(o -> getSizeOfDependency(sizeOfDependencies, o)))
+        .sorted(Comparator.comparing(o -> getSizeOfDependency(sizeOfDependencies, o.toString())))
         .collect(Collectors.toCollection(LinkedList::new))
         .descendingIterator()
-        .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s, sizeOfDependencies) + ")"));
+        .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s.toString(), sizeOfDependencies) + ")"));
   }
 
   /**
@@ -217,9 +229,8 @@ public class DepCleanMojo extends AbstractMojo {
    * @param sizeOfDependencies The size of the JAR file of the artifact.
    * @param dependencies       The GAV of the artifact.
    */
-  private void printInfoOfDependencies(final String info, final Map<String,
-      Long> sizeOfDependencies,
-      final Set<String> dependencies) {
+  private void printInfoOfDependencies(final String info, final Map<String, Long> sizeOfDependencies,
+                                       final Set<DependencyCoordinate> dependencies) {
     printString(info.toUpperCase() + " [" + dependencies.size() + "]" + ": ");
     printDependencies(sizeOfDependencies, dependencies);
   }
@@ -263,30 +274,14 @@ public class DepCleanMojo extends AbstractMojo {
   }
 
   /**
-   * Exclude artifacts with specific scopes from the analysis.
+   * Determine if an coordinate is a direct or transitive child of a dependency.
    *
-   * @param artifacts The set of artifacts to analyze.
-   * @return The set of artifacts for which the scope has not been excluded.
-   */
-  private Set<Artifact> excludeScope(final Set<Artifact> artifacts) {
-    Set<Artifact> nonExcludedArtifacts = new HashSet<>();
-    for (Artifact artifact : artifacts) {
-      if (!ignoreScopes.contains(artifact.getScope())) {
-        nonExcludedArtifacts.add(artifact);
-      }
-    }
-    return nonExcludedArtifacts;
-  }
-
-  /**
-   * Determine if an artifact is a direct or transitive child of a dependency.
-   *
-   * @param artifact   The artifact.
+   * @param coordinate   The coordinate.
    * @param dependency The dependency
-   * @return true if the artifact is a child of a dependency in the dependency tree.
+   * @return true if the coordinate is a child of a dependency in the dependency tree.
    * @throws DependencyGraphBuilderException If the graph cannot be constructed.
    */
-  private boolean isChildren(final Artifact artifact, final Dependency dependency)
+  private boolean isChildren(final DependencyCoordinate coordinate, final Dependency dependency)
       throws DependencyGraphBuilderException {
     List<DependencyNode> dependencyNodes = getDependencyNodes();
     for (DependencyNode node : dependencyNodes) {
@@ -295,8 +290,8 @@ public class DepCleanMojo extends AbstractMojo {
           && dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
         // now we are in the target dependency
         for (DependencyNode child : node.getChildren()) {
-          if (child.getArtifact().equals(artifact)) {
-            // the dependency contains the artifact as a child node
+          if (matches(child.getArtifact(), coordinate)) {
+            // the dependency contains the coordinate as a child node
             return true;
           }
 
@@ -343,6 +338,17 @@ public class DepCleanMojo extends AbstractMojo {
     return dependency;
   }
 
+  /**
+   * This method creates a {@link org.apache.maven.model.Dependency} object from a Maven {@link
+   * org.apache.maven.artifact.Artifact}.
+   *
+   * @param coordinate The dependency coordinate to create the dependency.
+   * @return The Dependency object.
+   */
+  private Dependency createDependency(final DependencyCoordinate coordinate) {
+    return createDependency(findArtifact(coordinate));
+  }
+
   private void printString(final String string) {
     System.out.println(string); //NOSONAR avoid a warning of non-used logger
   }
@@ -350,6 +356,8 @@ public class DepCleanMojo extends AbstractMojo {
   @SneakyThrows
   @Override
   public final void execute() throws MojoExecutionException {
+    final long startTime = System.currentTimeMillis();
+
     if (skipDepClean) {
       getLog().info("Skipping DepClean plugin execution");
       return;
@@ -411,7 +419,7 @@ public class DepCleanMojo extends AbstractMojo {
       Iterator<File> iterator = FileUtils.iterateFiles(
           new File(
               project.getBuild().getDirectory() + File.separator
-                  + DIRECTORY_TO_COPY_DEPENDENCIES), new String[] {"jar"}, true);
+                  + DIRECTORY_TO_COPY_DEPENDENCIES), new String[]{"jar"}, true);
       while (iterator.hasNext()) {
         File file = iterator.next();
         sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
@@ -429,155 +437,45 @@ public class DepCleanMojo extends AbstractMojo {
     }
 
     /* Analyze dependencies usage status */
-    ProjectDependencyAnalysis projectDependencyAnalysis;
-    DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer(ignoreTests);
+    final ProjectContext projectContext = buildProjectContext(model);
+    final ProjectDependencyAnalysis analysis;
+    final DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer(projectContext);
     try {
-      projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
+      analysis = dependencyAnalyzer.analyze();
     } catch (ProjectDependencyAnalyzerException e) {
       getLog().error("Unable to analyze dependencies.");
       return;
     }
 
-    // Getting coordinates of all artifacts without version.
-    Set<String> allDependenciesCoordinates = new HashSet<>();
-    Set<Artifact> allArtifacts = project.getArtifacts();
-    for (Artifact artifact : allArtifacts) {
-      String coordinate = artifact.getGroupId() + ":"
-              + artifact.getArtifactId() + ":"
-              + artifact.getVersion();
-      allDependenciesCoordinates.add(coordinate);
-    }
-
-    Set<Artifact> usedDirectArtifacts = projectDependencyAnalysis.getUsedDirectArtifacts();
-    Set<Artifact> usedTransitiveArtifacts = projectDependencyAnalysis.getUsedTransitiveArtifacts();
-    Set<Artifact> unusedDirectArtifacts = projectDependencyAnalysis.getUnusedDirectArtifacts();
-    Set<Artifact> unusedTransitiveArtifacts = new HashSet<>(allArtifacts);
-
-    unusedTransitiveArtifacts.removeAll(usedDirectArtifacts);
-    unusedTransitiveArtifacts.removeAll(usedTransitiveArtifacts);
-    unusedTransitiveArtifacts.removeAll(unusedDirectArtifacts);
-
-    /* Exclude dependencies with specific scopes from the DepClean analysis */
-    if (!ignoreScopes.isEmpty()) {
-      printString("Ignoring dependencies with scope(s): " + ignoreScopes);
-      usedTransitiveArtifacts = excludeScope(usedTransitiveArtifacts);
-      usedDirectArtifacts = excludeScope(usedDirectArtifacts);
-      unusedDirectArtifacts = excludeScope(unusedDirectArtifacts);
-      unusedTransitiveArtifacts = excludeScope(unusedTransitiveArtifacts);
-    }
-
     /* Use artifacts coordinates for the report instead of the Artifact object */
 
-    // List of dependencies declared in the POM
-    List<Dependency> dependencies = model.getDependencies();
-    Set<String> declaredArtifactsGroupArtifactIds = new HashSet<>();
-    for (Dependency dep : dependencies) {
-      final String artifactGroupArtifactId = dep.getGroupId() + ":" + dep.getArtifactId();
-      printString("#### Direct dependency " + artifactGroupArtifactId);
-      declaredArtifactsGroupArtifactIds.add(artifactGroupArtifactId);
-    }
-
-    // --- used dependencies
-    Set<String> usedDirectArtifactsCoordinates = new HashSet<>();
-    Set<String> usedInheritedArtifactsCoordinates = new HashSet<>();
-    Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
-
-    for (Artifact artifact : usedDirectArtifacts) {
-      String artifactGroupArtifactId = artifact.getGroupId() + ":" + artifact.getArtifactId();
-      String artifactGroupArtifactIds =
-          artifactGroupArtifactId + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString()
-              .split(":")[4];
-      if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactId)) {
-        // the artifact is declared in the pom
-        printString("#### Used Declared Artifact " + artifactGroupArtifactIds);
-        usedDirectArtifactsCoordinates.add(artifactGroupArtifactIds);
-      } else {
-        // the artifact is inherited
-        printString("#### Used Declared Inherited Artifact " + artifactGroupArtifactIds);
-        usedInheritedArtifactsCoordinates.add(artifactGroupArtifactIds);
-      }
-    }
-
-    // TODO Fix: The used transitive dependencies induced by inherited dependencies should be considered
-    //  as used inherited
-    for (Artifact artifact : usedTransitiveArtifacts) {
-      String artifactGroupArtifactId = artifact.getGroupId() + ":" + artifact.getArtifactId();
-      String artifactGroupArtifactIds =
-          artifactGroupArtifactId + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString()
-              .split(":")[4];
-      usedTransitiveArtifactsCoordinates.add(artifactGroupArtifactIds);
-    }
-
-    // --- unused dependencies
-    Set<String> unusedDirectArtifactsCoordinates = new HashSet<>();
-    Set<String> unusedInheritedArtifactsCoordinates = new HashSet<>();
-    Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
-
-    for (Artifact artifact : unusedDirectArtifacts) {
-      String artifactGroupArtifactId = artifact.getGroupId() + ":" + artifact.getArtifactId();
-      String artifactGroupArtifactIds =
-          artifactGroupArtifactId + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString()
-              .split(":")[4];
-      if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactId)) {
-        // the artifact is declared in the pom
-        printString("#### Unused Declared Artifact " + artifactGroupArtifactIds);
-        unusedDirectArtifactsCoordinates.add(artifactGroupArtifactIds);
-      } else {
-        // the artifact is inherited
-        printString("#### Unused Declared Inherited Artifact " + artifactGroupArtifactIds);
-        unusedInheritedArtifactsCoordinates.add(artifactGroupArtifactIds);
-      }
-    }
-
-    // TODO Fix: The unused transitive dependencies induced by inherited dependencies should be considered as
-    //  unused inherited
-    for (Artifact artifact : unusedTransitiveArtifacts) {
-      String artifactGroupArtifactId = artifact.getGroupId() + ":" + artifact.getArtifactId();
-      String artifactGroupArtifactIds =
-          artifactGroupArtifactId + ":" + artifact.toString().split(":")[3] + ":" + artifact.toString()
-              .split(":")[4];
-      unusedTransitiveArtifactsCoordinates.add(artifactGroupArtifactIds);
-    }
-
-    /* Ignoring dependencies from the analysis */
-    if (ignoreDependencies != null) {
-      for (String dependencyToIgnore : ignoreDependencies) {
-        // if the ignored dependency is an unused direct dependency then add it to the set of used direct
-        // and remove it from the set of unused direct
-        ignoreDependency(usedDirectArtifactsCoordinates, unusedDirectArtifactsCoordinates, dependencyToIgnore);
-        // if the ignored dependency is an unused inherited dependency then add it to the set of used inherited
-        // and remove it from the set of unused inherited
-        ignoreDependency(usedInheritedArtifactsCoordinates, unusedInheritedArtifactsCoordinates, dependencyToIgnore);
-        // if the ignored dependency is an unused transitive dependency then add it to the set of used transitive
-        // and remove it from the set of unused transitive
-        ignoreDependency(usedTransitiveArtifactsCoordinates, unusedTransitiveArtifactsCoordinates, dependencyToIgnore);
-      }
-    }
-
-    // Adding module coordinates as a dependency.
-    String moduleId = project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
+    //// Adding module coordinates as a dependency.
+    //String moduleId = project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
 
     // Collecting the result.
-    ResultsUtils resultInfo = new ResultsUtils(
-            unusedDirectArtifactsCoordinates,
-            unusedInheritedArtifactsCoordinates,
-            unusedTransitiveArtifactsCoordinates);
-    // Mapping the result with module for further usage.
-    ModuleResult.put(moduleId, resultInfo);
+    //ResultsUtils resultInfo = new ResultsUtils(
+    //    unusedDirectArtifactsCoordinates,
+    //    unusedInheritedArtifactsCoordinates,
+    //    unusedTransitiveArtifactsCoordinates);
+    //// Mapping the result with module for further usage.
+    //ModuleResult.put(moduleId, resultInfo);
 
     /* Printing the results to the terminal */
     printString(SEPARATOR);
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
     printString(SEPARATOR);
-    printInfoOfDependencies("Used direct dependencies", sizeOfDependencies, usedDirectArtifactsCoordinates);
-    printInfoOfDependencies("Used inherited dependencies", sizeOfDependencies, usedInheritedArtifactsCoordinates);
-    printInfoOfDependencies("Used transitive dependencies", sizeOfDependencies, usedTransitiveArtifactsCoordinates);
+    printInfoOfDependencies("Used direct dependencies", sizeOfDependencies,
+        analysis.getUsedDirectDependencies());
+    printInfoOfDependencies("Used inherited dependencies", sizeOfDependencies,
+        analysis.getUsedInheritedDependencies());
+    printInfoOfDependencies("Used transitive dependencies", sizeOfDependencies,
+        analysis.getUsedTransitiveDependencies());
     printInfoOfDependencies("Potentially unused direct dependencies", sizeOfDependencies,
-        unusedDirectArtifactsCoordinates);
+        analysis.getUnusedDirectDependencies());
     printInfoOfDependencies("Potentially unused inherited dependencies", sizeOfDependencies,
-        unusedInheritedArtifactsCoordinates);
+        analysis.getUnusedInheritedDependencies());
     printInfoOfDependencies("Potentially unused transitive dependencies", sizeOfDependencies,
-        unusedTransitiveArtifactsCoordinates);
+        analysis.getUnusedTransitiveDependencies());
 
     if (!ignoreDependencies.isEmpty()) {
       printString(SEPARATOR);
@@ -587,67 +485,68 @@ public class DepCleanMojo extends AbstractMojo {
       ignoreDependencies.forEach(s -> printString("\t" + s));
     }
 
-    // Getting those dependencies from previous modules whose status might have been changed now.
-    Set<ChangeDependencyResultUtils> dependenciesResultChange = new HashSet<>();
-    for (String module : ModuleDependency) {
-      /* If the module is used as a dependency in the project,
-       then it will be present in allDependenciesCoordinates. */
-      if (allDependenciesCoordinates.contains(module)) {
-        // Getting the result of specified module.
-        ResultsUtils result = ModuleResult.get(module);
-        /* Build will only fail when status of any dependencies has been changed
-         from unused to used, so getting all the unused dependencies from the
-         previous modules and comparing that with all the used transitive
-         dependencies of the current module. */
-        Set<String> allUnusedDependency = result.getAllUnusedDependenciesCoordinates();
-        for (String usedDependency : usedTransitiveArtifactsCoordinates) {
-          if (allUnusedDependency.contains(usedDependency)) {
-            // This dependency status need to be changed.
-            dependenciesResultChange.add(
-                    new ChangeDependencyResultUtils(usedDependency,
-                            module,
-                            result.getType(usedDependency)));
-          }
-        }
-      }
-    }
+    // TODO investigate this
+    //// Getting those dependencies from previous modules whose status might have been changed now.
+    //Set<ChangeDependencyResultUtils> dependenciesResultChange = new HashSet<>();
+    //for (String module : ModuleDependency) {
+    //  /* If the module is used as a dependency in the project,
+    //   then it will be present in allDependenciesCoordinates. */
+    //  if (allDependenciesCoordinates.contains(module)) {
+    //    // Getting the result of specified module.
+    //    ResultsUtils result = ModuleResult.get(module);
+    //    /* Build will only fail when status of any dependencies has been changed
+    //     from unused to used, so getting all the unused dependencies from the
+    //     previous modules and comparing that with all the used transitive
+    //     dependencies of the current module. */
+    //    Set<String> allUnusedDependency = result.getAllUnusedDependenciesCoordinates();
+    //    for (String usedDependency : usedTransitiveArtifactsCoordinates) {
+    //      if (allUnusedDependency.contains(usedDependency)) {
+    //        // This dependency status need to be changed.
+    //        dependenciesResultChange.add(
+    //            new ChangeDependencyResultUtils(usedDependency,
+    //                module,
+    //                result.getType(usedDependency)));
+    //      }
+    //    }
+    //  }
+    //}
 
-    // Adding the module whose result has been collected. (Alert: This position is specific for adding it)
-    ModuleDependency.add(moduleId);
+    //// Adding the module whose result has been collected. (Alert: This position is specific for adding it)
+    //ModuleDependency.add(moduleId);
 
-    // Printing those dependencies to the terminal whose status needs to be changed.
-    if (!dependenciesResultChange.isEmpty()) {
-      printString("\n" + SEPARATOR);
-      getLog().info("DEPENDENT MODULES FOUND");
-      printString("Due to dependent modules, the debloated result of some dependencies"
-              + " from previous modules has been changed now.");
-      printString("The dependency-module details of such dependencies with the"
-              + " new results are as follows :\n");
-      int serialNumber = 0;
-      for (ChangeDependencyResultUtils result : dependenciesResultChange) {
-        printString("\t" + ++serialNumber + ") ModuleCoordinates : " + result.getModule());
-        printString("\t   DependencyCoordinates : " + result.getDependencyCoordinate());
-        printString("\t   OldType : " + result.getType());
-        printString("\t   NewType : " + result.getNewType());
-        printString("");
-      }
-      printString(SEPARATOR);
-    }
+    //// Printing those dependencies to the terminal whose status needs to be changed.
+    //if (!dependenciesResultChange.isEmpty()) {
+    //  printString("\n" + SEPARATOR);
+    //  getLog().info("DEPENDENT MODULES FOUND");
+    //  printString("Due to dependent modules, the debloated result of some dependencies"
+    //      + " from previous modules has been changed now.");
+    //  printString("The dependency-module details of such dependencies with the"
+    //      + " new results are as follows :\n");
+    //  int serialNumber = 0;
+    //  for (ChangeDependencyResultUtils result : dependenciesResultChange) {
+    //    printString("\t" + ++serialNumber + ") ModuleCoordinates : " + result.getModule());
+    //    printString("\t   DependencyCoordinates : " + result.getDependencyCoordinate());
+    //    printString("\t   OldType : " + result.getType());
+    //    printString("\t   NewType : " + result.getNewType());
+    //    printString("");
+    //  }
+    //  printString(SEPARATOR);
+    //}
 
     /* Fail the build if there are unused direct dependencies */
-    if (failIfUnusedDirect && !unusedDirectArtifactsCoordinates.isEmpty()) {
+    if (failIfUnusedDirect && analysis.hasUnusedDirectDependencies()) {
       throw new MojoExecutionException(
           "Build failed due to unused direct dependencies in the dependency tree of the project.");
     }
 
-    /* Fail the build if there are unused direct dependencies */
-    if (failIfUnusedTransitive && !unusedTransitiveArtifactsCoordinates.isEmpty()) {
+    /* Fail the build if there are unused transitive dependencies */
+    if (failIfUnusedTransitive && analysis.hasUnusedTransitiveDependencies()) {
       throw new MojoExecutionException(
           "Build failed due to unused transitive dependencies in the dependency tree of the project.");
     }
 
-    /* Fail the build if there are unused direct dependencies */
-    if (failIfUnusedInherited && !unusedInheritedArtifactsCoordinates.isEmpty()) {
+    /* Fail the build if there are unused inherited dependencies */
+    if (failIfUnusedInherited && analysis.hasUnusedInheritedDependencies()) {
       throw new MojoExecutionException(
           "Build failed due to unused inherited dependencies in the dependency tree of the project.");
     }
@@ -658,12 +557,12 @@ public class DepCleanMojo extends AbstractMojo {
 
       /* Add used transitive as direct dependencies */
       try {
-        if (!usedTransitiveArtifacts.isEmpty()) {
+        if (analysis.hasUsedTransitiveDependencies()) {
           getLog()
-              .info("Adding " + unusedTransitiveArtifactsCoordinates.size()
+              .info("Adding " + analysis.getUsedTransitiveDependencies().size()
                   + " used transitive dependencies as direct dependencies.");
-          for (Artifact usedUndeclaredArtifact : usedTransitiveArtifacts) {
-            model.addDependency(createDependency(usedUndeclaredArtifact));
+          for (DependencyCoordinate usedTransitiveDependency : analysis.getUsedTransitiveDependencies()) {
+            model.addDependency(createDependency(usedTransitiveDependency));
           }
         }
       } catch (Exception e) {
@@ -672,13 +571,13 @@ public class DepCleanMojo extends AbstractMojo {
 
       /* Remove unused direct dependencies */
       try {
-        if (!unusedDirectArtifacts.isEmpty()) {
-          getLog().info("Removing " + unusedDirectArtifactsCoordinates.size()
+        if (analysis.hasUnusedDirectDependencies()) {
+          getLog().info("Removing " + analysis.getUnusedDirectDependencies().size()
               + " unused direct dependencies.");
-          for (Artifact unusedDeclaredArtifact : unusedDirectArtifacts) {
+          for (DependencyCoordinate unusedDirectDependency : analysis.getUnusedDirectDependencies()) {
             for (Dependency dependency : model.getDependencies()) {
-              if (dependency.getGroupId().equals(unusedDeclaredArtifact.getGroupId())
-                  && dependency.getArtifactId().equals(unusedDeclaredArtifact.getArtifactId())) {
+              if (dependency.getGroupId().equals(unusedDirectDependency.getGroupId())
+                  && dependency.getArtifactId().equals(unusedDirectDependency.getDependencyId())) {
                 model.removeDependency(dependency);
                 break;
               }
@@ -691,18 +590,18 @@ public class DepCleanMojo extends AbstractMojo {
 
       /* Exclude unused transitive dependencies */
       try {
-        if (!unusedTransitiveArtifacts.isEmpty()) {
+        if (analysis.hasUnusedTransitiveDependencies()) {
           getLog().info(
-              "Excluding " + unusedTransitiveArtifacts.size()
+              "Excluding " + analysis.getUnusedTransitiveDependencies().size()
                   + " unused transitive dependencies one-by-one.");
           for (Dependency dependency : model.getDependencies()) {
-            for (Artifact artifact : unusedTransitiveArtifacts) {
-              if (isChildren(artifact, dependency)) {
-                getLog().info("Excluding " + artifact.toString() + " from dependency " + dependency
+            for (DependencyCoordinate unusedTransitiveDependency : analysis.getUnusedTransitiveDependencies()) {
+              if (isChildren(unusedTransitiveDependency, dependency)) {
+                getLog().info("Excluding " + unusedTransitiveDependency + " from dependency " + dependency
                     .toString());
                 Exclusion exclusion = new Exclusion();
-                exclusion.setGroupId(artifact.getGroupId());
-                exclusion.setArtifactId(artifact.getArtifactId());
+                exclusion.setGroupId(unusedTransitiveDependency.getGroupId());
+                exclusion.setArtifactId(unusedTransitiveDependency.getDependencyId());
                 dependency.addExclusion(exclusion);
               }
             }
@@ -750,13 +649,7 @@ public class DepCleanMojo extends AbstractMojo {
       ParsedDependencies parsedDependencies = new ParsedDependencies(
           treeFile,
           sizeOfDependencies,
-          projectDependencyAnalysis.getArtifactClassesMap(),
-          usedDirectArtifactsCoordinates,
-          usedInheritedArtifactsCoordinates,
-          usedTransitiveArtifactsCoordinates,
-          unusedDirectArtifactsCoordinates,
-          unusedInheritedArtifactsCoordinates,
-          unusedTransitiveArtifactsCoordinates,
+          analysis,
           classUsageFile,
           createClassUsageCsv
       );
@@ -772,28 +665,134 @@ public class DepCleanMojo extends AbstractMojo {
         getLog().info("class-usage.csv file created in: " + classUsageFile.getAbsolutePath());
       }
     }
+
+    final long stopTime = System.currentTimeMillis();
+    log.info("Analysis done in " + getTime(stopTime - startTime));
   }
 
+  private String getTime(long millis) {
+    long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+    long seconds = (TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
+
+    return String.format("%smin %ss", minutes, seconds);
+  }
+
+  private ProjectContext buildProjectContext(Model model) {
+    final Set<DependencyCoordinate> allArtifactsFound = project.getArtifacts().stream()
+        .map(this::toDependencyCoordinate)
+        .collect(Collectors.toSet());
+    final Set<DependencyCoordinate> directDependencyArtifacts = project.getDependencyArtifacts().stream()
+        .map(this::toDependencyCoordinate)
+        .collect(Collectors.toSet());
+
+    final Set<DependencyCoordinate> directDependencies = directDependencyArtifacts.stream()
+        .filter(o -> contains(model.getDependencies(), o))
+        .collect(Collectors.toSet());
+    final Set<DependencyCoordinate> inheritedDependencies = newHashSet(directDependencyArtifacts);
+    inheritedDependencies.removeAll(directDependencies);
+    final Set<DependencyCoordinate> transitiveDependencies = newHashSet(allArtifactsFound);
+    transitiveDependencies.removeAll(directDependencies);
+    transitiveDependencies.removeAll(inheritedDependencies);
+
+    if (ignoreTests) {
+      ignoreScopes.add("test");
+    }
+
+    return new ProjectContext(
+        createProjectCoordinates(),
+        directDependencies,
+        inheritedDependencies,
+        transitiveDependencies,
+        Paths.get(project.getBuild().getOutputDirectory()),
+        Paths.get(project.getBuild().getTestOutputDirectory()),
+        ignoreScopes.stream().map(Scope::new).collect(Collectors.toSet()),
+        toDependencyCoordinates(allArtifactsFound, ignoreDependencies),
+        collectUsedClassesFromProcessors().stream().map(ClassName::new).collect(Collectors.toSet())
+    );
+  }
+
+  private DependencyCoordinate createProjectCoordinates() {
+    return new DependencyCoordinate(
+        project.getGroupId(),
+        project.getArtifactId(),
+        project.getVersion(),
+        project.getArtifact().getScope(),
+        project.getArtifact().getFile()
+    );
+  }
 
   /**
-   * If the dependencyToIgnore is an unused dependency, then add it to the set of usedArtifactsCoordinates and remove it
-   * from the set of unusedArtifactsCoordinates.
-   *
-   * @param usedArtifactsCoordinates   The set of used artifacts where the dependency will be added.
-   * @param unusedArtifactsCoordinates The set of unused artifacts where the dependency will be removed.
-   * @param dependencyToIgnore         The dependency to ignore.
+   * Maven processors are defined like this.
+   * <pre>{@code
+   *       <plugin>
+   *         <groupId>org.bsc.maven</groupId>
+   *         <artifactId>maven-processor-plugin</artifactId>
+   *         <executions>
+   *           <execution>
+   *             <id>process</id>
+   *             [...]
+   *             <configuration>
+   *               <processors>
+   *                 <processor>XXXProcessor</processor>
+   *               </processors>
+   *             </configuration>
+   *           </execution>
+   *         </executions>
+   *       </plugin>
+   * }</pre>
    */
-  private void ignoreDependency(
-      Set<String> usedArtifactsCoordinates,
-      Set<String> unusedArtifactsCoordinates,
-      String dependencyToIgnore) {
-    for (Iterator<String> i = unusedArtifactsCoordinates.iterator(); i.hasNext(); ) {
-      String unusedDirectArtifact = i.next();
-      if (dependencyToIgnore.equals(unusedDirectArtifact)) {
-        usedArtifactsCoordinates.add(unusedDirectArtifact);
-        i.remove();
-        break;
-      }
-    }
+  private Set<String> collectUsedClassesFromProcessors() {
+    log.debug("# collectUsedClassesFromProcessors()");
+    return Optional.ofNullable(project.getPlugin("org.bsc.maven:maven-processor-plugin"))
+        .map(plugin -> plugin.getExecutionsAsMap().get("process"))
+        .map(exec -> (Xpp3Dom) exec.getConfiguration())
+        .map(config -> config.getChild("processors"))
+        .map(Xpp3Dom::getChildren)
+        .map(arr -> Arrays.stream(arr).map(Xpp3Dom::getValue).collect(Collectors.toSet()))
+        .orElse(ImmutableSet.of());
+  }
+
+  private boolean contains(List<Dependency> dependencies, DependencyCoordinate dependencyCoordinate) {
+    return dependencies.stream()
+        // FIXME Version may not be interpolated in Maven's Dependency representation
+        .anyMatch(dependency -> dependencyCoordinate.getGroupId().equalsIgnoreCase(dependency.getGroupId())
+            && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId()));
+  }
+
+  private DependencyCoordinate toDependencyCoordinate(Artifact artifact) {
+    return new DependencyCoordinate(
+        artifact.getGroupId(),
+        artifact.getArtifactId(),
+        artifact.getVersion(),
+        artifact.getScope(),
+        artifact.getFile());
+  }
+
+  private Set<DependencyCoordinate> toDependencyCoordinates(Set<DependencyCoordinate> allArtifacts,
+                                                            Set<String> ignoreDependencies) {
+    return ignoreDependencies.stream()
+        .map(dependency -> findDependency(allArtifacts, dependency))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
+  }
+
+  private Artifact findArtifact(DependencyCoordinate coordinate) {
+    return project.getArtifacts().stream()
+        .filter(artifact -> matches(artifact, coordinate))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Unable to find " + coordinate + " in dependencies"));
+  }
+
+  private DependencyCoordinate findDependency(Set<DependencyCoordinate> allArtifacts, String dependency) {
+    return allArtifacts.stream()
+        .filter(artifact -> artifact.toString().toLowerCase().contains(dependency.toLowerCase()))
+        .findFirst()
+        .orElse(null);
+  }
+
+  private boolean matches(Artifact artifact, DependencyCoordinate coordinate) {
+    return coordinate.toString().toLowerCase().contains(
+        String.format("%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion())
+            .toLowerCase());
   }
 }

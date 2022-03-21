@@ -19,156 +19,123 @@ package se.kth.depclean.core.analysis;
  * under the License.
  */
 
+import static com.google.common.collect.ImmutableSet.copyOf;
+import static java.util.stream.Collectors.toCollection;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import org.apache.maven.artifact.Artifact;
+import java.util.TreeSet;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import se.kth.depclean.core.analysis.model.ClassName;
+import se.kth.depclean.core.analysis.model.DependencyAnalysisInfo;
+import se.kth.depclean.core.analysis.model.DependencyCoordinate;
 
 /**
  * Project dependencies analysis result.
  */
+@Getter
+@EqualsAndHashCode
 public class ProjectDependencyAnalysis {
 
-  /**
-   * Store all the used declared artifacts (ie. used direct dependencies).
-   */
-  private final Set<Artifact> usedDirectArtifacts;
+  private final Set<DependencyCoordinate> usedDirectDependencies;
+  private final Set<DependencyCoordinate> usedTransitiveDependencies;
+  private final Set<DependencyCoordinate> usedInheritedDependencies;
+  private final Set<DependencyCoordinate> unusedDirectDependencies;
+  private final Set<DependencyCoordinate> unusedTransitiveDependencies;
+  private final Set<DependencyCoordinate> unusedInheritedDependencies;
+  @Getter(AccessLevel.PROTECTED)
+  private final Map<DependencyCoordinate, DependencyTypes> dependencyClassesMap;
 
   /**
-   * Store all the used undeclared artifacts (ie. used transitive dependencies).
-   */
-  private final Set<Artifact> usedTransitiveArtifacts;
-
-  /**
-   * Store all the unused declared artifacts (ie. unused direct dependencies).
-   */
-  private final Set<Artifact> unusedDirectArtifacts;
-  /**
-   * Store all the known artifact with their classes and their used classes.
-   */
-  private final Map<String, ArtifactTypes> artifactClassesMap;
-
-  /**
-   * Ctor.
+   * The analysis result.
+   *
+   * @param usedDirectDependencies       used direct dependencies
+   * @param usedTransitiveDependencies   used transitive dependencies
+   * @param usedInheritedDependencies    used inherited dependencies
+   * @param unusedDirectDependencies     unused direct dependencies
+   * @param unusedTransitiveDependencies unused transitive dependencies
+   * @param unusedInheritedDependencies  unused inherited dependencies
+   * @param dependencyClassesMap         the whole dependencies and their relates classes and used classes
    */
   public ProjectDependencyAnalysis(
-      Set<Artifact> usedDirectArtifacts,
-      Set<Artifact> usedTransitiveArtifacts,
-      Set<Artifact> unusedDirectArtifacts,
-      Map<String, ArtifactTypes> artifactClassesMap) {
-    this.usedDirectArtifacts = safeCopy(usedDirectArtifacts);
-    this.usedTransitiveArtifacts = safeCopy(usedTransitiveArtifacts);
-    this.unusedDirectArtifacts = safeCopy(unusedDirectArtifacts);
-    this.artifactClassesMap = artifactClassesMap;
+      Set<DependencyCoordinate> usedDirectDependencies,
+      Set<DependencyCoordinate> usedTransitiveDependencies,
+      Set<DependencyCoordinate> usedInheritedDependencies,
+      Set<DependencyCoordinate> unusedDirectDependencies,
+      Set<DependencyCoordinate> unusedTransitiveDependencies,
+      Set<DependencyCoordinate> unusedInheritedDependencies,
+      Map<DependencyCoordinate, DependencyTypes> dependencyClassesMap) {
+    this.usedDirectDependencies = copyOf(usedDirectDependencies);
+    this.usedTransitiveDependencies = copyOf(usedTransitiveDependencies);
+    this.usedInheritedDependencies = copyOf(usedInheritedDependencies);
+    this.unusedDirectDependencies = copyOf(unusedDirectDependencies);
+    this.unusedTransitiveDependencies = copyOf(unusedTransitiveDependencies);
+    this.unusedInheritedDependencies = copyOf(unusedInheritedDependencies);
+    this.dependencyClassesMap = dependencyClassesMap;
+  }
+
+  public boolean hasUsedTransitiveDependencies() {
+    return !usedTransitiveDependencies.isEmpty();
+  }
+
+  public boolean hasUnusedDirectDependencies() {
+    return !unusedDirectDependencies.isEmpty();
+  }
+
+  public boolean hasUnusedTransitiveDependencies() {
+    return !unusedTransitiveDependencies.isEmpty();
+  }
+
+  public boolean hasUnusedInheritedDependencies() {
+    return !unusedInheritedDependencies.isEmpty();
   }
 
   /**
-   * To prevent unnecessary and unexpected modification in the set.
+   * Calculates information about the dependency once analysed.
    *
-   * @param set The required set.
-   * @return An unmodifiable set corresponding to the provided set.
+   * @param coordinate the dependency coordinate (groupId:dependencyId:version)
+   * @return the information about the dependency
    */
-  private Set<Artifact> safeCopy(Set<Artifact> set) {
-    return (set == null) ? Collections.emptySet()
-        : Collections.unmodifiableSet(new LinkedHashSet<>(set));
+  public DependencyAnalysisInfo getDependencyInfo(String coordinate) {
+    final DependencyCoordinate dependencyCoordinate = findByCoordinates(coordinate);
+    return new DependencyAnalysisInfo(
+        getStatus(dependencyCoordinate),
+        getType(dependencyCoordinate),
+        toValue(dependencyClassesMap.get(dependencyCoordinate).getAllTypes()),
+        toValue(dependencyClassesMap.get(dependencyCoordinate).getUsedTypes())
+    );
   }
 
-  /**
-   * Overrides the hash code value method of the object.
-   */
-  @Override
-  public int hashCode() {
-    int hashCode = getUsedDirectArtifacts().hashCode();
-    hashCode = (hashCode * 37) + getUsedTransitiveArtifacts().hashCode();
-    hashCode = (hashCode * 37) + getUnusedDirectArtifacts().hashCode();
-    return hashCode;
+  private DependencyCoordinate findByCoordinates(String coordinate) {
+    return dependencyClassesMap.keySet().stream()
+        .filter(dc -> dc.toString().contains(coordinate))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Unable to find " + coordinate + " in dependencies"));
   }
 
-  /**
-   * Used declared artifacts.
-   *
-   * @return {@link Artifact}
-   */
-  public Set<Artifact> getUsedDirectArtifacts() {
-    return usedDirectArtifacts;
+  private TreeSet<String> toValue(Set<ClassName> types) {
+    return types.stream()
+        .map(ClassName::getValue)
+        .collect(toCollection(TreeSet::new));
   }
 
-  // Object methods ---------------------------------------------------------
-
-  /**
-   * Used but not declared artifacts.
-   *
-   * @return {@link Artifact}
-   */
-  public Set<Artifact> getUsedTransitiveArtifacts() {
-    return usedTransitiveArtifacts;
+  private String getStatus(DependencyCoordinate coordinates) {
+    return (usedDirectDependencies.contains(coordinates) || usedInheritedDependencies
+        .contains(coordinates) || usedTransitiveDependencies.contains(coordinates))
+        ? "used" :
+        (unusedDirectDependencies.contains(coordinates) || unusedInheritedDependencies
+            .contains(coordinates) || unusedTransitiveDependencies.contains(coordinates))
+            ? "bloated" : "unknown";
   }
 
-  /**
-   * Unused but declared artifacts.
-   *
-   * @return {@link Artifact}
-   */
-  public Set<Artifact> getUnusedDirectArtifacts() {
-    return unusedDirectArtifacts;
-  }
-
-  /**
-   * Artifacts with their classes and used classes.
-   *
-   * @return the artifact map
-   */
-  public Map<String, ArtifactTypes> getArtifactClassesMap() {
-    return artifactClassesMap;
-  }
-
-  /**
-   * Overrides the standard equals method of Object.
-   */
-  @Override
-  public boolean equals(Object object) {
-    if (object instanceof ProjectDependencyAnalysis) {
-      ProjectDependencyAnalysis analysis = (ProjectDependencyAnalysis) object;
-      return getUsedDirectArtifacts().equals(analysis.getUsedDirectArtifacts())
-          && getUsedTransitiveArtifacts().equals(analysis.getUsedTransitiveArtifacts())
-          && getUnusedDirectArtifacts().equals(analysis.getUnusedDirectArtifacts());
-    }
-
-    return false;
-  }
-
-  /**
-   * Overrides de toString standard method of class Object @see java.lang.Object#toString().
-   */
-  @Override
-  public String toString() {
-    StringBuilder buffer = new StringBuilder();
-
-    if (!getUsedDirectArtifacts().isEmpty()) {
-      buffer.append("usedDeclaredArtifacts=").append(getUsedDirectArtifacts());
-    }
-
-    if (!getUsedTransitiveArtifacts().isEmpty()) {
-      if (buffer.length() > 0) {
-        buffer.append(",");
-      }
-      buffer.append("usedUndeclaredArtifacts=").append(getUsedTransitiveArtifacts());
-    }
-
-    if (!getUnusedDirectArtifacts().isEmpty()) {
-      if (buffer.length() > 0) {
-        buffer.append(",");
-      }
-      buffer.append("unusedDeclaredArtifacts=").append(getUnusedDirectArtifacts());
-    }
-
-    buffer.insert(0, "[");
-    buffer.insert(0, getClass().getName());
-
-    buffer.append("]");
-
-    return buffer.toString();
+  private String getType(DependencyCoordinate coordinates) {
+    return (usedDirectDependencies.contains(coordinates) || unusedDirectDependencies
+        .contains(coordinates)) ? "direct" :
+        (usedInheritedDependencies.contains(coordinates) || unusedInheritedDependencies
+            .contains(coordinates)) ? "inherited" :
+            (usedTransitiveDependencies.contains(coordinates) || unusedTransitiveDependencies
+                .contains(coordinates)) ? "transitive" : "unknown";
   }
 }

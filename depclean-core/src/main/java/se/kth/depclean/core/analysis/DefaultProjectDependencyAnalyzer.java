@@ -17,127 +17,89 @@
 
 package se.kth.depclean.core.analysis;
 
-import com.google.common.collect.ImmutableSet;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
+import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
+import se.kth.depclean.core.analysis.model.ClassName;
+import se.kth.depclean.core.analysis.model.ProjectContext;
 
 /**
  * This is principal class that perform the dependency analysis in a Maven project.
  */
 @Slf4j
-public class DefaultProjectDependencyAnalyzer implements ProjectDependencyAnalyzer {
+public class DefaultProjectDependencyAnalyzer {
 
   private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
-
-  /**
-   * If true, the project's classes in target/test-classes are not going to be analyzed.
-   */
-  private final boolean isIgnoredTest;
+  private final ProjectContext projectContext;
 
   /**
    * Ctor.
    */
-  public DefaultProjectDependencyAnalyzer(boolean isIgnoredTest) {
-    this.isIgnoredTest = isIgnoredTest;
+  public DefaultProjectDependencyAnalyzer(ProjectContext projectContext) {
+    this.projectContext = projectContext;
   }
 
   /**
    * Analyze the dependencies in a project.
    *
-   * @param project The Maven project to be analyzed.
-   * @return An object with the usedDeclaredArtifacts, usedUndeclaredArtifacts, and unusedDeclaredArtifacts.
+   * @return An object representing the analysis result.
    * @throws ProjectDependencyAnalyzerException if the analysis fails.
-   * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
    */
-  @Override
-  public ProjectDependencyAnalysis analyze(MavenProject project) throws ProjectDependencyAnalyzerException {
+  public ProjectDependencyAnalysis analyze() throws ProjectDependencyAnalyzerException {
     try {
       // a map of [dependency] -> [classes]
-      final DeclaredDependencyGraph declaredDependencyGraph =
-          new DeclaredDependencyGraph(project.getArtifacts(), project.getDependencyArtifacts());
-      final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(declaredDependencyGraph);
+      final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(projectContext);
 
       /* ******************** bytecode analysis ********************* */
 
       // execute the analysis (note that the order of these operations matters!)
-      actualUsedClasses.registerClasses(getProjectDependencyClasses(project));
-      if (!isIgnoredTest) {
-        actualUsedClasses.registerClasses(getProjectTestDependencyClasses(project));
+      actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getOutputFolder()));
+      if (!projectContext.ignoreTests()) {
+        log.debug("Parsing test folder");
+        actualUsedClasses.registerClasses(getProjectTestDependencyClasses(projectContext.getTestOutputFolder()));
       }
-      actualUsedClasses.registerClasses(collectUsedClassesFromProcessors(project));
+      actualUsedClasses.registerClasses(projectContext.getExtraClasses());
 
       /* ******************** usage analysis ********************* */
 
       // search for the dependencies used by the project
       Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
-      log.info("# DefaultCallGraph.referencedClassMembers()");
-      actualUsedClasses.registerClasses(DefaultCallGraph.referencedClassMembers(projectClasses));
+      log.debug("# DefaultCallGraph.referencedClassMembers()");
+      actualUsedClasses.registerClasses(getReferencedClassMembers(projectClasses));
 
       /* ******************** results as statically used at the bytecode *********************** */
-      return new ProjectDependencyAnalysisBuilder(declaredDependencyGraph, actualUsedClasses).analyse();
+      return new ProjectDependencyAnalysisBuilder(projectContext, actualUsedClasses).analyse();
     } catch (IOException exception) {
       throw new ProjectDependencyAnalyzerException("Cannot analyze dependencies", exception);
     }
   }
 
-  /**
-   * Maven processors are defined like this.
-   * <pre>{@code
-   *       <plugin>
-   *         <groupId>org.bsc.maven</groupId>
-   *         <artifactId>maven-processor-plugin</artifactId>
-   *         <executions>
-   *           <execution>
-   *             <id>process</id>
-   *             [...]
-   *             <configuration>
-   *               <processors>
-   *                 <processor>XXXProcessor</processor>
-   *               </processors>
-   *             </configuration>
-   *           </execution>
-   *         </executions>
-   *       </plugin>
-   * }</pre>
-   *
-   * @param project the maven project
-   */
-  private Iterable<String> collectUsedClassesFromProcessors(MavenProject project) {
-    log.info("# collectUsedClassesFromProcessors()");
-    return Optional.ofNullable(project.getPlugin("org.bsc.maven:maven-processor-plugin"))
-        .map(plugin -> plugin.getExecutionsAsMap().get("process"))
-        .map(exec -> (Xpp3Dom) exec.getConfiguration())
-        .map(config -> config.getChild("processors"))
-        .map(Xpp3Dom::getChildren)
-        .map(arr -> Arrays.stream(arr).map(Xpp3Dom::getValue).collect(Collectors.toSet()))
-        .orElse(ImmutableSet.of());
-  }
-
-  private Iterable<String> getProjectDependencyClasses(MavenProject project) throws IOException {
+  private Iterable<ClassName> getProjectDependencyClasses(Path outputFolder) throws IOException {
     // Analyze src classes in the project
-    log.info("# getProjectDependencyClasses()");
-    return collectDependencyClasses(project.getBuild().getOutputDirectory());
+    log.debug("# getProjectDependencyClasses()");
+    return collectDependencyClasses(outputFolder);
   }
 
-  private Iterable<String> getProjectTestDependencyClasses(MavenProject project) throws IOException {
+  private Iterable<ClassName> getProjectTestDependencyClasses(Path testOutputFolder) throws IOException {
     // Analyze test classes in the project
-    log.info("# getProjectTestDependencyClasses()");
-    return collectDependencyClasses(project.getBuild().getTestOutputDirectory());
+    log.debug("# getProjectTestDependencyClasses()");
+    return collectDependencyClasses(testOutputFolder);
   }
 
-  private Iterable<String> collectDependencyClasses(String path) throws IOException {
-    URL url = new File(path).toURI().toURL();
-    return dependencyAnalyzer.analyze(url);
+  private Iterable<ClassName> collectDependencyClasses(Path path) throws IOException {
+    return dependencyAnalyzer.analyze(path.toUri().toURL()).stream()
+        .map(ClassName::new)
+        .collect(Collectors.toSet());
+  }
+
+  private Iterable<ClassName> getReferencedClassMembers(Set<String> projectClasses) {
+    return DefaultCallGraph.referencedClassMembers(projectClasses).stream()
+        .map(ClassName::new)
+        .collect(Collectors.toSet());
   }
 }
