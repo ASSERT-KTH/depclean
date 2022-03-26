@@ -264,7 +264,7 @@ public class DepCleanMojo extends AbstractMojo {
   /**
    * Determine if an coordinate is a direct or transitive child of a dependency.
    *
-   * @param coordinate   The coordinate.
+   * @param coordinate The coordinate.
    * @param dependency The dependency
    * @return true if the coordinate is a child of a dependency in the dependency tree.
    * @throws DependencyGraphBuilderException If the graph cannot be constructed.
@@ -435,30 +435,7 @@ public class DepCleanMojo extends AbstractMojo {
       return;
     }
 
-    /* Printing the results to the terminal */
-    printString(SEPARATOR);
-    printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
-    printString(SEPARATOR);
-    printInfoOfDependencies("Used direct dependencies", sizeOfDependencies,
-        analysis.getUsedDirectDependencies());
-    printInfoOfDependencies("Used inherited dependencies", sizeOfDependencies,
-        analysis.getUsedInheritedDependencies());
-    printInfoOfDependencies("Used transitive dependencies", sizeOfDependencies,
-        analysis.getUsedTransitiveDependencies());
-    printInfoOfDependencies("Potentially unused direct dependencies", sizeOfDependencies,
-        analysis.getUnusedDirectDependencies());
-    printInfoOfDependencies("Potentially unused inherited dependencies", sizeOfDependencies,
-        analysis.getUnusedInheritedDependencies());
-    printInfoOfDependencies("Potentially unused transitive dependencies", sizeOfDependencies,
-        analysis.getUnusedTransitiveDependencies());
-
-    if (!ignoreDependencies.isEmpty()) {
-      printString(SEPARATOR);
-      printString(
-          "Dependencies ignored in the analysis by the user"
-              + " [" + ignoreDependencies.size() + "]" + ":" + " ");
-      ignoreDependencies.forEach(s -> printString("\t" + s));
-    }
+    printAnalysisResult(sizeOfDependencies, analysis);
 
     /* Fail the build if there are unused direct dependencies */
     if (failIfUnusedDirect && analysis.hasUnusedDirectDependencies()) {
@@ -481,74 +458,11 @@ public class DepCleanMojo extends AbstractMojo {
     /* Writing the debloated version of the pom */
     if (createPomDebloated) {
       getLog().info("Starting debloating POM");
-
-      /* Add used transitive as direct dependencies */
-      try {
-        if (analysis.hasUsedTransitiveDependencies()) {
-          getLog()
-              .info("Adding " + analysis.getUsedTransitiveDependencies().size()
-                  + " used transitive dependencies as direct dependencies.");
-          for (DependencyCoordinate usedTransitiveDependency : analysis.getUsedTransitiveDependencies()) {
-            model.addDependency(createDependency(usedTransitiveDependency));
-          }
-        }
-      } catch (Exception e) {
-        throw new MojoExecutionException(e.getMessage(), e);
-      }
-
-      /* Remove unused direct dependencies */
-      try {
-        if (analysis.hasUnusedDirectDependencies()) {
-          getLog().info("Removing " + analysis.getUnusedDirectDependencies().size()
-              + " unused direct dependencies.");
-          for (DependencyCoordinate unusedDirectDependency : analysis.getUnusedDirectDependencies()) {
-            for (Dependency dependency : model.getDependencies()) {
-              if (dependency.getGroupId().equals(unusedDirectDependency.getGroupId())
-                  && dependency.getArtifactId().equals(unusedDirectDependency.getDependencyId())) {
-                model.removeDependency(dependency);
-                break;
-              }
-            }
-          }
-        }
-      } catch (Exception e) {
-        throw new MojoExecutionException(e.getMessage(), e);
-      }
-
-      /* Exclude unused transitive dependencies */
-      try {
-        if (analysis.hasUnusedTransitiveDependencies()) {
-          getLog().info(
-              "Excluding " + analysis.getUnusedTransitiveDependencies().size()
-                  + " unused transitive dependencies one-by-one.");
-          for (Dependency dependency : model.getDependencies()) {
-            for (DependencyCoordinate unusedTransitiveDependency : analysis.getUnusedTransitiveDependencies()) {
-              if (isChildren(unusedTransitiveDependency, dependency)) {
-                getLog().info("Excluding " + unusedTransitiveDependency + " from dependency " + dependency
-                    .toString());
-                Exclusion exclusion = new Exclusion();
-                exclusion.setGroupId(unusedTransitiveDependency.getGroupId());
-                exclusion.setArtifactId(unusedTransitiveDependency.getDependencyId());
-                dependency.addExclusion(exclusion);
-              }
-            }
-          }
-        }
-      } catch (Exception e) {
-        throw new MojoExecutionException(e.getMessage(), e);
-      }
-
-      /* Write the debloated pom file */
-      String pathToDebloatedPom =
-          project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
-      try {
-        Path path = Paths.get(pathToDebloatedPom);
-        writePom(path, model);
-      } catch (IOException e) {
-        throw new MojoExecutionException(e.getMessage(), e);
-      }
-      getLog().info("POM debloated successfully");
-      getLog().info("pom-debloated.xml file created in: " + pathToDebloatedPom);
+      removeDuplicates(model);
+      addUsedTransitiveDependenciesAsDirectDependencies(model, analysis);
+      removeUnusedDirectDependencies(model, analysis);
+      removeUnusedTransitiveDependencies(model, analysis);
+      writeDebloatedPom(model);
     }
 
     /* Writing the JSON file with the debloat results */
@@ -595,6 +509,120 @@ public class DepCleanMojo extends AbstractMojo {
 
     final long stopTime = System.currentTimeMillis();
     log.info("Analysis done in " + getTime(stopTime - startTime));
+  }
+
+  private void removeDuplicates(Model model) {
+    // Maven Dependency's equals() method is broken, so remove manually remove duplicates
+    final Set<String> seen = newHashSet();
+    model.getDependencies().removeIf(dep -> !seen.add(dep.getGroupId() + ":" + dep.getArtifactId()));
+  }
+
+  private void printAnalysisResult(Map<String, Long> sizeOfDependencies, ProjectDependencyAnalysis analysis) {
+    printString(SEPARATOR);
+    printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
+    printString(SEPARATOR);
+    printInfoOfDependencies("Used direct dependencies", sizeOfDependencies,
+        analysis.getUsedDirectDependencies());
+    printInfoOfDependencies("Used inherited dependencies", sizeOfDependencies,
+        analysis.getUsedInheritedDependencies());
+    printInfoOfDependencies("Used transitive dependencies", sizeOfDependencies,
+        analysis.getUsedTransitiveDependencies());
+    printInfoOfDependencies("Potentially unused direct dependencies", sizeOfDependencies,
+        analysis.getUnusedDirectDependencies());
+    printInfoOfDependencies("Potentially unused inherited dependencies", sizeOfDependencies,
+        analysis.getUnusedInheritedDependencies());
+    printInfoOfDependencies("Potentially unused transitive dependencies", sizeOfDependencies,
+        analysis.getUnusedTransitiveDependencies());
+
+    if (!ignoreDependencies.isEmpty()) {
+      printString(SEPARATOR);
+      printString(
+          "Dependencies ignored in the analysis by the user"
+              + " [" + ignoreDependencies.size() + "]" + ":" + " ");
+      ignoreDependencies.forEach(s -> printString("\t" + s));
+    }
+  }
+
+  private void writeDebloatedPom(Model model) throws MojoExecutionException {
+    String pathToDebloatedPom =
+        project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
+    try {
+      Path path = Paths.get(pathToDebloatedPom);
+      writePom(path, model);
+    } catch (IOException e) {
+      throw new MojoExecutionException(e.getMessage(), e);
+    }
+    getLog().info("POM debloated successfully");
+    getLog().info("pom-debloated.xml file created in: " + pathToDebloatedPom);
+  }
+
+  private void removeUnusedTransitiveDependencies(Model model, ProjectDependencyAnalysis analysis)
+      throws MojoExecutionException {
+    try {
+      if (analysis.hasUnusedTransitiveDependencies()) {
+        final int dependencyAmount = analysis.getUnusedTransitiveDependencies().size();
+        getLog().info(
+            "Excluding " + dependencyAmount
+                + " unused transitive " + getDependencyWording(dependencyAmount) + " one-by-one.");
+        for (Dependency dependency : model.getDependencies()) {
+          for (DependencyCoordinate unusedTransitiveDependency : analysis.getUnusedTransitiveDependencies()) {
+            if (isChildren(unusedTransitiveDependency, dependency)) {
+              getLog().info("Excluding " + unusedTransitiveDependency + " from dependency " + dependency
+                  .toString());
+              Exclusion exclusion = new Exclusion();
+              exclusion.setGroupId(unusedTransitiveDependency.getGroupId());
+              exclusion.setArtifactId(unusedTransitiveDependency.getDependencyId());
+              dependency.addExclusion(exclusion);
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new MojoExecutionException(e.getMessage(), e);
+    }
+  }
+
+  private void removeUnusedDirectDependencies(Model model, ProjectDependencyAnalysis analysis)
+      throws MojoExecutionException {
+    try {
+      if (analysis.hasUnusedDirectDependencies()) {
+        final int dependencyAmount = analysis.getUnusedDirectDependencies().size();
+        getLog().info("Removing " + dependencyAmount
+            + " unused direct " + getDependencyWording(dependencyAmount) + ".");
+        for (DependencyCoordinate unusedDirectDependency : analysis.getUnusedDirectDependencies()) {
+          for (Dependency dependency : model.getDependencies()) {
+            if (matches(unusedDirectDependency, dependency)) {
+              model.removeDependency(dependency);
+              break;
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new MojoExecutionException(e.getMessage(), e);
+    }
+  }
+
+  private void addUsedTransitiveDependenciesAsDirectDependencies(Model model, ProjectDependencyAnalysis analysis)
+      throws MojoExecutionException {
+    try {
+      if (analysis.hasUsedTransitiveDependencies()) {
+        final int dependencyAmount = analysis.getUsedTransitiveDependencies().size();
+        getLog()
+            .info("Adding " + dependencyAmount
+                + " used transitive " + getDependencyWording(dependencyAmount) + " as direct "
+                + getDependencyWording(dependencyAmount) + ".");
+        for (DependencyCoordinate usedTransitiveDependency : analysis.getUsedTransitiveDependencies()) {
+          model.addDependency(createDependency(usedTransitiveDependency));
+        }
+      }
+    } catch (Exception e) {
+      throw new MojoExecutionException(e.getMessage(), e);
+    }
+  }
+
+  private String getDependencyWording(int amount) {
+    return amount > 1 ? "dependencies" : "dependency";
   }
 
   private String getTime(long millis) {
@@ -681,9 +709,8 @@ public class DepCleanMojo extends AbstractMojo {
 
   private boolean contains(List<Dependency> dependencies, DependencyCoordinate dependencyCoordinate) {
     return dependencies.stream()
-        // FIXME Version may not be interpolated in Maven's Dependency representation
-        .anyMatch(dependency -> dependencyCoordinate.getGroupId().equalsIgnoreCase(dependency.getGroupId())
-            && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId()));
+        // FIXME Version may not be interpolated in Maven's Dependency representation, so skip it
+        .anyMatch(dependency -> matches(dependencyCoordinate, dependency));
   }
 
   private DependencyCoordinate toDependencyCoordinate(Artifact artifact) {
@@ -721,5 +748,10 @@ public class DepCleanMojo extends AbstractMojo {
     return coordinate.toString().toLowerCase().contains(
         String.format("%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion())
             .toLowerCase());
+  }
+
+  private boolean matches(DependencyCoordinate dependencyCoordinate, Dependency dependency) {
+    return dependencyCoordinate.getGroupId().equalsIgnoreCase(dependency.getGroupId())
+        && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId());
   }
 }

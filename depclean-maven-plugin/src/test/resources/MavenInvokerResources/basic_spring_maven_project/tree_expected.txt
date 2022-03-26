@@ -15,16 +15,7 @@ se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 +- org.apache.maven:maven-plugin-api:jar:3.6.0:compile
 |  +- (org.apache.maven:maven-model:jar:3.6.0:compile - omitted for duplicate)
 |  +- (org.apache.maven:maven-artifact:jar:3.6.0:compile - omitted for duplicate)
-|  +- org.eclipse.sisu:org.eclipse.sisu.plexus:jar:0.3.3:compile
-|  |  +- javax.enterprise:cdi-api:jar:1.0:compile
-|  |  |  +- javax.annotation:jsr250-api:jar:1.0:compile
-|  |  |  \- javax.inject:javax.inject:jar:1:compile
-|  |  +- org.eclipse.sisu:org.eclipse.sisu.inject:jar:0.3.3:compile
-|  |  +- (org.codehaus.plexus:plexus-component-annotations:jar:1.5.5:compile - omitted for conflict with 1.6)
-|  |  +- (org.codehaus.plexus:plexus-classworlds:jar:2.5.2:compile - omitted for duplicate)
-|  |  \- (org.codehaus.plexus:plexus-utils:jar:3.0.17:compile - omitted for conflict with 3.3.0)
-|  +- (org.codehaus.plexus:plexus-utils:jar:3.1.0:compile - omitted for conflict with 3.3.0)
-|  \- org.codehaus.plexus:plexus-classworlds:jar:2.5.2:compile
+|  \- (org.codehaus.plexus:plexus-utils:jar:3.1.0:compile - omitted for conflict with 3.3.0)
 +- org.apache.maven:maven-project:jar:3.0-alpha-2:compile
 |  +- (org.apache.maven:maven-model:jar:3.0-alpha-2:compile - omitted for conflict with 3.6.0)
 |  +- (org.codehaus.plexus:plexus-utils:jar:1.5.6:compile - omitted for conflict with 3.3.0)
@@ -32,7 +23,6 @@ se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 +- org.apache.maven.plugin-tools:maven-plugin-annotations:jar:3.6.0:compile
 |  \- (org.apache.maven:maven-artifact:jar:3.0:compile - omitted for conflict with 3.6.0)
 +- org.apache.maven.shared:maven-dependency-tree:jar:3.0.1:compile
-|  \- org.codehaus.plexus:plexus-component-annotations:jar:1.6:compile
 +- commons-io:commons-io:jar:2.5:compile
 +- com.google.code.gson:gson:jar:2.8.6:compile
 +- org.whitesource:maven-dependency-tree-parser:jar:1.0.6:compile
@@ -54,21 +44,13 @@ se.kth.castor:depclean-maven-plugin:maven-plugin:2.0.2-SNAPSHOT
 +- commons-lang:commons-lang:jar:2.4:compile
 +- org.apache.maven:maven-compat:jar:3.0-alpha-2:compile
 |  +- (org.apache.maven:maven-model:jar:3.0-alpha-2:compile - omitted for conflict with 3.6.0)
-|  +- org.codehaus.plexus:plexus-container-default:jar:1.0-beta-3.0.5:compile
-|  |  +- (org.codehaus.plexus:plexus-utils:jar:1.4.5:compile - omitted for conflict with 3.3.0)
-|  |  +- (org.codehaus.plexus:plexus-classworlds:jar:1.4:compile - omitted for conflict with 2.5.2)
-|  |  +- org.apache.xbean:xbean-reflect:jar:3.4:compile
-|  |  |  +- (log4j:log4j:jar:1.2.12:compile - omitted for conflict with 1.2.17)
-|  |  |  \- (commons-logging:commons-logging-api:jar:1.1:compile - omitted for duplicate)
-|  |  +- (com.google.code.google-collections:google-collect:jar:snapshot-20080530:compile - omitted for duplicate)
-|  |  \- junit:junit:jar:4.13:compile
-|  \- (org.codehaus.plexus:plexus-component-annotations:jar:1.0-beta-3.0.5:compile - omitted for conflict with 1.6)
+|  \- org.codehaus.plexus:plexus-component-annotations:jar:1.0-beta-3.0.5:compile
+|     \- junit:junit:jar:4.13:compile
 +- org.apache.maven:maven-model:jar:3.6.0:compile
 |  \- (org.codehaus.plexus:plexus-utils:jar:3.1.0:compile - omitted for conflict with 3.3.0)
 +- commons-logging:commons-logging-api:jar:1.1:compile
 +- org.apache.maven:maven-artifact:jar:3.6.0:compile
-|  +- (org.codehaus.plexus:plexus-utils:jar:3.1.0:compile - omitted for conflict with 3.3.0)
-|  \- org.apache.commons:commons-lang3:jar:3.8.1:compile
+|  \- (org.codehaus.plexus:plexus-utils:jar:3.1.0:compile - omitted for conflict with 3.3.0)
 +- org.jetbrains:annotations:jar:17.0.0:compile
 +- com.google.code.google-collections:google-collect:jar:snapshot-20080530:compile
 +- org.ow2.asm:asm:jar:9.1:compile
