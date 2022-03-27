@@ -1,148 +1,51 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
+  <!-- Parent -->
   <parent>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-parent-pom</artifactId>
     <version>2.0.2-SNAPSHOT</version>
   </parent>
+
+  <!-- Coordinates -->
   <artifactId>depclean-maven-plugin</artifactId>
   <version>2.0.2-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>depclean-maven-plugin</name>
-  <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
+
   <properties>
-    <linkXRef>false</linkXRef>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
+    <linkXRef>false</linkXRef>
   </properties>
+
+  <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
+
+  <!-- Build options -->
   <dependencies>
+    <!-- Project module -->
     <dependency>
       <groupId>se.kth.castor</groupId>
       <artifactId>depclean-core</artifactId>
       <version>2.0.2-SNAPSHOT</version>
     </dependency>
+    <!--Maven tools for plugin construction-->
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
       <version>3.6.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-settings</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven.resolver</groupId>
-          <artifactId>maven-resolver-impl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-model-builder</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.sisu</groupId>
-          <artifactId>org.eclipse.sisu.plexus</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-component-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.inject</groupId>
-          <artifactId>javax.inject</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven.resolver</groupId>
-          <artifactId>maven-resolver-util</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven.shared</groupId>
-          <artifactId>maven-shared-utils</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-builder-support</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.inject</groupId>
-          <artifactId>guice</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-repository-metadata</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-settings-builder</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.sisu</groupId>
-          <artifactId>org.eclipse.sisu.inject</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven.resolver</groupId>
-          <artifactId>maven-resolver-spi</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-classworlds</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-resolver-provider</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven.resolver</groupId>
-          <artifactId>maven-resolver-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
       <version>3.6.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-classworlds</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.sisu</groupId>
-          <artifactId>org.eclipse.sisu.plexus</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-project</artifactId>
       <version>3.0-alpha-2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.sonatype.spice</groupId>
-          <artifactId>model-builder</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-interpolation</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-project-builder</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.woodstox</groupId>
-          <artifactId>wstx-asl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-container-default</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
@@ -153,17 +56,8 @@
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-tree</artifactId>
       <version>3.0.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.eclipse.aether</groupId>
-          <artifactId>aether-util</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-component-annotations</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
+    <!-- Utils -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -180,20 +74,18 @@
       <version>1.0.6</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.maven.plugin-testing</groupId>
+      <artifactId>maven-plugin-testing-tools</artifactId>
+      <version>3.3.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <!-- Integration tests -->
+    <!-- see https://khmarbaise.github.io/maven-it-extension/itf-documentation/usersguide/usersguide.html#_grouping_test_cases -->
+    <dependency>
       <groupId>com.soebes.itf.jupiter.extension</groupId>
       <artifactId>itf-extension-maven</artifactId>
       <version>0.9.0</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apiguardian</groupId>
-          <artifactId>apiguardian-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.junit.platform</groupId>
-          <artifactId>junit-platform-commons</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.soebes.itf.jupiter.extension</groupId>
@@ -213,141 +105,17 @@
       <version>3.19.0</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>30.1-jre</version>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.j2objc</groupId>
-          <artifactId>j2objc-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>listenablefuture</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.checkerframework</groupId>
-          <artifactId>checker-qual</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>failureaccess</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.errorprone</groupId>
-          <artifactId>error_prone_annotations</artifactId>
-        </exclusion>
-      </exclusions>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-      <version>3.3.0</version>
-      <scope>compile</scope>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>2.4</version>
-      <scope>compile</scope>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-compat</artifactId>
-      <version>3.0-alpha-2</version>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.maven.wagon</groupId>
-          <artifactId>wagon-provider-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-container-default</artifactId>
-        </exclusion>
-      </exclusions>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-model</artifactId>
-      <version>3.6.0</version>
-      <scope>compile</scope>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
-      <version>1.1</version>
-      <scope>compile</scope>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-artifact</artifactId>
-      <version>3.6.0</version>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
-      </exclusions>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains</groupId>
-      <artifactId>annotations</artifactId>
-      <version>17.0.0</version>
-      <scope>compile</scope>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.google-collections</groupId>
-      <artifactId>google-collect</artifactId>
-      <version>snapshot-20080530</version>
-      <scope>compile</scope>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <version>9.1</version>
-      <scope>compile</scope>
-      <optional>false</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.jgrapht</groupId>
-      <artifactId>jgrapht-core</artifactId>
-      <version>1.3.0</version>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jheaps</groupId>
-          <artifactId>jheaps</artifactId>
-        </exclusion>
-      </exclusions>
-      <optional>false</optional>
-    </dependency>
   </dependencies>
+
   <build>
     <testResources>
       <testResource>
-        <filtering>false</filtering>
         <directory>src/test/resources</directory>
+        <filtering>false</filtering>
       </testResource>
       <testResource>
-        <filtering>true</filtering>
         <directory>src/test/resources-its</directory>
+        <filtering>true</filtering>
       </testResource>
     </testResources>
     <plugins>
@@ -366,8 +134,14 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>3.0.0-M3</version>
+        <configuration>
+          <includes>
+            <include>**/*IT.java</include>
+          </includes>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -375,15 +149,16 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <includes>
-            <include>**/*IT.java</include>
-          </includes>
-        </configuration>
       </plugin>
+      <!-- Maven plugin to create Maven plugins-->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <version>3.6.0</version>
+        <configuration>
+          <goalPrefix>depclean</goalPrefix>
+          <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
+        </configuration>
         <executions>
           <execution>
             <id>mojo-descriptor</id>
@@ -393,43 +168,12 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <goalPrefix>depclean</goalPrefix>
-          <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
-        </configuration>
       </plugin>
+      <!-- Checkstyle-->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>3.1.2</version>
-        <executions>
-          <execution>
-            <id>check for errors</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <violationSeverity>error</violationSeverity>
-              <failsOnError>true</failsOnError>
-              <configLocation>../checkstyle.xml</configLocation>
-              <encoding>UTF-8</encoding>
-              <consoleOutput>true</consoleOutput>
-            </configuration>
-          </execution>
-          <execution>
-            <id>checkstyle report</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>checkstyle</goal>
-            </goals>
-            <configuration>
-              <failsOnError>true</failsOnError>
-              <configLocation>../checkstyle.xml</configLocation>
-              <encoding>UTF-8</encoding>
-              <consoleOutput>true</consoleOutput>
-            </configuration>
-          </execution>
-        </executions>
         <dependencies>
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
@@ -437,7 +181,41 @@
             <version>8.41</version>
           </dependency>
         </dependencies>
+        <executions>
+          <execution>
+            <id>check for errors</id>
+            <configuration>
+              <!-- Change to warning to enforce strong style rules -->
+              <violationSeverity>error</violationSeverity>
+              <failsOnError>true</failsOnError>
+              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <configLocation>../checkstyle.xml</configLocation>
+              <encoding>UTF-8</encoding>
+              <consoleOutput>true</consoleOutput>
+            </configuration>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>checkstyle report</id>
+            <configuration>
+              <failsOnError>true</failsOnError>
+              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <configLocation>../checkstyle.xml</configLocation>
+              <encoding>UTF-8</encoding>
+              <consoleOutput>true</consoleOutput>
+            </configuration>
+            <phase>verify</phase>
+            <goals>
+              <!-- Generate a Checkstyle report -->
+              <goal>checkstyle</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
+
 </project>

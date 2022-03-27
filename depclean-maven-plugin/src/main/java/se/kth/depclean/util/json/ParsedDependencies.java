@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
@@ -27,7 +26,6 @@ import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
 public class ParsedDependencies {
 
   private final File treeFile;
-  private final Map<String, Long> sizeOfDependencies;
   private final ProjectDependencyAnalysis analysis;
   private final File classUsageFile;
   private final boolean createClassUsageCsv;
@@ -48,7 +46,6 @@ public class ParsedDependencies {
     Node tree = parser.parse(r);
     NodeAdapter nodeAdapter = new NodeAdapter(
         analysis,
-        sizeOfDependencies,
         classUsageFile,
         createClassUsageCsv
     );

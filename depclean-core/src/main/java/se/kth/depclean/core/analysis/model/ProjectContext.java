@@ -7,46 +7,45 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import java.nio.file.Path;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import se.kth.depclean.core.analysis.graph.DependencyGraph;
 
 /**
  * Contains all information about the project's context, without any reference
  * to a given framework (Maven, Gradle, etc.).
  */
 @Slf4j
-@Getter
 @ToString
 @EqualsAndHashCode
 public final class ProjectContext {
 
-  private final Multimap<DependencyCoordinate, ClassName> classesPerDependency = ArrayListMultimap.create();
-  private final Multimap<ClassName, DependencyCoordinate> dependenciesPerClass = ArrayListMultimap.create();
+  private final Multimap<Dependency, ClassName> classesPerDependency = ArrayListMultimap.create();
+  private final Multimap<ClassName, Dependency> dependenciesPerClass = ArrayListMultimap.create();
 
-  private final DependencyCoordinate projectCoordinates;
-  private final Set<DependencyCoordinate> directDependencies;
-  private final Set<DependencyCoordinate> inheritedDependencies;
-  private final Set<DependencyCoordinate> transitiveDependencies;
-
+  @Getter
   private final Path outputFolder;
+  @Getter
   private final Path testOutputFolder;
 
+  @Getter
   private final Set<Scope> ignoredScopes;
-  private final Set<DependencyCoordinate> ignoredDependencies;
+  @Getter
+  private final Set<Dependency> ignoredDependencies;
 
+  @Getter
   private final Set<ClassName> extraClasses;
+  @Getter
+  private final DependencyGraph dependencyGraph;
 
   /**
    * Creates a new project context.
    *
-   * @param projectCoordinates the coordinates (groupId:dependencyId:version) of the current project
-   * @param directDependencies explicitly declared dependencies
-   * @param inheritedDependencies direct dependencies inherited from parent
-   * @param transitiveDependencies transitive (implicit) dependencies
+   * @param dependencyGraph the dependencyGraph
    * @param outputFolder where the project's classes are compiled
    * @param testOutputFolder where the project's test classes are compiled
    * @param ignoredScopes the scopes to ignore
@@ -54,16 +53,12 @@ public final class ProjectContext {
    * @param extraClasses some classes we want to tell the analyser to consider used
    *                     (like maven processors for instance)
    */
-  public ProjectContext(DependencyCoordinate projectCoordinates,
-                        Set<DependencyCoordinate> directDependencies, Set<DependencyCoordinate> inheritedDependencies,
-                        Set<DependencyCoordinate> transitiveDependencies, Path outputFolder, Path testOutputFolder,
+  public ProjectContext(DependencyGraph dependencyGraph,
+                        Path outputFolder, Path testOutputFolder,
                         Set<Scope> ignoredScopes,
-                        Set<DependencyCoordinate> ignoredDependencies,
+                        Set<Dependency> ignoredDependencies,
                         Set<ClassName> extraClasses) {
-    this.projectCoordinates = projectCoordinates;
-    this.directDependencies = directDependencies;
-    this.inheritedDependencies = inheritedDependencies;
-    this.transitiveDependencies = transitiveDependencies;
+    this.dependencyGraph = dependencyGraph;
     this.outputFolder = outputFolder;
     this.testOutputFolder = testOutputFolder;
     this.ignoredScopes = ignoredScopes;
@@ -72,40 +67,18 @@ public final class ProjectContext {
 
     ignoredScopes.forEach(scope -> log.info("Ignoring scope {}", scope));
 
-    populateDependenciesAndClassesMap(directDependencies);
-    populateDependenciesAndClassesMap(inheritedDependencies);
-    populateDependenciesAndClassesMap(transitiveDependencies);
+    populateDependenciesAndClassesMap(dependencyGraph.directDependencies());
+    populateDependenciesAndClassesMap(dependencyGraph.inheritedDependencies());
+    populateDependenciesAndClassesMap(dependencyGraph.transitiveDependencies());
 
     Multimaps.invertFrom(classesPerDependency, dependenciesPerClass);
-
-    if (log.isDebugEnabled()) {
-      log.debug("# Direct dependencies");
-      directDependencies.forEach(dependency -> log.debug("## Found dependency {}", dependency));
-      log.debug("# Inherited dependencies");
-      inheritedDependencies.forEach(dependency -> log.debug("## Found dependency {}", dependency));
-      log.debug("# Transitive dependencies");
-      transitiveDependencies.forEach(dependency -> log.debug("## Found dependency {}", dependency));
-    }
   }
 
-  private void populateDependenciesAndClassesMap(Set<DependencyCoordinate> dependencies) {
-    dependencies.stream()
-        .filter(this::filterScopesIfNeeded)
-        .forEach(dc -> classesPerDependency.putAll(dc, dc.getRelatedClasses()));
-  }
-
-  private boolean filterScopesIfNeeded(DependencyCoordinate dc) {
-    final String declaredScope = dc.getScope();
-    return ignoredScopes.stream()
-        .map(Scope::getValue)
-        .noneMatch(declaredScope::equalsIgnoreCase);
-  }
-
-  public Set<ClassName> getClassesForDependency(DependencyCoordinate dependency) {
+  public Set<ClassName> getClassesForDependency(Dependency dependency) {
     return copyOf(classesPerDependency.get(dependency));
   }
 
-  public Set<DependencyCoordinate> getDependenciesForClass(ClassName className) {
+  public Set<Dependency> getDependenciesForClass(ClassName className) {
     return copyOf(dependenciesPerClass.get(className));
   }
 
@@ -113,11 +86,30 @@ public final class ProjectContext {
     return Iterables.isEmpty(getDependenciesForClass(className));
   }
 
-  public Collection<DependencyCoordinate> getAllDependencies() {
-    return classesPerDependency.keys();
+  /**
+   * Get all known dependencies.
+   *
+   * @return all known dependencies
+   */
+  public Set<Dependency> getAllDependencies() {
+    final Set<Dependency> dependencies = new HashSet<>(dependencyGraph.allDependencies());
+    return copyOf(dependencies);
   }
 
   public boolean ignoreTests() {
     return ignoredScopes.contains(new Scope("test"));
+  }
+
+  private void populateDependenciesAndClassesMap(Set<Dependency> dependencies) {
+    dependencies.stream()
+        .filter(this::filterScopesIfNeeded)
+        .forEach(dc -> classesPerDependency.putAll(dc, dc.getRelatedClasses()));
+  }
+
+  private boolean filterScopesIfNeeded(Dependency dc) {
+    final String declaredScope = dc.getScope();
+    return ignoredScopes.stream()
+        .map(Scope::getValue)
+        .noneMatch(declaredScope::equalsIgnoreCase);
   }
 }

@@ -22,7 +22,6 @@ import se.kth.depclean.core.analysis.model.DependencyAnalysisInfo;
 public class NodeAdapter extends TypeAdapter<Node> {
 
   private final ProjectDependencyAnalysis analysis;
-  private final Map<String, Long> sizeOfDependencies;
   private final File classUsageFile;
   private final boolean createClassUsageCsv;
 
@@ -69,7 +68,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
         .value(node.getClassifier())
 
         .name("size")
-        .value(sizeOfDependencies.get(dependencyJar))
+        .value(dependencyInfo.getSize())
 
         .name("type")
         .value(dependencyInfo.getType())

@@ -20,17 +20,24 @@ package se.kth.depclean.core.analysis;
  */
 
 import static com.google.common.collect.ImmutableSet.copyOf;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.stream.Collectors.toCollection;
 
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ClassName;
+import se.kth.depclean.core.analysis.model.DebloatedDependency;
+import se.kth.depclean.core.analysis.model.Dependency;
 import se.kth.depclean.core.analysis.model.DependencyAnalysisInfo;
-import se.kth.depclean.core.analysis.model.DependencyCoordinate;
 
 /**
  * Project dependencies analysis result.
@@ -38,15 +45,18 @@ import se.kth.depclean.core.analysis.model.DependencyCoordinate;
 @Getter
 @EqualsAndHashCode
 public class ProjectDependencyAnalysis {
+  private static final String SEPARATOR = "-------------------------------------------------------";
 
-  private final Set<DependencyCoordinate> usedDirectDependencies;
-  private final Set<DependencyCoordinate> usedTransitiveDependencies;
-  private final Set<DependencyCoordinate> usedInheritedDependencies;
-  private final Set<DependencyCoordinate> unusedDirectDependencies;
-  private final Set<DependencyCoordinate> unusedTransitiveDependencies;
-  private final Set<DependencyCoordinate> unusedInheritedDependencies;
+  private final Set<Dependency> usedDirectDependencies;
+  private final Set<Dependency> usedTransitiveDependencies;
+  private final Set<Dependency> usedInheritedDependencies;
+  private final Set<Dependency> unusedDirectDependencies;
+  private final Set<Dependency> unusedTransitiveDependencies;
+  private final Set<Dependency> unusedInheritedDependencies;
+  private final Set<Dependency> ignoredDependencies;
   @Getter(AccessLevel.PROTECTED)
-  private final Map<DependencyCoordinate, DependencyTypes> dependencyClassesMap;
+  private final Map<Dependency, DependencyTypes> dependencyClassesMap;
+  private final DependencyGraph dependencyGraph;
 
   /**
    * The analysis result.
@@ -57,23 +67,28 @@ public class ProjectDependencyAnalysis {
    * @param unusedDirectDependencies     unused direct dependencies
    * @param unusedTransitiveDependencies unused transitive dependencies
    * @param unusedInheritedDependencies  unused inherited dependencies
+   * @param ignoredDependencies          ignored dependencies
    * @param dependencyClassesMap         the whole dependencies and their relates classes and used classes
    */
-  public ProjectDependencyAnalysis(
-      Set<DependencyCoordinate> usedDirectDependencies,
-      Set<DependencyCoordinate> usedTransitiveDependencies,
-      Set<DependencyCoordinate> usedInheritedDependencies,
-      Set<DependencyCoordinate> unusedDirectDependencies,
-      Set<DependencyCoordinate> unusedTransitiveDependencies,
-      Set<DependencyCoordinate> unusedInheritedDependencies,
-      Map<DependencyCoordinate, DependencyTypes> dependencyClassesMap) {
+  ProjectDependencyAnalysis(
+      Set<Dependency> usedDirectDependencies,
+      Set<Dependency> usedTransitiveDependencies,
+      Set<Dependency> usedInheritedDependencies,
+      Set<Dependency> unusedDirectDependencies,
+      Set<Dependency> unusedTransitiveDependencies,
+      Set<Dependency> unusedInheritedDependencies,
+      Set<Dependency> ignoredDependencies,
+      Map<Dependency, DependencyTypes> dependencyClassesMap,
+      DependencyGraph dependencyGraph) {
     this.usedDirectDependencies = copyOf(usedDirectDependencies);
     this.usedTransitiveDependencies = copyOf(usedTransitiveDependencies);
     this.usedInheritedDependencies = copyOf(usedInheritedDependencies);
     this.unusedDirectDependencies = copyOf(unusedDirectDependencies);
     this.unusedTransitiveDependencies = copyOf(unusedTransitiveDependencies);
     this.unusedInheritedDependencies = copyOf(unusedInheritedDependencies);
+    this.ignoredDependencies = copyOf(ignoredDependencies);
     this.dependencyClassesMap = dependencyClassesMap;
+    this.dependencyGraph = dependencyGraph;
   }
 
   public boolean hasUsedTransitiveDependencies() {
@@ -93,22 +108,59 @@ public class ProjectDependencyAnalysis {
   }
 
   /**
+   * Displays the analysis result.
+   */
+  public void print() {
+    printString(SEPARATOR);
+    printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
+    printString(SEPARATOR);
+    printInfoOfDependencies("Used direct dependencies", getUsedDirectDependencies());
+    printInfoOfDependencies("Used inherited dependencies", getUsedInheritedDependencies());
+    printInfoOfDependencies("Used transitive dependencies", getUsedTransitiveDependencies());
+    printInfoOfDependencies("Potentially unused direct dependencies", getUnusedDirectDependencies());
+    printInfoOfDependencies("Potentially unused inherited dependencies", getUnusedInheritedDependencies());
+    printInfoOfDependencies("Potentially unused transitive dependencies", getUnusedTransitiveDependencies());
+
+    if (!ignoredDependencies.isEmpty()) {
+      printString(SEPARATOR);
+      printString(
+          "Dependencies ignored in the analysis by the user"
+              + " [" + ignoredDependencies.size() + "]" + ":" + " ");
+      ignoredDependencies.forEach(s -> printString("\t" + s));
+    }
+  }
+
+  /**
    * Calculates information about the dependency once analysed.
    *
    * @param coordinate the dependency coordinate (groupId:dependencyId:version)
    * @return the information about the dependency
    */
   public DependencyAnalysisInfo getDependencyInfo(String coordinate) {
-    final DependencyCoordinate dependencyCoordinate = findByCoordinates(coordinate);
+    final Dependency dependency = findByCoordinates(coordinate);
     return new DependencyAnalysisInfo(
-        getStatus(dependencyCoordinate),
-        getType(dependencyCoordinate),
-        toValue(dependencyClassesMap.get(dependencyCoordinate).getAllTypes()),
-        toValue(dependencyClassesMap.get(dependencyCoordinate).getUsedTypes())
+        getStatus(dependency),
+        getType(dependency),
+        dependency.getSize(),
+        toValue(dependencyClassesMap.get(dependency).getAllTypes()),
+        toValue(dependencyClassesMap.get(dependency).getUsedTypes())
     );
   }
 
-  private DependencyCoordinate findByCoordinates(String coordinate) {
+  /**
+   * The processed dependencies.
+   *
+   * @return the debloated dependencies
+   */
+  public Set<DebloatedDependency> getDebloatedDependencies() {
+    final Set<Dependency> dependencies = new HashSet<>(getUsedDirectDependencies());
+    dependencies.addAll(getUsedTransitiveDependencies());
+    return dependencies.stream()
+        .map(this::toDebloatedDependency)
+        .collect(toImmutableSet());
+  }
+
+  private Dependency findByCoordinates(String coordinate) {
     return dependencyClassesMap.keySet().stream()
         .filter(dc -> dc.toString().contains(coordinate))
         .findFirst()
@@ -121,7 +173,7 @@ public class ProjectDependencyAnalysis {
         .collect(toCollection(TreeSet::new));
   }
 
-  private String getStatus(DependencyCoordinate coordinates) {
+  private String getStatus(Dependency coordinates) {
     return (usedDirectDependencies.contains(coordinates) || usedInheritedDependencies
         .contains(coordinates) || usedTransitiveDependencies.contains(coordinates))
         ? "used" :
@@ -130,12 +182,50 @@ public class ProjectDependencyAnalysis {
             ? "bloated" : "unknown";
   }
 
-  private String getType(DependencyCoordinate coordinates) {
+  private String getType(Dependency coordinates) {
     return (usedDirectDependencies.contains(coordinates) || unusedDirectDependencies
         .contains(coordinates)) ? "direct" :
         (usedInheritedDependencies.contains(coordinates) || unusedInheritedDependencies
             .contains(coordinates)) ? "inherited" :
             (usedTransitiveDependencies.contains(coordinates) || unusedTransitiveDependencies
                 .contains(coordinates)) ? "transitive" : "unknown";
+  }
+
+  private void printString(final String string) {
+    System.out.println(string); //NOSONAR avoid a warning of non-used logger
+  }
+
+  /**
+   * Util function to print the information of the analyzed artifacts.
+   *
+   * @param info               The usage status (used or unused) and type (direct, transitive, inherited) of artifacts.
+   * @param dependencies       The GAV of the artifact.
+   */
+  private void printInfoOfDependencies(final String info, final Set<Dependency> dependencies) {
+    printString(info.toUpperCase() + " [" + dependencies.size() + "]" + ": ");
+    printDependencies(dependencies);
+  }
+
+  /**
+   * Print the status of the dependencies to the standard output. The format is: "[coordinates][scope] [(size)]"
+   *
+   * @param dependencies       The set dependencies to print.
+   */
+  private void printDependencies(final Set<Dependency> dependencies) {
+    dependencies
+        .stream()
+        .sorted(Comparator.comparing(Dependency::getSize))
+        .collect(Collectors.toCollection(LinkedList::new))
+        .descendingIterator()
+        .forEachRemaining(s -> printString("\t" + s.printWithSize()));
+  }
+
+  private DebloatedDependency toDebloatedDependency(Dependency dependency) {
+    final Set<Dependency> dependenciesForParent = dependencyGraph.getDependenciesForParent(dependency);
+    final Set<Dependency> dependenciesToExclude = dependenciesForParent.stream()
+        .filter(dep -> getUnusedTransitiveDependencies().contains(dep))
+        .collect(Collectors.toSet());
+
+    return new DebloatedDependency(dependency, copyOf(dependenciesToExclude));
   }
 }

@@ -13,6 +13,7 @@ import java.util.jar.JarFile;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 
@@ -22,13 +23,14 @@ import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 @Slf4j
 @Getter
 @EqualsAndHashCode(exclude = "file")
-public class DependencyCoordinate {
+public class Dependency {
 
   private final String groupId;
   private final String dependencyId;
   private final String version;
   private final String scope;
   private final File file;
+  private final Long size;
 
   private final Iterable<ClassName> relatedClasses;
 
@@ -41,22 +43,29 @@ public class DependencyCoordinate {
    * @param scope scope
    * @param file the related dependency file (a jar in most cases)
    */
-  public DependencyCoordinate(String groupId, String dependencyId, String version, String scope, File file) {
+  public Dependency(String groupId, String dependencyId, String version, String scope, File file) {
     this.groupId = groupId;
     this.dependencyId = dependencyId;
     this.version = version;
     this.scope = scope;
     this.file = file;
     this.relatedClasses = findRelatedClasses();
+    this.size = calculateSize();
   }
 
-  public String getCoordinates() {
-    return String.format("%s:%s:%s", groupId, dependencyId, version);
+  @SuppressWarnings("CopyConstructorMissesField")
+  protected Dependency(Dependency dependency) {
+    this(dependency.getGroupId(), dependency.getDependencyId(), dependency.getVersion(),
+        dependency.getScope(), dependency.getFile());
   }
 
   @Override
   public String toString() {
     return String.format("%s:%s:%s:%s", groupId, dependencyId, version, scope);
+  }
+
+  public String printWithSize() {
+    return String.format("%s (%s)", this, FileUtils.byteCountToDisplaySize(getSize()));
   }
 
   private Iterable<ClassName> findRelatedClasses() {
@@ -86,5 +95,14 @@ public class DependencyCoordinate {
     }
 
     return copyOf(relatedClasses);
+  }
+
+  private Long calculateSize() {
+    try {
+      return FileUtils.sizeOf(file);
+    } catch (IllegalArgumentException | NullPointerException e) {
+      // File does not exist
+      return 0L;
+    }
   }
 }

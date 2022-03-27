@@ -16,6 +16,7 @@ import lombok.ToString;
 public class DependencyAnalysisInfo {
   private final String status;
   private final String type;
+  private final Long size;
   private final TreeSet<String> allTypes;
   private final TreeSet<String> usedTypes;
 }

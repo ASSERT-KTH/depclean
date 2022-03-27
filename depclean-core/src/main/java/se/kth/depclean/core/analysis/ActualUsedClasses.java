@@ -26,7 +26,7 @@ public class ActualUsedClasses {
       return;
     }
 
-    log.debug("## Register class {}", className);
+    log.trace("## Register class {}", className);
     classes.add(className);
   }
 

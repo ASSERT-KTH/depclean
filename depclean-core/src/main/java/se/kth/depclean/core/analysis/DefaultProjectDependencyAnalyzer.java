@@ -60,7 +60,7 @@ public class DefaultProjectDependencyAnalyzer {
       // execute the analysis (note that the order of these operations matters!)
       actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getOutputFolder()));
       if (!projectContext.ignoreTests()) {
-        log.debug("Parsing test folder");
+        log.trace("Parsing test folder");
         actualUsedClasses.registerClasses(getProjectTestDependencyClasses(projectContext.getTestOutputFolder()));
       }
       actualUsedClasses.registerClasses(projectContext.getExtraClasses());
@@ -69,7 +69,7 @@ public class DefaultProjectDependencyAnalyzer {
 
       // search for the dependencies used by the project
       Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
-      log.debug("# DefaultCallGraph.referencedClassMembers()");
+      log.trace("# DefaultCallGraph.referencedClassMembers()");
       actualUsedClasses.registerClasses(getReferencedClassMembers(projectClasses));
 
       /* ******************** results as statically used at the bytecode *********************** */
@@ -81,13 +81,13 @@ public class DefaultProjectDependencyAnalyzer {
 
   private Iterable<ClassName> getProjectDependencyClasses(Path outputFolder) throws IOException {
     // Analyze src classes in the project
-    log.debug("# getProjectDependencyClasses()");
+    log.trace("# getProjectDependencyClasses()");
     return collectDependencyClasses(outputFolder);
   }
 
   private Iterable<ClassName> getProjectTestDependencyClasses(Path testOutputFolder) throws IOException {
     // Analyze test classes in the project
-    log.debug("# getProjectTestDependencyClasses()");
+    log.trace("# getProjectTestDependencyClasses()");
     return collectDependencyClasses(testOutputFolder);
   }
 

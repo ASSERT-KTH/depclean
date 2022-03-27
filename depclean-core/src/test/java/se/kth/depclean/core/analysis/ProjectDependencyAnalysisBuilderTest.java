@@ -4,6 +4,7 @@ import static com.google.common.collect.ImmutableSet.of;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import se.kth.depclean.core.analysis.model.DebloatedDependency;
 import se.kth.depclean.core.analysis.model.ProjectContext;
 
 class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
@@ -98,9 +99,9 @@ class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
     final ProjectDependencyAnalysisBuilder analysisBuilder =
         new ProjectDependencyAnalysisBuilder(context, actualUsedClasses);
 
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_IO_DEPENDENCY.getCoordinates()).getStatus())
+    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_IO_DEPENDENCY.toString()).getStatus())
         .isEqualTo("used");
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_LANG_DEPENDENCY.getCoordinates()).getStatus())
+    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_LANG_DEPENDENCY.toString()).getStatus())
         .isEqualTo("bloated");
   }
 
@@ -112,11 +113,11 @@ class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
     final ProjectDependencyAnalysisBuilder analysisBuilder =
         new ProjectDependencyAnalysisBuilder(context, actualUsedClasses);
 
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_IO_DEPENDENCY.getCoordinates()).getType())
+    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_IO_DEPENDENCY.toString()).getType())
         .isEqualTo("direct");
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_LANG_DEPENDENCY.getCoordinates()).getType())
+    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_LANG_DEPENDENCY.toString()).getType())
         .isEqualTo("inherited");
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_LOGGING_DEPENDENCY.getCoordinates()).getType())
+    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_LOGGING_DEPENDENCY.toString()).getType())
         .isEqualTo("transitive");
   }
 
@@ -142,5 +143,4 @@ class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
           assertThat(dependencyTypes.getUsedTypes()).hasSize(0);
         });
   }
-
 }

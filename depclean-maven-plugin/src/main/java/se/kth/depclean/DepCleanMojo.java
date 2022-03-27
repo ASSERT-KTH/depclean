@@ -17,24 +17,14 @@
 
 package se.kth.depclean;
 
-import static com.google.common.collect.Sets.newHashSet;
-
 import com.google.common.collect.ImmutableSet;
 import fr.dutra.tools.maven.deptree.core.ParseException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -43,13 +33,9 @@ import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -63,15 +49,17 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
+import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ClassName;
-import se.kth.depclean.core.analysis.model.DependencyCoordinate;
+import se.kth.depclean.core.analysis.model.Dependency;
 import se.kth.depclean.core.analysis.model.ProjectContext;
 import se.kth.depclean.core.analysis.model.Scope;
+import se.kth.depclean.graph.MavenDependencyGraph;
+import se.kth.depclean.util.DebloatedPomWriter;
 import se.kth.depclean.util.JarUtils;
 import se.kth.depclean.util.MavenInvoker;
 import se.kth.depclean.util.json.ParsedDependencies;
@@ -181,160 +169,19 @@ public class DepCleanMojo extends AbstractMojo {
   @Component(hint = "default")
   private DependencyGraphBuilder dependencyGraphBuilder;
 
-
-  /**
-   * Write pom file to the filesystem.
-   *
-   * @param pomFile The path to the pom.
-   * @param model   The maven model to get the pom from.
-   * @throws IOException In case of any IO issue.
-   */
-  private static void writePom(final Path pomFile, final Model model) throws IOException {
-    MavenXpp3Writer writer = new MavenXpp3Writer();
-    writer.write(Files.newBufferedWriter(pomFile), model);
-  }
-
-  /**
-   * Print the status of the dependencies to the standard output. The format is: "[coordinates][scope] [(size)]"
-   *
-   * @param sizeOfDependencies A map with the size of the dependencies.
-   * @param dependencies       The set dependencies to print.
-   */
-  private void printDependencies(final Map<String, Long> sizeOfDependencies,
-                                 final Set<DependencyCoordinate> dependencies) {
-    dependencies
-        .stream()
-        .sorted(Comparator.comparing(o -> getSizeOfDependency(sizeOfDependencies, o.toString())))
-        .collect(Collectors.toCollection(LinkedList::new))
-        .descendingIterator()
-        .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s.toString(), sizeOfDependencies) + ")"));
-  }
-
-  /**
-   * Util function to print the information of the analyzed artifacts.
-   *
-   * @param info               The usage status (used or unused) and type (direct, transitive, inherited) of artifacts.
-   * @param sizeOfDependencies The size of the JAR file of the artifact.
-   * @param dependencies       The GAV of the artifact.
-   */
-  private void printInfoOfDependencies(final String info, final Map<String, Long> sizeOfDependencies,
-                                       final Set<DependencyCoordinate> dependencies) {
-    printString(info.toUpperCase() + " [" + dependencies.size() + "]" + ": ");
-    printDependencies(sizeOfDependencies, dependencies);
-  }
-
-  /**
-   * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size of the dependency
-   * cannot be obtained form the map (no key with the name of the dependency exists), then it returns 0.
-   *
-   * @param sizeOfDependencies A map of dependency -> size.
-   * @param dependency         The coordinates of a dependency.
-   * @return The size of the dependency if its name is a key in the map, otherwise it returns 0.
-   */
-  private Long getSizeOfDependency(final Map<String, Long> sizeOfDependencies, final String dependency) {
-    Long size = sizeOfDependencies
-        .get(dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar");
-    if (size != null) {
-      return size;
-    } else {
-      // The name of the dependency does not match with the name of the download jar, so we keep assume the size
-      // cannot be obtained and return 0.
-      return 0L;
-    }
-  }
-
-  /**
-   * Get the size of the dependency in human readable format.
-   *
-   * @param dependency         The dependency.
-   * @param sizeOfDependencies A map with the size of the dependencies, keys are stored as the downloaded jar file i.e.,
-   *                           [artifactId]-[version].jar
-   * @return The human readable representation of the dependency size.
-   */
-  private String getSize(final String dependency, final Map<String, Long> sizeOfDependencies) {
-    String dep = dependency.split(":")[1] + "-" + dependency.split(":")[2] + ".jar";
-    if (sizeOfDependencies.containsKey(dep)) {
-      return FileUtils.byteCountToDisplaySize(sizeOfDependencies.get(dep));
-    } else {
-      // The size cannot be obtained.
-      return "size unknown";
-    }
-  }
-
-  /**
-   * Determine if an coordinate is a direct or transitive child of a dependency.
-   *
-   * @param coordinate The coordinate.
-   * @param dependency The dependency
-   * @return true if the coordinate is a child of a dependency in the dependency tree.
-   * @throws DependencyGraphBuilderException If the graph cannot be constructed.
-   */
-  private boolean isChildren(final DependencyCoordinate coordinate, final Dependency dependency)
-      throws DependencyGraphBuilderException {
-    List<DependencyNode> dependencyNodes = getDependencyNodes();
-    for (DependencyNode node : dependencyNodes) {
-      Dependency dependencyNode = createDependency(node.getArtifact());
-      if (dependency.getGroupId().equals(dependencyNode.getGroupId())
-          && dependency.getArtifactId().equals(dependencyNode.getArtifactId())) {
-        // now we are in the target dependency
-        for (DependencyNode child : node.getChildren()) {
-          if (matches(child.getArtifact(), coordinate)) {
-            // the dependency contains the coordinate as a child node
-            return true;
-          }
-
-        }
-      }
-    }
-    return false;
-  }
-
   /**
    * Returns a list of dependency nodes from a graph of dependency tree.
    *
+   * @param model The maven model
    * @return The nodes in the dependency graph.
    * @throws DependencyGraphBuilderException if the graph cannot be built.
    */
-  private List<DependencyNode> getDependencyNodes() throws DependencyGraphBuilderException {
+  private DependencyGraph dependencyGraph(Model model) throws DependencyGraphBuilderException {
     ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(
         session.getProjectBuildingRequest());
     buildingRequest.setProject(project);
     DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
-    CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
-    rootNode.accept(visitor);
-    return visitor.getNodes();
-  }
-
-  /**
-   * This method creates a {@link org.apache.maven.model.Dependency} object from a Maven {@link
-   * org.apache.maven.artifact.Artifact}.
-   *
-   * @param artifact The artifact to create the dependency.
-   * @return The Dependency object.
-   */
-  private Dependency createDependency(final Artifact artifact) {
-    Dependency dependency = new Dependency();
-    dependency.setGroupId(artifact.getGroupId());
-    dependency.setArtifactId(artifact.getArtifactId());
-    dependency.setVersion(artifact.getVersion());
-    if (artifact.hasClassifier()) {
-      dependency.setClassifier(artifact.getClassifier());
-    }
-    dependency.setOptional(artifact.isOptional());
-    dependency.setScope(artifact.getScope());
-    dependency.setType(artifact.getType());
-    return dependency;
-  }
-
-  /**
-   * This method creates a {@link org.apache.maven.model.Dependency} object from a Maven {@link
-   * org.apache.maven.artifact.Artifact}.
-   *
-   * @param coordinate The dependency coordinate to create the dependency.
-   * @return The Dependency object.
-   */
-  private Dependency createDependency(final DependencyCoordinate coordinate) {
-    return createDependency(findArtifact(coordinate));
+    return new MavenDependencyGraph(project, model, rootNode);
   }
 
   private void printString(final String string) {
@@ -396,26 +243,6 @@ public class DepCleanMojo extends AbstractMojo {
       }
     }
 
-    /* Get the size of all the dependencies */
-    Map<String, Long> sizeOfDependencies = new HashMap<>();
-    // First, add the size of the project, as the sum of all the files in target/classes
-    String projectJar = project.getArtifactId() + "-" + project.getVersion() + ".jar";
-    long projectSize = FileUtils.sizeOf(new File(project.getBuild().getOutputDirectory()));
-    sizeOfDependencies.put(projectJar, projectSize);
-    if (Files.exists(Paths.get(
-        project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES))) {
-      Iterator<File> iterator = FileUtils.iterateFiles(
-          new File(
-              project.getBuild().getDirectory() + File.separator
-                  + DIRECTORY_TO_COPY_DEPENDENCIES), new String[]{"jar"}, true);
-      while (iterator.hasNext()) {
-        File file = iterator.next();
-        sizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
-      }
-    } else {
-      log.warn("Dependencies were not copied locally");
-    }
-
     /* Decompress dependencies */
     String dependencyDirectoryName =
         project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
@@ -435,7 +262,7 @@ public class DepCleanMojo extends AbstractMojo {
       return;
     }
 
-    printAnalysisResult(sizeOfDependencies, analysis);
+    analysis.print();
 
     /* Fail the build if there are unused direct dependencies */
     if (failIfUnusedDirect && analysis.hasUnusedDirectDependencies()) {
@@ -457,12 +284,7 @@ public class DepCleanMojo extends AbstractMojo {
 
     /* Writing the debloated version of the pom */
     if (createPomDebloated) {
-      getLog().info("Starting debloating POM");
-      removeDuplicates(model);
-      addUsedTransitiveDependenciesAsDirectDependencies(model, analysis);
-      removeUnusedDirectDependencies(model, analysis);
-      removeUnusedTransitiveDependencies(model, analysis);
-      writeDebloatedPom(model);
+      new DebloatedPomWriter(project, model, analysis).write();
     }
 
     /* Writing the JSON file with the debloat results */
@@ -489,7 +311,6 @@ public class DepCleanMojo extends AbstractMojo {
       }
       ParsedDependencies parsedDependencies = new ParsedDependencies(
           treeFile,
-          sizeOfDependencies,
           analysis,
           classUsageFile,
           createClassUsageCsv
@@ -511,120 +332,6 @@ public class DepCleanMojo extends AbstractMojo {
     log.info("Analysis done in " + getTime(stopTime - startTime));
   }
 
-  private void removeDuplicates(Model model) {
-    // Maven Dependency's equals() method is broken, so remove manually remove duplicates
-    final Set<String> seen = newHashSet();
-    model.getDependencies().removeIf(dep -> !seen.add(dep.getGroupId() + ":" + dep.getArtifactId()));
-  }
-
-  private void printAnalysisResult(Map<String, Long> sizeOfDependencies, ProjectDependencyAnalysis analysis) {
-    printString(SEPARATOR);
-    printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
-    printString(SEPARATOR);
-    printInfoOfDependencies("Used direct dependencies", sizeOfDependencies,
-        analysis.getUsedDirectDependencies());
-    printInfoOfDependencies("Used inherited dependencies", sizeOfDependencies,
-        analysis.getUsedInheritedDependencies());
-    printInfoOfDependencies("Used transitive dependencies", sizeOfDependencies,
-        analysis.getUsedTransitiveDependencies());
-    printInfoOfDependencies("Potentially unused direct dependencies", sizeOfDependencies,
-        analysis.getUnusedDirectDependencies());
-    printInfoOfDependencies("Potentially unused inherited dependencies", sizeOfDependencies,
-        analysis.getUnusedInheritedDependencies());
-    printInfoOfDependencies("Potentially unused transitive dependencies", sizeOfDependencies,
-        analysis.getUnusedTransitiveDependencies());
-
-    if (!ignoreDependencies.isEmpty()) {
-      printString(SEPARATOR);
-      printString(
-          "Dependencies ignored in the analysis by the user"
-              + " [" + ignoreDependencies.size() + "]" + ":" + " ");
-      ignoreDependencies.forEach(s -> printString("\t" + s));
-    }
-  }
-
-  private void writeDebloatedPom(Model model) throws MojoExecutionException {
-    String pathToDebloatedPom =
-        project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
-    try {
-      Path path = Paths.get(pathToDebloatedPom);
-      writePom(path, model);
-    } catch (IOException e) {
-      throw new MojoExecutionException(e.getMessage(), e);
-    }
-    getLog().info("POM debloated successfully");
-    getLog().info("pom-debloated.xml file created in: " + pathToDebloatedPom);
-  }
-
-  private void removeUnusedTransitiveDependencies(Model model, ProjectDependencyAnalysis analysis)
-      throws MojoExecutionException {
-    try {
-      if (analysis.hasUnusedTransitiveDependencies()) {
-        final int dependencyAmount = analysis.getUnusedTransitiveDependencies().size();
-        getLog().info(
-            "Excluding " + dependencyAmount
-                + " unused transitive " + getDependencyWording(dependencyAmount) + " one-by-one.");
-        for (Dependency dependency : model.getDependencies()) {
-          for (DependencyCoordinate unusedTransitiveDependency : analysis.getUnusedTransitiveDependencies()) {
-            if (isChildren(unusedTransitiveDependency, dependency)) {
-              getLog().info("Excluding " + unusedTransitiveDependency + " from dependency " + dependency
-                  .toString());
-              Exclusion exclusion = new Exclusion();
-              exclusion.setGroupId(unusedTransitiveDependency.getGroupId());
-              exclusion.setArtifactId(unusedTransitiveDependency.getDependencyId());
-              dependency.addExclusion(exclusion);
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      throw new MojoExecutionException(e.getMessage(), e);
-    }
-  }
-
-  private void removeUnusedDirectDependencies(Model model, ProjectDependencyAnalysis analysis)
-      throws MojoExecutionException {
-    try {
-      if (analysis.hasUnusedDirectDependencies()) {
-        final int dependencyAmount = analysis.getUnusedDirectDependencies().size();
-        getLog().info("Removing " + dependencyAmount
-            + " unused direct " + getDependencyWording(dependencyAmount) + ".");
-        for (DependencyCoordinate unusedDirectDependency : analysis.getUnusedDirectDependencies()) {
-          for (Dependency dependency : model.getDependencies()) {
-            if (matches(unusedDirectDependency, dependency)) {
-              model.removeDependency(dependency);
-              break;
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      throw new MojoExecutionException(e.getMessage(), e);
-    }
-  }
-
-  private void addUsedTransitiveDependenciesAsDirectDependencies(Model model, ProjectDependencyAnalysis analysis)
-      throws MojoExecutionException {
-    try {
-      if (analysis.hasUsedTransitiveDependencies()) {
-        final int dependencyAmount = analysis.getUsedTransitiveDependencies().size();
-        getLog()
-            .info("Adding " + dependencyAmount
-                + " used transitive " + getDependencyWording(dependencyAmount) + " as direct "
-                + getDependencyWording(dependencyAmount) + ".");
-        for (DependencyCoordinate usedTransitiveDependency : analysis.getUsedTransitiveDependencies()) {
-          model.addDependency(createDependency(usedTransitiveDependency));
-        }
-      }
-    } catch (Exception e) {
-      throw new MojoExecutionException(e.getMessage(), e);
-    }
-  }
-
-  private String getDependencyWording(int amount) {
-    return amount > 1 ? "dependencies" : "dependency";
-  }
-
   private String getTime(long millis) {
     long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
     long seconds = (TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
@@ -632,47 +339,19 @@ public class DepCleanMojo extends AbstractMojo {
     return String.format("%smin %ss", minutes, seconds);
   }
 
-  private ProjectContext buildProjectContext(Model model) {
-    final Set<DependencyCoordinate> allArtifactsFound = project.getArtifacts().stream()
-        .map(this::toDependencyCoordinate)
-        .collect(Collectors.toSet());
-    final Set<DependencyCoordinate> directDependencyArtifacts = project.getDependencyArtifacts().stream()
-        .map(this::toDependencyCoordinate)
-        .collect(Collectors.toSet());
-
-    final Set<DependencyCoordinate> directDependencies = directDependencyArtifacts.stream()
-        .filter(o -> contains(model.getDependencies(), o))
-        .collect(Collectors.toSet());
-    final Set<DependencyCoordinate> inheritedDependencies = newHashSet(directDependencyArtifacts);
-    inheritedDependencies.removeAll(directDependencies);
-    final Set<DependencyCoordinate> transitiveDependencies = newHashSet(allArtifactsFound);
-    transitiveDependencies.removeAll(directDependencies);
-    transitiveDependencies.removeAll(inheritedDependencies);
-
+  private ProjectContext buildProjectContext(Model model) throws DependencyGraphBuilderException {
     if (ignoreTests) {
       ignoreScopes.add("test");
     }
 
+    final DependencyGraph dependencyGraph = dependencyGraph(model);
     return new ProjectContext(
-        createProjectCoordinates(),
-        directDependencies,
-        inheritedDependencies,
-        transitiveDependencies,
+        dependencyGraph,
         Paths.get(project.getBuild().getOutputDirectory()),
         Paths.get(project.getBuild().getTestOutputDirectory()),
         ignoreScopes.stream().map(Scope::new).collect(Collectors.toSet()),
-        toDependencyCoordinates(allArtifactsFound, ignoreDependencies),
+        toDependencyCoordinates(dependencyGraph.allDependencies(), ignoreDependencies),
         collectUsedClassesFromProcessors().stream().map(ClassName::new).collect(Collectors.toSet())
-    );
-  }
-
-  private DependencyCoordinate createProjectCoordinates() {
-    return new DependencyCoordinate(
-        project.getGroupId(),
-        project.getArtifactId(),
-        project.getVersion(),
-        project.getArtifact().getScope(),
-        project.getArtifact().getFile()
     );
   }
 
@@ -697,7 +376,7 @@ public class DepCleanMojo extends AbstractMojo {
    * }</pre>
    */
   private Set<String> collectUsedClassesFromProcessors() {
-    log.debug("# collectUsedClassesFromProcessors()");
+    log.trace("# collectUsedClassesFromProcessors()");
     return Optional.ofNullable(project.getPlugin("org.bsc.maven:maven-processor-plugin"))
         .map(plugin -> plugin.getExecutionsAsMap().get("process"))
         .map(exec -> (Xpp3Dom) exec.getConfiguration())
@@ -707,51 +386,25 @@ public class DepCleanMojo extends AbstractMojo {
         .orElse(ImmutableSet.of());
   }
 
-  private boolean contains(List<Dependency> dependencies, DependencyCoordinate dependencyCoordinate) {
-    return dependencies.stream()
-        // FIXME Version may not be interpolated in Maven's Dependency representation, so skip it
-        .anyMatch(dependency -> matches(dependencyCoordinate, dependency));
-  }
-
-  private DependencyCoordinate toDependencyCoordinate(Artifact artifact) {
-    return new DependencyCoordinate(
-        artifact.getGroupId(),
-        artifact.getArtifactId(),
-        artifact.getVersion(),
-        artifact.getScope(),
-        artifact.getFile());
-  }
-
-  private Set<DependencyCoordinate> toDependencyCoordinates(Set<DependencyCoordinate> allArtifacts,
-                                                            Set<String> ignoreDependencies) {
+  /**
+   * Returns a set of {@code DependencyCoordinate}s that match given string representations.
+   *
+   * @param allArtifacts all known artifacts
+   * @param ignoreDependencies string representation of artificats to return
+   * @return a set of {@code DependencyCoordinate}s that match given string representations
+   */
+  private Set<Dependency> toDependencyCoordinates(Set<Dependency> allArtifacts,
+                                                  Set<String> ignoreDependencies) {
     return ignoreDependencies.stream()
         .map(dependency -> findDependency(allArtifacts, dependency))
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
   }
 
-  private Artifact findArtifact(DependencyCoordinate coordinate) {
-    return project.getArtifacts().stream()
-        .filter(artifact -> matches(artifact, coordinate))
-        .findFirst()
-        .orElseThrow(() -> new RuntimeException("Unable to find " + coordinate + " in dependencies"));
-  }
-
-  private DependencyCoordinate findDependency(Set<DependencyCoordinate> allArtifacts, String dependency) {
+  private Dependency findDependency(Set<Dependency> allArtifacts, String dependency) {
     return allArtifacts.stream()
         .filter(artifact -> artifact.toString().toLowerCase().contains(dependency.toLowerCase()))
         .findFirst()
         .orElse(null);
-  }
-
-  private boolean matches(Artifact artifact, DependencyCoordinate coordinate) {
-    return coordinate.toString().toLowerCase().contains(
-        String.format("%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion())
-            .toLowerCase());
-  }
-
-  private boolean matches(DependencyCoordinate dependencyCoordinate, Dependency dependency) {
-    return dependencyCoordinate.getGroupId().equalsIgnoreCase(dependency.getGroupId())
-        && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId());
   }
 }
