@@ -1,12 +1,14 @@
-package se.kth.depclean.core.analysis;
+package se.kth.depclean.core.analysis.model;
 
 import static com.google.common.collect.ImmutableSet.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import se.kth.depclean.core.analysis.ProjectContextCreator;
 import static se.kth.depclean.core.analysis.ProjectContextCreator.createDependency;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import se.kth.depclean.core.analysis.model.DebloatedDependency;
+import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 class ProjectDependencyAnalysisTest implements ProjectContextCreator {
 

@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.DependencyAnalysisInfo;
+import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /**
  * Custom Gson type adapter to write a JSON file with information of the dependencies.

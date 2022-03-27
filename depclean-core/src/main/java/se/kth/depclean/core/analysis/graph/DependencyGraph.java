@@ -1,7 +1,7 @@
 package se.kth.depclean.core.analysis.graph;
 
 import java.util.Set;
-import se.kth.depclean.core.analysis.model.Dependency;
+import se.kth.depclean.core.model.Dependency;
 
 /**
  * Should build a graph of dependencies, so that it can be requested for any representation of this graph.

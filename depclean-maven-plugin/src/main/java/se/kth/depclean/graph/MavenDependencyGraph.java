@@ -6,6 +6,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import java.io.File;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.jetbrains.annotations.NotNull;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
-import se.kth.depclean.core.analysis.model.Dependency;
+import se.kth.depclean.core.model.Dependency;
 
 /**
  * A dependency graph for maven reactor.
@@ -25,6 +26,7 @@ public class MavenDependencyGraph implements DependencyGraph {
 
   private final Set<Dependency> allDependencies;
 
+  private final MavenProject project;
   private final DependencyNode rootNode;
   private final Set<Dependency> directDependencies;
   private final Set<Dependency> inheritedDependencies;
@@ -39,6 +41,7 @@ public class MavenDependencyGraph implements DependencyGraph {
    * @param rootNode the graph's root node
    */
   public MavenDependencyGraph(MavenProject project, Model model, DependencyNode rootNode) {
+    this.project = project;
     this.rootNode = rootNode;
 
     this.allDependencies = project.getArtifacts().stream()
@@ -67,7 +70,13 @@ public class MavenDependencyGraph implements DependencyGraph {
 
   @Override
   public Dependency projectCoordinates() {
-    return toDepCleanDependency(rootNode.getArtifact());
+    log.info("project's jar {}", project.getBuild().getDirectory() + "/" + project.getBuild().getFinalName());
+    return new Dependency(
+        rootNode.getArtifact().getGroupId(),
+        rootNode.getArtifact().getArtifactId(),
+        rootNode.getArtifact().getVersion(),
+        new File(project.getBuild().getDirectory() + "/" + project.getBuild().getFinalName() + ".jar")
+    );
   }
 
   @Override

@@ -1,7 +1,8 @@
-package se.kth.depclean.core.analysis.model;
+package se.kth.depclean.core.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
+import se.kth.depclean.core.model.ClassName;
 
 class ClassNameTest {
 

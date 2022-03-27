@@ -1,4 +1,4 @@
-package se.kth.depclean.core.analysis.model;
+package se.kth.depclean.core.model;
 
 import static com.google.common.collect.ImmutableSet.copyOf;
 
@@ -51,6 +51,18 @@ public class Dependency {
     this.file = file;
     this.relatedClasses = findRelatedClasses();
     this.size = calculateSize();
+  }
+
+  /**
+   * Creates a dependency for the current project.
+   *
+   * @param groupId groupId
+   * @param dependencyId dependencyId
+   * @param version version
+   * @param file the related dependency file (a jar in most cases)
+   */
+  public Dependency(String groupId, String dependencyId, String version, File file) {
+    this(groupId, dependencyId, version, null, file);
   }
 
   @SuppressWarnings("CopyConstructorMissesField")

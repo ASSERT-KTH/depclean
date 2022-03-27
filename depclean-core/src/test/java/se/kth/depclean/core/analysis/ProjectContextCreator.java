@@ -10,10 +10,10 @@ import java.util.Collections;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
-import se.kth.depclean.core.analysis.model.ClassName;
-import se.kth.depclean.core.analysis.model.Dependency;
-import se.kth.depclean.core.analysis.model.ProjectContext;
-import se.kth.depclean.core.analysis.model.Scope;
+import se.kth.depclean.core.model.ClassName;
+import se.kth.depclean.core.model.Dependency;
+import se.kth.depclean.core.model.ProjectContext;
+import se.kth.depclean.core.model.Scope;
 
 public interface ProjectContextCreator {
 

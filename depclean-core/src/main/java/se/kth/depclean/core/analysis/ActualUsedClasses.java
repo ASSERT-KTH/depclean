@@ -3,8 +3,8 @@ package se.kth.depclean.core.analysis;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import se.kth.depclean.core.analysis.model.ClassName;
-import se.kth.depclean.core.analysis.model.ProjectContext;
+import se.kth.depclean.core.model.ClassName;
+import se.kth.depclean.core.model.ProjectContext;
 
 /**
  * Contains the actual classes used in the project (i.e. in classes, processors, configurations, etc.)

@@ -1,4 +1,4 @@
-package se.kth.depclean.core.analysis.model;
+package se.kth.depclean.core.model;
 
 import static com.google.common.collect.ImmutableSet.copyOf;
 
@@ -93,6 +93,7 @@ public final class ProjectContext {
    */
   public Set<Dependency> getAllDependencies() {
     final Set<Dependency> dependencies = new HashSet<>(dependencyGraph.allDependencies());
+    dependencies.add(dependencyGraph.projectCoordinates());
     return copyOf(dependencies);
   }
 

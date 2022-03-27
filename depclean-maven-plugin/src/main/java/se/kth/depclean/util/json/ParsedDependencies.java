@@ -14,14 +14,12 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import se.kth.depclean.core.analysis.ProjectDependencyAnalysis;
+import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /**
  * Uses the DepClean analysis results and the dependency tree of the project to produce a JSON file. This file represent
  * the structure of the dependency tree enriched with metadata of the usage or not of each dependency.
  */
-@Slf4j
 @AllArgsConstructor
 public class ParsedDependencies {
 

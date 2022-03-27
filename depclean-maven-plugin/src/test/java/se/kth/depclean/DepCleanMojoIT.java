@@ -121,7 +121,7 @@ public class DepCleanMojoIT {
     assertThat(result).isSuccessful()
         .out()
         .plain().contains(
-            "[INFO] Starting debloating POM",
+            "[INFO] Starting debloating file",
             "[INFO] Adding 1 used transitive dependency as direct dependency.",
             "[INFO] Removing 1 unused direct dependency.",
             "[INFO] Excluding 1 unused transitive dependency one-by-one.",

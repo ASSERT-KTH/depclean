@@ -1,4 +1,4 @@
-package se.kth.depclean.core.analysis.model;
+package se.kth.depclean.core.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

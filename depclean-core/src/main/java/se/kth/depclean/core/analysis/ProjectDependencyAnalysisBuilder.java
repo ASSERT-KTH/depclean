@@ -9,9 +9,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import se.kth.depclean.core.analysis.model.ClassName;
-import se.kth.depclean.core.analysis.model.Dependency;
-import se.kth.depclean.core.analysis.model.ProjectContext;
+import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.core.model.ClassName;
+import se.kth.depclean.core.model.Dependency;
+import se.kth.depclean.core.model.ProjectContext;
 
 /**
  * Builds the analysis given the declared dependencies and the one actually used.
@@ -86,21 +87,21 @@ public class ProjectDependencyAnalysisBuilder {
   private Set<Dependency> getUsedDirectDependencies() {
     return usedDependencies.stream()
         .filter(a -> context.getDependencyGraph().directDependencies().contains(a))
-        .peek(DependencyCoordinate -> log.trace("## Used Direct dependency {}", DependencyCoordinate))
+        .peek(dependency -> log.trace("## Used Direct dependency {}", dependency))
         .collect(Collectors.toSet());
   }
 
   private Set<Dependency> getUsedTransitiveDependencies() {
     return usedDependencies.stream()
         .filter(a -> context.getDependencyGraph().transitiveDependencies().contains(a))
-        .peek(DependencyCoordinate -> log.trace("## Used Transitive dependency {}", DependencyCoordinate))
+        .peek(dependency -> log.trace("## Used Transitive dependency {}", dependency))
         .collect(Collectors.toSet());
   }
 
   private Set<Dependency> getUsedInheritedDependencies() {
     return usedDependencies.stream()
         .filter(a -> context.getDependencyGraph().inheritedDependencies().contains(a))
-        .peek(DependencyCoordinate -> log.trace("## Used Transitive dependency {}", DependencyCoordinate))
+        .peek(dependency -> log.trace("## Used Transitive dependency {}", dependency))
         .collect(Collectors.toSet());
   }
 

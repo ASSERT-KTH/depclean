@@ -4,8 +4,7 @@ import static com.google.common.collect.ImmutableSet.of;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import se.kth.depclean.core.analysis.model.DebloatedDependency;
-import se.kth.depclean.core.analysis.model.ProjectContext;
+import se.kth.depclean.core.model.ProjectContext;
 
 class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
 

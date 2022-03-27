@@ -1,4 +1,4 @@
-package se.kth.depclean.core.analysis;
+package se.kth.depclean.core.analysis.model;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -30,14 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
-import se.kth.depclean.core.analysis.model.ClassName;
-import se.kth.depclean.core.analysis.model.DebloatedDependency;
-import se.kth.depclean.core.analysis.model.Dependency;
-import se.kth.depclean.core.analysis.model.DependencyAnalysisInfo;
+import se.kth.depclean.core.model.ClassName;
+import se.kth.depclean.core.model.Dependency;
 
 /**
  * Project dependencies analysis result.
@@ -54,7 +52,6 @@ public class ProjectDependencyAnalysis {
   private final Set<Dependency> unusedTransitiveDependencies;
   private final Set<Dependency> unusedInheritedDependencies;
   private final Set<Dependency> ignoredDependencies;
-  @Getter(AccessLevel.PROTECTED)
   private final Map<Dependency, DependencyTypes> dependencyClassesMap;
   private final DependencyGraph dependencyGraph;
 
@@ -70,7 +67,7 @@ public class ProjectDependencyAnalysis {
    * @param ignoredDependencies          ignored dependencies
    * @param dependencyClassesMap         the whole dependencies and their relates classes and used classes
    */
-  ProjectDependencyAnalysis(
+  public ProjectDependencyAnalysis(
       Set<Dependency> usedDirectDependencies,
       Set<Dependency> usedTransitiveDependencies,
       Set<Dependency> usedInheritedDependencies,

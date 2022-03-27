@@ -4,7 +4,7 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import se.kth.depclean.core.analysis.model.ClassName;
+import se.kth.depclean.core.model.ClassName;
 
 /**
  * POJO containing the types in a dependency.
