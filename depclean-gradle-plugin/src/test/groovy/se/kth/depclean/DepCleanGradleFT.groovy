@@ -17,7 +17,7 @@ class DepCleanGradleFT extends Specification {
 
   File emptyProjectFile = new File("src/test/resources-fts/empty_project")
   @Test
-  @DisplayName("Test that depclean gradle plugin runs on an empty project.")
+  @DisplayName("Test that the DepClean gradle plugin runs on an empty project.")
   def "pluginRunsOnEmptyProject"() {
     given:
     def project = ProjectBuilder.builder().withProjectDir(emptyProjectFile).build()
@@ -88,7 +88,7 @@ class DepCleanGradleFT extends Specification {
   File debloatedDependenciesIsCorrect = new File(projectPath3)
   File generatedDebloatedDependenciesDotGradle = new File(projectPath3 + "/debloated-dependencies.gradle");
   @Test
-  @DisplayName("Test that the depclean creates a proper debloated-dependencies.gradle file.")
+  @DisplayName("Test that the DepClean creates a proper debloated-dependencies.gradle file.")
   def "debloated_dependencies.gradle_is_correct"() {
     given:
     def project = ProjectBuilder.builder().withProjectDir(debloatedDependenciesIsCorrect).build()

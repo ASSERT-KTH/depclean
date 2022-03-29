@@ -22,7 +22,6 @@ package se.kth.depclean.core.analysis.asm;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
-import org.codehaus.plexus.component.annotations.Component;
 import se.kth.depclean.core.analysis.ClassFileVisitorUtils;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
@@ -30,7 +29,6 @@ import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 /**
  * Dependency analyzer.
  */
-@Component(role = DependencyAnalyzer.class)
 public class ASMDependencyAnalyzer implements DependencyAnalyzer {
 
   /**

@@ -5,6 +5,12 @@ plugins {
   id 'maven-publish'
 }
 
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
+}
+
 group 'se.kth.castor'
 version '1.0-SNAPSHOT'
 
