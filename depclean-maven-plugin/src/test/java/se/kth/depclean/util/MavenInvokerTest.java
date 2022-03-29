@@ -27,7 +27,7 @@ class MavenInvokerTest {
   @Test
   @DisplayName("Test that the Maven dependency tree, then the dependency tree is obtained")
   void testRunCommandToGetDependencyTree() throws IOException, InterruptedException {
-    MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree + " -Dverbose=true");
+    MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree);
     assertTrue(producedTree.exists());
     assertThat(producedTree).hasSameTextualContentAs(expectedTree);
   }

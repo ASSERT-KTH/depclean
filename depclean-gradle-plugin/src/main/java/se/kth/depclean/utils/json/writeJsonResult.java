@@ -15,6 +15,7 @@ import com.google.gson.stream.JsonWriter;
 import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
+import se.kth.depclean.core.model.ClassName;
 
 /**
  * Uses the DepClean analysis results and the declared dependencies of the project
@@ -215,20 +216,21 @@ public class writeJsonResult {
 
   private void writeUsageRatio(String dependencyId, JsonWriter localWriter) throws IOException {
     localWriter.name("usageRatio")
-        .value(dependencyAnalyzer.getArtifactClassesMap().containsKey(dependencyId)
-            ? dependencyAnalyzer.getArtifactClassesMap().get(dependencyId).getAllTypes().isEmpty()
+        .value(dependencyAnalyzer.getDependenciesClassesMap().containsKey(dependencyId)
+            ? dependencyAnalyzer.getDependenciesClassesMap().get(dependencyId).getAllTypes().isEmpty()
             ? 0 : // handle division by zero
-            ((double) dependencyAnalyzer.getArtifactClassesMap().get(dependencyId).getUsedTypes().size()
-                / dependencyAnalyzer.getArtifactClassesMap().get(dependencyId).getAllTypes().size()) : -1)
+            ((double) dependencyAnalyzer.getDependenciesClassesMap().get(dependencyId).getUsedTypes().size()
+                / dependencyAnalyzer.getDependenciesClassesMap().get(dependencyId).getAllTypes().size()) : -1)
         .name("children(s)")
         .beginArray();
   }
 
   private void writeUsedTypes(String dependencyId, JsonWriter localWriter) throws IOException {
     JsonWriter usedTypes = localWriter.name("usedTypes").beginArray();
-    if (dependencyAnalyzer.getArtifactClassesMap().containsKey(dependencyId)) {
-      for (String usedType : dependencyAnalyzer.getArtifactClassesMap().get(dependencyId).getUsedTypes()) {
-        usedTypes.value(usedType);
+    if (dependencyAnalyzer.getDependenciesClassesMap().containsKey(dependencyId)) {
+      for (ClassName usedType : dependencyAnalyzer.getDependenciesClassesMap().get(dependencyId).getUsedTypes()) {
+        System.out.println("Used type: " + usedType.toString());
+        usedTypes.value(usedType.getValue());
       }
     }
     usedTypes.endArray();
@@ -236,9 +238,9 @@ public class writeJsonResult {
 
   private void writeAllTypes(String dependencyId, JsonWriter localWriter) throws IOException {
     JsonWriter allTypes = localWriter.name("allTypes").beginArray();
-    if (dependencyAnalyzer.getArtifactClassesMap().containsKey(dependencyId)) {
-      for (String allType : dependencyAnalyzer.getArtifactClassesMap().get(dependencyId).getAllTypes()) {
-        allTypes.value(allType);
+    if (dependencyAnalyzer.getDependenciesClassesMap().containsKey(dependencyId)) {
+      for (ClassName allType : dependencyAnalyzer.getDependenciesClassesMap().get(dependencyId).getAllTypes()) {
+        allTypes.value(allType.getValue());
       }
     }
     allTypes.endArray();
@@ -250,8 +252,8 @@ public class writeJsonResult {
       String key = usagePerClassMap.getKey();
       Set<String> value = usagePerClassMap.getValue();
       for (String s : value) {
-        if (dependencyAnalyzer.getArtifactClassesMap().containsKey(dependencyId) && dependencyAnalyzer
-            .getArtifactClassesMap().get(dependencyId).getAllTypes().contains(s)) {
+        if (dependencyAnalyzer.getDependenciesClassesMap().containsKey(dependencyId) && dependencyAnalyzer
+            .getDependenciesClassesMap().get(dependencyId).getAllTypes().contains(s)) {
           String triplet = key + "," + s + "," + dependencyId + "\n";
           FileUtils.write(classUsageFile, triplet, Charset.defaultCharset(), true);
         }
