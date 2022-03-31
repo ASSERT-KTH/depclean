@@ -6,22 +6,25 @@
   <parent>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-parent-pom</artifactId>
-    <version>2.0.2-SNAPSHOT</version>
+    <version>2.0.2</version>
   </parent>
 
   <!-- Coordinates -->
+  <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.0.2-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>depclean-maven-plugin</name>
 
   <properties>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
+    <!-- Encoding for the failsafe-plugin -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <linkXRef>false</linkXRef>
   </properties>
 
-  <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
+  <description>DepClean is automatically removes unused dependencies in Maven projects</description>
 
   <!-- Build options -->
   <dependencies>
@@ -29,7 +32,7 @@
     <dependency>
       <groupId>se.kth.castor</groupId>
       <artifactId>depclean-core</artifactId>
-      <version>2.0.2-SNAPSHOT</version>
+      <version>2.0.2</version>
     </dependency>
     <!--Maven tools for plugin construction-->
     <dependency>
@@ -217,5 +220,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

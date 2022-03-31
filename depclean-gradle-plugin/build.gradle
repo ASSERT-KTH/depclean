@@ -16,8 +16,8 @@ repositories {
 dependencies {
   implementation(gradleApi())
   implementation(gradleTestKit())
-  implementation('se.kth.castor:depclean-core:2.0.2-SNAPSHOT')
-  implementation('se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT')
+  implementation('se.kth.castor:depclean-core:2.0.2')
+  implementation('se.kth.castor:depclean-maven-plugin:2.0.2')
   compileOnly('org.projectlombok:lombok:1.18.20')
   testImplementation('org.spockframework:spock-core:2.0-groovy-3.0')
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
