@@ -382,7 +382,7 @@ public class DepCleanMojo extends AbstractMojo {
     /* Copy direct dependencies locally */
     try {
       MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory="
-          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES);
+          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES, null);
     } catch (IOException | InterruptedException e) {
       getLog().error("Unable to resolve all the dependencies.");
       Thread.currentThread().interrupt();
@@ -728,7 +728,7 @@ public class DepCleanMojo extends AbstractMojo {
       final File treeFile = new File(project.getBuild().getDirectory() + File.separator + "tree.txt");
       final File classUsageFile = new File(project.getBuild().getDirectory() + File.separator + "class-usage.csv");
       try {
-        MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
+        MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true", null);
       } catch (IOException | InterruptedException e) {
         getLog().error("Unable to generate dependency tree.");
         // Restore interrupted state...

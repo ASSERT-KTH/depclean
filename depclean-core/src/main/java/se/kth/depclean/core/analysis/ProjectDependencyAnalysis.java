@@ -60,12 +60,12 @@ public class ProjectDependencyAnalysis {
   /**
    * To prevent unnecessary and unexpected modification in the set.
    *
-   * @param The required set.
+   * @param set required set.
    * @return An unmodifiable set corresponding to the provided set.
    */
   private Set<Artifact> safeCopy(Set<Artifact> set) {
     return (set == null) ? Collections.emptySet()
-        : Collections.unmodifiableSet(new LinkedHashSet<Artifact>(set));
+        : Collections.unmodifiableSet(new LinkedHashSet<>(set));
   }
 
   /**
