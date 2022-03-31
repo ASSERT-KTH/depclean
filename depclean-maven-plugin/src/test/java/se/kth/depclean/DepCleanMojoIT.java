@@ -121,10 +121,10 @@ public class DepCleanMojoIT {
     assertThat(result).isSuccessful()
         .out()
         .plain().contains(
-            "[INFO] Starting debloating POM",
-            "[INFO] Adding 1 used transitive dependencies as direct dependencies.",
-            "[INFO] Removing 1 unused direct dependencies.",
-            "[INFO] Excluding 1 unused transitive dependencies one-by-one.",
+            "[INFO] Starting debloating file",
+            "[INFO] Adding 1 used transitive dependency as direct dependency.",
+            "[INFO] Removing 1 unused direct dependency.",
+            "[INFO] Excluding 1 unused transitive dependency one-by-one.",
             "[INFO] POM debloated successfully",
             "[INFO] pom-debloated.xml file created in: " + generated_pom_debloated.getAbsolutePath());
     Assertions.assertTrue(generated_pom_debloated.exists());

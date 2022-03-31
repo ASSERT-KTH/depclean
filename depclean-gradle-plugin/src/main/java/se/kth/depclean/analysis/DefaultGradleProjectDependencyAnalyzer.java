@@ -22,14 +22,15 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
-import se.kth.depclean.core.analysis.ArtifactTypes;
-import se.kth.depclean.utils.DependencyUtils;
+import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
 import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
+import se.kth.depclean.core.model.ClassName;
+import se.kth.depclean.utils.DependencyUtils;
 
 /**
  * This is principal class that perform the dependency analysis in a Gradle project.
@@ -312,28 +313,51 @@ public class DefaultGradleProjectDependencyAnalyzer
   }
 
   /**
-   * Computes a map of [artifact] -> [allTypes, usedTypes].
+   * Computes a map of [dependency] -> [allTypes, usedTypes].
    *
-   * @return A map of [artifact] -> [allTypes, usedTypes]
+   * @return A map of [dependency] -> [allTypes, usedTypes]
    */
-  public Map<String, ArtifactTypes> getArtifactClassesMap() {
-    Map<String, ArtifactTypes> output = new HashMap<>();
+  public Map<String, DependencyTypes> getDependenciesClassesMap() {
+    // the output
+    Map<String, DependencyTypes> dependenciesClassMap = new HashMap<>();
+    // iterate through all the resolved artifacts
     for (Map.Entry<ResolvedArtifact, Set<String>> entry : artifactClassesMap.entrySet()) {
-      ResolvedArtifact key = entry.getKey();
-      if (artifactUsedClassesMap.containsKey(key)) {
-        output.put(key.getModuleVersion().toString(),
-            new ArtifactTypes(
-                artifactClassesMap.get(key), // get all the types
-                artifactUsedClassesMap.get(key) // get used types
+      ResolvedArtifact resolvedArtifact = entry.getKey();
+      // all the types in all artifacts
+      Set<String> typesSet = artifactClassesMap.get(resolvedArtifact);
+      if (typesSet == null) {
+        typesSet = new HashSet<>();
+      }
+      Set<ClassName> allClassNameSet = new HashSet<>();
+      for (String type : typesSet) {
+        allClassNameSet.add(new ClassName(type));
+      }
+      // all the types in used artifacts
+      Set<String> usedTypesSet = artifactUsedClassesMap.get(resolvedArtifact);
+      if (usedTypesSet == null) {
+        usedTypesSet = new HashSet<>();
+      }
+      Set<ClassName> usedClassNameSet = new HashSet<>();
+      for (String type : usedTypesSet) {
+        usedClassNameSet.add(new ClassName(type));
+      }
+
+      if (artifactUsedClassesMap.containsKey(resolvedArtifact)) {
+        dependenciesClassMap
+            .put(resolvedArtifact.getModuleVersion().toString(),
+            new DependencyTypes(
+                allClassNameSet, // get all the typesSet
+                usedClassNameSet // get used typesSet
             ));
       } else {
-        output.put(key.getModuleVersion().toString(),
-            new ArtifactTypes(
-                artifactClassesMap.get(key), // get all the types
-                new HashSet<>() // get used types
+        dependenciesClassMap
+            .put(resolvedArtifact.getModuleVersion().toString(),
+            new DependencyTypes(
+                allClassNameSet, // get all the typesSet
+                new HashSet<>() // get used typesSet
             ));
       }
     }
-    return output;
+    return dependenciesClassMap;
   }
 }

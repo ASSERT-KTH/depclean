@@ -15,7 +15,7 @@ jobs:
       max-parallel: 1
       matrix:
         os: [ ubuntu-latest, windows-latest ]
-        java: [ 11 ]
+        java: [ 17 ]
     runs-on: ${{ matrix.os }}
     name: Maven Build with Java ${{ matrix.java }} on ${{ matrix.os }}
     steps:
@@ -49,13 +49,13 @@ jobs:
       - name: "Integration Tests"
         run: mvn failsafe:integration-test --errors --fail-at-end
 
-        # The following is only executed on Ubuntu on Java 11
+        # The following is only executed on Ubuntu on Java 17
       - name: "JaCoCo Coverage Report"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 17 && github.repository == 'castor-software/depclean'
         run: mvn jacoco:report
 
       - name: "Codecov"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 17 && github.repository == 'castor-software/depclean'
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -63,7 +63,7 @@ jobs:
           flags: unittests
 
       - name: "Cache SonarCloud"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 17 && github.repository == 'castor-software/depclean'
         uses: actions/cache@v1
         with:
           path: ~/.sonar/cache
@@ -71,8 +71,8 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: "SonarCloud"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 11 && github.repository == 'castor-software/depclean'
-        run: mvn sonar:sonar -Dsonar.projectKey=castor-software_depclean -Dsonar.organization=castor-software -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.java.source=11 -Dsonar.java.target=11
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 17 && github.repository == 'castor-software/depclean'
+        run: mvn sonar:sonar -Dsonar.projectKey=castor-software_depclean -Dsonar.organization=castor-software -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.java.source=17 -Dsonar.java.target=17
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

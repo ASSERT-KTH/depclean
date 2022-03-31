@@ -34,8 +34,8 @@ class MavenInvokerTest {
 
   @AfterAll
   public static void tearDown() throws IOException {
-    if (producedTree.exists()) {
-      FileUtils.forceDelete(producedTree);
-    }
+   if (producedTree.exists()) {
+     FileUtils.forceDelete(producedTree);
+   }
   }
 }
