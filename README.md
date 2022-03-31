@@ -55,7 +55,7 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.0.2-SNAPSHOT</version>
+  <version>2.0.1</version>
   <executions>
     <execution>
       <goals>
@@ -108,7 +108,7 @@ For example, to fail the build in the presence of unused direct dependencies and
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.0.2-SNAPSHOT</version>
+  <version>2.0.1</version>
   <executions>
     <execution>
       <goals>
@@ -127,7 +127,7 @@ Of course, it is also possible to execute DepClean with parameters directly from
 can be executed directly as follows:
 
 ```bash
-mvn se.kth.castor:depclean-maven-plugin:2.0.2-SNAPSHOT:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
+mvn se.kth.castor:depclean-maven-plugin:2.0.1:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
 
 ## Installing and building from source
