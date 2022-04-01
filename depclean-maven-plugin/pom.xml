@@ -25,7 +25,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 
-  <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
+  <description>DepClean is automatically removes unused dependencies in Maven projects</description>
 
   <!-- Build options -->
   <dependencies>
