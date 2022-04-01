@@ -6,7 +6,7 @@
   <!-- Coordinates -->
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-parent-pom</artifactId>
-  <version>2.0.2-SNAPSHOT</version>
+  <version>2.0.2</version>
   <packaging>pom</packaging>
   <modelVersion>4.0.0</modelVersion>
 
@@ -18,13 +18,13 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- plugins -->
-    <compiler.release>8</compiler.release>
-    <javadoc.source>8</javadoc.source>
+    <compiler.release>17</compiler.release>
+    <javadoc.source>17</javadoc.source>
     <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
     <jacoco.plugin.version>0.8.6</jacoco.plugin.version>
     <coveralls.plugin.version>4.3.0</coveralls.plugin.version>
     <surefire.plugin.version>3.0.0-M3</surefire.plugin.version>
-    <compiler.plugin.version>3.8.1</compiler.plugin.version>
+    <compiler.plugin.version>3.10.1</compiler.plugin.version>
     <!-- dependencies -->
     <lombok.version>1.18.22</lombok.version>
     <slf4j-api.version>2.0.0-alpha1</slf4j-api.version>
