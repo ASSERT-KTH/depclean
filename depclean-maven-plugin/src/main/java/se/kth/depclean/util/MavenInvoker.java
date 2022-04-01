@@ -18,6 +18,7 @@
 package se.kth.depclean.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,23 +37,25 @@ public final class MavenInvoker {
   /**
    * Creates a native process to execute a custom command. This method is used to invoke maven plugins directly.
    *
-   * @param cmd The command to be executed.
+   * @param cmd       The command to be executed.
+   * @param directory The working directory of the subprocess,
+   *                  or null if the subprocess should inherit the working directory of the current process.
    * @return The console output.
    * @throws IOException          In case of IO issues.
    * @throws InterruptedException In case of IO issues.
    */
-  public static String[] runCommand(String cmd) throws IOException, InterruptedException {
+  public static String[] runCommand(String cmd, File directory) throws IOException, InterruptedException {
     Process process;
     ArrayList<String> list;
     if (OsUtils.isUnix()) {
       list = new ArrayList<>();
-      process = Runtime.getRuntime().exec(cmd);
+      process = Runtime.getRuntime().exec(cmd, null, directory);
       InputStream inputStream = process.getInputStream();
       BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
       return outputToConsole(process, list, br);
     } else if (OsUtils.isWindows()) {
       list = new ArrayList<>();
-      process = Runtime.getRuntime().exec("cmd /C " + cmd);
+      process = Runtime.getRuntime().exec("cmd /C " + cmd, null, directory);
       BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
       return outputToConsole(process, list, br);
     }

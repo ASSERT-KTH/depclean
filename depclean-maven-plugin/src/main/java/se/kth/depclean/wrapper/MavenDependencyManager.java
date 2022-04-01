@@ -86,7 +86,8 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     /* Copy direct dependencies locally */
     try {
       MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory="
-          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES);
+          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES,
+          null);
     } catch (IOException | InterruptedException e) {
       getLog().error("Unable to resolve all the dependencies.");
       Thread.currentThread().interrupt();
@@ -200,7 +201,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
 
   @Override
   public void generateDependencyTree(File treeFile) throws IOException, InterruptedException {
-    MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true");
+    MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true", null);
   }
 
   @SneakyThrows

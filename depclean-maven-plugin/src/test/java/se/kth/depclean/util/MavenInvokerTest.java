@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,15 +26,16 @@ class MavenInvokerTest {
   @Test
   @DisplayName("Test that the Maven dependency tree, then the dependency tree is obtained")
   void testRunCommandToGetDependencyTree() throws IOException, InterruptedException {
-    MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + producedTree);
+    File directory = new File("src/test/resources/MavenInvokerResources/basic_spring_maven_project");
+    MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=tree_produced.txt", directory);
     assertTrue(producedTree.exists());
     assertThat(producedTree).hasSameTextualContentAs(expectedTree);
   }
 
-  //@AfterAll
-  //public static void tearDown() throws IOException {
-  //  if (producedTree.exists()) {
-  //    FileUtils.forceDelete(producedTree);
-  //  }
-  //}
+  @AfterAll
+  public static void tearDown() throws IOException {
+    if (producedTree.exists()) {
+      FileUtils.forceDelete(producedTree);
+    }
+  }
 }
