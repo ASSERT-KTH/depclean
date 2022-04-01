@@ -26,7 +26,7 @@ public class DepCleanMojoIT {
   @MavenTest
   @DisplayName("Test that DepClean runs in an empty Maven project")
   void empty_project(MavenExecutionResult result) {
-    assertThat(result).isFailure(); // should pass
+    assertThat(result).isSuccessful(); // should pass
   }
 
   @MavenTest
