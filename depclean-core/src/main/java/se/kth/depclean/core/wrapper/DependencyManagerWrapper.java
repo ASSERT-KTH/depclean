@@ -9,6 +9,7 @@ import org.apache.maven.plugin.logging.Log;
 import se.kth.depclean.core.AbstractDebloater;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.core.model.ProjectContext;
 
 /**
  * Tells a dependency manager (i.e. Maven, gradle, ...) what to expose so the process can be managed from the core
@@ -71,12 +72,33 @@ public interface DependencyManagerWrapper {
   Set<String> collectUsedClassesFromProcessors();
 
   /**
+   * Find classes used in sources.
+   *
+   * @return the classes used.
+   */
+  Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testDirectory);
+
+  /**
    * The instance that will debloat the config file.
    *
    * @param analysis the depclean analysis
    * @return the debloater
    */
   AbstractDebloater<? extends Serializable> getDebloater(ProjectDependencyAnalysis analysis);
+
+  /**
+   * Where the sources are. Default is src/main/java.
+   *
+   * @return the graph
+   */
+  Path getSourceDirectory();
+
+  /**
+   * Where the tests sources are. Default is src/main/java.
+   *
+   * @return the graph
+   */
+  Path getTestDirectory();
 
   /**
    * The build directory path.

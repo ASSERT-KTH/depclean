@@ -3,6 +3,7 @@ package se.kth.depclean.core;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +59,7 @@ public class DepCleanManager {
     getLog().info("Starting DepClean dependency analysis");
 
     if (dependencyManager.isMaven() && dependencyManager.isPackagingPom()) {
-      getLog().info("Skipping because packaging type pom.");
+      getLog().info("Skipping because packaging type is pom.");
       return;
     }
 
@@ -162,21 +163,38 @@ public class DepCleanManager {
       ignoreScopes.add("test");
     }
 
+    Set<ClassName> allUsedClasses = new HashSet<>();
+    Set<ClassName> usedClassesFromProcessors = dependencyManager
+        .collectUsedClassesFromProcessors().stream()
+        .map(ClassName::new)
+        .collect(Collectors.toSet());
+
+    // Consider as used all the classes located in the imports of the source code
+    Set<ClassName> usedClassesFromSource = dependencyManager
+        .collectUsedClassesFromSource(dependencyManager.getSourceDirectory(),
+            dependencyManager.getTestDirectory()).stream()
+        .map(ClassName::new)
+        .collect(Collectors.toSet());
+    allUsedClasses.addAll(usedClassesFromProcessors);
+    allUsedClasses.addAll(usedClassesFromSource);
+
     final DependencyGraph dependencyGraph = dependencyManager.dependencyGraph();
     return new ProjectContext(
         dependencyGraph,
         dependencyManager.getOutputDirectory(),
         dependencyManager.getTestOutputDirectory(),
+        dependencyManager.getSourceDirectory(),
+        dependencyManager.getTestDirectory(),
         ignoreScopes.stream().map(Scope::new).collect(Collectors.toSet()),
         toDependency(dependencyGraph.allDependencies(), ignoreDependencies),
-        dependencyManager.collectUsedClassesFromProcessors().stream().map(ClassName::new).collect(Collectors.toSet())
+        allUsedClasses
     );
   }
 
   /**
    * Returns a set of {@code DependencyCoordinate}s that match given string representations.
    *
-   * @param allDependencies all known dependencies
+   * @param allDependencies    all known dependencies
    * @param ignoreDependencies string representation of dependencies to return
    * @return a set of {@code Dependency} that match given string representations
    */

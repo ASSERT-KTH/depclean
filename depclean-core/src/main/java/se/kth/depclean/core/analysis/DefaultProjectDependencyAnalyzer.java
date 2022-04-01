@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.core.analysis.src.Imports;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.ProjectContext;
 
@@ -68,8 +69,10 @@ public class DefaultProjectDependencyAnalyzer {
 
       /* ******************** usage analysis ********************* */
 
+
       // search for the dependencies used by the project
       Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
+
       log.trace("# DefaultCallGraph.referencedClassMembers()");
       actualUsedClasses.registerClasses(getReferencedClassMembers(projectClasses));
 

@@ -16,8 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 
 /**
- * Contains all information about the project's context, without any reference
- * to a given framework (Maven, Gradle, etc.).
+ * Contains all information about the project's context.
+ * It doesn't have any reference to a given framework (Maven, Gradle, etc.).
  */
 @Slf4j
 @ToString
@@ -31,6 +31,11 @@ public final class ProjectContext {
   private final Path outputFolder;
   @Getter
   private final Path testOutputFolder;
+  @Getter
+  private final Path sourceFolder;
+  @Getter
+  private final Path testFolder;
+
 
   @Getter
   private final Set<Scope> ignoredScopes;
@@ -45,22 +50,25 @@ public final class ProjectContext {
   /**
    * Creates a new project context.
    *
-   * @param dependencyGraph the dependencyGraph
-   * @param outputFolder where the project's classes are compiled
-   * @param testOutputFolder where the project's test classes are compiled
-   * @param ignoredScopes the scopes to ignore
+   * @param dependencyGraph     the dependencyGraph
+   * @param outputFolder        where the project's classes are compiled
+   * @param testOutputFolder    where the project's test classes are compiled
+   * @param sourceFolder        where the project's source code are located
+   * @param tesSourceFolder     where the project's test sources are located
+   * @param ignoredScopes       the scopes to ignore
    * @param ignoredDependencies the dependencies to ignore (i.e. considered as 'used')
-   * @param extraClasses some classes we want to tell the analyser to consider used
-   *                     (like maven processors for instance)
+   * @param extraClasses        some classes we want to tell the analyser to consider used
    */
   public ProjectContext(DependencyGraph dependencyGraph,
-                        Path outputFolder, Path testOutputFolder,
-                        Set<Scope> ignoredScopes,
-                        Set<Dependency> ignoredDependencies,
-                        Set<ClassName> extraClasses) {
+      Path outputFolder, Path testOutputFolder,
+      Path sourceFolder, Path tesSourceFolder, Set<Scope> ignoredScopes,
+      Set<Dependency> ignoredDependencies,
+      Set<ClassName> extraClasses) {
     this.dependencyGraph = dependencyGraph;
     this.outputFolder = outputFolder;
     this.testOutputFolder = testOutputFolder;
+    this.sourceFolder = sourceFolder;
+    this.testFolder = tesSourceFolder;
     this.ignoredScopes = ignoredScopes;
     this.ignoredDependencies = ignoredDependencies;
     this.extraClasses = extraClasses;

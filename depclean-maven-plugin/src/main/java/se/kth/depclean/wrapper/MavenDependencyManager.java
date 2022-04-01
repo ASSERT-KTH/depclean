@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import se.kth.depclean.core.AbstractDebloater;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.core.analysis.src.Imports;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.graph.MavenDependencyGraph;
 import se.kth.depclean.util.JarUtils;
@@ -62,7 +64,6 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     this.project = project;
     this.session = session;
     this.dependencyGraphBuilder = dependencyGraphBuilder;
-
     this.model = buildModel(project);
   }
 
@@ -186,6 +187,18 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
+  public Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testSourceDirectory) {
+    Set<String> allImports = new HashSet<>();
+    Imports importsInSourceFolder = new Imports(sourceDirectory);
+    Imports importsInTestsFolder = new Imports(testSourceDirectory);
+    Set<String> importsInSourceFolderSet = importsInSourceFolder.collectImportedClassesFromSource();
+    Set<String> importsInTestsFolderSet = importsInTestsFolder.collectImportedClassesFromSource();
+    allImports.addAll(importsInSourceFolderSet);
+    allImports.addAll(importsInTestsFolderSet);
+    return allImports;
+  }
+
+  @Override
   public AbstractDebloater<? extends Serializable> getDebloater(ProjectDependencyAnalysis analysis) {
     return new MavenDebloater(
         analysis,
@@ -197,6 +210,16 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   @Override
   public String getBuildDirectory() {
     return project.getBuild().getDirectory();
+  }
+
+  @Override
+  public Path getSourceDirectory() {
+    return new File(project.getBuild().getSourceDirectory()).toPath();
+  }
+
+  @Override
+  public Path getTestDirectory() {
+    return new File(project.getBuild().getTestSourceDirectory()).toPath();
   }
 
   @Override
