@@ -13,7 +13,6 @@ class ActualUsedClassesTest implements ProjectContextCreator {
     final ProjectContext context = createContext();
     final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(context);
     actualUsedClasses.registerClasses(of(COMMONS_IO_CLASS));
-
     assertThat(actualUsedClasses.getRegisteredClasses()).containsExactly(COMMONS_IO_CLASS);
   }
 
@@ -22,8 +21,6 @@ class ActualUsedClassesTest implements ProjectContextCreator {
     final ProjectContext context = createContext();
     final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(context);
     actualUsedClasses.registerClasses(of(UNKNOWN_CLASS));
-
     assertThat(actualUsedClasses.getRegisteredClasses()).isEmpty();
   }
-
 }
