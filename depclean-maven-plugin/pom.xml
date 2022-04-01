@@ -20,6 +20,9 @@
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
     <linkXRef>false</linkXRef>
+    <!-- Encoding for the failsafe-plugin -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 
   <description>DepClean is a plugin for automatically remove unused dependencies in Maven projects</description>
