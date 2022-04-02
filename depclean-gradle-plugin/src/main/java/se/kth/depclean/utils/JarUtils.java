@@ -15,8 +15,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package se.kth.depclean.util;
+package se.kth.depclean.utils;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -26,8 +28,6 @@ import java.util.Enumeration;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Utility class to handle JAR files.
@@ -55,7 +55,7 @@ public final class JarUtils {
         try {
           JarUtils.decompressDependencyFiles(f.getAbsolutePath());
           // delete the original dependency jar file
-          org.apache.commons.io.FileUtils.forceDelete(f);
+          FileUtils.forceDelete(f);
         } catch (IOException e) {
           log.warn("Problem decompressing jar file: " + f.getAbsolutePath());
         }

@@ -11,18 +11,16 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.logging.Log;
-import org.jetbrains.annotations.Nullable;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
-import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
-import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
 import se.kth.depclean.core.model.ProjectContext;
 import se.kth.depclean.core.model.Scope;
+import se.kth.depclean.core.util.JarUtils;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
+import se.kth.depclean.core.wrapper.LogWrapper;
 
 /**
  * Runs the depclean process, regardless of a specific dependency manager.
@@ -31,6 +29,7 @@ import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 public class DepCleanManager {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
+  private static final String DIRECTORY_TO_EXTRACT_DEPENDENCIES = "dependency";
 
   private final DependencyManagerWrapper dependencyManager;
   private final boolean skipDepClean;
@@ -48,27 +47,25 @@ public class DepCleanManager {
    * Execute the depClean manager.
    */
   @SneakyThrows
-  public void execute() throws AnalysisFailureException {
+  public ProjectDependencyAnalysis execute() throws AnalysisFailureException {
     final long startTime = System.currentTimeMillis();
 
     if (skipDepClean) {
       getLog().info("Skipping DepClean plugin execution");
-      return;
+      return null;
     }
     printString(SEPARATOR);
     getLog().info("Starting DepClean dependency analysis");
 
     if (dependencyManager.isMaven() && dependencyManager.isPackagingPom()) {
-      getLog().info("Skipping because packaging type is pom.");
-      return;
+      getLog().info("Skipping because packaging type is pom");
+      return null;
     }
 
-    dependencyManager.copyAndExtractDependencies();
+    extractLibClasses();
 
-    final ProjectDependencyAnalysis analysis = getAnalysis();
-    if (analysis == null) {
-      return;
-    }
+    final DefaultProjectDependencyAnalyzer projectDependencyAnalyzer = new DefaultProjectDependencyAnalyzer();
+    final ProjectDependencyAnalysis analysis = projectDependencyAnalyzer.analyze(buildProjectContext());
     analysis.print();
 
     /* Fail the build if there are unused direct dependencies */
@@ -101,6 +98,44 @@ public class DepCleanManager {
 
     final long stopTime = System.currentTimeMillis();
     getLog().info("Analysis done in " + getTime(stopTime - startTime));
+
+    return analysis;
+  }
+
+  @SneakyThrows
+  private void extractLibClasses() {
+    final File dependencyDirectory =
+        dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES).toFile();
+    FileUtils.deleteDirectory(dependencyDirectory);
+    dependencyManager.dependencyGraph().allDependencies()
+        .forEach(jarFile -> copyDependencies(jarFile, dependencyDirectory));
+
+    // TODO remove this workaround later
+    if (dependencyManager.getBuildDirectory().resolve("libs").toFile().exists()) {
+      try {
+        FileUtils.copyDirectory(
+            dependencyManager.getBuildDirectory().resolve("libs").toFile(),
+            dependencyDirectory
+        );
+      } catch (IOException | NullPointerException e) {
+        getLog().error("Error copying directory libs to dependency");
+        throw new RuntimeException(e);
+      }
+    }
+
+    /* Decompress dependencies */
+    if (dependencyDirectory.exists()) {
+      JarUtils.decompress(dependencyDirectory.getAbsolutePath());
+    }
+  }
+
+  private void copyDependencies(Dependency dependency, File destFolder) {
+    copyDependencies(dependency.getFile(), destFolder);
+  }
+
+  @SneakyThrows
+  private void copyDependencies(File jarFile, File destFolder) {
+    FileUtils.copyFileToDirectory(jarFile, destFolder);
   }
 
   private void createResultJson(ProjectDependencyAnalysis analysis) {
@@ -144,21 +179,6 @@ public class DepCleanManager {
     }
   }
 
-  @Nullable
-  private ProjectDependencyAnalysis getAnalysis() {
-    /* Analyze dependencies usage status */
-    final ProjectContext projectContext = buildProjectContext();
-    final ProjectDependencyAnalysis analysis;
-    final DefaultProjectDependencyAnalyzer dependencyAnalyzer = new DefaultProjectDependencyAnalyzer(projectContext);
-    try {
-      analysis = dependencyAnalyzer.analyze();
-    } catch (ProjectDependencyAnalyzerException e) {
-      getLog().error("Unable to analyze dependencies.");
-      return null;
-    }
-    return analysis;
-  }
-
   private ProjectContext buildProjectContext() {
     if (ignoreTests) {
       ignoreScopes.add("test");
@@ -182,16 +202,15 @@ public class DepCleanManager {
     allUsedClasses.addAll(usedClassesFromProcessors);
     allUsedClasses.addAll(usedClassesFromSource);
 
-    final DependencyGraph dependencyGraph = dependencyManager.dependencyGraph();
     return new ProjectContext(
-        dependencyGraph,
-        dependencyManager.getOutputDirectory(),
-        dependencyManager.getTestOutputDirectory(),
+        dependencyManager.dependencyGraph(),
+        dependencyManager.getOutputDirectories(),
+        dependencyManager.getTestOutputDirectories(),
         dependencyManager.getSourceDirectory(),
         dependencyManager.getTestDirectory(),
         dependencyManager.getDependenciesDirectory(),
         ignoreScopes.stream().map(Scope::new).collect(Collectors.toSet()),
-        toDependency(dependencyGraph.allDependencies(), ignoreDependencies),
+        toDependency(dependencyManager.dependencyGraph().allDependencies(), ignoreDependencies),
         allUsedClasses
     );
   }
@@ -227,7 +246,7 @@ public class DepCleanManager {
     System.out.println(string); //NOSONAR avoid a warning of non-used logger
   }
 
-  private Log getLog() {
+  private LogWrapper getLog() {
     return dependencyManager.getLog();
   }
 }

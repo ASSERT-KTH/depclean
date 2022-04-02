@@ -18,12 +18,12 @@ import se.kth.depclean.core.model.Scope;
 public interface ProjectContextCreator {
 
   ClassName COMMONS_IO_CLASS = new ClassName("org.apache.commons.io.IOUtils");
-  ClassName COMMONS_LANG_CLASS = new ClassName("org.apache.commons.lang.ArrayUtils");
+  ClassName COMMONS_LANG_CLASS = new ClassName("org.apache.commons.lang3.ArrayUtils");
   ClassName COMMONS_LOGGING_CLASS = new ClassName("org.apache.commons.logging.Log");
   ClassName JUNIT_CLASS = new ClassName("org.junit.jupiter.engine.JupiterTestEngine");
   ClassName UNKNOWN_CLASS = new ClassName("com.unknown.Unknown");
   Dependency COMMONS_IO_DEPENDENCY = createDependency("commons-io");
-  Dependency COMMONS_LANG_DEPENDENCY = createDependency("commons-lang");
+  Dependency COMMONS_LANG_DEPENDENCY = createDependency("commons-lang3");
   Dependency COMMONS_LOGGING_DEPENDENCY = createDependency("commons-logging-api");
   Dependency JUNIT_DEPENDENCY = createTestDependency("junit-jupiter");
   Dependency UNKNOWN_DEPENDENCY = createDependency("unknown");
@@ -36,8 +36,8 @@ public interface ProjectContextCreator {
             of(COMMONS_LANG_DEPENDENCY),
             of(COMMONS_LOGGING_DEPENDENCY)
         ),
-        Paths.get("main/resources"),
-        Paths.get("test/resources"),
+        of(Paths.get("target/classes")),
+        of(Paths.get("target/test-classes")),
         Paths.get("/main"),
         Paths.get("/test"),
         Paths.get(""),
@@ -55,8 +55,8 @@ public interface ProjectContextCreator {
             of(COMMONS_LANG_DEPENDENCY),
             of(COMMONS_LOGGING_DEPENDENCY)
         ),
-        Paths.get("main/resources"),
-        Paths.get("test/resources"),
+        of(Paths.get("target/classes")),
+        of(Paths.get("target/test-classes")),
         Paths.get("/main"),
         Paths.get("/test"),
         Paths.get(""),
@@ -74,8 +74,8 @@ public interface ProjectContextCreator {
             of(COMMONS_LANG_DEPENDENCY),
             of(COMMONS_LOGGING_DEPENDENCY)
         ),
-        Paths.get("main/resources"),
-        Paths.get("test/resources"),
+        of(Paths.get("target/classes")),
+        of(Paths.get("target/test-classes")),
         Paths.get("/main"),
         Paths.get("/test"),
         Paths.get(""),

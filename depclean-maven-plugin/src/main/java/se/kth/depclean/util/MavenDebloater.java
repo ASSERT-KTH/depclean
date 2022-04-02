@@ -51,7 +51,7 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
   }
 
   @Override
-  protected Dependency toMavenDependency(DebloatedDependency debloatedDependency) {
+  protected Dependency toProviderDependency(DebloatedDependency debloatedDependency) {
     final Dependency dependency = createDependency(debloatedDependency);
     debloatedDependency.getExclusions().forEach(depToExclude -> exclude(dependency, depToExclude));
     return dependency;

@@ -134,7 +134,7 @@ class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
           assertThat(dependencyTypes.getUsedTypes()).hasSize(1);
         })
         .hasEntrySatisfying(COMMONS_LANG_DEPENDENCY, dependencyTypes -> {
-          assertThat(dependencyTypes.getAllTypes()).hasSize(127);
+          assertThat(dependencyTypes.getAllTypes()).hasSize(345);
           assertThat(dependencyTypes.getUsedTypes()).hasSize(0);
         })
         .hasEntrySatisfying(COMMONS_LOGGING_DEPENDENCY, dependencyTypes -> {
