@@ -17,6 +17,7 @@
 
 package se.kth.depclean.core.analysis;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -58,17 +59,19 @@ public class DefaultProjectDependencyAnalyzer {
 
       /* ******************** bytecode analysis ********************* */
 
-      // execute the analysis (note that the order of these operations matters!)
+      // analyze project's class files
       actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getOutputFolder()));
+      // analyze dependencies' class files
+      actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getDependenciesFolder()));
+      // analyze project's tests class files
       if (!projectContext.ignoreTests()) {
         log.trace("Parsing test folder");
         actualUsedClasses.registerClasses(getProjectTestDependencyClasses(projectContext.getTestOutputFolder()));
       }
+      // analyze extra classes (collected through static analysis of source code)
       actualUsedClasses.registerClasses(projectContext.getExtraClasses());
 
       /* ******************** usage analysis ********************* */
-
-
       // search for the dependencies used by the project
       Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
 
@@ -81,6 +84,13 @@ public class DefaultProjectDependencyAnalyzer {
       throw new ProjectDependencyAnalyzerException("Cannot analyze dependencies", exception);
     }
   }
+
+
+
+
+
+
+
 
   private Iterable<ClassName> getProjectDependencyClasses(Path outputFolder) throws IOException {
     // Analyze src classes in the project
