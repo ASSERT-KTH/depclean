@@ -3,6 +3,7 @@ package se.kth.depclean.core.analysis;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,6 @@ class ClassFileVisitorUtilsTest {
 
   @Test
   void dummy() {
-    assertTrue(true);
+    Assertions.assertEquals("acd/cde", ClassFileVisitorUtils.removeRootFolderInPath("tmp/acd/cde"));
   }
 }

@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import org.codehaus.plexus.util.DirectoryScanner;
@@ -123,16 +125,33 @@ public final class ClassFileVisitorUtils {
   }
 
   /**
+   * Removes the root folder of the dependency from the path.
+   *
+   * @param path the dependency folder
+   * @return path without the dependency folder
+   */
+  public static String removeRootFolderInPath(String path) {
+    ArrayList<String> tmp = new ArrayList<>(Arrays.asList(path.split("/")));
+    if (tmp.size() > 1) {
+      tmp.remove(0);
+    }
+    path = String.join("/", tmp);
+    return path;
+  }
+
+  /**
    * Visits the classes.
    *
-   * @param path Path of the class.
-   * @param in   read the input bytes.
+   * @param path    Path of the class.
+   * @param in      read the input bytes.
    * @param visitor A {@link ClassFileVisitor}.
    */
   private static void visitClass(String path, InputStream in, ClassFileVisitor visitor) {
     if (!path.endsWith(CLASS)) {
       throw new IllegalArgumentException("Path is not a class");
     }
+    path = removeRootFolderInPath(path);
+    System.out.println("class name here: " + path);
     String className = path.substring(0, path.length() - CLASS.length());
     className = className.replace('/', '.');
     visitor.visitClass(className, in);
