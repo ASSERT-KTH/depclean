@@ -56,7 +56,6 @@ public class DepCleanMojoIT {
         );
   }
 
-
   @MavenTest
   @DisplayName("Test that DepClean identifies all dependencies as used")
   void all_dependencies_used(MavenExecutionResult result) {
