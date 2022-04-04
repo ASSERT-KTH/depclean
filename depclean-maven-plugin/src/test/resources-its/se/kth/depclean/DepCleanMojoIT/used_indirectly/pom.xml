@@ -22,23 +22,12 @@
       <artifactId>xz</artifactId>
       <version>1.9</version>
     </dependency>
-    <!--<dependency>-->
-    <!--  <groupId>com.fasterxml.jackson.core</groupId>-->
-    <!--  <artifactId>jackson-databind</artifactId>-->
-    <!--  <version>2.12.6.1</version>-->
-    <!--</dependency>-->
     <dependency>
       <!-- support for compressed serialized ASTs -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
       <version>1.21</version>
     </dependency>
-    <!--<dependency>-->
-    <!--  <groupId>org.junit.jupiter</groupId>-->
-    <!--  <artifactId>junit-jupiter</artifactId>-->
-    <!--  <version>5.8.2</version>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
   </dependencies>
   <build>
     <plugins>
@@ -65,10 +54,6 @@
             <goals>
               <goal>depclean</goal>
             </goals>
-            <configuration>
-              <createResultJson>true</createResultJson>
-              <createClassUsageCsv>true</createClassUsageCsv>
-            </configuration>
           </execution>
         </executions>
       </plugin>

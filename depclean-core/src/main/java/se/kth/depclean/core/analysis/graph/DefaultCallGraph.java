@@ -63,12 +63,12 @@ public class DefaultCallGraph {
    * @return All the referenced classes.
    */
   public static Set<String> referencedClassMembers(Set<String> projectClasses) {
-    System.out.println("project classes: " + projectClasses);
+    //System.out.println("project classes: " + projectClasses);
     Set<String> allReferencedClassMembers = new HashSet<>();
     for (String projectClass : projectClasses) {
       allReferencedClassMembers.addAll(traverse(projectClass));
     }
-    System.out.println("All referenced class members: " + allReferencedClassMembers);
+    //System.out.println("All referenced class members: " + allReferencedClassMembers);
     return allReferencedClassMembers;
   }
 
@@ -88,7 +88,7 @@ public class DefaultCallGraph {
   }
 
   private static void addReferencedClassMember(String clazz, String referencedClassMember) {
-    System.out.println("\t" + clazz + " -> " + referencedClassMember);
+    //System.out.println("\t" + clazz + " -> " + referencedClassMember);
     Set<String> s = usagesPerClass.computeIfAbsent(clazz, k -> new HashSet<>());
     s.add(referencedClassMember);
   }

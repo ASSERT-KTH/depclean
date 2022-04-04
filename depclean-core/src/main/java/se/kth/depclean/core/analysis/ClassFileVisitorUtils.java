@@ -131,6 +131,7 @@ public final class ClassFileVisitorUtils {
    * @return path without the dependency folder
    */
   public static String removeRootFolderInPath(String path) {
+    // TODO improve this workaround
     ArrayList<String> tmp = new ArrayList<>(Arrays.asList(path.split("/")));
     if (tmp.size() > 1) {
       tmp.remove(0);
@@ -151,7 +152,6 @@ public final class ClassFileVisitorUtils {
       throw new IllegalArgumentException("Path is not a class");
     }
     path = removeRootFolderInPath(path);
-    System.out.println("class name here: " + path);
     String className = path.substring(0, path.length() - CLASS.length());
     className = className.replace('/', '.');
     visitor.visitClass(className, in);

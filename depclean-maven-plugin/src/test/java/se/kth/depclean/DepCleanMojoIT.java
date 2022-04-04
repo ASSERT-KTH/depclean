@@ -80,6 +80,25 @@ public class DepCleanMojoIT {
   }
 
   @MavenTest
+  @DisplayName("Test that dependencies used indirectly (org.tukaani:xz is used indirectly)")
+  void used_indirectly(MavenExecutionResult result) {
+    assertThat(result).isSuccessful().out()
+        .plain().contains(
+            "-------------------------------------------------------",
+            " D E P C L E A N   A N A L Y S I S   R E S U L T S",
+            "-------------------------------------------------------",
+            "USED DIRECT DEPENDENCIES [2]: ",
+            "	org.apache.commons:commons-compress:1.21:compile (994 KB)",
+            "	org.tukaani:xz:1.9:compile (113 KB)",
+            "USED INHERITED DEPENDENCIES [0]: ",
+            "USED TRANSITIVE DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [0]: "
+        );
+  }
+
+  @MavenTest
   @DisplayName("Test that DepClean runs in a Maven project with processors")
   void processor_used(MavenExecutionResult result) {
     assertThat(result).isSuccessful().out()

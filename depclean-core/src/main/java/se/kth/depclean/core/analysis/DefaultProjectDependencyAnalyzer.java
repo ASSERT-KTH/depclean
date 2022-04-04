@@ -75,9 +75,6 @@ public class DefaultProjectDependencyAnalyzer {
       /* ******************** usage analysis ********************* */
       actualUsedClasses.registerClasses(getReferencedClassMembers(projectClasses));
 
-      System.out.println(DefaultCallGraph.getDirectedGraph().toString());
-
-
       /* ******************** results as statically used at the bytecode *********************** */
       return new ProjectDependencyAnalysisBuilder(projectContext, actualUsedClasses).analyse();
 
