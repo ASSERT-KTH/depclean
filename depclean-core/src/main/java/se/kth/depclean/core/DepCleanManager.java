@@ -188,6 +188,7 @@ public class DepCleanManager {
         dependencyManager.getTestOutputDirectory(),
         dependencyManager.getSourceDirectory(),
         dependencyManager.getTestDirectory(),
+        dependencyManager.getDependenciesDirectory(),
         ignoreScopes.stream().map(Scope::new).collect(Collectors.toSet()),
         toDependency(dependencyGraph.allDependencies(), ignoreDependencies),
         allUsedClasses

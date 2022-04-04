@@ -73,7 +73,6 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
           signatureVisitor,
           resultCollector
       );
-
       DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
           signatureVisitor,
           annotationVisitor,

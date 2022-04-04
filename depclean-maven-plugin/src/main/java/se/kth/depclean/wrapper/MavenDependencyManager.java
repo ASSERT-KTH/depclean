@@ -187,6 +187,12 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
+  public Path getDependenciesDirectory() {
+    String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
+    return new File(dependencyDirectoryName).toPath();
+  }
+
+  @Override
   public Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testSourceDirectory) {
     Set<String> allImports = new HashSet<>();
     ImportsAnalyzer importsInSourceFolder = new ImportsAnalyzer(sourceDirectory);
