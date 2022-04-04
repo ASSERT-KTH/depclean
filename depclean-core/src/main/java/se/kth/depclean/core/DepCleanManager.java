@@ -163,6 +163,7 @@ public class DepCleanManager {
       ignoreScopes.add("test");
     }
 
+    // Consider are used all the classes declared in Maven processors
     Set<ClassName> allUsedClasses = new HashSet<>();
     Set<ClassName> usedClassesFromProcessors = dependencyManager
         .collectUsedClassesFromProcessors().stream()
@@ -170,11 +171,13 @@ public class DepCleanManager {
         .collect(Collectors.toSet());
 
     // Consider as used all the classes located in the imports of the source code
-    Set<ClassName> usedClassesFromSource = dependencyManager
-        .collectUsedClassesFromSource(dependencyManager.getSourceDirectory(),
-            dependencyManager.getTestDirectory()).stream()
+    Set<ClassName> usedClassesFromSource = dependencyManager.collectUsedClassesFromSource(
+            dependencyManager.getSourceDirectory(),
+            dependencyManager.getTestDirectory())
+        .stream()
         .map(ClassName::new)
         .collect(Collectors.toSet());
+
     allUsedClasses.addAll(usedClassesFromProcessors);
     allUsedClasses.addAll(usedClassesFromSource);
 

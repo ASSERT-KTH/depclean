@@ -28,7 +28,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import se.kth.depclean.core.AbstractDebloater;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
-import se.kth.depclean.core.analysis.src.Imports;
+import se.kth.depclean.core.analysis.src.ImportsAnalyzer;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.graph.MavenDependencyGraph;
 import se.kth.depclean.util.JarUtils;
@@ -53,13 +53,13 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   /**
    * Creates the manager.
    *
-   * @param logger the logger
-   * @param project the maven project
-   * @param session the maven session
+   * @param logger                 the logger
+   * @param project                the maven project
+   * @param session                the maven session
    * @param dependencyGraphBuilder a tool to build the dependency graph
    */
   public MavenDependencyManager(Log logger, MavenProject project, MavenSession session,
-                                DependencyGraphBuilder dependencyGraphBuilder) {
+      DependencyGraphBuilder dependencyGraphBuilder) {
     this.logger = logger;
     this.project = project;
     this.session = session;
@@ -87,7 +87,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     /* Copy direct dependencies locally */
     try {
       MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory="
-          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES,
+              + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES,
           null);
     } catch (IOException | InterruptedException e) {
       getLog().error("Unable to resolve all the dependencies.");
@@ -189,8 +189,8 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   @Override
   public Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testSourceDirectory) {
     Set<String> allImports = new HashSet<>();
-    Imports importsInSourceFolder = new Imports(sourceDirectory);
-    Imports importsInTestsFolder = new Imports(testSourceDirectory);
+    ImportsAnalyzer importsInSourceFolder = new ImportsAnalyzer(sourceDirectory);
+    ImportsAnalyzer importsInTestsFolder = new ImportsAnalyzer(testSourceDirectory);
     Set<String> importsInSourceFolderSet = importsInSourceFolder.collectImportedClassesFromSource();
     Set<String> importsInTestsFolderSet = importsInTestsFolder.collectImportedClassesFromSource();
     allImports.addAll(importsInSourceFolderSet);
