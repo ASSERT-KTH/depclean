@@ -110,7 +110,7 @@ public class DefaultCallGraph {
     directedGraph.edgeSet().clear();
   }
 
-  public Map<String, Set<String>> getUsagesPerClass() {
+  public static Map<String, Set<String>> getUsagesPerClass() {
     return usagesPerClass;
   }
 

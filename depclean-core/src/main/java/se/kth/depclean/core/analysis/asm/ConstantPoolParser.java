@@ -90,8 +90,7 @@ public class ConstantPoolParser {
   }
 
   static Set<String> parseConstantPoolClassReferences(ByteBuffer buf) {
-    if (buf.order(ByteOrder.BIG_ENDIAN)
-        .getInt() != HEAD) {
+    if (buf.order(ByteOrder.BIG_ENDIAN).getInt() != HEAD) {
       return Collections.emptySet();
     }
     buf.getChar();
