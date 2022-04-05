@@ -26,8 +26,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import org.codehaus.plexus.util.DirectoryScanner;
@@ -52,10 +52,8 @@ public final class ClassFileVisitorUtils {
    *
    * @param url     The jar or directory
    * @param visitor A {@link ClassFileVisitor}.
-   * @throws IOException In case of any I/O problems.
    */
-  public static void accept(URL url, ClassFileVisitor visitor)
-      throws IOException {
+  public static void accept(URL url, ClassFileVisitor visitor) {
     if (url.getPath().endsWith(".jar")) {
       acceptJar(url, visitor);
     } else {
@@ -82,12 +80,10 @@ public final class ClassFileVisitorUtils {
    *
    * @param url     URL of jar
    * @param visitor A {@link ClassFileVisitor}.
-   * @throws IOException In case of IO issues.
    */
-  private static void acceptJar(URL url, ClassFileVisitor visitor)
-      throws IOException {
+  private static void acceptJar(URL url, ClassFileVisitor visitor) {
     try (JarInputStream in = new JarInputStream(url.openStream())) {
-      JarEntry entry = null;
+      JarEntry entry;
       while ((entry = in.getNextJarEntry()) != null) { //NOSONAR
         String name = entry.getName();
         // ignore files like package-info.class and module-info.class
@@ -95,6 +91,8 @@ public final class ClassFileVisitorUtils {
           visitClass(name, in, visitor);
         }
       }
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
@@ -103,10 +101,8 @@ public final class ClassFileVisitorUtils {
    *
    * @param directory Directory or File to be analyzed.
    * @param visitor   A {@link ClassFileVisitor}.
-   * @throws IOException In case of IO issues.
    */
-  private static void acceptDirectory(File directory, ClassFileVisitor visitor)
-      throws IOException {
+  private static void acceptDirectory(File directory, ClassFileVisitor visitor) {
     if (!directory.isDirectory()) {
       throw new IllegalArgumentException("File is not a directory");
     }
@@ -120,6 +116,8 @@ public final class ClassFileVisitorUtils {
       File file = new File(directory, path);
       try (FileInputStream in = new FileInputStream(file)) {
         visitClass(path, in, visitor);
+      } catch (IOException e) {
+        e.printStackTrace();
       }
     }
   }
@@ -130,14 +128,14 @@ public final class ClassFileVisitorUtils {
    * @param path the dependency folder
    * @return path without the dependency folder
    */
-  public static String removeRootFolderInPath(String path) {
-    // TODO improve this workaround
-    ArrayList<String> tmp = new ArrayList<>(Arrays.asList(path.split("/")));
-    if (tmp.size() > 1) {
-      tmp.remove(0);
+  public static String getChild(String path) {
+    Path tmp = Paths.get(path);
+    if (tmp.getNameCount() > 1) {
+      return tmp.subpath(1, tmp.getNameCount()).toString();
+    } else {
+      // impossible to extract child's path
+      return path;
     }
-    path = String.join("/", tmp);
-    return path;
   }
 
   /**
@@ -151,7 +149,7 @@ public final class ClassFileVisitorUtils {
     if (!path.endsWith(CLASS)) {
       throw new IllegalArgumentException("Path is not a class");
     }
-    path = removeRootFolderInPath(path);
+    path = getChild(path);
     String className = path.substring(0, path.length() - CLASS.length());
     className = className.replace('/', '.');
     visitor.visitClass(className, in);

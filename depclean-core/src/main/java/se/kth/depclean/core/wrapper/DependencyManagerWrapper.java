@@ -9,11 +9,10 @@ import org.apache.maven.plugin.logging.Log;
 import se.kth.depclean.core.AbstractDebloater;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
-import se.kth.depclean.core.model.ProjectContext;
 
 /**
- * Tells a dependency manager (i.e. Maven, gradle, ...) what to expose so the process can be managed from the core
- * rather than from the dependency manager plugin
+ * Tells a dependency manager (i.e. Maven, Gradle, ...) what to expose so the process can be managed
+ * from the core rather than from the dependency manager plugin.
  */
 public interface DependencyManagerWrapper {
 
@@ -124,14 +123,11 @@ public interface DependencyManagerWrapper {
   /**
    * Gets the JSON representation of the dependency tree.
    *
-   * @param treeFile the file containing the tree
-   * @param analysis the depclean analysis result
-   * @param classUsageFile the class usage file
-   * @param createClassUsageCsv whether to write the class usage down
+   * @param treeFile           the file containing the tree
+   * @param analysis           the depclean analysis result
+   * @param classUsageFile     the class usage file
+   * @param createCallGraphCsv whether to write the call graph of usages down
    * @return the JSON tree
    */
-  String getTreeAsJson(
-      File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createClassUsageCsv);
-
-
+  String getTreeAsJson(File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv);
 }

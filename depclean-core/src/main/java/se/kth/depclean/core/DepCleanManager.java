@@ -42,7 +42,7 @@ public class DepCleanManager {
   private final boolean failIfUnusedInherited;
   private final boolean createPomDebloated;
   private final boolean createResultJson;
-  private final boolean createClassUsageCsv;
+  private final boolean createCallGraphCsv;
 
   /**
    * Execute the depClean manager.
@@ -94,7 +94,7 @@ public class DepCleanManager {
       dependencyManager.getDebloater(analysis).write();
     }
 
-    /* Writing the JSON file with the debloat results */
+    /* Writing the JSON file with the depclean results */
     if (createResultJson) {
       createResultJson(analysis);
     }
@@ -107,7 +107,7 @@ public class DepCleanManager {
     printString("Creating depclean-results.json, please wait...");
     final File jsonFile = new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-results.json");
     final File treeFile = new File(dependencyManager.getBuildDirectory() + File.separator + "tree.txt");
-    final File classUsageFile = new File(dependencyManager.getBuildDirectory() + File.separator + "class-usage.csv");
+    final File csvFile = new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-callgraph.csv");
     try {
       dependencyManager.generateDependencyTree(treeFile);
     } catch (IOException | InterruptedException e) {
@@ -116,30 +116,31 @@ public class DepCleanManager {
       Thread.currentThread().interrupt();
       return;
     }
-    if (createClassUsageCsv) {
-      printString("Creating class-usage.csv, please wait...");
+    if (createCallGraphCsv) {
+      printString("Creating " + csvFile.getName() + ", please wait...");
       try {
-        FileUtils.write(classUsageFile, "OriginClass,TargetClass,Dependency\n", Charset.defaultCharset());
+        FileUtils.write(csvFile, "OriginClass,TargetClass,OriginDependency,TargetDependency\n", Charset.defaultCharset());
       } catch (IOException e) {
         getLog().error("Error writing the CSV header.");
       }
     }
-    String treeAsJson = dependencyManager.getTreeAsJson(treeFile,
+    String treeAsJson = dependencyManager.getTreeAsJson(
+        treeFile,
         analysis,
-        classUsageFile,
-        createClassUsageCsv
+        csvFile,
+        createCallGraphCsv
     );
 
     try {
       FileUtils.write(jsonFile, treeAsJson, Charset.defaultCharset());
     } catch (IOException e) {
-      getLog().error("Unable to generate JSON file.");
+      getLog().error("Unable to generate " + jsonFile.getName() + " file.");
     }
     if (jsonFile.exists()) {
-      getLog().info("depclean-results.json file created in: " + jsonFile.getAbsolutePath());
+      getLog().info(jsonFile.getName() + " file created in: " + jsonFile.getAbsolutePath());
     }
-    if (classUsageFile.exists()) {
-      getLog().info("class-usage.csv file created in: " + classUsageFile.getAbsolutePath());
+    if (csvFile.exists()) {
+      getLog().info(csvFile.getName() + " file created in: " + csvFile.getAbsolutePath());
     }
   }
 
@@ -219,7 +220,6 @@ public class DepCleanManager {
   private String getTime(long millis) {
     long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
     long seconds = (TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
-
     return String.format("%smin %ss", minutes, seconds);
   }
 

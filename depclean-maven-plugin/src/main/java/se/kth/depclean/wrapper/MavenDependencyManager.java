@@ -235,12 +235,12 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   @SneakyThrows
   @Override
   public String getTreeAsJson(
-      File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createClassUsageCsv) {
+      File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv) {
     return new ParsedDependencies(
         treeFile,
         analysis,
         classUsageFile,
-        createClassUsageCsv
+        createCallGraphCsv
     ).parseTreeToJson();
   }
 }

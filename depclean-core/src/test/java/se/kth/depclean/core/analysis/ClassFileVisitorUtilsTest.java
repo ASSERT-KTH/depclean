@@ -1,7 +1,5 @@
 package se.kth.depclean.core.analysis;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +16,8 @@ class ClassFileVisitorUtilsTest {
   }
 
   @Test
-  void dummy() {
-    Assertions.assertEquals("acd/cde", ClassFileVisitorUtils.removeRootFolderInPath("tmp/acd/cde"));
+  void dummy() throws Exception {
+    Assertions.assertEquals("acd/cde", ClassFileVisitorUtils.getChild("tmp/acd/cde"));
   }
+
 }
