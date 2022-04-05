@@ -87,8 +87,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     /* Copy direct dependencies locally */
     try {
       MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory="
-              + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES,
-          null);
+          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES, null);
     } catch (IOException | InterruptedException e) {
       getLog().error("Unable to resolve all the dependencies.");
       Thread.currentThread().interrupt();
