@@ -1,5 +1,7 @@
 package se.kth.depclean.core.analysis;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +18,10 @@ class ClassFileVisitorUtilsTest {
   }
 
   @Test
-  void dummy() throws Exception {
-    Assertions.assertEquals("acd/cde", ClassFileVisitorUtils.getChild("tmp/acd/cde"));
+  void testGetChild() {
+    Path parent = Paths.get("Users", "Documents", "SVG");
+    Path child = Paths.get("Documents", "SVG");
+    Assertions.assertEquals(child.toString(), ClassFileVisitorUtils.getChild(parent.toString()));
   }
 
 }
