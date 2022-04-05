@@ -1,8 +1,9 @@
 package se.kth.depclean.core;
 
 
-import static com.google.common.collect.ImmutableSet.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.google.common.collect.ImmutableSet.of;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,21 +13,19 @@ import lombok.SneakyThrows;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
-import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
-import se.kth.depclean.core.fake.graph.AllDependenciesUsedDependencyGraph;
-import se.kth.depclean.core.fake.graph.FakeDependencyGraph;
-import se.kth.depclean.core.fake.FakeDependencyManager;
-import se.kth.depclean.core.fake.graph.NoDependencyUsedDependencyGraph;
-import se.kth.depclean.core.fake.graph.OnlyDirectAndInheritedUsedDependencyGraph;
-import se.kth.depclean.core.fake.graph.OnlyDirectUsedDependencyGraph;
+import se.kth.depclean.core.fake.depmanager.AllDependenciesUsedDependencyManager;
+import se.kth.depclean.core.fake.depmanager.EmptyProjectDependencyManager;
+import se.kth.depclean.core.fake.depmanager.FakeDependencyManager;
+import se.kth.depclean.core.fake.depmanager.NoDependencyUsedDependencyManager;
+import se.kth.depclean.core.fake.depmanager.OnlyDirectAndInheritedUsedDependencyManager;
+import se.kth.depclean.core.fake.depmanager.OnlyDirectUsedDependencyManager;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 
 class DepCleanManagerEnd2EndTest {
@@ -69,13 +68,14 @@ class DepCleanManagerEnd2EndTest {
     depCleanManager.execute();
 
     assertThat(logsAsString()).contains(
-        "[INFO] Skipping because packaging type pom"
+        "[INFO] Skipping because packaging type is pom"
     );
   }
 
   @Test
   void shouldPassForEmptyProject() throws AnalysisFailureException {
-    final DepCleanManager depCleanManager = new DepCleanManagerBuilder().build();
+    final DepCleanManager depCleanManager = new DepCleanManagerBuilder()
+        .withDependencyManager(EmptyProjectDependencyManager.class).build();
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
@@ -90,7 +90,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   void shouldReportAllDependencyUsed() throws AnalysisFailureException {
     final DepCleanManager depCleanManager = new DepCleanManagerBuilder()
-        .withGraph(AllDependenciesUsedDependencyGraph.class).build();
+        .withDependencyManager(AllDependenciesUsedDependencyManager.class).build();
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
@@ -105,7 +105,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   void shouldReportNoDependencyUsed() throws AnalysisFailureException {
     final DepCleanManager depCleanManager = new DepCleanManagerBuilder()
-        .withGraph(NoDependencyUsedDependencyGraph.class).build();
+        .withDependencyManager(NoDependencyUsedDependencyManager.class).build();
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
@@ -120,7 +120,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   void shouldReportOnlyDirectAndInheritedDependenciesUsed() throws AnalysisFailureException {
     final DepCleanManager depCleanManager = new DepCleanManagerBuilder()
-        .withGraph(OnlyDirectAndInheritedUsedDependencyGraph.class).build();
+        .withDependencyManager(OnlyDirectAndInheritedUsedDependencyManager.class).build();
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
@@ -135,7 +135,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   void shouldReportOnlyDirectDependencyUsed() throws AnalysisFailureException {
     final DepCleanManager depCleanManager = new DepCleanManagerBuilder()
-        .withGraph(OnlyDirectUsedDependencyGraph.class).build();
+        .withDependencyManager(OnlyDirectUsedDependencyManager.class).build();
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
@@ -150,7 +150,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   void shouldFailForUnusedDirectDependency() {
     final DepCleanManager depCleanManager = new DepCleanManagerBuilder()
-        .withGraph(NoDependencyUsedDependencyGraph.class)
+        .withDependencyManager(NoDependencyUsedDependencyManager.class)
         .withFailIfUnusedDirectDependency()
         .build();
 
@@ -162,7 +162,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   void shouldFailForUnusedInheritedDependency() {
     final DepCleanManager depCleanManager = new DepCleanManagerBuilder()
-        .withGraph(OnlyDirectUsedDependencyGraph.class)
+        .withDependencyManager(OnlyDirectUsedDependencyManager.class)
         .withFailIfUnusedInheritedDependency()
         .build();
 
@@ -174,7 +174,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   void shouldFailForUnusedTransitiveDependency() {
     final DepCleanManager depCleanManager = new DepCleanManagerBuilder()
-        .withGraph(OnlyDirectAndInheritedUsedDependencyGraph.class)
+        .withDependencyManager(OnlyDirectAndInheritedUsedDependencyManager.class)
         .withFailIfUnusedTransitiveDependency()
         .build();
 
@@ -262,8 +262,8 @@ class DepCleanManagerEnd2EndTest {
     }
 
     @SneakyThrows
-    public <T extends FakeDependencyGraph> DepCleanManagerBuilder withGraph(Class<T> clazz) {
-      this.dependencyManager = new FakeDependencyManager(logger, clazz.getDeclaredConstructor().newInstance());
+    public <T extends FakeDependencyManager> DepCleanManagerBuilder withDependencyManager(Class<T> clazz) {
+      this.dependencyManager = clazz.getDeclaredConstructor(Logger.class).newInstance(logger);
       return this;
     }
 
