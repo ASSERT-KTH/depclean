@@ -12,20 +12,18 @@ import se.kth.depclean.core.model.ProjectContext;
 @Slf4j
 public class ActualUsedClasses {
 
-  final Set<ClassName> classes = new HashSet<>();
   private final ProjectContext context;
+  private final Set<ClassName> classes = new HashSet<>();
 
   public ActualUsedClasses(ProjectContext context) {
     this.context = context;
   }
 
   private void registerClass(ClassName className) {
-
     // Do not register class unknown to dependencies
     if (context.hasNoDependencyOnClass(className)) {
       return;
     }
-
     log.trace("## Register class {}", className);
     classes.add(className);
   }

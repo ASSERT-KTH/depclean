@@ -56,7 +56,6 @@ public class DepCleanMojoIT {
         );
   }
 
-
   @MavenTest
   @DisplayName("Test that DepClean identifies all dependencies as used")
   void all_dependencies_used(MavenExecutionResult result) {
@@ -65,10 +64,12 @@ public class DepCleanMojoIT {
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
-            "USED DIRECT DEPENDENCIES [3]: ",
+            "USED DIRECT DEPENDENCIES [5]: ",
+            "	org.projectlombok:lombok:1.18.22:compile (1 MB)",
             "	org.apache.commons:commons-lang3:3.12.0:compile (573 KB)",
             "	commons-codec:commons-codec:1.15:compile (345 KB)",
             "	commons-io:commons-io:2.11.0:compile (319 KB)",
+            "	org.kohsuke.metainf-services:metainf-services:1.8:compile (7 KB)",
             "USED INHERITED DEPENDENCIES [0]: ",
             "USED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ",
@@ -77,6 +78,24 @@ public class DepCleanMojoIT {
         );
   }
 
+  @MavenTest
+  @DisplayName("Test that dependencies used indirectly (org.tukaani:xz is used indirectly)")
+  void used_indirectly(MavenExecutionResult result) {
+    assertThat(result).isSuccessful().out()
+        .plain().contains(
+            "-------------------------------------------------------",
+            " D E P C L E A N   A N A L Y S I S   R E S U L T S",
+            "-------------------------------------------------------",
+            "USED DIRECT DEPENDENCIES [2]: ",
+            "	org.apache.commons:commons-compress:1.21:compile (994 KB)",
+            "	org.tukaani:xz:1.9:compile (113 KB)",
+            "USED INHERITED DEPENDENCIES [0]: ",
+            "USED TRANSITIVE DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [0]: "
+        );
+  }
 
   @MavenTest
   @DisplayName("Test that DepClean runs in a Maven project with processors")

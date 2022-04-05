@@ -28,13 +28,11 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 /**
- * A directed graph G = (V, E) where V is a set of classes and E is a set of edges
- * representing class member calls between the classes in V.
+ * A directed graph G = (V, E) where V is a set of classes and E is a set of edges. Edges represent class member calls between the classes in V.
  */
 public class DefaultCallGraph {
 
-  private static final AbstractBaseGraph<String, DefaultEdge> directedGraph =
-      new DefaultDirectedGraph<>(DefaultEdge.class);
+  private static final AbstractBaseGraph<String, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
   private static final Set<String> projectVertices = new HashSet<>();
   private static final Map<String, Set<String>> usagesPerClass = new HashMap<>();
 
@@ -59,19 +57,18 @@ public class DefaultCallGraph {
   }
 
   /**
-   * Traverses the call graph to obtain a set of all the reachable classes from a set of classes (ie., vertices in the
-   * graph).
+   * Traverses the call graph to obtain a set of all the reachable classes from a set of classes. Classes are vertices in the graph.
    *
    * @param projectClasses The classes in the Maven project.
    * @return All the referenced classes.
    */
   public static Set<String> referencedClassMembers(Set<String> projectClasses) {
-    // System.out.println("project classes: " + projectClasses);
+    //System.out.println("project classes: " + projectClasses);
     Set<String> allReferencedClassMembers = new HashSet<>();
     for (String projectClass : projectClasses) {
       allReferencedClassMembers.addAll(traverse(projectClass));
     }
-    // System.out.println("All referenced class members: " + allReferencedClassMembers);
+    //System.out.println("All referenced class members: " + allReferencedClassMembers);
     return allReferencedClassMembers;
   }
 
@@ -91,7 +88,7 @@ public class DefaultCallGraph {
   }
 
   private static void addReferencedClassMember(String clazz, String referencedClassMember) {
-    // System.out.println("\t" + clazz + " -> " + referencedClassMember);
+    //System.out.println("\t" + clazz + " -> " + referencedClassMember);
     Set<String> s = usagesPerClass.computeIfAbsent(clazz, k -> new HashSet<>());
     s.add(referencedClassMember);
   }
@@ -113,7 +110,7 @@ public class DefaultCallGraph {
     directedGraph.edgeSet().clear();
   }
 
-  public Map<String, Set<String>> getUsagesPerClass() {
+  public static Map<String, Set<String>> getUsagesPerClass() {
     return usagesPerClass;
   }
 

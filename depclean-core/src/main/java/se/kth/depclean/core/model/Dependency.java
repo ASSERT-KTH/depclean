@@ -105,7 +105,6 @@ public class Dependency {
         log.error(e.getMessage(), e);
       }
     }
-
     return copyOf(relatedClasses);
   }
 

@@ -76,10 +76,10 @@ public class DepCleanMojo extends AbstractMojo {
 
   /**
    * If this is true, DepClean creates a CSV file with the result of the analysis with the columns:
-   * OriginClass,TargetClass,Dependency. The file is called "class-usage.csv" and it is located in /target.
+   * OriginClass,TargetClass,OriginDependency,TargetDependency. The file is called "depclean-callgraph.csv" and it is located in /target.
    */
-  @Parameter(property = "createClassUsageCsv", defaultValue = "false")
-  private boolean createClassUsageCsv;
+  @Parameter(property = "createCallGraphCsv", defaultValue = "false")
+  private boolean createCallGraphCsv;
 
   /**
    * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
@@ -156,7 +156,7 @@ public class DepCleanMojo extends AbstractMojo {
           failIfUnusedInherited,
           createPomDebloated,
           createResultJson,
-          createClassUsageCsv
+          createCallGraphCsv
       ).execute();
     } catch (AnalysisFailureException e) {
       throw new MojoExecutionException(e.getMessage(), e);

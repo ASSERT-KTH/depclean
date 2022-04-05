@@ -19,7 +19,6 @@
 
 package se.kth.depclean.core.analysis.asm;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 import se.kth.depclean.core.analysis.ClassFileVisitorUtils;
@@ -32,12 +31,12 @@ import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 public class ASMDependencyAnalyzer implements DependencyAnalyzer {
 
   /**
-   * Analyze the . Updates the {@link ClassMembersVisitorCounter} class counters.
+   * Analyze the Updates the {@link ClassMembersVisitorCounter} class counters.
    *
    * @see org.apache.invoke.shared.dependency.analyzer.DependencyAnalyzer#analyze(java.net.URL)
    */
   @Override
-  public Set<String> analyze(URL url) throws IOException {
+  public Set<String> analyze(URL url) {
     ClassMembersVisitorCounter.resetClassCounters();
     DependencyClassFileVisitor visitor = new DependencyClassFileVisitor();
     ClassFileVisitorUtils.accept(url, visitor);

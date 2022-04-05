@@ -41,12 +41,8 @@ public class DefaultClassAnalyzer implements ClassAnalyzer {
     CollectorClassFileVisitor visitor = new CollectorClassFileVisitor();
     try {
       ClassFileVisitorUtils.accept(url, visitor);
-    } catch (ZipException e) {
-      // since the current ZipException gives no indication what jar file is corrupted
-      // we prefer to wrap another ZipException for better error visibility
-      ZipException ze = new ZipException("Cannot process Jar entry on URL: " + url + " due to " + e.getMessage());
-      ze.initCause(e);
-      throw ze;
+    } catch (Exception e) {
+      e.printStackTrace();
     }
     return visitor.getClasses();
   }

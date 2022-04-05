@@ -51,7 +51,6 @@ public class DefaultAnnotationVisitor extends AnnotationVisitor {
   @Override
   public AnnotationVisitor visitAnnotation(final String name, final String desc) {
     resultCollector.addDesc(desc);
-
     return this;
   }
 

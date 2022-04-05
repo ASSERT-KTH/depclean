@@ -11,8 +11,8 @@ import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /**
- * Tells a dependency manager (i.e. Maven, gradle, ...) what to expose so the process can be managed from the core
- * rather than from the dependency manager plugin
+ * Tells a dependency manager (i.e. Maven, Gradle, ...) what to expose so the process can be managed
+ * from the core rather than from the dependency manager plugin.
  */
 public interface DependencyManagerWrapper {
 
@@ -71,12 +71,40 @@ public interface DependencyManagerWrapper {
   Set<String> collectUsedClassesFromProcessors();
 
   /**
+   * Where the compiled dependencies are located.
+   *
+   * @return the path to the compiled dependencies.
+   */
+  Path getDependenciesDirectory();
+
+  /**
+   * Find classes used in sources.
+   *
+   * @return the classes used.
+   */
+  Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testDirectory);
+
+  /**
    * The instance that will debloat the config file.
    *
    * @param analysis the depclean analysis
    * @return the debloater
    */
   AbstractDebloater<? extends Serializable> getDebloater(ProjectDependencyAnalysis analysis);
+
+  /**
+   * Where the sources are. Default is src/main/java.
+   *
+   * @return the graph
+   */
+  Path getSourceDirectory();
+
+  /**
+   * Where the tests sources are. Default is src/main/java.
+   *
+   * @return the graph
+   */
+  Path getTestDirectory();
 
   /**
    * The build directory path.
@@ -95,12 +123,11 @@ public interface DependencyManagerWrapper {
   /**
    * Gets the JSON representation of the dependency tree.
    *
-   * @param treeFile the file containing the tree
-   * @param analysis the depclean analysis result
-   * @param classUsageFile the class usage file
-   * @param createClassUsageCsv whether to write the class usage down
+   * @param treeFile           the file containing the tree
+   * @param analysis           the depclean analysis result
+   * @param classUsageFile     the class usage file
+   * @param createCallGraphCsv whether to write the call graph of usages down
    * @return the JSON tree
    */
-  String getTreeAsJson(
-      File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createClassUsageCsv);
+  String getTreeAsJson(File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv);
 }

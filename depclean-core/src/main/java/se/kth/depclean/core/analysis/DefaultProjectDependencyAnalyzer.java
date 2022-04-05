@@ -58,23 +58,27 @@ public class DefaultProjectDependencyAnalyzer {
 
       /* ******************** bytecode analysis ********************* */
 
-      // execute the analysis (note that the order of these operations matters!)
+      // analyze project's class files
       actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getOutputFolder()));
+      // analyze project's tests class files
       if (!projectContext.ignoreTests()) {
         log.trace("Parsing test folder");
         actualUsedClasses.registerClasses(getProjectTestDependencyClasses(projectContext.getTestOutputFolder()));
       }
+      // the set of compiled classes and tests in the project
+      Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
+      // analyze dependencies' class files
+      actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getDependenciesFolder()));
+      // analyze extra classes (collected through static analysis of source code)
       actualUsedClasses.registerClasses(projectContext.getExtraClasses());
 
       /* ******************** usage analysis ********************* */
-
-      // search for the dependencies used by the project
-      Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
-      log.trace("# DefaultCallGraph.referencedClassMembers()");
       actualUsedClasses.registerClasses(getReferencedClassMembers(projectClasses));
 
       /* ******************** results as statically used at the bytecode *********************** */
       return new ProjectDependencyAnalysisBuilder(projectContext, actualUsedClasses).analyse();
+
+
     } catch (IOException exception) {
       throw new ProjectDependencyAnalyzerException("Cannot analyze dependencies", exception);
     }
@@ -93,13 +97,17 @@ public class DefaultProjectDependencyAnalyzer {
   }
 
   private Iterable<ClassName> collectDependencyClasses(Path path) throws IOException {
-    return dependencyAnalyzer.analyze(path.toUri().toURL()).stream()
+    return dependencyAnalyzer
+        .analyze(path.toUri().toURL())
+        .stream()
         .map(ClassName::new)
         .collect(Collectors.toSet());
   }
 
   private Iterable<ClassName> getReferencedClassMembers(Set<String> projectClasses) {
-    return DefaultCallGraph.referencedClassMembers(projectClasses).stream()
+    return DefaultCallGraph
+        .referencedClassMembers(projectClasses)
+        .stream()
         .map(ClassName::new)
         .collect(Collectors.toSet());
   }

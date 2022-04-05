@@ -6,7 +6,7 @@
   "version": "1.0.0-SNAPSHOT",
   "packaging": "jar",
   "omitted": false,
-  "size": 2859,
+  "size": 2861,
   "type": "unknown",
   "status": "unknown",
   "parent": "unknown",
@@ -37,9 +37,15 @@
         "com.jcabi.manifests.StreamsMfs"
       ],
       "usedTypes": [
-        "com.jcabi.manifests.Manifests"
+        "com.jcabi.manifests.ClasspathMfs",
+        "com.jcabi.manifests.FilesMfs",
+        "com.jcabi.manifests.Manifests",
+        "com.jcabi.manifests.MfMap",
+        "com.jcabi.manifests.Mfs",
+        "com.jcabi.manifests.ServletMfs",
+        "com.jcabi.manifests.StreamsMfs"
       ],
-      "usageRatio": 0.14285714285714285,
+      "usageRatio": 1.0,
       "children": []
     },
     {

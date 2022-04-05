@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import se.kth.depclean.core.AbstractDebloater;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.core.analysis.src.ImportsAnalyzer;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.graph.MavenDependencyGraph;
 import se.kth.depclean.util.JarUtils;
@@ -51,18 +53,17 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   /**
    * Creates the manager.
    *
-   * @param logger the logger
-   * @param project the maven project
-   * @param session the maven session
+   * @param logger                 the logger
+   * @param project                the maven project
+   * @param session                the maven session
    * @param dependencyGraphBuilder a tool to build the dependency graph
    */
   public MavenDependencyManager(Log logger, MavenProject project, MavenSession session,
-                                DependencyGraphBuilder dependencyGraphBuilder) {
+      DependencyGraphBuilder dependencyGraphBuilder) {
     this.logger = logger;
     this.project = project;
     this.session = session;
     this.dependencyGraphBuilder = dependencyGraphBuilder;
-
     this.model = buildModel(project);
   }
 
@@ -86,8 +87,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     /* Copy direct dependencies locally */
     try {
       MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory="
-          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES,
-          null);
+          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES, null);
     } catch (IOException | InterruptedException e) {
       getLog().error("Unable to resolve all the dependencies.");
       Thread.currentThread().interrupt();
@@ -186,6 +186,24 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
+  public Path getDependenciesDirectory() {
+    String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
+    return new File(dependencyDirectoryName).toPath();
+  }
+
+  @Override
+  public Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testSourceDirectory) {
+    Set<String> allImports = new HashSet<>();
+    ImportsAnalyzer importsInSourceFolder = new ImportsAnalyzer(sourceDirectory);
+    ImportsAnalyzer importsInTestsFolder = new ImportsAnalyzer(testSourceDirectory);
+    Set<String> importsInSourceFolderSet = importsInSourceFolder.collectImportedClassesFromSource();
+    Set<String> importsInTestsFolderSet = importsInTestsFolder.collectImportedClassesFromSource();
+    allImports.addAll(importsInSourceFolderSet);
+    allImports.addAll(importsInTestsFolderSet);
+    return allImports;
+  }
+
+  @Override
   public AbstractDebloater<? extends Serializable> getDebloater(ProjectDependencyAnalysis analysis) {
     return new MavenDebloater(
         analysis,
@@ -200,6 +218,16 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
+  public Path getSourceDirectory() {
+    return new File(project.getBuild().getSourceDirectory()).toPath();
+  }
+
+  @Override
+  public Path getTestDirectory() {
+    return new File(project.getBuild().getTestSourceDirectory()).toPath();
+  }
+
+  @Override
   public void generateDependencyTree(File treeFile) throws IOException, InterruptedException {
     MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true", null);
   }
@@ -207,12 +235,12 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   @SneakyThrows
   @Override
   public String getTreeAsJson(
-      File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createClassUsageCsv) {
+      File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv) {
     return new ParsedDependencies(
         treeFile,
         analysis,
         classUsageFile,
-        createClassUsageCsv
+        createCallGraphCsv
     ).parseTreeToJson();
   }
 }

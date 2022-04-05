@@ -38,6 +38,9 @@ public interface ProjectContextCreator {
         ),
         Paths.get("main/resources"),
         Paths.get("test/resources"),
+        Paths.get("/main"),
+        Paths.get("/test"),
+        Paths.get(""),
         Collections.emptySet(),
         Collections.emptySet(),
         Collections.emptySet()
@@ -54,6 +57,9 @@ public interface ProjectContextCreator {
         ),
         Paths.get("main/resources"),
         Paths.get("test/resources"),
+        Paths.get("/main"),
+        Paths.get("/test"),
+        Paths.get(""),
         of(new Scope("test")),
         Collections.emptySet(),
         Collections.emptySet()
@@ -70,6 +76,9 @@ public interface ProjectContextCreator {
         ),
         Paths.get("main/resources"),
         Paths.get("test/resources"),
+        Paths.get("/main"),
+        Paths.get("/test"),
+        Paths.get(""),
         of(new Scope("test")),
         of(COMMONS_IO_DEPENDENCY),
         Collections.emptySet()

@@ -26,7 +26,7 @@ public class ParsedDependencies {
   private final File treeFile;
   private final ProjectDependencyAnalysis analysis;
   private final File classUsageFile;
-  private final boolean createClassUsageCsv;
+  private final boolean createCallgraphCsv;
 
   /**
    * Creates string with the JSON representation of the enriched dependency tree of the Maven project.
@@ -45,7 +45,7 @@ public class ParsedDependencies {
     NodeAdapter nodeAdapter = new NodeAdapter(
         analysis,
         classUsageFile,
-        createClassUsageCsv
+        createCallgraphCsv
     );
     GsonBuilder gsonBuilder = new GsonBuilder()
         .setPrettyPrinting()

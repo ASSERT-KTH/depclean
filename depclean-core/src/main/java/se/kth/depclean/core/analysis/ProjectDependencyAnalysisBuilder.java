@@ -24,8 +24,7 @@ public class ProjectDependencyAnalysisBuilder {
   private final ActualUsedClasses actualUsedClasses;
   private final Set<Dependency> usedDependencies;
 
-  ProjectDependencyAnalysisBuilder(ProjectContext context,
-                                   ActualUsedClasses actualUsedClasses) {
+  ProjectDependencyAnalysisBuilder(ProjectContext context, ActualUsedClasses actualUsedClasses) {
     this.context = context;
     this.actualUsedClasses = actualUsedClasses;
     usedDependencies = actualUsedClasses.getRegisteredClasses().stream()
@@ -39,20 +38,13 @@ public class ProjectDependencyAnalysisBuilder {
    * @return the analysis
    */
   public ProjectDependencyAnalysis analyse() {
-    final Set<Dependency> usedDirectDependencies =
-        getUsedDirectDependencies();
-    final Set<Dependency> usedTransitiveDependencies =
-        getUsedTransitiveDependencies();
-    final Set<Dependency> usedInheritedDependencies =
-        getUsedInheritedDependencies();
-    final Set<Dependency> unusedDirectDependencies =
-        getUnusedDirectDependencies(usedDirectDependencies);
-    final Set<Dependency> unusedTransitiveDependencies =
-        getUnusedTransitiveDependencies(usedTransitiveDependencies);
-    final Set<Dependency> unusedInheritedDependencies =
-        getUnusedInheritedDependencies(usedInheritedDependencies);
-    final Map<Dependency, DependencyTypes> dependencyClassesMap =
-        buildDependencyClassesMap();
+    final Set<Dependency> usedDirectDependencies = getUsedDirectDependencies();
+    final Set<Dependency> usedTransitiveDependencies = getUsedTransitiveDependencies();
+    final Set<Dependency> usedInheritedDependencies = getUsedInheritedDependencies();
+    final Set<Dependency> unusedDirectDependencies = getUnusedDirectDependencies(usedDirectDependencies);
+    final Set<Dependency> unusedTransitiveDependencies = getUnusedTransitiveDependencies(usedTransitiveDependencies);
+    final Set<Dependency> unusedInheritedDependencies = getUnusedInheritedDependencies(usedInheritedDependencies);
+    final Map<Dependency, DependencyTypes> dependencyClassesMap = buildDependencyClassesMap();
 
     context.getIgnoredDependencies().forEach(dependencyToIgnore -> {
       ignoreDependency(usedDirectDependencies, unusedDirectDependencies, dependencyToIgnore);
@@ -127,12 +119,12 @@ public class ProjectDependencyAnalysisBuilder {
   }
 
   /**
-   * If the dependencyToIgnore is an unused dependency, then add it to the set of usedDependencyCoordinates and remove
-   * it from the set of unusedDependencyCoordinates.
+   * If the dependencyToIgnore is an unused dependency, then add it to the set of
+   * usedDependencyCoordinates and remove it from the set of unusedDependencyCoordinates.
    *
    * @param usedDependencies   The set of used artifacts where the dependency will be added.
    * @param unusedDependencies The set of unused artifacts where the dependency will be removed.
-   * @param dependencyToIgnore         The dependency to ignore.
+   * @param dependencyToIgnore The dependency to ignore.
    */
   private void ignoreDependency(
       Set<Dependency> usedDependencies,

@@ -22,8 +22,8 @@ import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 public class NodeAdapter extends TypeAdapter<Node> {
 
   private final ProjectDependencyAnalysis analysis;
-  private final File classUsageFile;
-  private final boolean createClassUsageCsv;
+  private final File callGraphFile;
+  private final boolean createCallGraphCsv;
 
   @Override
   public void write(JsonWriter jsonWriter, Node node) throws IOException {
@@ -31,10 +31,9 @@ public class NodeAdapter extends TypeAdapter<Node> {
     String gav = ga + ":" + node.getVersion();
     String vs = node.getVersion() + ":" + node.getScope();
     String canonical = ga + ":" + node.getPackaging() + ":" + vs;
-    String dependencyJar = node.getArtifactId() + "-" + node.getVersion() + ".jar";
 
-    if (createClassUsageCsv) {
-      writeClassUsageCsv(canonical);
+    if (createCallGraphCsv) {
+      writeCallGraphCsv(canonical);
     }
 
     final DependencyAnalysisInfo dependencyInfo = analysis.getDependencyInfo(gav);
@@ -117,14 +116,14 @@ public class NodeAdapter extends TypeAdapter<Node> {
     allTypes.endArray();
   }
 
-  private void writeClassUsageCsv(String canonical) throws IOException {
+  private void writeCallGraphCsv(String canonical) throws IOException {
     DefaultCallGraph defaultCallGraph = new DefaultCallGraph();
     for (Map.Entry<String, Set<String>> usagePerClassMap : defaultCallGraph.getUsagesPerClass().entrySet()) {
       String key = usagePerClassMap.getKey();
       Set<String> value = usagePerClassMap.getValue();
       for (String s : value) {
         String triplet = key + "," + s + "," + canonical + "\n";
-        FileUtils.write(classUsageFile, triplet, Charset.defaultCharset(), true);
+        FileUtils.write(callGraphFile, triplet, Charset.defaultCharset(), true);
       }
     }
   }

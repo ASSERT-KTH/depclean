@@ -3,6 +3,7 @@ package se.kth.depclean.core;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +42,7 @@ public class DepCleanManager {
   private final boolean failIfUnusedInherited;
   private final boolean createPomDebloated;
   private final boolean createResultJson;
-  private final boolean createClassUsageCsv;
+  private final boolean createCallGraphCsv;
 
   /**
    * Execute the depClean manager.
@@ -58,7 +59,7 @@ public class DepCleanManager {
     getLog().info("Starting DepClean dependency analysis");
 
     if (dependencyManager.isMaven() && dependencyManager.isPackagingPom()) {
-      getLog().info("Skipping because packaging type pom.");
+      getLog().info("Skipping because packaging type is pom.");
       return;
     }
 
@@ -93,7 +94,7 @@ public class DepCleanManager {
       dependencyManager.getDebloater(analysis).write();
     }
 
-    /* Writing the JSON file with the debloat results */
+    /* Writing the JSON file with the depclean results */
     if (createResultJson) {
       createResultJson(analysis);
     }
@@ -106,7 +107,7 @@ public class DepCleanManager {
     printString("Creating depclean-results.json, please wait...");
     final File jsonFile = new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-results.json");
     final File treeFile = new File(dependencyManager.getBuildDirectory() + File.separator + "tree.txt");
-    final File classUsageFile = new File(dependencyManager.getBuildDirectory() + File.separator + "class-usage.csv");
+    final File csvFile = new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-callgraph.csv");
     try {
       dependencyManager.generateDependencyTree(treeFile);
     } catch (IOException | InterruptedException e) {
@@ -115,30 +116,31 @@ public class DepCleanManager {
       Thread.currentThread().interrupt();
       return;
     }
-    if (createClassUsageCsv) {
-      printString("Creating class-usage.csv, please wait...");
+    if (createCallGraphCsv) {
+      printString("Creating " + csvFile.getName() + ", please wait...");
       try {
-        FileUtils.write(classUsageFile, "OriginClass,TargetClass,Dependency\n", Charset.defaultCharset());
+        FileUtils.write(csvFile, "OriginClass,TargetClass,OriginDependency,TargetDependency\n", Charset.defaultCharset());
       } catch (IOException e) {
         getLog().error("Error writing the CSV header.");
       }
     }
-    String treeAsJson = dependencyManager.getTreeAsJson(treeFile,
+    String treeAsJson = dependencyManager.getTreeAsJson(
+        treeFile,
         analysis,
-        classUsageFile,
-        createClassUsageCsv
+        csvFile,
+        createCallGraphCsv
     );
 
     try {
       FileUtils.write(jsonFile, treeAsJson, Charset.defaultCharset());
     } catch (IOException e) {
-      getLog().error("Unable to generate JSON file.");
+      getLog().error("Unable to generate " + jsonFile.getName() + " file.");
     }
     if (jsonFile.exists()) {
-      getLog().info("depclean-results.json file created in: " + jsonFile.getAbsolutePath());
+      getLog().info(jsonFile.getName() + " file created in: " + jsonFile.getAbsolutePath());
     }
-    if (classUsageFile.exists()) {
-      getLog().info("class-usage.csv file created in: " + classUsageFile.getAbsolutePath());
+    if (csvFile.exists()) {
+      getLog().info(csvFile.getName() + " file created in: " + csvFile.getAbsolutePath());
     }
   }
 
@@ -162,21 +164,42 @@ public class DepCleanManager {
       ignoreScopes.add("test");
     }
 
+    // Consider are used all the classes declared in Maven processors
+    Set<ClassName> allUsedClasses = new HashSet<>();
+    Set<ClassName> usedClassesFromProcessors = dependencyManager
+        .collectUsedClassesFromProcessors().stream()
+        .map(ClassName::new)
+        .collect(Collectors.toSet());
+
+    // Consider as used all the classes located in the imports of the source code
+    Set<ClassName> usedClassesFromSource = dependencyManager.collectUsedClassesFromSource(
+            dependencyManager.getSourceDirectory(),
+            dependencyManager.getTestDirectory())
+        .stream()
+        .map(ClassName::new)
+        .collect(Collectors.toSet());
+
+    allUsedClasses.addAll(usedClassesFromProcessors);
+    allUsedClasses.addAll(usedClassesFromSource);
+
     final DependencyGraph dependencyGraph = dependencyManager.dependencyGraph();
     return new ProjectContext(
         dependencyGraph,
         dependencyManager.getOutputDirectory(),
         dependencyManager.getTestOutputDirectory(),
+        dependencyManager.getSourceDirectory(),
+        dependencyManager.getTestDirectory(),
+        dependencyManager.getDependenciesDirectory(),
         ignoreScopes.stream().map(Scope::new).collect(Collectors.toSet()),
         toDependency(dependencyGraph.allDependencies(), ignoreDependencies),
-        dependencyManager.collectUsedClassesFromProcessors().stream().map(ClassName::new).collect(Collectors.toSet())
+        allUsedClasses
     );
   }
 
   /**
    * Returns a set of {@code DependencyCoordinate}s that match given string representations.
    *
-   * @param allDependencies all known dependencies
+   * @param allDependencies    all known dependencies
    * @param ignoreDependencies string representation of dependencies to return
    * @return a set of {@code Dependency} that match given string representations
    */
@@ -197,7 +220,6 @@ public class DepCleanManager {
   private String getTime(long millis) {
     long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
     long seconds = (TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
-
     return String.format("%smin %ss", minutes, seconds);
   }
 
