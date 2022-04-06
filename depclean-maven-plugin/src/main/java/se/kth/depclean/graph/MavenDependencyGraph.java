@@ -70,7 +70,6 @@ public class MavenDependencyGraph implements DependencyGraph {
 
   @Override
   public Dependency projectCoordinates() {
-    log.info("project's jar {}", project.getBuild().getDirectory() + "/" + project.getBuild().getFinalName());
     return new Dependency(
         rootNode.getArtifact().getGroupId(),
         rootNode.getArtifact().getArtifactId(),

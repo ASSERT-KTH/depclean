@@ -2,10 +2,8 @@ package se.kth.depclean.core.wrapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.Set;
-import org.apache.maven.plugin.logging.Log;
 import se.kth.depclean.core.AbstractDebloater;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
@@ -21,7 +19,7 @@ public interface DependencyManagerWrapper {
    *
    * @return The dependency manager logger
    */
-  Log getLog();
+  LogWrapper getLog();
 
   /**
    * Whether this is a Maven project.
@@ -38,11 +36,6 @@ public interface DependencyManagerWrapper {
   boolean isPackagingPom();
 
   /**
-   * Copies the dependencies to a folder, to use them later.
-   */
-  void copyAndExtractDependencies();
-
-  /**
    * A representation of the dependency manager's dependency graph.
    *
    * @return the graph
@@ -50,18 +43,32 @@ public interface DependencyManagerWrapper {
   DependencyGraph dependencyGraph();
 
   /**
+   * Where the sources are. Default is src/main/java.
+   *
+   * @return the graph
+   */
+  Path getSourceDirectory();
+
+  /**
+   * Where the tests sources are. Default is src/main/java.
+   *
+   * @return the graph
+   */
+  Path getTestDirectory();
+
+  /**
    * Where the sources are compiled to.
    *
-   * @return the path to the compiled sources folder
+   * @return the paths to the compiled sources folders
    */
-  Path getOutputDirectory();
+  Set<Path> getOutputDirectories();
 
   /**
    * Where the tests sources are compiled to.
    *
-   * @return the path to the compiled test sources folder
+   * @return the paths to the compiled test sources folders
    */
-  Path getTestOutputDirectory();
+  Set<Path> getTestOutputDirectories();
 
   /**
    * Find classes used in processors.
@@ -90,28 +97,14 @@ public interface DependencyManagerWrapper {
    * @param analysis the depclean analysis
    * @return the debloater
    */
-  AbstractDebloater<? extends Serializable> getDebloater(ProjectDependencyAnalysis analysis);
-
-  /**
-   * Where the sources are. Default is src/main/java.
-   *
-   * @return the graph
-   */
-  Path getSourceDirectory();
-
-  /**
-   * Where the tests sources are. Default is src/main/java.
-   *
-   * @return the graph
-   */
-  Path getTestDirectory();
+  AbstractDebloater<?> getDebloater(ProjectDependencyAnalysis analysis);
 
   /**
    * The build directory path.
    *
    * @return the build directory path
    */
-  String getBuildDirectory();
+  Path getBuildDirectory();
 
   /**
    * Generates the dependency tree.

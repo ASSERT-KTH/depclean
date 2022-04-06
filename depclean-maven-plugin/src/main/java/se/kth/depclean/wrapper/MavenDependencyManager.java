@@ -1,6 +1,7 @@
 package se.kth.depclean.wrapper;
 
-import com.google.common.collect.ImmutableSet;
+import static com.google.common.collect.ImmutableSet.of;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,7 +15,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -30,8 +30,8 @@ import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.src.ImportsAnalyzer;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
+import se.kth.depclean.core.wrapper.LogWrapper;
 import se.kth.depclean.graph.MavenDependencyGraph;
-import se.kth.depclean.util.JarUtils;
 import se.kth.depclean.util.MavenDebloater;
 import se.kth.depclean.util.MavenInvoker;
 import se.kth.depclean.util.json.ParsedDependencies;
@@ -68,8 +68,23 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public Log getLog() {
-    return logger;
+  public LogWrapper getLog() {
+    return new LogWrapper() {
+      @Override
+      public void info(String message) {
+        logger.info(message);
+      }
+
+      @Override
+      public void error(String message) {
+        logger.error(message);
+      }
+
+      @Override
+      public void debug(String message) {
+        logger.debug(message);
+      }
+    };
   }
 
   @Override
@@ -83,39 +98,6 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public void copyAndExtractDependencies() {
-    /* Copy direct dependencies locally */
-    try {
-      MavenInvoker.runCommand("mvn dependency:copy-dependencies -DoutputDirectory="
-          + project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES, null);
-    } catch (IOException | InterruptedException e) {
-      getLog().error("Unable to resolve all the dependencies.");
-      Thread.currentThread().interrupt();
-      throw new RuntimeException(e);
-    }
-
-    // TODO remove this workaround later
-    if (new File(project.getBuild().getDirectory() + File.separator + "libs").exists()) {
-      try {
-        FileUtils.copyDirectory(new File(project.getBuild().getDirectory() + File.separator + "libs"),
-            new File(project.getBuild().getDirectory() + File.separator + DIRECTORY_TO_COPY_DEPENDENCIES)
-        );
-      } catch (IOException | NullPointerException e) {
-        getLog().error("Error copying directory libs to dependency");
-        throw new RuntimeException(e);
-      }
-    }
-
-    /* Decompress dependencies */
-    String dependencyDirectoryName =
-        project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
-    File dependencyDirectory = new File(dependencyDirectoryName);
-    if (dependencyDirectory.exists()) {
-      JarUtils.decompress(dependencyDirectoryName);
-    }
-  }
-
-  @Override
   @SneakyThrows
   public DependencyGraph dependencyGraph() {
     ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(
@@ -126,13 +108,17 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public Path getOutputDirectory() {
-    return Paths.get(project.getBuild().getOutputDirectory());
+  public Set<Path> getOutputDirectories() {
+    return of(
+        Paths.get(project.getBuild().getOutputDirectory())
+    );
   }
 
   @Override
-  public Path getTestOutputDirectory() {
-    return Paths.get(project.getBuild().getTestOutputDirectory());
+  public Set<Path> getTestOutputDirectories() {
+    return of(
+        Paths.get(project.getBuild().getTestOutputDirectory())
+    );
   }
 
   private Model buildModel(MavenProject project) {
@@ -182,7 +168,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
         .map(config -> config.getChild("processors"))
         .map(Xpp3Dom::getChildren)
         .map(arr -> Arrays.stream(arr).map(Xpp3Dom::getValue).collect(Collectors.toSet()))
-        .orElse(ImmutableSet.of());
+        .orElse(of());
   }
 
   @Override
@@ -213,8 +199,8 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public String getBuildDirectory() {
-    return project.getBuild().getDirectory();
+  public Path getBuildDirectory() {
+    return Paths.get(project.getBuild().getDirectory());
   }
 
   @Override

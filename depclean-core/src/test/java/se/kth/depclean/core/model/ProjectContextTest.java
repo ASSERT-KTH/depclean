@@ -12,7 +12,7 @@ class ProjectContextTest implements ProjectContextCreator {
   void shouldContainDependenciesWithClasses() {
     final ProjectContext context = createContext();
     assertThat(context.getClassesForDependency(COMMONS_IO_DEPENDENCY)).hasSize(123);
-    assertThat(context.getClassesForDependency(COMMONS_LANG_DEPENDENCY)).hasSize(127);
+    assertThat(context.getClassesForDependency(COMMONS_LANG_DEPENDENCY)).hasSize(345);
     assertThat(context.getClassesForDependency(COMMONS_LOGGING_DEPENDENCY)).hasSize(20);
     assertThat(context.getClassesForDependency(JUNIT_DEPENDENCY)).hasSize(113);
     assertThat(context.getClassesForDependency(UNKNOWN_DEPENDENCY)).isEmpty();

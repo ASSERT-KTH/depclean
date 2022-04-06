@@ -101,13 +101,9 @@ public class DefaultCallGraph {
     return projectVertices;
   }
 
-  public static Set<String> getVertices() {
-    return directedGraph.vertexSet();
-  }
-
-  public static void cleanDirectedGraph() {
-    directedGraph.vertexSet().clear();
-    directedGraph.edgeSet().clear();
+  public static void clear() {
+    projectVertices.clear();
+    usagesPerClass.clear();
   }
 
   public static Map<String, Set<String>> getUsagesPerClass() {

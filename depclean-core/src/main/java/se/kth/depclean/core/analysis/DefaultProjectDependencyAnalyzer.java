@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
@@ -36,61 +37,52 @@ import se.kth.depclean.core.model.ProjectContext;
 public class DefaultProjectDependencyAnalyzer {
 
   private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
-  private final ProjectContext projectContext;
-
-  /**
-   * Ctor.
-   */
-  public DefaultProjectDependencyAnalyzer(ProjectContext projectContext) {
-    this.projectContext = projectContext;
-  }
 
   /**
    * Analyze the dependencies in a project.
    *
+   * @param projectContext The project's context
+   *
    * @return An object representing the analysis result.
-   * @throws ProjectDependencyAnalyzerException if the analysis fails.
    */
-  public ProjectDependencyAnalysis analyze() throws ProjectDependencyAnalyzerException {
-    try {
-      // a map of [dependency] -> [classes]
-      final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(projectContext);
+  public ProjectDependencyAnalysis analyze(final ProjectContext projectContext) {
 
-      /* ******************** bytecode analysis ********************* */
+    // a map of [dependency] -> [classes]
+    final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(projectContext);
 
-      // analyze project's class files
-      actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getOutputFolder()));
-      // analyze project's tests class files
-      if (!projectContext.ignoreTests()) {
-        log.trace("Parsing test folder");
-        actualUsedClasses.registerClasses(getProjectTestDependencyClasses(projectContext.getTestOutputFolder()));
-      }
-      // the set of compiled classes and tests in the project
-      Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
-      // analyze dependencies' class files
-      actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getDependenciesFolder()));
-      // analyze extra classes (collected through static analysis of source code)
-      actualUsedClasses.registerClasses(projectContext.getExtraClasses());
+    /* ******************** bytecode analysis ********************* */
 
-      /* ******************** usage analysis ********************* */
-      actualUsedClasses.registerClasses(getReferencedClassMembers(projectClasses));
-
-      /* ******************** results as statically used at the bytecode *********************** */
-      return new ProjectDependencyAnalysisBuilder(projectContext, actualUsedClasses).analyse();
-
-
-    } catch (IOException exception) {
-      throw new ProjectDependencyAnalyzerException("Cannot analyze dependencies", exception);
+    // analyze project's class files
+    projectContext.getOutputFolders()
+        .forEach(folder -> actualUsedClasses.registerClasses(getProjectDependencyClasses(folder)));
+    // analyze project's tests class files
+    if (!projectContext.ignoreTests()) {
+      log.trace("Parsing test folder");
+      projectContext.getTestOutputFolders()
+          .forEach(folder -> actualUsedClasses.registerClasses(getProjectTestDependencyClasses(folder)));
     }
+    // the set of compiled classes and tests in the project
+    Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
+    // analyze dependencies' class files
+    actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getDependenciesFolder()));
+    // analyze extra classes (collected through static analysis of source code)
+    actualUsedClasses.registerClasses(projectContext.getExtraClasses());
+
+    /* ******************** usage analysis ********************* */
+    actualUsedClasses.registerClasses(getReferencedClassMembers(projectClasses));
+
+    /* ******************** results as statically used at the bytecode *********************** */
+    return new ProjectDependencyAnalysisBuilder(projectContext, actualUsedClasses).analyse();
   }
 
-  private Iterable<ClassName> getProjectDependencyClasses(Path outputFolder) throws IOException {
+  @SneakyThrows
+  private Iterable<ClassName> getProjectDependencyClasses(Path outputFolder) {
     // Analyze src classes in the project
-    log.trace("# getProjectDependencyClasses()");
     return collectDependencyClasses(outputFolder);
   }
 
-  private Iterable<ClassName> getProjectTestDependencyClasses(Path testOutputFolder) throws IOException {
+  @SneakyThrows
+  private Iterable<ClassName> getProjectTestDependencyClasses(Path testOutputFolder) {
     // Analyze test classes in the project
     log.trace("# getProjectTestDependencyClasses()");
     return collectDependencyClasses(testOutputFolder);

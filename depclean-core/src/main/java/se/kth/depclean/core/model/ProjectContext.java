@@ -16,7 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 
 /**
- * Contains all information about the project's context. It doesn't have any reference to a given framework (Maven, Gradle, etc.).
+ * Contains all information about the project's context.
+ * It doesn't have any reference to a given framework (Maven, Gradle, etc.).
  */
 @Slf4j
 @ToString
@@ -27,16 +28,15 @@ public final class ProjectContext {
   private final Multimap<ClassName, Dependency> dependenciesPerClass = ArrayListMultimap.create();
 
   @Getter
-  private final Path outputFolder;
+  private final Set<Path> outputFolders;
   @Getter
-  private final Path testOutputFolder;
+  private final Set<Path> testOutputFolders;
   @Getter
   private final Path sourceFolder;
   @Getter
   private final Path testFolder;
   @Getter
   private final Path dependenciesFolder;
-
 
   @Getter
   private final Set<Scope> ignoredScopes;
@@ -51,8 +51,8 @@ public final class ProjectContext {
    * Creates a new project context.
    *
    * @param dependencyGraph     the dependencyGraph
-   * @param outputFolder        where the project's classes are compiled
-   * @param testOutputFolder    where the project's test classes are compiled
+   * @param outputFolders       where the project's classes are compiled
+   * @param testOutputFolders   where the project's test classes are compiled
    * @param sourceFolder        where the project's source code are located
    * @param tesSourceFolder     where the project's test sources are located
    * @param dependenciesFolder  where the dependency classes are located
@@ -61,13 +61,17 @@ public final class ProjectContext {
    * @param extraClasses        some classes we want to tell the analyser to consider used
    */
   public ProjectContext(DependencyGraph dependencyGraph,
-      Path outputFolder, Path testOutputFolder,
-      Path sourceFolder, Path tesSourceFolder, Path dependenciesFolder, Set<Scope> ignoredScopes,
-      Set<Dependency> ignoredDependencies,
-      Set<ClassName> extraClasses) {
+                        Set<Path> outputFolders,
+                        Set<Path> testOutputFolders,
+                        Path sourceFolder,
+                        Path tesSourceFolder,
+                        Path dependenciesFolder,
+                        Set<Scope> ignoredScopes,
+                        Set<Dependency> ignoredDependencies,
+                        Set<ClassName> extraClasses) {
     this.dependencyGraph = dependencyGraph;
-    this.outputFolder = outputFolder;
-    this.testOutputFolder = testOutputFolder;
+    this.outputFolders = outputFolders;
+    this.testOutputFolders = testOutputFolders;
     this.sourceFolder = sourceFolder;
     this.testFolder = tesSourceFolder;
     this.dependenciesFolder = dependenciesFolder;
@@ -113,11 +117,11 @@ public final class ProjectContext {
 
   private void populateDependenciesAndClassesMap(Set<Dependency> dependencies) {
     dependencies.stream()
-        .filter(this::filterScopesIfNeeded)
+        .filter(this::excludeScopes)
         .forEach(dc -> classesPerDependency.putAll(dc, dc.getRelatedClasses()));
   }
 
-  private boolean filterScopesIfNeeded(Dependency dc) {
+  private boolean excludeScopes(Dependency dc) {
     final String declaredScope = dc.getScope();
     return ignoredScopes.stream()
         .map(Scope::getValue)
