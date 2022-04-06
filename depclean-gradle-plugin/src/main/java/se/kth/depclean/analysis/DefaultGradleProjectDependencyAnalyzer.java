@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -26,7 +27,6 @@ import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
-import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
 import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.model.ClassName;
@@ -74,13 +74,11 @@ public class DefaultGradleProjectDependencyAnalyzer
    * @param project The Gradle project to be analyzed.
    * @return An object with the usedDeclaredArtifacts, usedUndeclaredArtifacts,
    *        and unusedDeclaredArtifacts.
-   * @throws ProjectDependencyAnalyzerException if the analysis fails.
    * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
    */
+  @SneakyThrows
   @Override
-  public GradleProjectDependencyAnalysis analyze(final Project project)
-          throws ProjectDependencyAnalyzerException {
-    try {
+  public GradleProjectDependencyAnalysis analyze(final Project project) {
       // project's configurations.
       ConfigurationContainer configurationContainer = project.getConfigurations();
       Set<Configuration> configurations = new HashSet<>(configurationContainer);
@@ -136,9 +134,6 @@ public class DefaultGradleProjectDependencyAnalyzer
       return new GradleProjectDependencyAnalysis(usedDeclaredArtifacts,
               usedUndeclaredArtifacts, unusedDeclaredArtifacts);
 
-    } catch (IOException e) {
-      throw new ProjectDependencyAnalyzerException("Cannot analyze dependencies", e);
-    }
   }
 
   /**

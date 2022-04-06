@@ -1,4 +1,4 @@
-package se.kth.depclean.util;
+package se.kth.depclean.core.util;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

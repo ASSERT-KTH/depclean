@@ -32,8 +32,7 @@ import se.kth.depclean.utils.DependencyUtils;
 import se.kth.depclean.utils.GradleWritingUtils;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
-import se.kth.depclean.core.analysis.ProjectDependencyAnalyzerException;
-import se.kth.depclean.util.JarUtils;
+import se.kth.depclean.utils.JarUtils;
 import se.kth.depclean.utils.json.writeJsonResult;
 
 /**
@@ -165,14 +164,10 @@ public class DepCleanGradleAction implements Action<Project> {
     decompressDependencies(dependencyDirectory, dependencyDirPath.toString());
 
     /* Analyze dependencies usage status */
-    GradleProjectDependencyAnalysis projectDependencyAnalysis = null;
+    GradleProjectDependencyAnalysis projectDependencyAnalysis;
     DefaultGradleProjectDependencyAnalyzer dependencyAnalyzer =
-            new DefaultGradleProjectDependencyAnalyzer(isIgnoreTest);
-    try {
-      projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
-    } catch (ProjectDependencyAnalyzerException e) {
-      logger.error("Unable to analyze dependencies.");
-    }
+        new DefaultGradleProjectDependencyAnalyzer(isIgnoreTest);
+    projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
 
     /* Collecting the dependencies in their respective categories after the
        dependency analysis has been completed. */

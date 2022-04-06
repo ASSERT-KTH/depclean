@@ -24,7 +24,7 @@ public abstract class AbstractDebloater<T> {
     log.info("Starting debloating file");
     logChanges();
     setDependencies(analysis.getDebloatedDependencies().stream()
-        .map(this::toMavenDependency)
+        .map(this::toProviderDependency)
         .collect(Collectors.toList()));
 
     if (log.isDebugEnabled()) {
@@ -34,7 +34,7 @@ public abstract class AbstractDebloater<T> {
     writeFile();
   }
 
-  protected abstract T toMavenDependency(DebloatedDependency debloatedDependency);
+  protected abstract T toProviderDependency(DebloatedDependency debloatedDependency);
 
   protected abstract void setDependencies(List<T> dependencies);
 
