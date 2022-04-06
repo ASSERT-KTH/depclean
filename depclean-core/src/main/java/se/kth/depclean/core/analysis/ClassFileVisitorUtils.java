@@ -30,11 +30,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.codehaus.plexus.util.DirectoryScanner;
 
 /**
  * Utility to visit classes in a library given either as a jar file or an exploded directory.
  */
+@Slf4j
 public final class ClassFileVisitorUtils {
 
   private static final String[] CLASS_INCLUDES = {"**/*.class"};
@@ -92,7 +94,7 @@ public final class ClassFileVisitorUtils {
         }
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error("Error analyzing JAR: " + url);
     }
   }
 
@@ -112,12 +114,11 @@ public final class ClassFileVisitorUtils {
     scanner.scan();
     String[] paths = scanner.getIncludedFiles();
     for (String path : paths) {
-      path = path.replace(File.separatorChar, '/');
       File file = new File(directory, path);
       try (FileInputStream in = new FileInputStream(file)) {
         visitClass(path, in, visitor);
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error("Error analyzing directory: " + directory.getAbsolutePath());
       }
     }
   }
@@ -151,7 +152,7 @@ public final class ClassFileVisitorUtils {
     }
     path = getChild(path);
     String className = path.substring(0, path.length() - CLASS.length());
-    className = className.replace('/', '.');
+    className = className.replace(File.separatorChar, '.');
     visitor.visitClass(className, in);
   }
 

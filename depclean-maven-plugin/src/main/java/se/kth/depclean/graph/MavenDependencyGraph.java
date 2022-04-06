@@ -31,13 +31,12 @@ public class MavenDependencyGraph implements DependencyGraph {
   private final Set<Dependency> directDependencies;
   private final Set<Dependency> inheritedDependencies;
   private final Set<Dependency> transitiveDependencies;
-  private final Multimap<Dependency, Dependency> dependenciesPerDependency
-      = ArrayListMultimap.create();
+  private final Multimap<Dependency, Dependency> dependenciesPerDependency = ArrayListMultimap.create();
 
   /**
    * Create a maven dependency graph.
    *
-   * @param project the maven project
+   * @param project  the maven project
    * @param rootNode the graph's root node
    */
   public MavenDependencyGraph(MavenProject project, Model model, DependencyNode rootNode) {

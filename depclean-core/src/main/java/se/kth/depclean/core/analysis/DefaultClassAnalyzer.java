@@ -22,11 +22,12 @@ package se.kth.depclean.core.analysis;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
-import java.util.zip.ZipException;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The default class analyzer.
  */
+@Slf4j
 public class DefaultClassAnalyzer implements ClassAnalyzer {
 
   /**
@@ -42,7 +43,7 @@ public class DefaultClassAnalyzer implements ClassAnalyzer {
     try {
       ClassFileVisitorUtils.accept(url, visitor);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("Error analyzing class file: " + url);
     }
     return visitor.getClasses();
   }

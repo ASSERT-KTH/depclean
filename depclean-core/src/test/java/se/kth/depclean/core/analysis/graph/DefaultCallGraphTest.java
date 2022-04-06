@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,5 +43,10 @@ class DefaultCallGraphTest {
     usagesExpected.put("F", new HashSet<>(Arrays.asList("G", "H")));
     usagesExpected.put("I", new HashSet<>(Arrays.asList("J")));
     Assertions.assertEquals(usagesExpected, usagesPerClass);
+  }
+
+  @AfterEach
+  void tearDown() {
+    DefaultCallGraph.clear();
   }
 }
