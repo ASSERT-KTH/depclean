@@ -17,39 +17,17 @@
 
 ## What is DepClean?
 
-DepClean is a tool to automatically remove dependencies that are included in your Java dependency tree but are not
-actually used in the project's code. DepClean detects and removes all the unused dependencies declared in the `pom.xml`
-file of a project or imported from its parent. For that, it relies on bytecode static analysis and extends
-the `maven-dependency-analyze` plugin (more details on
-this [plugin](https://maven.apache.org/plugins/maven-dependency-plugin/analyze-mojo.html)). DepClean does not modify the
-original source code of the application nor its original `pom.xml`. It can be executed as a Maven goal through the
-command line or integrated directly into the Maven build lifecycle.
+DepClean automatically cleans the dependency tree of Java projects.
+It removes all the dependencies that are included in the project's dependency tree but are not actually necessary to build it. 
+DepClean detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent. 
+It can be executed as a Maven goal through the command line or integrated directly into the Maven build lifecycle (CI/CD).
+DepClean does not modify the original source code of the application nor its original `pom.xml`.
 
-For a visual illustration of what DepClean can provide for your project, have a look at
-the [depclean-web](https://github.com/castor-software/depclean-web) project.
-
-If you use DepClean in an academic context, please cite:
-
-```
-@Article{Soto-Valero2021,
-  author={Soto-Valero, C{\'e}sar and Harrand, Nicolas and Monperrus, Martin and Baudry, Benoit},
-  title={A comprehensive study of bloated dependencies in the Maven ecosystem},
-  journal={Empirical Software Engineering},
-  year={2021},
-  month={Mar},
-  day={25},
-  volume={26},
-  number={3},
-  pages={45},
-  issn={1573-7616},
-  doi={10.1007/s10664-020-09914-8},
-  url={https://doi.org/10.1007/s10664-020-09914-8}
-}
-```
+For a visual illustration of what DepClean can provide for your project, have a look at the companion [depclean-web](https://github.com/castor-software/depclean-web) project.
 
 ## Usage
 
-You can configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
+Configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
 
 ```xml
 <plugin>
@@ -67,27 +45,22 @@ You can configure the `pom.xml` file of your Maven project to use DepClean as pa
 ```
 
 Or you can run DepClean directly from the command line.
-Let's see it in action with the project [Apache Commons Numbers](https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh)!
+
+```bash
+cd PATH_TO_MAVEN_PROJECT
+mvn compile   
+mvn compiler:testCompile
+mvn se.kth.castor:depclean-maven-plugin:2.0.2:depclean
+```
+
+Let's see an example of running DepClean version 2.0.1 in the project [Apache Commons Numbers](https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh)!
 
 ![Demo](https://github.com/castor-software/depclean/blob/master/.img/demo.gif)
 
-## How does it work?
-
-DepClean runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types
-referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the
-project actually use in the bytecode with respect to the class members belonging to its dependencies.
-
-With this usage information, DepClean constructs a new `pom.xml` based on the following steps:
-
-1. add all used transitive dependencies as direct dependencies
-2. remove all unused direct dependencies
-3. exclude all unused transitive dependencies
-
-If all the tests pass, and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
-
-### Optional Parameters
+## Optional Parameters
 
 The Maven plugin can be configured with the following additional parameters.
+
 
 | Name                       |     Type      | Description                                                                                                                                                                                                                                                                                                    | 
 |:---------------------------|:-------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
@@ -102,8 +75,9 @@ The Maven plugin can be configured with the following additional parameters.
 | `<failIfUnusedInherited>`  |   `boolean`   | If this is true, and DepClean reported any unused inherited dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                              |
 | `<skipDepClean>`           |   `boolean`   | Skip plugin execution completely. **Default value is:** `false`.                                                                                                                                                                                                                                               |
 
-For example, to fail the build in the presence of unused direct dependencies and ignore all the scopes except the
-`compile` scope, use the following plugin configuration.
+You can integrate DepClean in your CI/CD pipeline.
+For example, if you want to fail the build in the presence of unused direct dependencies, while ignoring all the dependency scopes except the
+`compile`, use the following plugin configuration.
 
 ```xml
 <plugin>
@@ -124,12 +98,25 @@ For example, to fail the build in the presence of unused direct dependencies and
 </plugin>
 ```
 
-Of course, it is also possible to execute DepClean with parameters directly from the command line. The previous example
-can be executed directly as follows:
+Of course, it is also possible to execute DepClean with parameters directly from the command line. The previous example can be executed directly as follows:
 
 ```bash
 mvn se.kth.castor:depclean-maven-plugin:2.0.2:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
+
+## How does DepClean works?
+
+DepClean runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types
+referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the
+project actually use in the bytecode with respect to the class members belonging to its dependencies.
+
+With this usage information, DepClean constructs a new `pom.xml` based on the following steps:
+
+1. add all used transitive dependencies as direct dependencies
+2. remove all unused direct dependencies
+3. exclude all unused transitive dependencies
+
+If all the tests pass, and the project builds correctly after these changes, then it means that the dependencies identified as bloated can be removed. DepClean produces a file named `pom-debloated.xml`, located in the root of the project, which is a clean version of the original `pom.xml` without bloated dependencies.
 
 ## Installing and building from source
 
@@ -148,14 +135,6 @@ Then run the following Maven command to build the application and install the pl
 
 ```bash
 mvn clean install
-```
-Once the plugin is installed, you can execute the `depclean` goal directly in the command line:
-
-```bash
-cd PATH_TO_MAVEN_PROJECT
-mvn compile   
-mvn compiler:testCompile
-mvn se.kth.castor:depclean-maven-plugin:2.0.2:depclean
 ```
 
 ## License
