@@ -31,8 +31,8 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
    * Creates the debloater.
    *
    * @param analysis the depclean analysis result
-   * @param project the maven project
-   * @param model the maven model
+   * @param project  the maven project
+   * @param model    the maven model
    */
   public MavenDebloater(ProjectDependencyAnalysis analysis, MavenProject project, Model model) {
     super(analysis);
@@ -91,7 +91,11 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
   }
 
   private boolean hasVersionAsProperty(Dependency initialDependency) {
-    return initialDependency.getVersion().startsWith("$");
+    if (initialDependency.getVersion() != null) {
+      return initialDependency.getVersion().startsWith("$");
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -124,8 +128,7 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
   }
 
   /**
-   * This method creates a Maven {@link Dependency} object from a depclean {@link
-   * se.kth.depclean.core.model.Dependency}.
+   * This method creates a Maven {@link Dependency} object from a depclean {@link se.kth.depclean.core.model.Dependency}.
    *
    * @param dependency The depclean dependency to create the maven dependency.
    * @return The Dependency object.
@@ -136,8 +139,7 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
   }
 
   /**
-   * This method creates a {@link Dependency} object from a Maven {@link
-   * org.apache.maven.artifact.Artifact}.
+   * This method creates a {@link Dependency} object from a Maven {@link org.apache.maven.artifact.Artifact}.
    *
    * @param artifact The artifact to create the dependency.
    * @return The Dependency object.

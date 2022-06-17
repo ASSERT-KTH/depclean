@@ -23,6 +23,7 @@ import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.stream.Collectors.toCollection;
 
+import java.io.File;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -134,7 +135,12 @@ public class ProjectDependencyAnalysis {
    * @return the information about the dependency
    */
   public DependencyAnalysisInfo getDependencyInfo(String coordinate) {
-    final Dependency dependency = findByCoordinates(coordinate);
+    Dependency dependency;
+    try {
+      dependency = findByCoordinates(coordinate);
+    } catch (RuntimeException e) {
+      return null;
+    }
     return new DependencyAnalysisInfo(
         getStatus(dependency),
         getType(dependency),

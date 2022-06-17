@@ -38,55 +38,60 @@ public class NodeAdapter extends TypeAdapter<Node> {
 
     final DependencyAnalysisInfo dependencyInfo = analysis.getDependencyInfo(gav);
 
-    JsonWriter localWriter = jsonWriter.beginObject()
-        .name("id")
-        .value(canonical)
 
-        .name("coordinates")
-        .value(gav)
+    if (dependencyInfo != null) {
 
-        .name("groupId")
-        .value(node.getGroupId())
+      JsonWriter localWriter = jsonWriter.beginObject()
+          .name("id")
+          .value(canonical)
 
-        .name("artifactId")
-        .value(node.getArtifactId())
+          .name("coordinates")
+          .value(gav)
 
-        .name("version")
-        .value(node.getVersion())
+          .name("groupId")
+          .value(node.getGroupId())
 
-        .name("scope")
-        .value(node.getScope())
+          .name("artifactId")
+          .value(node.getArtifactId())
 
-        .name("packaging")
-        .value(node.getPackaging())
+          .name("version")
+          .value(node.getVersion())
 
-        .name("omitted")
-        .value(node.isOmitted())
+          .name("scope")
+          .value(node.getScope())
 
-        .name("classifier")
-        .value(node.getClassifier())
+          .name("packaging")
+          .value(node.getPackaging())
 
-        .name("size")
-        .value(dependencyInfo.getSize())
+          .name("omitted")
+          .value(node.isOmitted())
 
-        .name("type")
-        .value(dependencyInfo.getType())
+          .name("classifier")
+          .value(node.getClassifier())
 
-        .name("status")
-        .value(dependencyInfo.getStatus())
+          .name("size")
+          .value(dependencyInfo.getSize())
 
-        .name("parent")
-        .value(getParent(node));
+          .name("type")
+          .value(dependencyInfo.getType())
 
-    writeAllTypes(dependencyInfo, localWriter);
-    writeUsedTypes(dependencyInfo, localWriter);
-    writeUsageRatio(dependencyInfo, localWriter);
+          .name("status")
+          .value(dependencyInfo.getStatus())
 
-    for (Node c : node.getChildNodes()) {
-      this.write(jsonWriter, c);
+          .name("parent")
+          .value(getParent(node));
+
+      writeAllTypes(dependencyInfo, localWriter);
+      writeUsedTypes(dependencyInfo, localWriter);
+      writeUsageRatio(dependencyInfo, localWriter);
+
+      for (Node c : node.getChildNodes()) {
+        this.write(jsonWriter, c);
+      }
+      jsonWriter.endArray()
+          .endObject();
+
     }
-    jsonWriter.endArray()
-        .endObject();
   }
 
   private String getParent(Node node) {
