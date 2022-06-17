@@ -62,7 +62,6 @@ Let's see an example of running DepClean version 2.0.1 in the project [Apache Co
 The Maven plugin can be configured with the following additional parameters.
 
 
-|:---------------------------|:-------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Name                       |     Type      | Description                                                                                                                                                                                                                                                                                                    | 
 |:---------------------------|:-------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
 | `<ignoreDependencies>`     | `Set<String>` | Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis. **Dependency format is:** `groupId:artifactId:version:scope`.                          |
@@ -75,7 +74,7 @@ The Maven plugin can be configured with the following additional parameters.
 | `<failIfUnusedTransitive>` |   `boolean`   | If this is true, and DepClean reported any unused transitive dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                             |
 | `<failIfUnusedInherited>`  |   `boolean`   | If this is true, and DepClean reported any unused inherited dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                              |
 | `<skipDepClean>`           |   `boolean`   | Skip plugin execution completely. **Default value is:** `false`.                                                                                                                                                                                                                                               |
-|:---------------------------|:-------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
 
 You can integrate DepClean in your CI/CD pipeline.
 For example, if you want to fail the build in the presence of unused direct dependencies, while ignoring all the dependency scopes except the
