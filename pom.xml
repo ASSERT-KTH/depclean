@@ -222,7 +222,7 @@
   </build>
 
   <profiles>
-    <!-- To deploy via command line use: `mvn deploy -P deploy-artifacts` -->
+    <!-- To deploy via command line use: `mvn deploy -P deploy` -->
     <profile>
       <id>deploy</id>
       <build>

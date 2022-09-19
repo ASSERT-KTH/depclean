@@ -7,6 +7,7 @@ on:
         required: true
 jobs:
   release:
+    name: Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
@@ -17,11 +18,32 @@ jobs:
         with:
           distribution: 'adopt-hotspot'
           java-version: 17
+          server-id: ossrh
+          server-username: ${{ secrets.NEXUS_USERNAME }}
+          server-password: ${{ secrets.NEXUS_PASSWORD }}
 
       - name: Deploy Maven package
-        uses: samuelmeuli/action-maven-publish@v1
+        run: mvn deploy -P deploy
+        env:
+          MAVEN_USERNAME: ${{ secrets.GPG_PASSPHRASE }}
+          MAVEN_PASSWORD: ${{ secrets.GPG_PRIVATE_KEY }}
+
+      - name: Create and push tag
+        run: |
+          git config --global user.email "cesarsotovalero@gmail.com"
+          git config --global user.name "$GITHUB_ACTOR"
+          git tag -a $TAG -m "Release v$TAG"
+          git push origin $TAG
+        env:
+          TAG: ${{ github.event.inputs.versionName }}
+
+      - name: Create Release on GitHub
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          nexus_username: ${{ secrets.NEXUS_USERNAME }}
-          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
+          tag_name: ${{ github.event.inputs.versionName }}
+          release_name: MyLib ${{ github.event.inputs.versionName }}
+          draft: true
+          prerelease: false
