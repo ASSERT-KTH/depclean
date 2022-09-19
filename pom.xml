@@ -172,7 +172,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler.plugin.version}</version>
         <configuration>
-          <release>8</release>
+          <release>17</release>
         </configuration>
       </plugin>
       <!-- Maven site -->
