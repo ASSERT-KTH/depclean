@@ -224,7 +224,7 @@
   <profiles>
     <!-- To deploy via command line use: `mvn deploy -P deploy-artifacts` -->
     <profile>
-      <id>deploy-artifacts</id>
+      <id>deploy</id>
       <build>
         <plugins>
           <!-- Maven compiler plugin -->
