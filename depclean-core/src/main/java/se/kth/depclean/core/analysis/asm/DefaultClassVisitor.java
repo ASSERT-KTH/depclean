@@ -49,7 +49,7 @@ public class DefaultClassVisitor extends ClassVisitor {
       FieldVisitor fieldVisitor,
       MethodVisitor methodVisitor,
       ResultCollector resultCollector) {
-    super(Opcodes.ASM7);
+    super(Opcodes.ASM9);
     this.signatureVisitor = signatureVisitor;
     this.annotationVisitor = annotationVisitor;
     this.fieldVisitor = fieldVisitor;

@@ -32,7 +32,7 @@ public class DefaultAnnotationVisitor extends AnnotationVisitor {
   private final ResultCollector resultCollector;
 
   public DefaultAnnotationVisitor(ResultCollector resultCollector) {
-    super(Opcodes.ASM7);
+    super(Opcodes.ASM9);
     this.resultCollector = resultCollector;
   }
 
