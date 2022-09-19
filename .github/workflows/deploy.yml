@@ -19,14 +19,17 @@ jobs:
           distribution: 'adopt-hotspot'
           java-version: 17
           server-id: ossrh
-          server-username: ${{ secrets.NEXUS_USERNAME }}
-          server-password: ${{ secrets.NEXUS_PASSWORD }}
+          server-username: OSSRH_USERNAME # env variable for username in deploy
+          server-password: OSSRH_TOKEN # env variable for token in deploy
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
 
       - name: Deploy Maven package
         run: mvn deploy -P deploy
         env:
-          MAVEN_USERNAME: ${{ secrets.GPG_PASSPHRASE }}
-          MAVEN_PASSWORD: ${{ secrets.GPG_PRIVATE_KEY }}
+          OSSRH_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.NEXUS_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Create and push tag
         run: |
