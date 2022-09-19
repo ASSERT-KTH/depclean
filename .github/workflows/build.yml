@@ -1,5 +1,4 @@
-name: build
-
+name: Build
 on:
   push:
     branches:
@@ -7,14 +6,13 @@ on:
   pull_request:
     branches:
       - master
-
 jobs:
   # For maven project
   build:
     strategy:
       max-parallel: 1
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
         java: [ 17 ]
     runs-on: ${{ matrix.os }}
     name: Maven Build with Java ${{ matrix.java }} on ${{ matrix.os }}
