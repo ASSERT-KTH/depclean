@@ -3,7 +3,7 @@ on:
   release:
     types: [ created ]
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
@@ -20,4 +20,4 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           nexus_username: ${{ secrets.NEXUS_USERNAME }}
-          nexus_password: ${{ secrets.nexus_password }}
+          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
