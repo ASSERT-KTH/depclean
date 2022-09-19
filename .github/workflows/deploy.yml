@@ -1,7 +1,10 @@
-name: Deploy to the Maven Central Repository
+name: Deploy
 on:
-  release:
-    types: [ created ]
+  workflow_dispatch:
+    inputs:
+      versionName:
+        description: 'Version Name'
+        required: true
 jobs:
   release:
     runs-on: ubuntu-latest
