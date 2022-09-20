@@ -75,11 +75,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-# --------------------------------------------------------------------------------------------------------------------
-# For Gradle module
+  # --------------------------------------------------------------------------------------------------------------------
+  # For Gradle module
   gradle:
 
-    name: Gradle build with Java 11 on ubuntu-latest
+    name: Gradle build with Java 17 on ubuntu-latest
     runs-on: ubuntu-latest
     steps:
 
@@ -90,9 +90,10 @@ jobs:
         uses: gradle/wrapper-validation-action@v1.0.4
 
       - name: Java 17
+      - uses: actions/setup-java@v3
         with:
           java-version: 17
-        uses: actions/setup-java@v1
+          distribution: 'adopt-hotspot'
 
       - name: Cache Gradle packages
         uses: actions/cache@v2.1.6
@@ -115,10 +116,8 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          # home is not the repoistory root but `/home/runner`, so chdir to repository root and then use relative paths to current repository root
+          # home is not the repository root but `/home/runner`, so chdir to repository root and then use relative paths to current repository root
           # getting correct directory now
           # getting executable permission error on the binary
-
           chmod +x ./depclean-gradle-plugin/gradlew
           ./depclean-gradle-plugin/gradlew build -p ./depclean-gradle-plugin/ -x test
-
