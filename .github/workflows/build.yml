@@ -79,7 +79,7 @@ jobs:
 # For Gradle module
   gradle:
 
-    name: Gradle build with Java 1 on ubuntu-latest
+    name: Gradle build with Java 17 on ubuntu-latest
     runs-on: ubuntu-latest
     steps:
 
