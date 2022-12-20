@@ -160,10 +160,14 @@ public class DepCleanMojoIT {
     assertThat(result).isSuccessful()
         .out()
         .plain().contains(
-            "[INFO] Starting debloating file",
+            "[INFO] Starting debloating POM file...",
             "[INFO] Adding 1 used transitive dependency as direct dependency.",
             "[INFO] Removing 1 unused direct dependency.",
             "[INFO] Excluding 1 unused transitive dependency one-by-one.",
+            "[INFO] Adding com.fasterxml.jackson.core:jackson-core:2.12.2:compile",
+            "[INFO] Adding org.mapstruct:mapstruct-processor:1.4.2.Final:provided",
+            "[INFO] Adding com.fasterxml.jackson.core:jackson-databind:2.12.2:compile",
+            "[INFO] Excluding com.fasterxml.jackson.core:jackson-annotations from com.fasterxml.jackson.core:jackson-databind:2.12.2",
             "[INFO] POM debloated successfully",
             "[INFO] pom-debloated.xml file created in: " + generated_pom_debloated.getAbsolutePath());
     Assertions.assertTrue(generated_pom_debloated.exists());

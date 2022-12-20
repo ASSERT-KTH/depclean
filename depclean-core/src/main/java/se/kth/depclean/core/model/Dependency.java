@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -115,5 +116,25 @@ public class Dependency {
       // File does not exist
       return 0L;
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Dependency that = (Dependency) o;
+    return Objects.equals(groupId, that.groupId)
+        && Objects.equals(dependencyId, that.dependencyId)
+        && Objects.equals(version, that.version)
+        && Objects.equals(scope, that.scope);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(groupId, dependencyId, version);
   }
 }

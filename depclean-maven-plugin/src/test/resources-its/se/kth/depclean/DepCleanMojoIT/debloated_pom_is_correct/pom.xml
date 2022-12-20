@@ -18,6 +18,7 @@
   </properties>
 
   <dependencies>
+    <!-- jackson-annotations should be excluded from jackson-databind in pom-debloated.xml -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -30,6 +31,14 @@
       <artifactId>mapstruct-processor</artifactId>
       <version>${mapstruct.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <!-- commons-io should not appear in pom-debloated.xml -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.11.0</version>
+      <scope>compile</scope>
+      <optional>false</optional>
     </dependency>
   </dependencies>
   <build>
@@ -71,7 +80,7 @@
       <plugin>
         <groupId>se.kth.castor</groupId>
         <artifactId>depclean-maven-plugin</artifactId>
-        <version>2.0.3</version>
+        <version>2.0.4-SNAPSHOT</version>
         <executions>
           <execution>
             <goals>
@@ -79,8 +88,6 @@
             </goals>
             <configuration>
               <createPomDebloated>true</createPomDebloated>
-            <!--    <failIfUnusedDirect>true</failIfUnusedDirect>-->
-            <!--    <ignoreScopes>test,provided,import,runtime</ignoreScopes>-->
             </configuration>
           </execution>
         </executions>

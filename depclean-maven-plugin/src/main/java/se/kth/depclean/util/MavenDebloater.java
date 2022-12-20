@@ -44,16 +44,20 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
   @Override
   protected void logDependencies() {
     model.getDependencies().forEach(dep -> {
-      log.debug("Debloated dependency {}", dep);
-      dep.getExclusions().forEach(excl -> log.debug("- Excluding {}:{}",
-          excl.getGroupId(), excl.getArtifactId()));
+      log.info("Adding {}:{}:{}:{}", dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), dep.getScope()
+      );
+      dep.getExclusions().forEach(excl ->
+          log.info("Excluding {}:{} from {}:{}:{}",
+          excl.getGroupId(), excl.getArtifactId(), dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), dep.getScope())
+      );
     });
   }
 
   @Override
   protected Dependency toProviderDependency(DebloatedDependency debloatedDependency) {
     final Dependency dependency = createDependency(debloatedDependency);
-    debloatedDependency.getExclusions().forEach(depToExclude -> exclude(dependency, depToExclude));
+    debloatedDependency.getExclusions()
+        .forEach(depToExclude -> exclude(dependency, depToExclude));
     return dependency;
   }
 
@@ -82,8 +86,8 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
 
   @Override
   protected void writeFile() throws IOException {
-    String pathToDebloatedPom =
-        project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
+    String pathToDebloatedPom = project.getBasedir().getAbsolutePath()
+        + File.separator + "pom-debloated.xml";
     Path path = Paths.get(pathToDebloatedPom);
     writePom(path);
     log.info("POM debloated successfully");

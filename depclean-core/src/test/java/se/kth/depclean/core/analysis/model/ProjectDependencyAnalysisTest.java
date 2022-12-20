@@ -7,8 +7,6 @@ import static se.kth.depclean.core.analysis.ProjectContextCreator.createDependen
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
-import se.kth.depclean.core.analysis.model.DebloatedDependency;
-import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 class ProjectDependencyAnalysisTest implements ProjectContextCreator {
 
@@ -31,7 +29,7 @@ class ProjectDependencyAnalysisTest implements ProjectContextCreator {
         )
     );
 
-    assertThat(analysis.getDebloatedDependencies())
+    assertThat(analysis.getUsedDependencies())
         .containsExactlyInAnyOrder(
             new DebloatedDependency(COMMONS_IO_DEPENDENCY, of(COMMONS_LOGGING_DEPENDENCY)),
             new DebloatedDependency(JUNIT_DEPENDENCY, of())

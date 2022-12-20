@@ -23,7 +23,6 @@ import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.stream.Collectors.toCollection;
 
-import java.io.File;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -33,6 +32,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.model.ClassName;
@@ -43,6 +43,7 @@ import se.kth.depclean.core.model.Dependency;
  */
 @Getter
 @EqualsAndHashCode
+@Slf4j
 public class ProjectDependencyAnalysis {
   private static final String SEPARATOR = "-------------------------------------------------------";
 
@@ -151,13 +152,28 @@ public class ProjectDependencyAnalysis {
   }
 
   /**
-   * The processed dependencies.
+   * Get all the used dependencies (direct, inherited and transitive).
    *
-   * @return the debloated dependencies
+   * @return the used dependencies
    */
-  public Set<DebloatedDependency> getDebloatedDependencies() {
+  public Set<DebloatedDependency> getUsedDependencies() {
     final Set<Dependency> dependencies = new HashSet<>(getUsedDirectDependencies());
+    dependencies.addAll(getUsedInheritedDependencies());
     dependencies.addAll(getUsedTransitiveDependencies());
+    return dependencies.stream()
+        .map(this::toDebloatedDependency)
+        .collect(toImmutableSet());
+  }
+
+  /**
+   * Get all the potentially unused dependencies (direct, inherited and transitive).
+   *
+   * @return the unused dependencies
+   */
+  public Set<DebloatedDependency> getUnusedDependencies() {
+    final Set<Dependency> dependencies = new HashSet<>(getUnusedDirectDependencies());
+    dependencies.addAll(getUnusedInheritedDependencies());
+    dependencies.addAll(getUnusedTransitiveDependencies());
     return dependencies.stream()
         .map(this::toDebloatedDependency)
         .collect(toImmutableSet());
@@ -228,7 +244,6 @@ public class ProjectDependencyAnalysis {
     final Set<Dependency> dependenciesToExclude = dependenciesForParent.stream()
         .filter(dep -> getUnusedTransitiveDependencies().contains(dep))
         .collect(Collectors.toSet());
-
     return new DebloatedDependency(dependency, copyOf(dependenciesToExclude));
   }
 }
