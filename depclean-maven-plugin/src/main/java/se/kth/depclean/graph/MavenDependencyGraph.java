@@ -69,11 +69,17 @@ public class MavenDependencyGraph implements DependencyGraph {
 
   @Override
   public Dependency projectCoordinates() {
+    File projectJarFile;
+    if (new File(project.getBuild().getDirectory() + File.separator + project.getBuild().getFinalName() + ".jar").exists()) {
+      projectJarFile = new File(project.getBuild().getDirectory() + File.separator + project.getBuild().getFinalName() + ".jar");
+    } else {
+      projectJarFile = null;
+    }
     return new Dependency(
         rootNode.getArtifact().getGroupId(),
         rootNode.getArtifact().getArtifactId(),
         rootNode.getArtifact().getVersion(),
-        new File(project.getBuild().getDirectory() + "/" + project.getBuild().getFinalName() + ".jar")
+        projectJarFile
     );
   }
 
