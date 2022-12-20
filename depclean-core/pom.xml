@@ -8,12 +8,12 @@
   <parent>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-parent-pom</artifactId>
-    <version>2.0.3</version>
+    <version>2.0.4-SNAPSHOT</version>
   </parent>
 
   <!-- Coordinates -->
   <artifactId>depclean-core</artifactId>
-  <version>2.0.3</version>
+  <version>2.0.4-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>Core library of DepClean</description>
   <name>depclean-core</name>
