@@ -140,7 +140,7 @@ public class MavenDependencyGraph implements DependencyGraph {
     return new Dependency(
         artifact.getGroupId(),
         artifact.getArtifactId(),
-        artifact.getVersion(),
+        artifact.getBaseVersion(),
         artifact.getScope(),
         artifact.getFile());
   }
