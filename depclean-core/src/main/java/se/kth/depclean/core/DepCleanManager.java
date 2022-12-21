@@ -7,9 +7,11 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
@@ -26,6 +28,7 @@ import se.kth.depclean.core.wrapper.LogWrapper;
  * Runs the depclean process, regardless of a specific dependency manager.
  */
 @AllArgsConstructor
+@Slf4j
 public class DepCleanManager {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
@@ -224,14 +227,15 @@ public class DepCleanManager {
    */
   private Set<Dependency> toDependency(Set<Dependency> allDependencies, Set<String> ignoreDependencies) {
     return ignoreDependencies.stream()
-        .map(dependency -> findDependency(allDependencies, dependency))
+        .map(dependencyToIgnore -> findDependency(allDependencies, dependencyToIgnore))
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
   }
 
   private Dependency findDependency(Set<Dependency> allDependencies, String dependency) {
+    Pattern pattern = Pattern.compile(dependency, Pattern.CASE_INSENSITIVE);
     return allDependencies.stream()
-        .filter(dep -> dep.toString().toLowerCase().contains(dependency.toLowerCase()))
+        .filter(dep -> pattern.matcher(dep.toString()).lookingAt())
         .findFirst()
         .orElse(null);
   }
