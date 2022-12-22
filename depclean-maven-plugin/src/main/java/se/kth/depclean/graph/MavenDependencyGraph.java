@@ -5,6 +5,7 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.google.common.collect.Sets.newHashSet;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.Set;
@@ -25,12 +26,12 @@ import se.kth.depclean.core.model.Dependency;
 public class MavenDependencyGraph implements DependencyGraph {
 
   private final Set<Dependency> allDependencies;
-
   private final MavenProject project;
   private final DependencyNode rootNode;
   private final Set<Dependency> directDependencies;
-  private final Set<Dependency> inheritedDependencies;
   private final Set<Dependency> transitiveDependencies;
+  private final Set<Dependency> inheritedDirectDependencies;
+  private final Set<Dependency> inheritedTransitiveDependencies;
   private final Multimap<Dependency, Dependency> dependenciesPerDependency = ArrayListMultimap.create();
 
   /**
@@ -42,21 +43,16 @@ public class MavenDependencyGraph implements DependencyGraph {
   public MavenDependencyGraph(MavenProject project, Model model, DependencyNode rootNode) {
     this.project = project;
     this.rootNode = rootNode;
-
-    this.allDependencies = project.getArtifacts().stream()
-        .map(this::toDepCleanDependency)
-        .collect(toImmutableSet());
+    buildDependencyDependencies(rootNode);
+    this.allDependencies = getAllDependencies(project);
     // The model gets only the direct dependencies (not the inherited ones)
-    this.directDependencies = model.getDependencies().stream()
-        .map(this::toDepCleanDependency)
-        .collect(toImmutableSet());
+    this.directDependencies = getDirectDependencies(model);
     // The project gets all the direct dependencies (with the inherited ones)
     //noinspection deprecation
-    this.inheritedDependencies = inheritedDependencies(project.getDependencyArtifacts());
+    this.inheritedDirectDependencies = inheritedDirectDependencies(project.getDependencyArtifacts());
+    this.inheritedTransitiveDependencies = inheritedTransitiveDependencies(inheritedDirectDependencies);
     this.transitiveDependencies = transitiveDependencies(allDependencies);
-
-    buildDependencyDependencies(rootNode);
-
+    // Logs
     if (log.isDebugEnabled()) {
       this.allDependencies.forEach(dep -> {
         log.debug("Found dependency {}", dep);
@@ -84,32 +80,8 @@ public class MavenDependencyGraph implements DependencyGraph {
   }
 
   @Override
-  public Set<Dependency> allDependencies() {
-    return allDependencies;
-  }
-
-  @Override
-  public Set<Dependency> getDependenciesForParent(Dependency parent) {
-    return copyOf(dependenciesPerDependency.get(parent));
-  }
-
-  @Override
   public Set<Dependency> directDependencies() {
     return directDependencies;
-  }
-
-  @Override
-  public Set<Dependency> inheritedDependencies() {
-    return inheritedDependencies;
-  }
-
-  @NotNull
-  private Set<Dependency> inheritedDependencies(Set<Artifact> dependencyArtifacts) {
-    final Set<Dependency> visibleDependencies = dependencyArtifacts.stream()
-        .map(this::toDepCleanDependency)
-        .collect(Collectors.toSet());
-    visibleDependencies.removeAll(this.directDependencies);
-    return copyOf(visibleDependencies);
   }
 
   @Override
@@ -118,11 +90,53 @@ public class MavenDependencyGraph implements DependencyGraph {
   }
 
   @NotNull
-  private Set<Dependency> transitiveDependencies(Set<Dependency> allArtifactsFound) {
-    final Set<Dependency> transitiveDependencies = newHashSet(allArtifactsFound);
-    transitiveDependencies.removeAll(this.directDependencies);
-    transitiveDependencies.removeAll(this.inheritedDependencies);
-    return copyOf(transitiveDependencies);
+  private Set<Dependency> transitiveDependencies(Set<Dependency> allDependencies) {
+    Set<Dependency> allTransitiveDependencies = newHashSet(allDependencies);
+    allTransitiveDependencies.removeAll(this.directDependencies);
+    allTransitiveDependencies.removeAll(this.inheritedDirectDependencies);
+    allTransitiveDependencies.removeAll(this.inheritedTransitiveDependencies);
+    return copyOf(allTransitiveDependencies);
+  }
+
+  @Override
+  public Set<Dependency> inheritedDirectDependencies() {
+    return inheritedDirectDependencies;
+  }
+
+  @NotNull
+  private Set<Dependency> inheritedDirectDependencies(Set<Artifact> dependencyArtifacts) {
+    final Set<Dependency> visibleDependencies = dependencyArtifacts.stream()
+        .map(this::toDepCleanDependency)
+        .collect(Collectors.toSet());
+    visibleDependencies.removeAll(this.directDependencies);
+    return copyOf(visibleDependencies);
+  }
+
+  @Override
+  public Set<Dependency> inheritedTransitiveDependencies() {
+    return inheritedTransitiveDependencies;
+  }
+
+  @NotNull
+  private Set<Dependency> inheritedTransitiveDependencies(Set<Dependency> inheritedDirectDependencies) {
+    Set<Dependency> allInheritedTransitiveDependencies = newHashSet();
+    dependenciesPerDependency.forEach((key, value) -> {
+          if (inheritedDirectDependencies.contains(key)) {
+            allInheritedTransitiveDependencies.add(value);
+          }
+        }
+    );
+    return copyOf(allInheritedTransitiveDependencies);
+  }
+
+  @Override
+  public Set<Dependency> getDependenciesForParent(Dependency parent) {
+    return copyOf(dependenciesPerDependency.get(parent));
+  }
+
+  @Override
+  public Set<Dependency> allDependencies() {
+    return allDependencies;
   }
 
   private void buildDependencyDependencies(DependencyNode parentNode) {
@@ -160,5 +174,17 @@ public class MavenDependencyGraph implements DependencyGraph {
   private boolean matches(Dependency dependencyCoordinate, org.apache.maven.model.Dependency dependency) {
     return dependencyCoordinate.getGroupId().equalsIgnoreCase(dependency.getGroupId())
         && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId());
+  }
+
+  private ImmutableSet<Dependency> getAllDependencies(MavenProject project) {
+    return project.getArtifacts().stream()
+        .map(this::toDepCleanDependency)
+        .collect(toImmutableSet());
+  }
+
+  private ImmutableSet<Dependency> getDirectDependencies(Model model) {
+    return model.getDependencies().stream()
+        .map(this::toDepCleanDependency)
+        .collect(toImmutableSet());
   }
 }

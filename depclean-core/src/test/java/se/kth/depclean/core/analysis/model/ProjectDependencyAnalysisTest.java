@@ -17,6 +17,8 @@ class ProjectDependencyAnalysisTest implements ProjectContextCreator {
         of(JUNIT_DEPENDENCY),
         of(),
         of(COMMONS_LANG_DEPENDENCY),
+        of(COMMONS_MATH_DEPENDENCY),
+        of(COMMONS_IO_DEPENDENCY),
         of(COMMONS_LOGGING_DEPENDENCY),
         of(),
         of(),
@@ -25,6 +27,7 @@ class ProjectDependencyAnalysisTest implements ProjectContextCreator {
             createDependency("ExampleClass"),
             of(COMMONS_IO_DEPENDENCY),
             of(COMMONS_LANG_DEPENDENCY),
+            of(COMMONS_MATH_DEPENDENCY),
             of(JUNIT_DEPENDENCY, COMMONS_LOGGING_DEPENDENCY)
         )
     );

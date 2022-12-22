@@ -28,7 +28,7 @@ class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
     final ProjectDependencyAnalysisBuilder analysisBuilder =
         new ProjectDependencyAnalysisBuilder(context, actualUsedClasses);
 
-    assertThat(analysisBuilder.analyse().getUsedInheritedDependencies())
+    assertThat(analysisBuilder.analyse().getUsedInheritedDirectDependencies())
         .containsExactlyInAnyOrder(COMMONS_LANG_DEPENDENCY);
   }
 
@@ -73,7 +73,7 @@ class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
     final ProjectDependencyAnalysisBuilder analysisBuilder =
         new ProjectDependencyAnalysisBuilder(context, actualUsedClasses);
 
-    assertThat(analysisBuilder.analyse().getUnusedInheritedDependencies())
+    assertThat(analysisBuilder.analyse().getUnusedInheritedDirectDependencies())
         .containsExactlyInAnyOrder(COMMONS_LANG_DEPENDENCY);
   }
 

@@ -84,7 +84,7 @@ public class DepCleanManager {
     }
 
     /* Fail the build if there are unused inherited dependencies */
-    if (failIfUnusedInherited && analysis.hasUnusedInheritedDependencies()) {
+    if (failIfUnusedInherited && analysis.hasUnusedInheritedDirectDependencies()) {
       throw new AnalysisFailureException(
           "Build failed due to unused inherited dependencies in the dependency tree of the project.");
     }

@@ -23,8 +23,9 @@ public class FakeDependencyGraph implements DependencyGraph {
   public Set<Dependency> allDependencies() {
     return ImmutableSet.<Dependency>builder()
         .addAll(directDependencies())
-        .addAll(inheritedDependencies())
         .addAll(transitiveDependencies())
+        .addAll(inheritedDirectDependencies())
+        .addAll(inheritedTransitiveDependencies())
         .build();
   }
 
@@ -34,13 +35,18 @@ public class FakeDependencyGraph implements DependencyGraph {
   }
 
   @Override
-  public Set<Dependency> inheritedDependencies() {
+  public Set<Dependency> transitiveDependencies() {
+    return of(COMMONS_LOGGING_DEPENDENCY);
+  }
+
+  @Override
+  public Set<Dependency> inheritedDirectDependencies() {
     return of(COMMONS_LANG_DEPENDENCY);
   }
 
   @Override
-  public Set<Dependency> transitiveDependencies() {
-    return of(COMMONS_LOGGING_DEPENDENCY);
+  public Set<Dependency> inheritedTransitiveDependencies() {
+    return of(COMMONS_LANG_DEPENDENCY);
   }
 
   @Override

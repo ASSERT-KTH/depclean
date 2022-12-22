@@ -82,8 +82,9 @@ public final class ProjectContext {
     ignoredScopes.forEach(scope -> log.info("Ignoring scope {}", scope));
 
     populateDependenciesAndClassesMap(dependencyGraph.directDependencies());
-    populateDependenciesAndClassesMap(dependencyGraph.inheritedDependencies());
     populateDependenciesAndClassesMap(dependencyGraph.transitiveDependencies());
+    populateDependenciesAndClassesMap(dependencyGraph.inheritedDirectDependencies());
+    populateDependenciesAndClassesMap(dependencyGraph.inheritedTransitiveDependencies());
 
     Multimaps.invertFrom(classesPerDependency, dependenciesPerClass);
   }
