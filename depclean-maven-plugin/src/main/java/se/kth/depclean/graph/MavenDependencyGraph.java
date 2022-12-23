@@ -44,6 +44,13 @@ public class MavenDependencyGraph implements DependencyGraph {
     this.project = project;
     this.rootNode = rootNode;
     buildDependencyDependencies(rootNode);
+
+    System.out.println("dependenciesPerDependency = " + dependenciesPerDependency);
+
+    System.out.println("rootNode = " + rootNode);
+    System.out.println("Dependencies per dependency");
+    dependenciesPerDependency.forEach((key, value) -> System.out.println(key + " -> " + value));
+
     this.allDependencies = getAllDependencies(project);
     // The model gets only the direct dependencies (not the inherited ones)
     this.directDependencies = getDirectDependencies(model);
@@ -140,14 +147,10 @@ public class MavenDependencyGraph implements DependencyGraph {
   }
 
   private void buildDependencyDependencies(DependencyNode parentNode) {
-    for (DependencyNode child : parentNode.getChildren()) {
-      if (!child.getChildren().isEmpty()) {
-        child.getChildren().forEach(c -> {
-          dependenciesPerDependency.put(toDepCleanDependency(child), toDepCleanDependency(c));
-          buildDependencyDependencies(c);
-        });
-      }
-    }
+    parentNode.getChildren().forEach(childNode -> {
+      dependenciesPerDependency.put(toDepCleanDependency(parentNode.getArtifact()), toDepCleanDependency(childNode.getArtifact()));
+      buildDependencyDependencies(childNode);
+    });
   }
 
   private Dependency toDepCleanDependency(Artifact artifact) {
@@ -156,7 +159,8 @@ public class MavenDependencyGraph implements DependencyGraph {
         artifact.getArtifactId(),
         artifact.getVersion(),
         artifact.getScope(),
-        artifact.getFile());
+        artifact.getFile()
+    );
   }
 
   private Dependency toDepCleanDependency(DependencyNode node) {
@@ -173,7 +177,8 @@ public class MavenDependencyGraph implements DependencyGraph {
 
   private boolean matches(Dependency dependencyCoordinate, org.apache.maven.model.Dependency dependency) {
     return dependencyCoordinate.getGroupId().equalsIgnoreCase(dependency.getGroupId())
-        && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId());
+        && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId())
+        && dependencyCoordinate.getVersion().equalsIgnoreCase(dependency.getVersion());
   }
 
   private ImmutableSet<Dependency> getAllDependencies(MavenProject project) {
