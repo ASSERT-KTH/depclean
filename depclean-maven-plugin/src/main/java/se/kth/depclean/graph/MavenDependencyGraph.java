@@ -8,6 +8,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -45,9 +46,6 @@ public class MavenDependencyGraph implements DependencyGraph {
     this.rootNode = rootNode;
     buildDependencyDependencies(rootNode);
 
-    System.out.println("dependenciesPerDependency = " + dependenciesPerDependency);
-
-    System.out.println("rootNode = " + rootNode);
     System.out.println("Dependencies per dependency");
     dependenciesPerDependency.forEach((key, value) -> System.out.println(key + " -> " + value));
 
@@ -57,8 +55,16 @@ public class MavenDependencyGraph implements DependencyGraph {
     // The project gets all the direct dependencies (with the inherited ones)
     //noinspection deprecation
     this.inheritedDirectDependencies = inheritedDirectDependencies(project.getDependencyArtifacts());
-    this.inheritedTransitiveDependencies = inheritedTransitiveDependencies(inheritedDirectDependencies);
+
+    this.inheritedTransitiveDependencies = inheritedTransitiveDependencies(inheritedDirectDependencies, new HashSet<>());
     this.transitiveDependencies = transitiveDependencies(allDependencies);
+
+    System.out.println("All dependencies" + allDependencies);
+    System.out.println("Direct dependencies" + directDependencies);
+    System.out.println("Inherited direct dependencies" + inheritedDirectDependencies);
+    System.out.println("Inherited transitive dependencies" + inheritedTransitiveDependencies);
+    System.out.println("Transitive dependencies" + transitiveDependencies);
+
     // Logs
     if (log.isDebugEnabled()) {
       this.allDependencies.forEach(dep -> {
@@ -125,15 +131,16 @@ public class MavenDependencyGraph implements DependencyGraph {
   }
 
   @NotNull
-  private Set<Dependency> inheritedTransitiveDependencies(Set<Dependency> inheritedDirectDependencies) {
-    Set<Dependency> allInheritedTransitiveDependencies = newHashSet();
-    dependenciesPerDependency.forEach((key, value) -> {
-          if (inheritedDirectDependencies.contains(key)) {
-            allInheritedTransitiveDependencies.add(value);
-          }
-        }
-    );
-    return copyOf(allInheritedTransitiveDependencies);
+  private Set<Dependency> inheritedTransitiveDependencies(Set<Dependency> inheritedDirectDependencies, Set<Dependency> inheritedTransitiveDependencies) {
+    // recursively add the transitive dependencies of the inherited direct dependencies
+    if (!inheritedDirectDependencies.isEmpty()) {
+      for (Dependency inheritedDirectDependency : inheritedDirectDependencies) {
+        Set<Dependency> c = new HashSet<>(dependenciesPerDependency.get(inheritedDirectDependency));
+        inheritedTransitiveDependencies.addAll(c);
+        inheritedTransitiveDependencies(c, inheritedTransitiveDependencies);
+      }
+    }
+    return copyOf(inheritedTransitiveDependencies);
   }
 
   @Override
