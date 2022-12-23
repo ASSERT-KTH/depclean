@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -30,6 +31,7 @@ import org.jgrapht.traverse.DepthFirstIterator;
 /**
  * A directed graph G = (V, E) where V is a set of classes and E is a set of edges. Edges represent class member calls between the classes in V.
  */
+@Slf4j
 public class DefaultCallGraph {
 
   private static final AbstractBaseGraph<String, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
@@ -63,12 +65,12 @@ public class DefaultCallGraph {
    * @return All the referenced classes.
    */
   public static Set<String> referencedClassMembers(Set<String> projectClasses) {
-    //System.out.println("project classes: " + projectClasses);
+    log.debug("Project classes: " + projectClasses);
     Set<String> allReferencedClassMembers = new HashSet<>();
     for (String projectClass : projectClasses) {
       allReferencedClassMembers.addAll(traverse(projectClass));
     }
-    //System.out.println("All referenced class members: " + allReferencedClassMembers);
+    log.debug("All referenced class members: " + allReferencedClassMembers);
     return allReferencedClassMembers;
   }
 

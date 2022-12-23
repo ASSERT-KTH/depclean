@@ -119,7 +119,7 @@ public final class ProjectContext {
     dependencies.stream()
         .filter(this::excludeScopes)
         .forEach(dc -> {
-          log.info("Adding dependency {} with related classes: {}", dc, dc.getRelatedClasses());
+          log.debug("Adding dependency {} with related classes: {}", dc, dc.getRelatedClasses());
           classesPerDependency.putAll(dc, dc.getRelatedClasses());
         });
   }

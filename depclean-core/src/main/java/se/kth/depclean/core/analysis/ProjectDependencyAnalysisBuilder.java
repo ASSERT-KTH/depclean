@@ -31,8 +31,8 @@ public class ProjectDependencyAnalysisBuilder {
         .flatMap(clazz -> context.getDependenciesForClass(clazz).stream())
         .collect(Collectors.toSet());
 
-    System.out.println("Actual used classes: " + actualUsedClasses.getRegisteredClasses());
-    System.out.println("Used dependencies" + usedDependencies);
+    log.debug("Actual used classes: " + actualUsedClasses.getRegisteredClasses());
+    log.debug("Used dependencies" + usedDependencies);
   }
 
   /**
