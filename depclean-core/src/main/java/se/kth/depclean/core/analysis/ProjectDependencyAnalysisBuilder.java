@@ -30,6 +30,9 @@ public class ProjectDependencyAnalysisBuilder {
     usedDependencies = actualUsedClasses.getRegisteredClasses().stream()
         .flatMap(clazz -> context.getDependenciesForClass(clazz).stream())
         .collect(Collectors.toSet());
+
+    System.out.println("Actual used classes: " + actualUsedClasses.getRegisteredClasses());
+    System.out.println("Used dependencies" + usedDependencies);
   }
 
   /**
@@ -116,23 +119,19 @@ public class ProjectDependencyAnalysisBuilder {
     return getUnusedDependencies(context.getDependencyGraph().directDependencies(), usedDirectDependencies);
   }
 
-  private Set<Dependency> getUnusedTransitiveDependencies(
-      Set<Dependency> usedTransitiveDependencies) {
+  private Set<Dependency> getUnusedTransitiveDependencies(Set<Dependency> usedTransitiveDependencies) {
     return getUnusedDependencies(context.getDependencyGraph().transitiveDependencies(), usedTransitiveDependencies);
   }
 
-  private Set<Dependency> getUnusedInheritedDirectDependencies(
-      Set<Dependency> usedInheritedDependencies) {
+  private Set<Dependency> getUnusedInheritedDirectDependencies(Set<Dependency> usedInheritedDependencies) {
     return getUnusedDependencies(context.getDependencyGraph().inheritedDirectDependencies(), usedInheritedDependencies);
   }
 
-  private Set<Dependency> getUnusedInheritedTransitiveDependencies(
-      Set<Dependency> usedInheritedDependencies) {
+  private Set<Dependency> getUnusedInheritedTransitiveDependencies(Set<Dependency> usedInheritedDependencies) {
     return getUnusedDependencies(context.getDependencyGraph().inheritedTransitiveDependencies(), usedInheritedDependencies);
   }
 
-  private Set<Dependency> getUnusedDependencies(
-      Set<Dependency> baseDependencies, Set<Dependency> usedDependencies) {
+  private Set<Dependency> getUnusedDependencies(Set<Dependency> baseDependencies, Set<Dependency> usedDependencies) {
     final Set<Dependency> unusedInheritedDependencies = newHashSet(baseDependencies);
     unusedInheritedDependencies.removeAll(usedDependencies);
     return unusedInheritedDependencies;

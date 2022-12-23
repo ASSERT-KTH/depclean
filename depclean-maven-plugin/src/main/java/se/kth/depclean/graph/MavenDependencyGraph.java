@@ -45,25 +45,19 @@ public class MavenDependencyGraph implements DependencyGraph {
     this.project = project;
     this.rootNode = rootNode;
     buildDependencyDependencies(rootNode);
-
-    System.out.println("Dependencies per dependency");
-    dependenciesPerDependency.forEach((key, value) -> System.out.println(key + " -> " + value));
-
     this.allDependencies = getAllDependencies(project);
     // The model gets only the direct dependencies (not the inherited ones)
     this.directDependencies = getDirectDependencies(model);
     // The project gets all the direct dependencies (with the inherited ones)
     //noinspection deprecation
     this.inheritedDirectDependencies = inheritedDirectDependencies(project.getDependencyArtifacts());
-
     this.inheritedTransitiveDependencies = inheritedTransitiveDependencies(inheritedDirectDependencies, new HashSet<>());
     this.transitiveDependencies = transitiveDependencies(allDependencies);
 
-    System.out.println("All dependencies" + allDependencies);
-    System.out.println("Direct dependencies" + directDependencies);
-    System.out.println("Inherited direct dependencies" + inheritedDirectDependencies);
-    System.out.println("Inherited transitive dependencies" + inheritedTransitiveDependencies);
-    System.out.println("Transitive dependencies" + transitiveDependencies);
+    log.info("Direct dependencies" + directDependencies);
+    log.info("Inherited direct dependencies" + inheritedDirectDependencies);
+    log.info("Inherited transitive dependencies" + inheritedTransitiveDependencies);
+    log.info("Transitive dependencies" + transitiveDependencies);
 
     // Logs
     if (log.isDebugEnabled()) {
@@ -132,11 +126,19 @@ public class MavenDependencyGraph implements DependencyGraph {
 
   @NotNull
   private Set<Dependency> inheritedTransitiveDependencies(Set<Dependency> inheritedDirectDependencies, Set<Dependency> inheritedTransitiveDependencies) {
-    // recursively add the transitive dependencies of the inherited direct dependencies
     if (!inheritedDirectDependencies.isEmpty()) {
       for (Dependency inheritedDirectDependency : inheritedDirectDependencies) {
         Set<Dependency> c = new HashSet<>(dependenciesPerDependency.get(inheritedDirectDependency));
-        inheritedTransitiveDependencies.addAll(c);
+        for (Dependency d : c) {
+          project.getArtifacts().stream()
+              .filter(artifact -> artifact.getGroupId().equals(d.getGroupId()) && artifact.getArtifactId().equals(d.getDependencyId()))
+              .findFirst()
+              .ifPresent(artifact -> {
+                if (artifact.getVersion().equals(d.getVersion())) {
+                  inheritedTransitiveDependencies.add(toDepCleanDependency(artifact));
+                }
+              });
+        }
         inheritedTransitiveDependencies(c, inheritedTransitiveDependencies);
       }
     }

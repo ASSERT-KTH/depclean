@@ -22,9 +22,10 @@ public class ActualUsedClasses {
   private void registerClass(ClassName className) {
     // Do not register class unknown to dependencies
     if (context.hasNoDependencyOnClass(className)) {
+      log.info("Class {} is not known to any dependency", className);
       return;
     }
-    log.trace("## Register class {}", className);
+    log.info("## Register class {}", className);
     classes.add(className);
   }
 

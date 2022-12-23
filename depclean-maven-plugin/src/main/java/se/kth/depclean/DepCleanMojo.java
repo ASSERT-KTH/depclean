@@ -121,8 +121,14 @@ public class DepCleanMojo extends AbstractMojo {
    * If this is true, and DepClean reported any unused inherited dependency in the dependency tree, then the project's
    * build fails immediately after running DepClean.
    */
-  @Parameter(property = "failIfUnusedInherited", defaultValue = "false")
-  private boolean failIfUnusedInherited;
+  @Parameter(property = "failIfUnusedInheritedDirect", defaultValue = "false")
+  private boolean failIfUnusedInheritedDirect;
+  /**
+   * If this is true, and DepClean reported any unused inherited dependency in the dependency tree, then the project's
+   * build fails immediately after running DepClean.
+   */
+  @Parameter(property = "failIfUnusedInheritedTransitive", defaultValue = "false")
+  private boolean failIfUnusedInheritedTransitive;
 
   /**
    * Skip plugin execution completely.
@@ -153,7 +159,8 @@ public class DepCleanMojo extends AbstractMojo {
           ignoreDependencies,
           failIfUnusedDirect,
           failIfUnusedTransitive,
-          failIfUnusedInherited,
+          failIfUnusedInheritedDirect,
+          failIfUnusedInheritedTransitive,
           createPomDebloated,
           createResultJson,
           createCallGraphCsv

@@ -235,7 +235,8 @@ class DepCleanManagerEnd2EndTest {
     private Set<String> ignoreDependencies = of();
     private boolean failIfUnusedDirect = false;
     private boolean failIfUnusedTransitive = false;
-    private boolean failIfUnusedInherited = false;
+    private boolean failIfUnusedInheritedDirect = false;
+    private boolean failIfUnusedInheritedTransitive= false;
     private boolean createPomDebloated = false;
     private boolean createResultJson = false;
     private boolean createClassUsageCsv = false;
@@ -249,7 +250,8 @@ class DepCleanManagerEnd2EndTest {
           ignoreDependencies,
           failIfUnusedDirect,
           failIfUnusedTransitive,
-          failIfUnusedInherited,
+          failIfUnusedInheritedDirect,
+          failIfUnusedInheritedTransitive,
           createPomDebloated,
           createResultJson,
           createClassUsageCsv
@@ -278,7 +280,7 @@ class DepCleanManagerEnd2EndTest {
     }
 
     public DepCleanManagerBuilder withFailIfUnusedInheritedDependency() {
-      this.failIfUnusedInherited = true;
+      this.failIfUnusedInheritedDirect = true;
       return this;
     }
 

@@ -51,7 +51,7 @@ public class Dependency {
     this.scope = scope;
     this.file = file;
     this.relatedClasses = findRelatedClasses();
-    this.size = calculateSize();
+    this.size = calculateSize(file);
   }
 
   /**
@@ -106,10 +106,12 @@ public class Dependency {
         log.error(e.getMessage(), e);
       }
     }
+    log.trace("Finding related classes for Dependency: " + groupId + ":" + dependencyId + ":" + version + ":" + scope + ":" + file);
+    log.trace("Related classes: " + relatedClasses);
     return copyOf(relatedClasses);
   }
 
-  private Long calculateSize() {
+  private Long calculateSize(File file) {
     try {
       return FileUtils.sizeOf(file);
     } catch (IllegalArgumentException | NullPointerException e) {

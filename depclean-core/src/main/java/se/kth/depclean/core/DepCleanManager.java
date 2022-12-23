@@ -41,7 +41,8 @@ public class DepCleanManager {
   private final Set<String> ignoreDependencies;
   private final boolean failIfUnusedDirect;
   private final boolean failIfUnusedTransitive;
-  private final boolean failIfUnusedInherited;
+  private final boolean failIfUnusedInheritedDirect;
+  private final boolean failIfUnusedInheritedTransitive;
   private final boolean createPomDebloated;
   private final boolean createResultJson;
   private final boolean createCallGraphCsv;
@@ -65,7 +66,7 @@ public class DepCleanManager {
       return null;
     }
 
-    extractLibClasses();
+    extractClassesFromDependencies();
 
     final DefaultProjectDependencyAnalyzer projectDependencyAnalyzer = new DefaultProjectDependencyAnalyzer();
     final ProjectDependencyAnalysis analysis = projectDependencyAnalyzer.analyze(buildProjectContext());
@@ -83,10 +84,16 @@ public class DepCleanManager {
           "Build failed due to unused transitive dependencies in the dependency tree of the project.");
     }
 
-    /* Fail the build if there are unused inherited dependencies */
-    if (failIfUnusedInherited && analysis.hasUnusedInheritedDirectDependencies()) {
+    /* Fail the build if there are unused inherited direct dependencies */
+    if (failIfUnusedInheritedDirect && analysis.hasUnusedInheritedDirectDependencies()) {
       throw new AnalysisFailureException(
-          "Build failed due to unused inherited dependencies in the dependency tree of the project.");
+          "Build failed due to unused inherited direct dependencies in the dependency tree of the project.");
+    }
+
+    /* Fail the build if there are unused inherited direct dependencies */
+    if (failIfUnusedInheritedTransitive && analysis.hasUnusedInheritedTransitiveDependencies()) {
+      throw new AnalysisFailureException(
+          "Build failed due to unused inherited transitive dependencies in the dependency tree of the project.");
     }
 
     /* Writing the debloated version of the pom */
@@ -106,14 +113,13 @@ public class DepCleanManager {
   }
 
   @SneakyThrows
-  private void extractLibClasses() {
-    final File dependencyDirectory =
-        dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES).toFile();
+  private void extractClassesFromDependencies() {
+    File dependencyDirectory = dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES).toFile();
     FileUtils.deleteDirectory(dependencyDirectory);
     dependencyManager.dependencyGraph().allDependencies()
         .forEach(jarFile -> copyDependencies(jarFile, dependencyDirectory));
 
-    // TODO remove this workaround later
+    // Workaround for dependencies that are in located in a project's libs directory.
     if (dependencyManager.getBuildDirectory().resolve("libs").toFile().exists()) {
       try {
         FileUtils.copyDirectory(
@@ -121,8 +127,7 @@ public class DepCleanManager {
             dependencyDirectory
         );
       } catch (IOException | NullPointerException e) {
-        getLog().error("Error copying directory libs to dependency");
-        throw new RuntimeException(e);
+        getLog().error("Error copying directory libs to" + dependencyDirectory.getAbsolutePath());
       }
     }
 

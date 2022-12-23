@@ -47,7 +47,6 @@ import se.kth.depclean.core.model.Dependency;
 public class ProjectDependencyAnalysis {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
-
   private final Set<Dependency> usedDirectDependencies;
   private final Set<Dependency> usedTransitiveDependencies;
   private final Set<Dependency> usedInheritedDirectDependencies;
@@ -105,7 +104,7 @@ public class ProjectDependencyAnalysis {
   }
 
   public boolean hasUnusedInheritedTransitiveDependencies() {
-    return !unusedInheritedDirectDependencies.isEmpty();
+    return !unusedInheritedTransitiveDependencies.isEmpty();
   }
 
   /**
@@ -123,7 +122,6 @@ public class ProjectDependencyAnalysis {
     printInfoOfDependencies("Potentially unused transitive dependencies", getUnusedTransitiveDependencies());
     printInfoOfDependencies("Potentially unused inherited direct dependencies", getUnusedInheritedDirectDependencies());
     printInfoOfDependencies("Potentially unused inherited transitive dependencies", getUnusedInheritedTransitiveDependencies());
-
     if (!ignoredDependencies.isEmpty()) {
       printString(SEPARATOR);
       printString(
@@ -163,6 +161,7 @@ public class ProjectDependencyAnalysis {
   public Set<DebloatedDependency> getUsedDependencies() {
     final Set<Dependency> dependencies = new HashSet<>(getUsedDirectDependencies());
     dependencies.addAll(getUsedInheritedDirectDependencies());
+    dependencies.addAll(getUsedInheritedTransitiveDependencies());
     dependencies.addAll(getUsedTransitiveDependencies());
     return dependencies.stream()
         .map(this::toDebloatedDependency)
@@ -210,7 +209,6 @@ public class ProjectDependencyAnalysis {
           || unusedTransitiveDependencies.contains(coordinates))
           ? "bloated" : "unknown";
     }
-
   }
 
   private String getType(Dependency coordinates) {
