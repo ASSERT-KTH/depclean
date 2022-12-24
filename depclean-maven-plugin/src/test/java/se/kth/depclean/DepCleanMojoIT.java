@@ -27,13 +27,13 @@ public class DepCleanMojoIT {
 
   @MavenTest
   void empty_project(MavenExecutionResult result) {
-    log.info("Test that DepClean runs in an empty Maven project");
+    log.trace("Test that DepClean runs in an empty Maven project");
     assertThat(result).isSuccessful(); // should pass
   }
 
   @MavenTest
   void used_java_record(MavenExecutionResult result) {
-    log.info("Test that DepClean identifies dependency used in Java record");
+    log.trace("Test that DepClean identifies dependency used in Java record");
     assertThat(result).isSuccessful().out()
         .plain().contains(
             "-------------------------------------------------------",
@@ -54,7 +54,7 @@ public class DepCleanMojoIT {
 
   @MavenTest
   void all_dependencies_unused(MavenExecutionResult result) {
-    log.info("Test that DepClean identifies all dependencies as unused");
+    log.trace("Test that DepClean identifies all dependencies as unused");
     assertThat(result).isSuccessful().out()
         .plain().contains(
             "-------------------------------------------------------",
@@ -83,7 +83,7 @@ public class DepCleanMojoIT {
 
   @MavenTest
   void all_dependencies_used(MavenExecutionResult result) {
-    log.info("Test that DepClean identifies all dependencies as used");
+    log.trace("Test that DepClean identifies all dependencies as used");
     assertThat(result).isSuccessful().out()
         .plain().contains(
             "-------------------------------------------------------",
@@ -107,7 +107,7 @@ public class DepCleanMojoIT {
 
   @MavenTest
   void used_indirectly(MavenExecutionResult result) {
-    log.info("Test that dependencies used indirectly (org.tukaani:xz is used indirectly)");
+    log.trace("Test that dependencies used indirectly (org.tukaani:xz is used indirectly)");
     assertThat(result).isSuccessful().out()
         .plain().contains(
             "-------------------------------------------------------",
@@ -128,7 +128,7 @@ public class DepCleanMojoIT {
 
   @MavenTest
   void processor_used(MavenExecutionResult result) {
-    log.info("Test that DepClean runs in a Maven project with processors");
+    log.trace("Test that DepClean runs in a Maven project with processors");
     assertThat(result).isSuccessful().out()
         .plain().contains(
             "-------------------------------------------------------",
@@ -152,7 +152,7 @@ public class DepCleanMojoIT {
   @MavenTest
   void json_should_be_correct(MavenExecutionResult result) throws IOException {
     if (OsUtils.isUnix()) {
-      log.info("Test that DepClean creates a proper depclean-results.json file");
+      log.trace("Test that DepClean creates a proper depclean-results.json file");
       File expectedJsonFile = new File("src/test/resources/DepCleanMojoResources/depclean-results.json");
       String expectedJsonContent = FileUtils.readFileToString(expectedJsonFile, Charset.defaultCharset());
       assertThat(result).isSuccessful()
@@ -165,7 +165,7 @@ public class DepCleanMojoIT {
 
   @MavenTest
   void debloated_pom_is_correct(MavenExecutionResult result) {
-    log.info("Test that DepClean creates a proper pom-debloated.xml file");
+    log.trace("Test that DepClean creates a proper pom-debloated.xml file");
     String path = "target/maven-it/se/kth/depclean/DepCleanMojoIT/debloated_pom_is_correct/project/pom-debloated.xml";
     File generated_pom_debloated = new File(path);
     assertThat(result).isSuccessful()
@@ -190,7 +190,7 @@ public class DepCleanMojoIT {
   @MavenTest
   @Disabled
   void unused_inherited_exists(MavenExecutionResult result) {
-    log.info("Test that DepClean detects unused inherited dependencies in a Maven project with a parent");
+    log.trace("Test that DepClean detects unused inherited dependencies in a Maven project with a parent");
     assertThat(result).isSuccessful().out()
         .plain().contains(
             "-------------------------------------------------------",
