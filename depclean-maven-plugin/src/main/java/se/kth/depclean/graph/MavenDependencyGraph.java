@@ -43,9 +43,6 @@ public class MavenDependencyGraph implements DependencyGraph {
    * @param rootNode the graph's root node
    */
   public MavenDependencyGraph(MavenProject project, Model model, DependencyNode rootNode) {
-
-    log.info("Building dependency graph");
-
     this.project = project;
     this.rootNode = rootNode;
     buildDependencyDependencies(rootNode);
@@ -58,10 +55,10 @@ public class MavenDependencyGraph implements DependencyGraph {
     this.inheritedTransitiveDependencies = inheritedTransitiveDependencies(inheritedDirectDependencies, new HashSet<>());
     this.transitiveDependencies = transitiveDependencies(allDependencies);
 
-    log.info("Direct dependencies" + directDependencies);
-    log.info("Inherited direct dependencies" + inheritedDirectDependencies);
-    log.info("Inherited transitive dependencies" + inheritedTransitiveDependencies);
-    log.info("Transitive dependencies" + transitiveDependencies);
+    log.debug("Direct dependencies" + directDependencies);
+    log.debug("Inherited direct dependencies" + inheritedDirectDependencies);
+    log.debug("Inherited transitive dependencies" + inheritedTransitiveDependencies);
+    log.debug("Transitive dependencies" + transitiveDependencies);
 
     // Logs
     if (log.isDebugEnabled()) {

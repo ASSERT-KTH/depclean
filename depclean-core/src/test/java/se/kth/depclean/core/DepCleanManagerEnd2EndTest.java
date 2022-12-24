@@ -173,7 +173,7 @@ class DepCleanManagerEnd2EndTest {
 
     assertThatThrownBy(depCleanManager::execute)
         .isInstanceOf(AnalysisFailureException.class)
-        .hasMessage("Build failed due to unused inherited dependencies in the dependency tree of the project.");
+        .hasMessage("Build failed due to unused inherited direct dependencies in the dependency tree of the project.");
   }
 
   @Test

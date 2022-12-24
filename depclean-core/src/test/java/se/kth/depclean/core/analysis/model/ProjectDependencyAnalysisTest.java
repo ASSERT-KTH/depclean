@@ -35,6 +35,7 @@ class ProjectDependencyAnalysisTest implements ProjectContextCreator {
     assertThat(analysis.getUsedDependencies())
         .containsExactlyInAnyOrder(
             new DebloatedDependency(COMMONS_IO_DEPENDENCY, of(COMMONS_LOGGING_DEPENDENCY)),
+            new DebloatedDependency(COMMONS_LANG_DEPENDENCY, of(COMMONS_LOGGING_DEPENDENCY)),
             new DebloatedDependency(JUNIT_DEPENDENCY, of())
         );
   }
