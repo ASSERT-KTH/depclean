@@ -100,8 +100,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   @Override
   @SneakyThrows
   public DependencyGraph dependencyGraph() {
-    ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(
-        session.getProjectBuildingRequest());
+    ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
     buildingRequest.setProject(project);
     DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
     return new MavenDependencyGraph(project, model, rootNode);
@@ -109,16 +108,12 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
 
   @Override
   public Set<Path> getOutputDirectories() {
-    return of(
-        Paths.get(project.getBuild().getOutputDirectory())
-    );
+    return Set.of(Paths.get(project.getBuild().getOutputDirectory()));
   }
 
   @Override
   public Set<Path> getTestOutputDirectories() {
-    return of(
-        Paths.get(project.getBuild().getTestOutputDirectory())
-    );
+    return Set.of(Paths.get(project.getBuild().getTestOutputDirectory()));
   }
 
   private Model buildModel(MavenProject project) {

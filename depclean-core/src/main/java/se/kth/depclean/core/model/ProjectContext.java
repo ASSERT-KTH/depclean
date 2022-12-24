@@ -16,8 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 
 /**
- * Contains all information about the project's context.
- * It doesn't have any reference to a given framework (Maven, Gradle, etc.).
+ * Contains all information about the project's context. It doesn't have any reference to a given framework (Maven, Gradle, etc.).
  */
 @Slf4j
 @ToString
@@ -61,14 +60,14 @@ public final class ProjectContext {
    * @param extraClasses        some classes we want to tell the analyser to consider used
    */
   public ProjectContext(DependencyGraph dependencyGraph,
-                        Set<Path> outputFolders,
-                        Set<Path> testOutputFolders,
-                        Path sourceFolder,
-                        Path tesSourceFolder,
-                        Path dependenciesFolder,
-                        Set<Scope> ignoredScopes,
-                        Set<Dependency> ignoredDependencies,
-                        Set<ClassName> extraClasses) {
+      Set<Path> outputFolders,
+      Set<Path> testOutputFolders,
+      Path sourceFolder,
+      Path tesSourceFolder,
+      Path dependenciesFolder,
+      Set<Scope> ignoredScopes,
+      Set<Dependency> ignoredDependencies,
+      Set<ClassName> extraClasses) {
     this.dependencyGraph = dependencyGraph;
     this.outputFolders = outputFolders;
     this.testOutputFolders = testOutputFolders;
@@ -82,7 +81,8 @@ public final class ProjectContext {
     ignoredScopes.forEach(scope -> log.info("Ignoring scope {}", scope));
 
     populateDependenciesAndClassesMap(dependencyGraph.directDependencies());
-    populateDependenciesAndClassesMap(dependencyGraph.inheritedDependencies());
+    populateDependenciesAndClassesMap(dependencyGraph.inheritedDirectDependencies());
+    populateDependenciesAndClassesMap(dependencyGraph.inheritedTransitiveDependencies());
     populateDependenciesAndClassesMap(dependencyGraph.transitiveDependencies());
 
     Multimaps.invertFrom(classesPerDependency, dependenciesPerClass);
@@ -118,7 +118,10 @@ public final class ProjectContext {
   private void populateDependenciesAndClassesMap(Set<Dependency> dependencies) {
     dependencies.stream()
         .filter(this::excludeScopes)
-        .forEach(dc -> classesPerDependency.putAll(dc, dc.getRelatedClasses()));
+        .forEach(dc -> {
+          log.debug("Adding dependency {} with related classes: {}", dc, dc.getRelatedClasses());
+          classesPerDependency.putAll(dc, dc.getRelatedClasses());
+        });
   }
 
   private boolean excludeScopes(Dependency dc) {

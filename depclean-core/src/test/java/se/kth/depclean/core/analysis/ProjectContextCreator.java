@@ -23,6 +23,7 @@ public interface ProjectContextCreator {
   ClassName JUNIT_CLASS = new ClassName("org.junit.jupiter.engine.JupiterTestEngine");
   ClassName UNKNOWN_CLASS = new ClassName("com.unknown.Unknown");
   Dependency COMMONS_IO_DEPENDENCY = createDependency("commons-io");
+  Dependency COMMONS_MATH_DEPENDENCY = createDependency("commons-math");
   Dependency COMMONS_LANG_DEPENDENCY = createDependency("commons-lang3");
   Dependency COMMONS_LOGGING_DEPENDENCY = createDependency("commons-logging-api");
   Dependency JUNIT_DEPENDENCY = createTestDependency("junit-jupiter");
@@ -34,6 +35,7 @@ public interface ProjectContextCreator {
             createDependency("ExampleClass"),
             of(COMMONS_IO_DEPENDENCY, JUNIT_DEPENDENCY),
             of(COMMONS_LANG_DEPENDENCY),
+            of(COMMONS_MATH_DEPENDENCY),
             of(COMMONS_LOGGING_DEPENDENCY)
         ),
         of(Paths.get("target/classes")),
@@ -53,6 +55,7 @@ public interface ProjectContextCreator {
             createDependency("ExampleClass"),
             of(COMMONS_IO_DEPENDENCY, JUNIT_DEPENDENCY),
             of(COMMONS_LANG_DEPENDENCY),
+            of(COMMONS_MATH_DEPENDENCY),
             of(COMMONS_LOGGING_DEPENDENCY)
         ),
         of(Paths.get("target/classes")),
@@ -72,6 +75,7 @@ public interface ProjectContextCreator {
             createDependency("ExampleClass"),
             of(COMMONS_IO_DEPENDENCY),
             of(COMMONS_LANG_DEPENDENCY),
+            of(COMMONS_MATH_DEPENDENCY),
             of(COMMONS_LOGGING_DEPENDENCY)
         ),
         of(Paths.get("target/classes")),
@@ -112,7 +116,8 @@ public interface ProjectContextCreator {
 
     private final Dependency projectCoordinates;
     private final Set<Dependency> directDependencies;
-    private final Set<Dependency> inheritedDependencies;
+    private final Set<Dependency> inheritedDirectDependencies;
+    private final Set<Dependency> inheritedTransitiveDependencies;
     private final Set<Dependency> transitiveDependencies;
 
     @Override
@@ -126,8 +131,13 @@ public interface ProjectContextCreator {
     }
 
     @Override
-    public Set<Dependency> inheritedDependencies() {
-      return inheritedDependencies;
+    public Set<Dependency> inheritedDirectDependencies() {
+      return inheritedDirectDependencies;
+    }
+
+    @Override
+    public Set<Dependency> inheritedTransitiveDependencies() {
+      return inheritedTransitiveDependencies;
     }
 
     @Override
@@ -138,7 +148,8 @@ public interface ProjectContextCreator {
     @Override
     public Set<Dependency> allDependencies() {
       final Set<Dependency> dependencies = newHashSet(directDependencies);
-      dependencies.addAll(inheritedDependencies);
+      dependencies.addAll(inheritedDirectDependencies);
+      dependencies.addAll(inheritedTransitiveDependencies);
       dependencies.addAll(transitiveDependencies);
       return copyOf(dependencies);
     }

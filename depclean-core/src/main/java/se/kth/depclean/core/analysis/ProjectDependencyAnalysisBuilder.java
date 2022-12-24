@@ -30,6 +30,9 @@ public class ProjectDependencyAnalysisBuilder {
     usedDependencies = actualUsedClasses.getRegisteredClasses().stream()
         .flatMap(clazz -> context.getDependenciesForClass(clazz).stream())
         .collect(Collectors.toSet());
+
+    log.debug("Actual used classes: " + actualUsedClasses.getRegisteredClasses());
+    log.debug("Used dependencies" + usedDependencies);
   }
 
   /**
@@ -38,30 +41,38 @@ public class ProjectDependencyAnalysisBuilder {
    * @return the analysis
    */
   public ProjectDependencyAnalysis analyse() {
+    // used dependencies
     final Set<Dependency> usedDirectDependencies = getUsedDirectDependencies();
     final Set<Dependency> usedTransitiveDependencies = getUsedTransitiveDependencies();
-    final Set<Dependency> usedInheritedDependencies = getUsedInheritedDependencies();
+    final Set<Dependency> usedInheritedDirectDependencies = getUsedInheritedDirectDependencies();
+    final Set<Dependency> usedInheritedTransitiveDependencies = getUsedInheritedTransitiveDependencies();
+    // unused dependencies
     final Set<Dependency> unusedDirectDependencies = getUnusedDirectDependencies(usedDirectDependencies);
     final Set<Dependency> unusedTransitiveDependencies = getUnusedTransitiveDependencies(usedTransitiveDependencies);
-    final Set<Dependency> unusedInheritedDependencies = getUnusedInheritedDependencies(usedInheritedDependencies);
+    final Set<Dependency> unusedInheritedDirectDependencies = getUnusedInheritedDirectDependencies(usedInheritedDirectDependencies);
+    final Set<Dependency> unusedInheritedTransitiveDependencies = getUnusedInheritedTransitiveDependencies(usedInheritedTransitiveDependencies);
+    // classes in each dependency
     final Map<Dependency, DependencyTypes> dependencyClassesMap = buildDependencyClassesMap();
-
+    // ignore dependencies
     context.getIgnoredDependencies().forEach(dependencyToIgnore -> {
       ignoreDependency(usedDirectDependencies, unusedDirectDependencies, dependencyToIgnore);
       ignoreDependency(usedTransitiveDependencies, unusedTransitiveDependencies, dependencyToIgnore);
-      ignoreDependency(usedInheritedDependencies, unusedInheritedDependencies, dependencyToIgnore);
+      ignoreDependency(usedInheritedDirectDependencies, unusedInheritedDirectDependencies, dependencyToIgnore);
+      ignoreDependency(usedInheritedTransitiveDependencies, unusedInheritedTransitiveDependencies, dependencyToIgnore);
     });
-
     return new ProjectDependencyAnalysis(
         usedDirectDependencies,
         usedTransitiveDependencies,
-        usedInheritedDependencies,
+        usedInheritedDirectDependencies,
+        usedInheritedTransitiveDependencies,
         unusedDirectDependencies,
         unusedTransitiveDependencies,
-        unusedInheritedDependencies,
+        unusedInheritedDirectDependencies,
+        unusedInheritedTransitiveDependencies,
         context.getIgnoredDependencies(),
         dependencyClassesMap,
-        context.getDependencyGraph());
+        context.getDependencyGraph()
+    );
   }
 
   private Map<Dependency, DependencyTypes> buildDependencyClassesMap() {
@@ -74,6 +85,13 @@ public class ProjectDependencyAnalysisBuilder {
       output.put(dependency, new DependencyTypes(allClasses, usedClasses));
     }
     return output;
+  }
+
+  private Set<Dependency> getUsedInheritedDirectDependencies() {
+    return usedDependencies.stream()
+        .filter(a -> context.getDependencyGraph().inheritedDirectDependencies().contains(a))
+        .peek(dependency -> log.trace("## Used Inherited Direct dependency {}", dependency))
+        .collect(Collectors.toSet());
   }
 
   private Set<Dependency> getUsedDirectDependencies() {
@@ -90,9 +108,9 @@ public class ProjectDependencyAnalysisBuilder {
         .collect(Collectors.toSet());
   }
 
-  private Set<Dependency> getUsedInheritedDependencies() {
+  private Set<Dependency> getUsedInheritedTransitiveDependencies() {
     return usedDependencies.stream()
-        .filter(a -> context.getDependencyGraph().inheritedDependencies().contains(a))
+        .filter(a -> context.getDependencyGraph().inheritedTransitiveDependencies().contains(a))
         .peek(dependency -> log.trace("## Used Transitive dependency {}", dependency))
         .collect(Collectors.toSet());
   }
@@ -101,36 +119,33 @@ public class ProjectDependencyAnalysisBuilder {
     return getUnusedDependencies(context.getDependencyGraph().directDependencies(), usedDirectDependencies);
   }
 
-  private Set<Dependency> getUnusedTransitiveDependencies(
-      Set<Dependency> usedTransitiveDependencies) {
+  private Set<Dependency> getUnusedTransitiveDependencies(Set<Dependency> usedTransitiveDependencies) {
     return getUnusedDependencies(context.getDependencyGraph().transitiveDependencies(), usedTransitiveDependencies);
   }
 
-  private Set<Dependency> getUnusedInheritedDependencies(
-      Set<Dependency> usedInheritedDependencies) {
-    return getUnusedDependencies(context.getDependencyGraph().inheritedDependencies(), usedInheritedDependencies);
+  private Set<Dependency> getUnusedInheritedDirectDependencies(Set<Dependency> usedInheritedDependencies) {
+    return getUnusedDependencies(context.getDependencyGraph().inheritedDirectDependencies(), usedInheritedDependencies);
   }
 
-  private Set<Dependency> getUnusedDependencies(
-      Set<Dependency> baseDependencies, Set<Dependency> usedDependencies) {
+  private Set<Dependency> getUnusedInheritedTransitiveDependencies(Set<Dependency> usedInheritedDependencies) {
+    return getUnusedDependencies(context.getDependencyGraph().inheritedTransitiveDependencies(), usedInheritedDependencies);
+  }
+
+  private Set<Dependency> getUnusedDependencies(Set<Dependency> baseDependencies, Set<Dependency> usedDependencies) {
     final Set<Dependency> unusedInheritedDependencies = newHashSet(baseDependencies);
     unusedInheritedDependencies.removeAll(usedDependencies);
     return unusedInheritedDependencies;
   }
 
   /**
-   * If the dependencyToIgnore is an unused dependency, then add it to the set of
-   * usedDependencyCoordinates and remove it from the set of unusedDependencyCoordinates.
+   * If the dependency to ignore is an unused dependency, then add it to the set of usedDependencyCoordinates
+   * and remove it from the set of unusedDependencyCoordinates.
    *
    * @param usedDependencies   The set of used artifacts where the dependency will be added.
    * @param unusedDependencies The set of unused artifacts where the dependency will be removed.
    * @param dependencyToIgnore The dependency to ignore.
    */
-  private void ignoreDependency(
-      Set<Dependency> usedDependencies,
-      Set<Dependency> unusedDependencies,
-      Dependency dependencyToIgnore) {
-
+  private void ignoreDependency(Set<Dependency> usedDependencies, Set<Dependency> unusedDependencies, Dependency dependencyToIgnore) {
     for (Iterator<Dependency> i = unusedDependencies.iterator(); i.hasNext(); ) {
       Dependency unusedDependency = i.next();
       if (dependencyToIgnore.equals(unusedDependency)) {

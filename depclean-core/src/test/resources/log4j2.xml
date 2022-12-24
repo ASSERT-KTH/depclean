@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration xmlns:xi="http://www.w3.org/2001/XInclude"
-               packages="se.kth.depclean" status="WARN">
+               packages="se.kth.jdbl" status="WARN">
     <Appenders>
         <xi:include
                 href="log4j2-includes/console-appender_pattern-layout_colored.xml"/>

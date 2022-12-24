@@ -20,7 +20,12 @@ public class EmptyProjectDependencyManager extends FakeDependencyManager {
       }
 
       @Override
-      public Set<Dependency> inheritedDependencies() {
+      public Set<Dependency> inheritedDirectDependencies() {
+        return of();
+      }
+
+      @Override
+      public Set<Dependency> inheritedTransitiveDependencies() {
         return of();
       }
 

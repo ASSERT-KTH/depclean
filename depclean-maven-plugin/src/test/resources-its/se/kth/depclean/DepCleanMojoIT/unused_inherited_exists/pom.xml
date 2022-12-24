@@ -3,6 +3,18 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-math-parent</artifactId>
+    <version>4.0-beta1</version>
+    <!--commons-math-parent has the following dependency: -->
+    <!--<dependency>-->
+    <!--  <groupId>org.junit.jupiter</groupId>-->
+    <!--  <artifactId>junit-jupiter</artifactId>-->
+    <!--  <scope>test</scope>-->
+    <!--</dependency>-->
+  </parent>
+
   <groupId>org.foo.bar</groupId>
   <artifactId>foobar</artifactId>
   <version>1.0.0-SNAPSHOT</version>
@@ -43,16 +55,12 @@
       <plugin>
         <groupId>se.kth.castor</groupId>
         <artifactId>depclean-maven-plugin</artifactId>
-        <version>2.0.3</version>
+        <version>2.0.4-SNAPSHOT</version>
         <executions>
           <execution>
             <goals>
               <goal>depclean</goal>
             </goals>
-            <!--<configuration>-->
-            <!--    <failIfUnusedDirect>true</failIfUnusedDirect>-->
-            <!--    <ignoreScopes>test,provided,import,runtime</ignoreScopes>-->
-            <!--</configuration>-->
           </execution>
         </executions>
       </plugin>

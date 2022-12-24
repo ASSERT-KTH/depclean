@@ -57,12 +57,13 @@ public class DefaultProjectDependencyAnalyzer {
         .forEach(folder -> actualUsedClasses.registerClasses(getProjectDependencyClasses(folder)));
     // analyze project's tests class files
     if (!projectContext.ignoreTests()) {
-      log.trace("Parsing test folder");
       projectContext.getTestOutputFolders()
           .forEach(folder -> actualUsedClasses.registerClasses(getProjectTestDependencyClasses(folder)));
     }
     // the set of compiled classes and tests in the project
     Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
+    log.debug("Project classes: {}", projectClasses);
+
     // analyze dependencies' class files
     actualUsedClasses.registerClasses(getProjectDependencyClasses(projectContext.getDependenciesFolder()));
     // analyze extra classes (collected through static analysis of source code)

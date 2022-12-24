@@ -80,10 +80,11 @@ class DepCleanManagerEnd2EndTest {
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
     assertThat(analysis.getUsedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUsedInheritedDependencies()).isEmpty();
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isEmpty();
     assertThat(analysis.getUsedTransitiveDependencies()).isEmpty();
     assertThat(analysis.getUnusedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedDependencies()).isEmpty();
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isEmpty();
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isEmpty();
     assertThat(analysis.getUnusedTransitiveDependencies()).isEmpty();
   }
 
@@ -95,10 +96,11 @@ class DepCleanManagerEnd2EndTest {
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
     assertThat(analysis.getUsedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUsedInheritedDependencies()).hasSize(1);
+    assertThat(analysis.getUsedInheritedDirectDependencies()).hasSize(1);
     assertThat(analysis.getUsedTransitiveDependencies()).hasSize(1);
     assertThat(analysis.getUnusedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedDependencies()).isEmpty();
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isEmpty();
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isEmpty();
     assertThat(analysis.getUnusedTransitiveDependencies()).isEmpty();
   }
 
@@ -110,10 +112,11 @@ class DepCleanManagerEnd2EndTest {
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
     assertThat(analysis.getUsedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUsedInheritedDependencies()).isEmpty();
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isEmpty();
     assertThat(analysis.getUsedTransitiveDependencies()).isEmpty();
     assertThat(analysis.getUnusedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUnusedInheritedDependencies()).hasSize(1);
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).hasSize(1);
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).hasSize(1);
     assertThat(analysis.getUnusedTransitiveDependencies()).hasSize(1);
   }
 
@@ -125,10 +128,11 @@ class DepCleanManagerEnd2EndTest {
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
     assertThat(analysis.getUsedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUsedInheritedDependencies()).hasSize(1);
+    assertThat(analysis.getUsedInheritedDirectDependencies()).hasSize(1);
     assertThat(analysis.getUsedTransitiveDependencies()).isEmpty();
     assertThat(analysis.getUnusedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedDependencies()).isEmpty();
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isEmpty();
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isEmpty();
     assertThat(analysis.getUnusedTransitiveDependencies()).hasSize(1);
   }
 
@@ -140,10 +144,11 @@ class DepCleanManagerEnd2EndTest {
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
     assertThat(analysis.getUsedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUsedInheritedDependencies()).isEmpty();
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isEmpty();
     assertThat(analysis.getUsedTransitiveDependencies()).isEmpty();
     assertThat(analysis.getUnusedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedDependencies()).hasSize(1);
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).hasSize(1);
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).hasSize(1);
     assertThat(analysis.getUnusedTransitiveDependencies()).hasSize(1);
   }
 
@@ -168,7 +173,7 @@ class DepCleanManagerEnd2EndTest {
 
     assertThatThrownBy(depCleanManager::execute)
         .isInstanceOf(AnalysisFailureException.class)
-        .hasMessage("Build failed due to unused inherited dependencies in the dependency tree of the project.");
+        .hasMessage("Build failed due to unused inherited direct dependencies in the dependency tree of the project.");
   }
 
   @Test
@@ -230,7 +235,8 @@ class DepCleanManagerEnd2EndTest {
     private Set<String> ignoreDependencies = of();
     private boolean failIfUnusedDirect = false;
     private boolean failIfUnusedTransitive = false;
-    private boolean failIfUnusedInherited = false;
+    private boolean failIfUnusedInheritedDirect = false;
+    private boolean failIfUnusedInheritedTransitive= false;
     private boolean createPomDebloated = false;
     private boolean createResultJson = false;
     private boolean createClassUsageCsv = false;
@@ -244,7 +250,8 @@ class DepCleanManagerEnd2EndTest {
           ignoreDependencies,
           failIfUnusedDirect,
           failIfUnusedTransitive,
-          failIfUnusedInherited,
+          failIfUnusedInheritedDirect,
+          failIfUnusedInheritedTransitive,
           createPomDebloated,
           createResultJson,
           createClassUsageCsv
@@ -273,7 +280,7 @@ class DepCleanManagerEnd2EndTest {
     }
 
     public DepCleanManagerBuilder withFailIfUnusedInheritedDependency() {
-      this.failIfUnusedInherited = true;
+      this.failIfUnusedInheritedDirect = true;
       return this;
     }
 

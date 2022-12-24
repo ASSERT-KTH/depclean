@@ -12,9 +12,11 @@ public interface DependencyGraph {
 
   Set<Dependency> directDependencies();
 
-  Set<Dependency> inheritedDependencies();
-
   Set<Dependency> transitiveDependencies();
+
+  Set<Dependency> inheritedDirectDependencies();
+
+  Set<Dependency> inheritedTransitiveDependencies();
 
   Set<Dependency> allDependencies();
 
