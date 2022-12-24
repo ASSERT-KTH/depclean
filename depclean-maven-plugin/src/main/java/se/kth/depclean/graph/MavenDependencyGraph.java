@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,9 @@ public class MavenDependencyGraph implements DependencyGraph {
    * @param rootNode the graph's root node
    */
   public MavenDependencyGraph(MavenProject project, Model model, DependencyNode rootNode) {
+
+    log.info("Building dependency graph");
+
     this.project = project;
     this.rootNode = rootNode;
     buildDependencyDependencies(rootNode);
@@ -54,10 +58,10 @@ public class MavenDependencyGraph implements DependencyGraph {
     this.inheritedTransitiveDependencies = inheritedTransitiveDependencies(inheritedDirectDependencies, new HashSet<>());
     this.transitiveDependencies = transitiveDependencies(allDependencies);
 
-    log.debug("Direct dependencies" + directDependencies);
-    log.debug("Inherited direct dependencies" + inheritedDirectDependencies);
-    log.debug("Inherited transitive dependencies" + inheritedTransitiveDependencies);
-    log.debug("Transitive dependencies" + transitiveDependencies);
+    log.info("Direct dependencies" + directDependencies);
+    log.info("Inherited direct dependencies" + inheritedDirectDependencies);
+    log.info("Inherited transitive dependencies" + inheritedTransitiveDependencies);
+    log.info("Transitive dependencies" + transitiveDependencies);
 
     // Logs
     if (log.isDebugEnabled()) {
@@ -177,17 +181,18 @@ public class MavenDependencyGraph implements DependencyGraph {
   }
 
   private Dependency toDepCleanDependency(org.apache.maven.model.Dependency dependency) {
-    //noinspection OptionalGetWithoutIsPresent
-    return allDependencies.stream()
-        .filter(artifact -> matches(artifact, dependency))
-        .findFirst()
-        .get();
+    for (Dependency artifact : allDependencies) {
+      if (matches(artifact, dependency)) {
+        return Optional.of(artifact).get();
+      }
+    }
+    // This should never happen.
+    return null;
   }
 
   private boolean matches(Dependency dependencyCoordinate, org.apache.maven.model.Dependency dependency) {
     return dependencyCoordinate.getGroupId().equalsIgnoreCase(dependency.getGroupId())
-        && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId())
-        && dependencyCoordinate.getVersion().equalsIgnoreCase(dependency.getVersion());
+        && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId());
   }
 
   private ImmutableSet<Dependency> getAllDependencies(MavenProject project) {
