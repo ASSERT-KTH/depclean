@@ -8,12 +8,12 @@
   <parent>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-parent-pom</artifactId>
-    <version>2.0.4</version>
+    <version>2.0.5</version>
   </parent>
 
   <!-- Coordinates -->
   <artifactId>depclean-core</artifactId>
-  <version>2.0.4</version>
+  <version>2.0.5</version>
   <packaging>jar</packaging>
   <description>Core library of DepClean</description>
   <name>depclean-core</name>
@@ -88,13 +88,13 @@
     <dependency>
       <groupId>com.thoughtworks.qdox</groupId>
       <artifactId>qdox</artifactId>
-      <version>2.0.2</version>
+      <version>2.0.3</version>
     </dependency>
     <!-- Bytecode manipulation -->
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>9.3</version>
+      <version>9.4</version>
     </dependency>
     <!-- Maven dependencies -->
     <dependency>
@@ -106,7 +106,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>3.4.2</version>
+      <version>3.5.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -124,7 +124,7 @@
     <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
-      <version>17.0.0</version>
+      <version>23.1.0</version>
       <scope>compile</scope>
     </dependency>
     <!-- Utils -->
