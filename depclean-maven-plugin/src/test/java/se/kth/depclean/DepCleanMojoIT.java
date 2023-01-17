@@ -220,5 +220,37 @@ public class DepCleanMojoIT {
             "	org.apiguardian:apiguardian-api:1.1.2:test (6 KB)"
         );
   }
+
+
+  @MavenTest
+  @Disabled
+  void ignored_scopes(MavenExecutionResult result) {
+    log.trace("Test that DepClean ignores dependencies (considers them as used) with the ignored scopes");
+    assertThat(result).isSuccessful().out()
+        .plain().contains(
+            "-------------------------------------------------------",
+            " D E P C L E A N   A N A L Y S I S   R E S U L T S",
+            "-------------------------------------------------------",
+            "USED DIRECT DEPENDENCIES [2]: ",
+            "	com.fasterxml.jackson.core:jackson-core:2.12.2:compile (356 KB)",
+            "	commons-io:commons-io:2.11.0:test (319 KB)",
+            "USED TRANSITIVE DEPENDENCIES [2]: ",
+            "	com.fasterxml.jackson.core:jackson-core:2.12.2:provided (356 KB)",
+            "	com.fasterxml.jackson.core:jackson-annotations:2.12.2:provided (73 KB)",
+            "USED INHERITED DIRECT DEPENDENCIES [0]: ",
+            "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: ",
+            "	com.google.guava:guava:31.0.1-jre:compile (2 MB)",
+            "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [6]: ",
+            "	org.checkerframework:checker-qual:3.12.0:compile (203 KB)",
+            "	com.google.code.findbugs:jsr305:3.0.2:compile (19 KB)",
+            "	com.google.errorprone:error_prone_annotations:2.7.1:compile (14 KB)",
+            "	com.google.j2objc:j2objc-annotations:1.3:compile (8 KB)",
+            "	com.google.guava:failureaccess:1.0.1:compile (4 KB)",
+            "	com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava:compile (2 KB)",
+            "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: "
+        );
+  }
 }
 
