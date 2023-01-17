@@ -2,8 +2,11 @@ name: Deploy
 on:
   workflow_dispatch:
     inputs:
-      versionName:
-        description: 'Version Name'
+      previousVersion:
+        description: 'Previous version'
+        required: true
+      newVersion:
+        description: 'New version'
         required: true
 jobs:
   release:
@@ -50,3 +53,11 @@ jobs:
           release_name: DepClean v${{ github.event.inputs.versionName }}
           draft: true
           prerelease: false
+
+      - name: Update README
+        run: |
+          sed -i 's/${{ github.event.inputs.previousVersion }}/${{ github.event.inputs.newVersion }}/g' README.md
+          git config --global user.email "cesarsotovalero@gmail.com"
+          git config --global user.name "$GITHUB_ACTOR"
+          git commit -am "Replace ${{ github.event.inputs.previousVersion }} with ${{ github.event.inputs.newVersion }} in README"
+          git push origin main
