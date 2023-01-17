@@ -41,7 +41,7 @@ jobs:
           git tag -a $TAG -m "Release v$TAG"
           git push origin $TAG
         env:
-          TAG: ${{ github.event.inputs.versionName }}
+          TAG: ${{ github.event.inputs.newVersion }}
 
       - name: Create Release on GitHub
         id: create_release
@@ -49,8 +49,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.event.inputs.versionName }}
-          release_name: DepClean v${{ github.event.inputs.versionName }}
+          tag_name: ${{ github.event.inputs.newVersion }}
+          release_name: ${{ github.event.inputs.newVersion }}
           draft: true
           prerelease: false
 
