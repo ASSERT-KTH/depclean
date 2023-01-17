@@ -117,15 +117,25 @@ public final class ProjectContext {
 
   private void populateDependenciesAndClassesMap(Set<Dependency> dependencies) {
     dependencies.stream()
-        .filter(this::excludeScopes)
+        .filter(this::excludeDependenciesBasedOnIgnoredScopes)
         .forEach(dc -> {
           log.debug("Adding dependency {} with related classes: {}", dc, dc.getRelatedClasses());
           classesPerDependency.putAll(dc, dc.getRelatedClasses());
         });
+
+
   }
 
-  private boolean excludeScopes(Dependency dc) {
+  /**
+   * Exclude dependencies based on the scopes.
+   *
+   * @param dc the dependency to check
+   * @return true if the dependency should be excluded, false otherwise
+   */
+  private boolean excludeDependenciesBasedOnIgnoredScopes(Dependency dc) {
     final String declaredScope = dc.getScope();
+    log.debug("ignoreScopes: " + ignoredScopes);
+    log.debug("dc = " + dc + " declaredScope = " + declaredScope);
     return ignoredScopes.stream()
         .map(Scope::getValue)
         .noneMatch(declaredScope::equalsIgnoreCase);
