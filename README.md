@@ -92,7 +92,7 @@ For example, if you want to fail the build in the presence of unused direct depe
       </goals>
       <configuration>
         <failIfUnusedDirect>true</failIfUnusedDirect>
-        <ignoreScopes>compile,provided,test,runtime,system,import</ignoreScopes>
+        <ignoreScopes>provided,test,runtime,system,import</ignoreScopes>
       </configuration>
     </execution>
   </executions>
