@@ -29,7 +29,7 @@ Then, you can run the `depclean` task to analyze your project and remove unused 
 
 ### Optional Parameters
 
-The class https://github.com/ASSERT-KTH/depclean/blob/master/depclean-gradle-plugin/src/main/java/se/kth/depclean/DepCleanGradlePluginExtension.java contains the following parameters currently accepted by DepClean Gradle plugin:
+The class [DepCleanGradlePluginExtension.java](https://github.com/ASSERT-KTH/depclean/blob/master/depclean-gradle-plugin/src/main/java/se/kth/depclean/DepCleanGradlePluginExtension.java) contains the following parameters currently accepted by DepClean Gradle plugin:
  
 - `project`: This refers to the Gradle project that will be analyzed by the plugin.
 - `skipDepClean`: If this is set to true, the execution of the DepClean plugin will be completely skipped.
@@ -52,10 +52,6 @@ We are actively seeking contributions to help move this project forward. If you'
 - **Feature suggestions**: If you think of a feature that would enhance the plugin, we'd love to hear about it! You can submit it as an issue with the tag "enhancement".
 - **Testing and feedback**: Any feedback you can provide as to how the plugin works in your own projects would be invaluable. If you can test the plugin and let us know what you think, we would appreciate it.
 - **Spread the word**: The more people know about our project, the more great contributions we can get. So, please, share it with your peers!
-
-### Getting Started
-
-Clone the repository and build the project with Gradle:
 
 ## Installing and Building From Source
 
