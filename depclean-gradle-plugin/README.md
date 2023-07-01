@@ -21,10 +21,10 @@ plugins {
     id 'se.kth.depclean' version '0.1.0-SNAPSHOT'
 }
 ```
-Then, you can run the `depclean` task to analyze your project and remove unused dependencies:
+Then, you can run the `debloat` task to analyze your project and remove unused dependencies:
 
 ```bash
-./gradlew depclean
+./gradlew debloat
 ```
 
 ### Optional Parameters
