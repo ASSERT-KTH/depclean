@@ -96,7 +96,7 @@ jobs:
           distribution: 'adopt-hotspot'
 
       - name: Cache Gradle packages
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.8
         with:
           path: |
             ~/.gradle/caches
