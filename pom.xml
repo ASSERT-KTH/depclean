@@ -28,7 +28,7 @@
     <!-- dependencies -->
     <lombok.version>1.18.28</lombok.version>
     <slf4j-api.version>2.0.7</slf4j-api.version>
-    <slf4j-log4j12.version>2.0.5</slf4j-log4j12.version>
+    <slf4j-log4j12.version>2.0.7</slf4j-log4j12.version>
     <!-- do not change -->
     <junit5.version>5.6.2</junit5.version>
   </properties>
