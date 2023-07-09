@@ -97,7 +97,7 @@
     <dependency>
       <groupId>com.soebes.itf.jupiter.extension</groupId>
       <artifactId>itf-assertj</artifactId>
-      <version>0.11.0</version>
+      <version>0.12.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
