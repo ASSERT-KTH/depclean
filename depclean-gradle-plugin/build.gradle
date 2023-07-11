@@ -27,7 +27,7 @@ dependencies {
   implementation('org.slf4j:slf4j-log4j12:1.7.36')
   compileOnly('org.projectlombok:lombok:1.18.28')
   annotationProcessor 'org.projectlombok:lombok:1.18.28'
-  testImplementation('org.spockframework:spock-core:2.0-groovy-3.0')
+  testImplementation('org.spockframework:spock-core:2.3-groovy-4.0')
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
 }
 
