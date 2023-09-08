@@ -29,7 +29,7 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: "Cache Local Maven Repository"
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: "Cache SonarCloud"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 17 && github.repository == 'castor-software/depclean'
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -96,7 +96,7 @@ jobs:
           distribution: 'adopt-hotspot'
 
       - name: Cache Gradle packages
-        uses: actions/cache@v2.1.8
+        uses: actions/cache@v3.3.2
         with:
           path: |
             ~/.gradle/caches
