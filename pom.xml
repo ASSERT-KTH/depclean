@@ -26,7 +26,7 @@
     <surefire.plugin.version>3.1.2</surefire.plugin.version>
     <compiler.plugin.version>3.11.0</compiler.plugin.version>
     <!-- dependencies -->
-    <lombok.version>1.18.28</lombok.version>
+    <lombok.version>1.18.30</lombok.version>
     <slf4j-api.version>2.0.9</slf4j-api.version>
     <slf4j-log4j12.version>2.0.9</slf4j-log4j12.version>
     <!-- do not change -->
