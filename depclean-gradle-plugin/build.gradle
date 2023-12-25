@@ -25,8 +25,8 @@ dependencies {
   implementation('se.kth.castor:depclean-core:2.0.6')
   implementation('se.kth.castor:depclean-maven-plugin:2.0.6')
   implementation('org.slf4j:slf4j-log4j12:1.7.36')
-  compileOnly('org.projectlombok:lombok:1.18.28')
-  annotationProcessor 'org.projectlombok:lombok:1.18.28'
+  compileOnly('org.projectlombok:lombok:1.18.30')
+  annotationProcessor 'org.projectlombok:lombok:1.18.30'
   testImplementation('org.spockframework:spock-core:2.3-groovy-4.0')
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
 }
