@@ -21,16 +21,16 @@
     <compiler.release>11</compiler.release>
     <javadoc.source>11</javadoc.source>
     <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
-    <jacoco.plugin.version>0.8.8</jacoco.plugin.version>
+    <jacoco.plugin.version>0.8.10</jacoco.plugin.version>
     <coveralls.plugin.version>4.3.0</coveralls.plugin.version>
-    <surefire.plugin.version>3.0.0-M3</surefire.plugin.version>
-    <compiler.plugin.version>3.10.1</compiler.plugin.version>
+    <surefire.plugin.version>3.1.2</surefire.plugin.version>
+    <compiler.plugin.version>3.11.0</compiler.plugin.version>
     <!-- dependencies -->
-    <lombok.version>1.18.24</lombok.version>
-    <slf4j-api.version>2.0.5</slf4j-api.version>
-    <slf4j-log4j12.version>2.0.5</slf4j-log4j12.version>
+    <lombok.version>1.18.28</lombok.version>
+    <slf4j-api.version>2.0.9</slf4j-api.version>
+    <slf4j-log4j12.version>2.0.9</slf4j-log4j12.version>
     <!-- do not change -->
-    <junit5.version>5.6.2</junit5.version>
+    <junit5.version>5.10.0</junit5.version>
   </properties>
 
   <!-- Project description-->
@@ -161,7 +161,7 @@
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
           <!-- see versions at https://search.maven.org/search?q=g:org.sonarsource.scanner.maven%20AND%20a:sonar-maven-plugin -->
-          <version>3.7.0.1746</version>
+          <version>3.10.0.2594</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -180,13 +180,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.7.1</version>
+        <version>3.12.1</version>
       </plugin>
       <!-- Maven project info -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.4.5</version>
       </plugin>
       <!-- Surefire plugin -->
       <plugin>
@@ -232,7 +232,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.10.1</version>
+            <version>3.11.0</version>
             <configuration>
               <release>11</release>
             </configuration>
@@ -241,7 +241,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.2.0</version>
+            <version>3.3.0</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -255,7 +255,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.3.2</version>
+            <version>3.5.0</version>
             <configuration>
               <source>${javadoc.source}</source>
               <doclint>none</doclint>
@@ -273,7 +273,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.0.1</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -288,7 +288,7 @@
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.9</version>
+            <version>1.6.13</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>ossrh</serverId>
@@ -301,7 +301,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-release-plugin</artifactId>
-            <version>3.0.0-M5</version>
+            <version>3.0.1</version>
             <configuration>
               <autoVersionSubmodules>true</autoVersionSubmodules>
               <useReleaseProfile>false</useReleaseProfile>

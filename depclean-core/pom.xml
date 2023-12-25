@@ -30,7 +30,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.3.0</version>
         <dependencies>
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
@@ -94,7 +94,7 @@
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>9.4</version>
+      <version>9.5</version>
     </dependency>
     <!-- Maven dependencies -->
     <dependency>
@@ -106,7 +106,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>3.5.0</version>
+      <version>3.5.1</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -119,7 +119,7 @@
     <dependency>
       <groupId>org.jgrapht</groupId>
       <artifactId>jgrapht-core</artifactId>
-      <version>1.5.1</version>
+      <version>1.5.2</version>
     </dependency>
     <dependency>
       <groupId>org.jetbrains</groupId>
@@ -137,7 +137,7 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.23.1</version>
+      <version>3.24.2</version>
     </dependency>
   </dependencies>
 
