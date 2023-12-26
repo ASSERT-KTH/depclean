@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static com.google.common.collect.ImmutableSet.of;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,7 @@ import se.kth.depclean.core.fake.depmanager.FakeDependencyManager;
 import se.kth.depclean.core.fake.depmanager.NoDependencyUsedDependencyManager;
 import se.kth.depclean.core.fake.depmanager.OnlyDirectAndInheritedUsedDependencyManager;
 import se.kth.depclean.core.fake.depmanager.OnlyDirectUsedDependencyManager;
+import se.kth.depclean.core.model.Dependency;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 
 class DepCleanManagerEnd2EndTest {
@@ -188,6 +190,20 @@ class DepCleanManagerEnd2EndTest {
         .hasMessage("Build failed due to unused transitive dependencies in the dependency tree of the project.");
   }
 
+  @Test
+  void shouldIgnoreDependencies() throws AnalysisFailureException {
+    final DepCleanManager depCleanManager = new DepCleanManagerBuilder()
+            .withDependencyManager(OnlyDirectAndInheritedUsedDependencyManager.class)
+            .withIgnoreDependencies(of("se.kth.depclean.core.test:commons-io:.*", "se.kth.depclean.core.test:commons-logging-api:.*"))
+            .build();
+
+    final ProjectDependencyAnalysis analysis = depCleanManager.execute();
+
+    assertThat(analysis.getIgnoredDependencies()).hasSize(2);
+    assertThat(analysis.getIgnoredDependencies()).contains(new Dependency("se.kth.depclean.core.test", "commons-io", "1.0.0", "compile", new File("")));
+    assertThat(analysis.getIgnoredDependencies()).contains(new Dependency("se.kth.depclean.core.test", "commons-logging-api", "1.0.0", "compile", new File("")));
+  }
+
   private String logsAsString() {
     return appender.getLog().stream()
         .map(this::toString)
@@ -286,6 +302,11 @@ class DepCleanManagerEnd2EndTest {
 
     public DepCleanManagerBuilder withFailIfUnusedTransitiveDependency() {
       this.failIfUnusedTransitive = true;
+      return this;
+    }
+
+    public DepCleanManagerBuilder withIgnoreDependencies(Set<String> ignoreDependencies) {
+      this.ignoreDependencies = ignoreDependencies;
       return this;
     }
   }
