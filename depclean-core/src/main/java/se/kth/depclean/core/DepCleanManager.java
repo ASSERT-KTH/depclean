@@ -227,22 +227,25 @@ public class DepCleanManager {
    * Returns a set of {@code DependencyCoordinate}s that match given string representations.
    *
    * @param allDependencies    all known dependencies
-   * @param ignoreDependencies string representation of dependencies to return
+   * @param dependencyPatterns string representation of dependencies to match
    * @return a set of {@code Dependency} that match given string representations
    */
-  private Set<Dependency> toDependency(Set<Dependency> allDependencies, Set<String> ignoreDependencies) {
-    return ignoreDependencies.stream()
-        .map(dependencyToIgnore -> findDependency(allDependencies, dependencyToIgnore))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toSet());
+  private Set<Dependency> toDependency(Set<Dependency> allDependencies, Set<String> dependencyPatterns) {
+    System.out.println("allDependencies: ");
+    allDependencies.forEach(System.out::println);
+    System.out.println("dependencyPatterns: ");
+    dependencyPatterns.forEach(System.out::println);
+
+    return dependencyPatterns.stream()
+            .flatMap(pattern -> findDependencies(allDependencies, pattern).stream())
+            .collect(Collectors.toSet());
   }
 
-  private Dependency findDependency(Set<Dependency> allDependencies, String dependency) {
-    Pattern pattern = Pattern.compile(dependency, Pattern.CASE_INSENSITIVE);
+  private Set<Dependency> findDependencies(Set<Dependency> allDependencies, String patternString) {
+    Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
     return allDependencies.stream()
-        .filter(dep -> pattern.matcher(dep.toString()).lookingAt())
-        .findFirst()
-        .orElse(null);
+            .filter(dep -> pattern.matcher(dep.toString()).matches())
+            .collect(Collectors.toSet());
   }
 
   private String getTime(long millis) {
