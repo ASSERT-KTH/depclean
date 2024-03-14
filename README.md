@@ -21,7 +21,7 @@ DepClean automatically cleans the dependency tree of Java projects.
 It removes all the dependencies that are included in the project's dependency tree but are not actually necessary to build it. 
 DepClean detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent. 
 It can be executed as a Maven goal through the command line or integrated directly into the Maven build lifecycle (CI/CD).
-DepClean does not modify the original source code of the application nor its original `pom.xml`.
+DepClean does not modify the original source code of the application nor its original `pom.xml`. It has presented in ["A Comprehensive Study of Bloated Dependencies in the Maven Ecosystem](http://arxiv.org/pdf/2001.07808") ([doi:10.1007/s10664-020-09914-8](https://doi.org/10.1007/s10664-020-09914-8)).
 
 For a visual illustration of what DepClean can provide for your project, have a look at the companion [depclean-web](https://github.com/castor-software/depclean-web) project.
 
