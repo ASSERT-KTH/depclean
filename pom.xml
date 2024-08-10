@@ -27,8 +27,8 @@
     <compiler.plugin.version>3.13.0</compiler.plugin.version>
     <!-- dependencies -->
     <lombok.version>1.18.34</lombok.version>
-    <slf4j-api.version>2.0.14</slf4j-api.version>
-    <slf4j-log4j12.version>2.0.14</slf4j-log4j12.version>
+    <slf4j-api.version>2.0.16</slf4j-api.version>
+    <slf4j-log4j12.version>2.0.16</slf4j-log4j12.version>
     <!-- do not change -->
     <junit5.version>5.10.3</junit5.version>
   </properties>
