@@ -23,7 +23,7 @@
     <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
     <jacoco.plugin.version>0.8.12</jacoco.plugin.version>
     <coveralls.plugin.version>4.3.0</coveralls.plugin.version>
-    <surefire.plugin.version>3.5.0</surefire.plugin.version>
+    <surefire.plugin.version>3.5.1</surefire.plugin.version>
     <compiler.plugin.version>3.13.0</compiler.plugin.version>
     <!-- dependencies -->
     <lombok.version>1.18.34</lombok.version>
