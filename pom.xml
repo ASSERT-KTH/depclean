@@ -30,7 +30,7 @@
     <slf4j-api.version>2.0.17</slf4j-api.version>
     <slf4j-log4j12.version>2.0.17</slf4j-log4j12.version>
     <!-- do not change -->
-    <junit5.version>5.12.0</junit5.version>
+    <junit5.version>5.12.1</junit5.version>
   </properties>
 
   <!-- Project description-->
