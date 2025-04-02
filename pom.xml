@@ -21,7 +21,7 @@
     <compiler.release>11</compiler.release>
     <javadoc.source>11</javadoc.source>
     <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
-    <jacoco.plugin.version>0.8.12</jacoco.plugin.version>
+    <jacoco.plugin.version>0.8.13</jacoco.plugin.version>
     <coveralls.plugin.version>4.3.0</coveralls.plugin.version>
     <surefire.plugin.version>3.5.3</surefire.plugin.version>
     <compiler.plugin.version>3.14.0</compiler.plugin.version>
