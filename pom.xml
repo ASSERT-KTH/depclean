@@ -161,7 +161,7 @@
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
           <!-- see versions at https://search.maven.org/search?q=g:org.sonarsource.scanner.maven%20AND%20a:sonar-maven-plugin -->
-          <version>3.11.0.3922</version>
+          <version>5.1.0.4751</version>
         </plugin>
       </plugins>
     </pluginManagement>
