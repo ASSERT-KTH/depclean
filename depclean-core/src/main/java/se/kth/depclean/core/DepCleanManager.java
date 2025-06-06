@@ -114,18 +114,19 @@ public class DepCleanManager {
 
   @SneakyThrows
   private void extractClassesFromDependencies() {
-    File dependencyDirectory = dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES).toFile();
+    File dependencyDirectory = dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES)
+        .toFile();
     FileUtils.deleteDirectory(dependencyDirectory);
     dependencyManager.dependencyGraph().allDependencies()
         .forEach(jarFile -> copyDependencies(jarFile, dependencyDirectory));
 
-    // Workaround for dependencies that are in located in a project's libs directory.
+    // Workaround for dependencies that are in located in a project's libs
+    // directory.
     if (dependencyManager.getBuildDirectory().resolve("libs").toFile().exists()) {
       try {
         FileUtils.copyDirectory(
             dependencyManager.getBuildDirectory().resolve("libs").toFile(),
-            dependencyDirectory
-        );
+            dependencyDirectory);
       } catch (IOException | NullPointerException e) {
         getLog().error("Error copying directory libs to" + dependencyDirectory.getAbsolutePath());
       }
@@ -162,7 +163,8 @@ public class DepCleanManager {
     if (createCallGraphCsv) {
       printString("Creating " + csvFile.getName() + ", please wait...");
       try {
-        FileUtils.write(csvFile, "OriginClass,TargetClass,OriginDependency,TargetDependency\n", Charset.defaultCharset());
+        FileUtils.write(csvFile, "OriginClass,TargetClass,OriginDependency,TargetDependency\n",
+            Charset.defaultCharset());
       } catch (IOException e) {
         getLog().error("Error writing the CSV header.");
       }
@@ -171,8 +173,7 @@ public class DepCleanManager {
         treeFile,
         analysis,
         csvFile,
-        createCallGraphCsv
-    );
+        createCallGraphCsv);
 
     try {
       FileUtils.write(jsonFile, treeAsJson, Charset.defaultCharset());
@@ -201,8 +202,8 @@ public class DepCleanManager {
 
     // Consider as used all the classes located in the imports of the source code
     Set<ClassName> usedClassesFromSource = dependencyManager.collectUsedClassesFromSource(
-            dependencyManager.getSourceDirectory(),
-            dependencyManager.getTestDirectory())
+        dependencyManager.getSourceDirectory(),
+        dependencyManager.getTestDirectory())
         .stream()
         .map(ClassName::new)
         .collect(Collectors.toSet());
@@ -217,35 +218,29 @@ public class DepCleanManager {
         dependencyManager.getSourceDirectory(),
         dependencyManager.getTestDirectory(),
         dependencyManager.getDependenciesDirectory(),
-        ignoreScopes.stream().map(Scope::new).collect(Collectors.toSet()),
-        toDependency(dependencyManager.dependencyGraph().allDependencies(), ignoreDependencies),
-        allUsedClasses
-    );
+        ignoreScopes.stream()
+            .map(scope -> new Scope(scope))
+            .collect(Collectors.toSet()),
+        ignoreDependencies.stream()
+            .map(pattern -> toDependency(dependencyManager.dependencyGraph().allDependencies(), pattern))
+            .flatMap(Set::stream)
+            .collect(Collectors.toSet()),
+        allUsedClasses);
   }
 
   /**
-   * Returns a set of {@code DependencyCoordinate}s that match given string representations.
+   * Returns a set of {@code DependencyCoordinate}s that match given string
+   * representations.
    *
    * @param allDependencies    all known dependencies
    * @param dependencyPatterns string representation of dependencies to match
    * @return a set of {@code Dependency} that match given string representations
    */
-  private Set<Dependency> toDependency(Set<Dependency> allDependencies, Set<String> dependencyPatterns) {
-    System.out.println("allDependencies: ");
-    allDependencies.forEach(System.out::println);
-    System.out.println("dependencyPatterns: ");
-    dependencyPatterns.forEach(System.out::println);
-
-    return dependencyPatterns.stream()
-            .flatMap(pattern -> findDependencies(allDependencies, pattern).stream())
-            .collect(Collectors.toSet());
-  }
-
-  private Set<Dependency> findDependencies(Set<Dependency> allDependencies, String patternString) {
+  private Set<Dependency> toDependency(Set<Dependency> allDependencies, String patternString) {
     Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
     return allDependencies.stream()
-            .filter(dep -> pattern.matcher(dep.toString()).matches())
-            .collect(Collectors.toSet());
+        .filter(dep -> pattern.matcher(dep.toString()).matches())
+        .collect(Collectors.toSet());
   }
 
   private String getTime(long millis) {
@@ -255,7 +250,7 @@ public class DepCleanManager {
   }
 
   private void printString(final String string) {
-    System.out.println(string); //NOSONAR avoid a warning of non-used logger
+    System.out.println(string); // NOSONAR avoid a warning of non-used logger
   }
 
   private LogWrapper getLog() {

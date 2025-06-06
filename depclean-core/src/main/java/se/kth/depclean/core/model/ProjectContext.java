@@ -16,7 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 
 /**
- * Contains all information about the project's context. It doesn't have any reference to a given framework (Maven, Gradle, etc.).
+ * Contains all information about the project's context. It doesn't have any
+ * reference to a given framework (Maven, Gradle, etc.).
  */
 @Slf4j
 @ToString
@@ -56,8 +57,10 @@ public final class ProjectContext {
    * @param tesSourceFolder     where the project's test sources are located
    * @param dependenciesFolder  where the dependency classes are located
    * @param ignoredScopes       the scopes to ignore
-   * @param ignoredDependencies the dependencies to ignore (i.e. considered as 'used')
-   * @param extraClasses        some classes we want to tell the analyser to consider used
+   * @param ignoredDependencies the dependencies to ignore (i.e. considered as
+   *                            'used')
+   * @param extraClasses        some classes we want to tell the analyser to
+   *                            consider used
    */
   public ProjectContext(DependencyGraph dependencyGraph,
       Set<Path> outputFolders,
@@ -122,7 +125,6 @@ public final class ProjectContext {
           log.debug("Adding dependency {} with related classes: {}", dc, dc.getRelatedClasses());
           classesPerDependency.putAll(dc, dc.getRelatedClasses());
         });
-
 
   }
 
