@@ -18,8 +18,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- plugins -->
-    <compiler.release>11</compiler.release>
-    <javadoc.source>11</javadoc.source>
+    <compiler.release>21</compiler.release>
+    <javadoc.source>21</javadoc.source>
     <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
     <jacoco.plugin.version>0.8.13</jacoco.plugin.version>
     <coveralls.plugin.version>4.3.0</coveralls.plugin.version>
@@ -173,7 +173,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler.plugin.version}</version>
         <configuration>
-          <release>11</release>
+          <release>21</release>
         </configuration>
       </plugin>
       <!-- Maven site -->
@@ -234,7 +234,7 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.14.0</version>
             <configuration>
-              <release>11</release>
+              <release>21</release>
             </configuration>
           </plugin>
           <!-- Maven source plugin -->

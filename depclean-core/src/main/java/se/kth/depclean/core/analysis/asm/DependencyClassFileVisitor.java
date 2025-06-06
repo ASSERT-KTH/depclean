@@ -59,32 +59,28 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
 
       /* visit class members */
       AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(
-          resultCollector
-      );
+          resultCollector);
       SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(
-          resultCollector
-      );
+          resultCollector);
       FieldVisitor fieldVisitor = new DefaultFieldVisitor(
           annotationVisitor,
-          resultCollector
-      );
+          resultCollector);
       MethodVisitor methodVisitor = new DefaultMethodVisitor(
           annotationVisitor,
           signatureVisitor,
-          resultCollector
-      );
+          resultCollector);
       DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
           signatureVisitor,
           annotationVisitor,
           fieldVisitor,
           methodVisitor,
-          resultCollector
-      );
+          resultCollector);
 
       reader.accept(defaultClassVisitor, 0);
 
       // inset edge in the graph based on the bytecode analysis
-      //System.out.println("Edge " + className + " -> " + resultCollector.getDependencies());
+      // System.out.println("Edge " + className + " -> " +
+      // resultCollector.getDependencies());
       DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
 
     } catch (IndexOutOfBoundsException | IOException e) {

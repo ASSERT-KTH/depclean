@@ -34,12 +34,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.codehaus.plexus.util.DirectoryScanner;
 
 /**
- * Utility to visit classes in a library given either as a jar file or an exploded directory.
+ * Utility to visit classes in a library given either as a jar file or an
+ * exploded directory.
  */
 @Slf4j
 public final class ClassFileVisitorUtils {
 
-  private static final String[] CLASS_INCLUDES = {"**/*.class"};
+  private static final String[] CLASS_INCLUDES = { "**/*.class" };
   public static final String CLASS = ".class";
 
   /**
@@ -86,7 +87,7 @@ public final class ClassFileVisitorUtils {
   private static void acceptJar(URL url, ClassFileVisitor visitor) {
     try (JarInputStream in = new JarInputStream(url.openStream())) {
       JarEntry entry;
-      while ((entry = in.getNextJarEntry()) != null) { //NOSONAR
+      while ((entry = in.getNextJarEntry()) != null) { // NOSONAR
         String name = entry.getName();
         // ignore files like package-info.class and module-info.class
         if (name.endsWith(CLASS) && name.indexOf('-') == -1) {

@@ -38,11 +38,11 @@ public class Dependency {
   /**
    * Creates a dependency.
    *
-   * @param groupId groupId
+   * @param groupId      groupId
    * @param dependencyId dependencyId
-   * @param version version
-   * @param scope scope
-   * @param file the related dependency file (a jar in most cases)
+   * @param version      version
+   * @param scope        scope
+   * @param file         the related dependency file (a jar in most cases)
    */
   public Dependency(String groupId, String dependencyId, String version, String scope, File file) {
     this.groupId = groupId;
@@ -57,10 +57,10 @@ public class Dependency {
   /**
    * Creates a dependency for the current project.
    *
-   * @param groupId groupId
+   * @param groupId      groupId
    * @param dependencyId dependencyId
-   * @param version version
-   * @param file the related dependency file (a jar in most cases)
+   * @param version      version
+   * @param file         the related dependency file (a jar in most cases)
    */
   public Dependency(String groupId, String dependencyId, String version, File file) {
     this(groupId, dependencyId, version, null, file);
@@ -106,7 +106,8 @@ public class Dependency {
         log.error(e.getMessage(), e);
       }
     }
-    log.trace("Finding related classes for Dependency: " + groupId + ":" + dependencyId + ":" + version + ":" + scope + ":" + file);
+    log.trace("Finding related classes for Dependency: " + groupId + ":" + dependencyId + ":" + version + ":" + scope
+        + ":" + file);
     log.trace("Related classes: " + relatedClasses);
     return copyOf(relatedClasses);
   }
