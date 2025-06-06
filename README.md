@@ -15,10 +15,6 @@
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=ASSERT-KTH_depclean&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=ASSERT-KTH_depclean)
 [![codecov](https://codecov.io/gh/ASSERT-KTH/depclean/graph/badge.svg?token=X0XE6R72OD)](https://codecov.io/gh/ASSERT-KTH/depclean)
 
-Here's an enhanced version of your README section, with improved clarity, flow, and grammar, while preserving all technical content:
-
----
-
 ## What is DepClean?
 
 **DepClean** is a Maven plugin that automatically detects and removes unused dependencies declared in a project's `pom.xml` file, imported transitively through other dependencies, and even those inherited from a parent POM.
