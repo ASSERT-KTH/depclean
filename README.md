@@ -15,29 +15,35 @@
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=ASSERT-KTH_depclean&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=ASSERT-KTH_depclean)
 [![codecov](https://codecov.io/gh/ASSERT-KTH/depclean/graph/badge.svg?token=X0XE6R72OD)](https://codecov.io/gh/ASSERT-KTH/depclean)
 
+Here's an enhanced version of your README section, with improved clarity, flow, and grammar, while preserving all technical content:
+
+---
 
 ## What is DepClean?
 
-DepClean automatically cleans the dependency tree of Java projects.
-It removes all the dependencies that are included in the project's dependency tree but are not actually necessary to build it.
-DepClean detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent.
-It can be executed as a Maven goal through the command line or integrated directly into the Maven build lifecycle (CI/CD).
-DepClean does not modify the original source code of the application nor its original `pom.xml`. It has been presented in ["A Comprehensive Study of Bloated Dependencies in the Maven Ecosystem](http://arxiv.org/pdf/2001.07808") ([doi:10.1007/s10664-020-09914-8](https://doi.org/10.1007/s10664-020-09914-8)).
+**DepClean** is a Maven plugin that automatically detects and removes unused dependencies declared in a project's `pom.xml` file, imported transitively through other dependencies, and even those inherited from a parent POM.
 
-### Features
+It can be executed via the command line as a Maven goal or seamlessly integrated into the Maven build lifecycle (e.g., in CI/CD pipelines). 
 
-- Detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent.
-- Supports Java 21 bytecode analysis, ensuring compatibility with the latest Java features.
-- Creates a clean `pom.xml` without unused dependencies.
-- Computes a detailed dependency usage report per dependency.
-- Fine-grained configuration to customize the dependency analysis and cleaning.
-- Can be integrated directly into the Maven build lifecycle.
-- Supports multi-module Maven projects.
-- Ignores dependencies used exclusively through reflection.
-- Includes dependencies for Java annotation processing.
-- Supports the analysis of fat-jars, shaded dependencies, and repackaged dependencies.
+Importantly, **DepClean does *not* modify your source code or original `pom.xml` file**.
 
-For a visual illustration of what DepClean can provide for your project, have a look at the companion [depclean-web](https://github.com/castor-software/depclean-web) project.
+### Main Features
+
+* Automatically detects and removes unused dependencies from the `pom.xml`, including those inherited from parent projects.
+* Fully supports Java 21 bytecode analysis, ensuring compatibility with modern Java features.
+* Generates a clean and minimal `pom.xml`, free from unused dependencies.
+* Produces detailed, per-dependency usage reports.
+* Offers fine-grained configuration options to tailor the analysis and cleaning process.
+* Integrates directly into the Maven build lifecycle.
+* Handles multi-module Maven projects out of the box.
+* Ignores some dependencies used only via reflection (e.g., frameworks like Spring or Hibernate).
+* Includes support for annotation processors.
+* Analyzes fat JARs, shaded dependencies, and repackaged libraries.
+
+For a visual overview of how DepClean works and what it can do for your project, check out the companion project: [**depclean-web**](https://github.com/castor-software/depclean-web).
+
+✨ **DepClean is the result of academic research** conducted at [KTH Royal Institute of Technology](https://www.kth.se/en) in Sweden. It was introduced in the paper:
+["A Comprehensive Study of Bloated Dependencies in the Maven Ecosystem"](http://arxiv.org/pdf/2001.07808) ([DOI: 10.1007/s10664-020-09914-8](https://doi.org/10.1007/s10664-020-09914-8))
 
 ## Usage
 
@@ -67,7 +73,7 @@ mvn compiler:testCompile
 mvn se.kth.castor:depclean-maven-plugin:2.1.0:depclean
 ```
 
-Let's see an example of running DepClean version 2.1.0 in the project [Apache Commons Numbers](https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh)!
+Let's see an example of running DepClean version 2.0.1 in the project [Apache Commons Numbers](https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh)!
 
 ![Demo](https://github.com/castor-software/depclean/blob/master/.img/demo.gif)
 
