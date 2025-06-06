@@ -88,7 +88,7 @@ public final class JarUtils {
         File destinationParent = destFile.getParentFile();
         // create the parent directory structure if needed
         destinationParent.mkdirs();
-        if (!entry.isDirectory()) {
+        if (!entry.isDirectory() && !destFile.isDirectory()) {
           BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
           int currentByte;
           // establish buffer for writing file
@@ -112,6 +112,5 @@ public final class JarUtils {
       }
     }
   }
-
 
 }
