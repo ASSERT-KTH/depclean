@@ -38,8 +38,8 @@ public class DefaultAnnotationVisitor extends AnnotationVisitor {
 
   @Override
   public void visit(final String name, final Object value) {
-    if (value instanceof Type) {
-      resultCollector.addType((Type) value);
+    if (value instanceof Type type) {
+      resultCollector.addType(type);
     }
   }
 

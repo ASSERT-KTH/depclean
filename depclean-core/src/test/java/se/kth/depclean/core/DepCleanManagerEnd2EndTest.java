@@ -36,12 +36,12 @@ class DepCleanManagerEnd2EndTest {
   private static final Logger logger = Logger.getRootLogger();
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     logger.addAppender(appender);
   }
 
   @AfterEach
-  public void tearDown() {
+  void tearDown() {
     appender.clear();
     logger.removeAppender(appender);
     // Static classes are evils :)

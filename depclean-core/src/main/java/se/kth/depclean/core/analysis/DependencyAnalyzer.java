@@ -19,7 +19,6 @@ package se.kth.depclean.core.analysis;
  * under the License.
  */
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 

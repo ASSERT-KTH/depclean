@@ -60,7 +60,6 @@ public class DefaultClassVisitor extends ClassVisitor {
   @Override
   public void visit(final int version, final int access, final String name, final String signature,
       final String superName, final String[] interfaces) {
-    //System.out.println("Visiting class: " + name);
     ClassMembersVisitorCounter.addVisitedClass();
     if (signature == null) {
       resultCollector.addName(superName);
@@ -77,7 +76,6 @@ public class DefaultClassVisitor extends ClassVisitor {
 
   @Override
   public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-    // System.out.println("\t" + "visiting annotation: " + desc);
     ClassMembersVisitorCounter.addVisitedAnnotation();
     resultCollector.addDesc(desc);
     return annotationVisitor;
@@ -91,15 +89,14 @@ public class DefaultClassVisitor extends ClassVisitor {
   @Override
   public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
       final Object value) {
-    // System.out.println("\t" + "visiting field: " + name);
     ClassMembersVisitorCounter.addVisitedField();
     if (signature == null) {
       resultCollector.addDesc(desc);
     } else {
       addTypeSignature(signature);
     }
-    if (value instanceof Type) {
-      resultCollector.addType((Type) value);
+    if (value instanceof Type type) {
+      resultCollector.addType(type);
     }
     return fieldVisitor;
   }
@@ -107,7 +104,6 @@ public class DefaultClassVisitor extends ClassVisitor {
   @Override
   public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
       final String[] exceptions) {
-    // System.out.println("\t" + "visiting method: " + name);
     ClassMembersVisitorCounter.addVisitedMethod();
     if (signature == null) {
       resultCollector.addMethodDesc(desc);
