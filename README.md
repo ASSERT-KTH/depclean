@@ -15,11 +15,25 @@
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=ASSERT-KTH_depclean&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=ASSERT-KTH_depclean)
 [![codecov](https://codecov.io/gh/ASSERT-KTH/depclean/graph/badge.svg?token=X0XE6R72OD)](https://codecov.io/gh/ASSERT-KTH/depclean)
 
+## Features
+
+- Detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent
+- Supports Java 21 bytecode analysis, ensuring compatibility with the latest Java features
+- Creates a clean `pom.xml` without unused dependencies
+- Computes a detailed dependency usage report per dependency
+- Fine-grained configuration to customize the dependency analysis and cleaning
+- Can be integrated directly into the Maven build lifecycle
+- Supports multi-module Maven projects
+- Detects unused dependencies in the following scopes: `compile`, `provided`, `test`, `runtime`
+- Ignores dependencies used exclusively through reflection
+- Includes dependencies for Java annotation processing
+- Supports the analysis of fat-jars, shaded dependencies, and repackaged dependencies
+
 ## What is DepClean?
 
 DepClean automatically cleans the dependency tree of Java projects.
-It removes all the dependencies that are included in the project's dependency tree but are not actually necessary to build it. 
-DepClean detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent. 
+It removes all the dependencies that are included in the project's dependency tree but are not actually necessary to build it.
+DepClean detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent.
 It can be executed as a Maven goal through the command line or integrated directly into the Maven build lifecycle (CI/CD).
 DepClean does not modify the original source code of the application nor its original `pom.xml`. It has been presented in ["A Comprehensive Study of Bloated Dependencies in the Maven Ecosystem](http://arxiv.org/pdf/2001.07808") ([doi:10.1007/s10664-020-09914-8](https://doi.org/10.1007/s10664-020-09914-8)).
 
@@ -33,7 +47,7 @@ Configure the `pom.xml` file of your Maven project to use DepClean as part of th
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.0.6</version>
+  <version>2.1.0</version>
   <executions>
     <execution>
       <goals>
@@ -50,10 +64,10 @@ Or you can run DepClean directly from the command line.
 cd {PATH_TO_MAVEN_PROJECT}
 mvn compile
 mvn compiler:testCompile
-mvn se.kth.castor:depclean-maven-plugin:2.0.6:depclean
+mvn se.kth.castor:depclean-maven-plugin:2.1.0:depclean
 ```
 
-Let's see an example of running DepClean version 2.0.1 in the project [Apache Commons Numbers](https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh)!
+Let's see an example of running DepClean version 2.1.0 in the project [Apache Commons Numbers](https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh)!
 
 ![Demo](https://github.com/castor-software/depclean/blob/master/.img/demo.gif)
 
@@ -61,20 +75,18 @@ Let's see an example of running DepClean version 2.0.1 in the project [Apache Co
 
 The Maven plugin can be configured with the following additional parameters.
 
-
-| Name                       |     Type      | Description                                                                                                                                                                                                                                                                                                                                                                                                               | 
-|:---------------------------|:-------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| Name                       |     Type      | Description                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| :------------------------- | :-----------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `<ignoreDependencies>`     | `Set<String>` | A regex expression matching dependencies to be ignored by DepClean during the analysis (i.e., considered as used). This is useful to bypass incomplete result caused by bytecode-level analysis. **For example:** `-DignoreDependencies="net.bytebuddy:byte-buddy:.*","com.google.guava.*"` ignores dependencies with `groupId:artifactId` equals to `net.bytebuddy:byte-buddy` and `groupId` equals to `com.google.guava`. |
-| `<ignoreScopes>`           | `Set<String>` | Add a list of scopes, to be ignored by DepClean during the analysis. Useful to not analyze dependencies with scopes that are not needed at runtime. **Valid scopes are:** `compile`, `provided`, `test`, `runtime`, `system`, `import`. An Empty string indicates no scopes (default).                                                                                                                                    |
-| `<ignoreTests>`            |   `boolean`   | If this is true, DepClean will not analyze the test classes in the project, and, therefore, the dependencies that are only used for testing will be considered unused. This parameter is useful to detect dependencies that have `compile` scope but are only used for testing. **Default value is:** `false`.                                                                                                            |
-| `<createPomDebloated>`     |   `boolean`   | If this is true, DepClean creates a debloated version of the pom without unused dependencies called `debloated-pom.xml`, in the root of the project. **Default value is:** `false`.                                                                                                                                                                                                                                       |
-| `<createResultJson>`       |   `boolean`   | If this is true, DepClean creates a JSON file of the dependency tree along with metadata of each dependency. The file is called `depclean-results.json`, and is located in the `target` directory of the project. **Default value is:** `false`.                                                                                                                                                                          |
-| `<createCallGraphCsv>`     |   `boolean`   | If this is true, DepClean creates a CSV file with the static call graph of the API members used in the project. The file is called `depclean-callgraph.csv`, and is located in the `target` directory of the project. **Default value is:** `false`.                                                                                                                                                                      |
-| `<failIfUnusedDirect>`     |   `boolean`   | If this is true, and DepClean reported any unused direct dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                                                            |
-| `<failIfUnusedTransitive>` |   `boolean`   | If this is true, and DepClean reported any unused transitive dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                                                        |
-| `<failIfUnusedInherited>`  |   `boolean`   | If this is true, and DepClean reported any unused inherited dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                                                         |
-| `<skipDepClean>`           |   `boolean`   | Skip plugin execution completely. **Default value is:** `false`.                                                                                                                                                                                                                                                                                                                                                          |
-
+| `<ignoreScopes>`           | `Set<String>` | Add a list of scopes, to be ignored by DepClean during the analysis. Useful to not analyze dependencies with scopes that are not needed at runtime. **Valid scopes are:** `compile`, `provided`, `test`, `runtime`, `system`, `import`. An Empty string indicates no scopes (default).                                                                                                                                      |
+| `<ignoreTests>`            |   `boolean`   | If this is true, DepClean will not analyze the test classes in the project, and, therefore, the dependencies that are only used for testing will be considered unused. This parameter is useful to detect dependencies that have `compile` scope but are only used for testing. **Default value is:** `false`.                                                                                                              |
+| `<createPomDebloated>`     |   `boolean`   | If this is true, DepClean creates a debloated version of the pom without unused dependencies called `debloated-pom.xml`, in the root of the project. **Default value is:** `false`.                                                                                                                                                                                                                                         |
+| `<createResultJson>`       |   `boolean`   | If this is true, DepClean creates a JSON file of the dependency tree along with metadata of each dependency. The file is called `depclean-results.json`, and is located in the `target` directory of the project. **Default value is:** `false`.                                                                                                                                                                            |
+| `<createCallGraphCsv>`     |   `boolean`   | If this is true, DepClean creates a CSV file with the static call graph of the API members used in the project. The file is called `depclean-callgraph.csv`, and is located in the `target` directory of the project. **Default value is:** `false`.                                                                                                                                                                        |
+| `<failIfUnusedDirect>`     |   `boolean`   | If this is true, and DepClean reported any unused direct dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                                                              |
+| `<failIfUnusedTransitive>` |   `boolean`   | If this is true, and DepClean reported any unused transitive dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                                                          |
+| `<failIfUnusedInherited>`  |   `boolean`   | If this is true, and DepClean reported any unused inherited dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                                                           |
+| `<skipDepClean>`           |   `boolean`   | Skip plugin execution completely. **Default value is:** `false`.                                                                                                                                                                                                                                                                                                                                                            |
 
 You can integrate DepClean in your CI/CD pipeline.
 For example, if you want to fail the build in the presence of unused direct dependencies, while ignoring all the dependency scopes except the
@@ -84,7 +96,7 @@ For example, if you want to fail the build in the presence of unused direct depe
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.0.6</version>
+  <version>2.1.0</version>
   <executions>
     <execution>
       <goals>
@@ -102,7 +114,7 @@ For example, if you want to fail the build in the presence of unused direct depe
 Of course, it is also possible to execute DepClean with parameters directly from the command line. The previous example can be executed directly as follows:
 
 ```bash
-mvn se.kth.castor:depclean-maven-plugin:2.0.6:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
+mvn se.kth.castor:depclean-maven-plugin:2.1.0:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
 
 ## How does DepClean works?
@@ -123,7 +135,7 @@ If all the tests pass, and the project builds correctly after these changes, the
 
 Prerequisites:
 
-- [Java OpenJDK 11](https://openjdk.java.net) or above
+- [Java OpenJDK 21](https://openjdk.java.net) or above
 - [Apache Maven](https://maven.apache.org/)
 
 In a terminal clone the repository and switch to the cloned folder:
@@ -132,6 +144,7 @@ In a terminal clone the repository and switch to the cloned folder:
 git clone https://github.com/castor-software/depclean.git
 cd depclean
 ```
+
 Then run the following Maven command to build the application and install the plugin locally:
 
 ```bash
