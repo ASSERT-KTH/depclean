@@ -29,7 +29,7 @@ jobs:
           distribution: "temurin"
 
       - name: "Cache Local Maven Repository"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: "Cache SonarCloud"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -91,7 +91,7 @@ jobs:
           distribution: "temurin"
 
       - name: Cache Gradle packages
-        uses: actions/cache@v3.4.3
+        uses: actions/cache@v4.2.3
         with:
           path: |
             ~/.gradle/caches
