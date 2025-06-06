@@ -54,7 +54,7 @@ jobs:
 
       - name: "Codecov"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./depclean-maven-plugin/target/site/jacoco/jacoco.xml,./depclean-core/target/site/jacoco/jacoco.xml
