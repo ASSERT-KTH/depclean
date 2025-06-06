@@ -15,19 +15,6 @@
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=ASSERT-KTH_depclean&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=ASSERT-KTH_depclean)
 [![codecov](https://codecov.io/gh/ASSERT-KTH/depclean/graph/badge.svg?token=X0XE6R72OD)](https://codecov.io/gh/ASSERT-KTH/depclean)
 
-## Features
-
-- Detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent
-- Supports Java 21 bytecode analysis, ensuring compatibility with the latest Java features
-- Creates a clean `pom.xml` without unused dependencies
-- Computes a detailed dependency usage report per dependency
-- Fine-grained configuration to customize the dependency analysis and cleaning
-- Can be integrated directly into the Maven build lifecycle
-- Supports multi-module Maven projects
-- Detects unused dependencies in the following scopes: `compile`, `provided`, `test`, `runtime`
-- Ignores dependencies used exclusively through reflection
-- Includes dependencies for Java annotation processing
-- Supports the analysis of fat-jars, shaded dependencies, and repackaged dependencies
 
 ## What is DepClean?
 
@@ -36,6 +23,19 @@ It removes all the dependencies that are included in the project's dependency tr
 DepClean detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent.
 It can be executed as a Maven goal through the command line or integrated directly into the Maven build lifecycle (CI/CD).
 DepClean does not modify the original source code of the application nor its original `pom.xml`. It has been presented in ["A Comprehensive Study of Bloated Dependencies in the Maven Ecosystem](http://arxiv.org/pdf/2001.07808") ([doi:10.1007/s10664-020-09914-8](https://doi.org/10.1007/s10664-020-09914-8)).
+
+### Features
+
+- Detects and removes all the unused dependencies declared in the `pom.xml` file of a project or imported from its parent.
+- Supports Java 21 bytecode analysis, ensuring compatibility with the latest Java features.
+- Creates a clean `pom.xml` without unused dependencies.
+- Computes a detailed dependency usage report per dependency.
+- Fine-grained configuration to customize the dependency analysis and cleaning.
+- Can be integrated directly into the Maven build lifecycle.
+- Supports multi-module Maven projects.
+- Ignores dependencies used exclusively through reflection.
+- Includes dependencies for Java annotation processing.
+- Supports the analysis of fat-jars, shaded dependencies, and repackaged dependencies.
 
 For a visual illustration of what DepClean can provide for your project, have a look at the companion [depclean-web](https://github.com/castor-software/depclean-web) project.
 
