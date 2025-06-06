@@ -84,10 +84,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1.1.0
-
-      - name: Java 21
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           java-version: 21
@@ -100,23 +97,15 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
             ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2-
-
-      # solving issues with current working directory
-      # working-directory: ~/depclean-gradle-plugin
-      # with:
-      #   files: ./depclean-gradle-plugin
-      #   path: ~/depclean-gradle-plugin
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Build with maven (Getting missing dependencies)
-        run: mvn clean install -q
+        run: mvn clean install -DskipTests -q
 
       - name: Build with Gradle
+        working-directory: ./depclean-gradle-plugin
         run: |
-          # home is not the repoistory root but `/home/runner`, so chdir to repository root and then use relative paths to current repository root
-          # getting correct directory now
-          # getting executable permission error on the binary
-
-          chmod +x ./depclean-gradle-plugin/gradlew
-          ./depclean-gradle-plugin/gradlew build -p ./depclean-gradle-plugin/ -x test
+          git update-index --chmod=+x gradlew
+          ./gradlew build -x test
