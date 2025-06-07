@@ -29,7 +29,7 @@
     <lombok.version>1.18.30</lombok.version>
     <slf4j-api.version>2.0.17</slf4j-api.version>
     <slf4j-log4j12.version>2.0.17</slf4j-log4j12.version>
-    <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
+    <findbugs.annotations.version>3.0.1u2</findbugs.annotations.version>
     <!-- do not change -->
     <junit5.version>5.13.0</junit5.version>
   </properties>
