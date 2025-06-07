@@ -94,8 +94,8 @@ public class DefaultMethodVisitor extends MethodVisitor {
 
   @Override
   public void visitLdcInsn(final Object cst) {
-    if (cst instanceof Type) {
-      resultCollector.addType((Type) cst);
+    if (cst instanceof Type type) {
+      resultCollector.addType(type);
     }
   }
 

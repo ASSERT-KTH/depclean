@@ -12,7 +12,7 @@ import se.kth.depclean.core.analysis.asm.DependencyClassFileVisitor;
 import se.kth.depclean.core.analysis.asm.ResultCollector;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
-public class DependencyClassFileVisitorTest {
+class DependencyClassFileVisitorTest {
 
   // Resource class for testing.
   private static final File classFile = new File(

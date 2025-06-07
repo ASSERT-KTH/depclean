@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import se.kth.depclean.core.analysis.ProjectContextCreator;
-import se.kth.depclean.core.model.ProjectContext;
 
 class ProjectContextTest implements ProjectContextCreator {
 

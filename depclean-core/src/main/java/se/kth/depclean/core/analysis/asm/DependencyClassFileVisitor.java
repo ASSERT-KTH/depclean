@@ -79,8 +79,6 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
       reader.accept(defaultClassVisitor, 0);
 
       // inset edge in the graph based on the bytecode analysis
-      // System.out.println("Edge " + className + " -> " +
-      // resultCollector.getDependencies());
       DefaultCallGraph.addEdge(className, resultCollector.getDependencies());
 
     } catch (IndexOutOfBoundsException | IOException e) {
