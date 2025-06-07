@@ -4,10 +4,10 @@ import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 @AllArgsConstructor
 @Slf4j
 public class ImportsAnalyzer {
+  private static final String[] SOURCE_FILE_EXTENSIONS = new String[]{"java"};
 
   /**
    * A directory with Java source files.
@@ -33,25 +34,30 @@ public class ImportsAnalyzer {
    * @return The set of all the imports.
    */
   public Set<String> collectImportedClassesFromSource() {
-    Set<String> importsSet = new HashSet<>();
+    if (!Files.isReadable(directoryPath) || !Files.isDirectory(directoryPath)) {
+      return Collections.emptySet();
+    }
+    JavaProjectBuilder builder = constructJavaProjectBuilder();
+    return extractImportsFrom(builder);
+  }
+
+  private JavaProjectBuilder constructJavaProjectBuilder() {
     JavaProjectBuilder builder = new JavaProjectBuilder();
-    String[] extensions = new String[]{"java"};
-    File directory = new File(directoryPath.toUri());
-    if (directory.canRead() && directory.isDirectory()) {
-      List<File> files = (List<File>) FileUtils.listFiles(directoryPath.toFile(), extensions, true);
-      for (File file : files) {
-        try {
-          builder.addSource(file);
-        } catch (IOException | RuntimeException e) {
-          log.info("Cannot analyze imports in file: " + file.getAbsolutePath());
-        }
-      }
-      Collection<JavaClass> javaClasses = builder.getClasses();
-      for (JavaClass javaClass : javaClasses) {
-        List<String> imports = javaClass.getSource().getImports();
-        importsSet.addAll(imports);
+    for (File file : FileUtils.listFiles(directoryPath.toFile(), SOURCE_FILE_EXTENSIONS, true)) {
+      try {
+        builder.addSource(file);
+      } catch (IOException | RuntimeException e) {
+        log.info("Cannot analyze imports in file: {}", file.getAbsolutePath());
       }
     }
-    return importsSet;
+    return builder;
+  }
+
+  private Set<String> extractImportsFrom(JavaProjectBuilder builder) {
+    Set<String> imports = new HashSet<>();
+    for (JavaClass javaClass : builder.getClasses()) {
+      imports.addAll(javaClass.getSource().getImports());
+    }
+    return imports;
   }
 }
