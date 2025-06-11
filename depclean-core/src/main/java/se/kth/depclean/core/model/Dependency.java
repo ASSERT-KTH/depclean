@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -23,7 +22,6 @@ import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
  */
 @Slf4j
 @Getter
-@EqualsAndHashCode(exclude = "file")
 public class Dependency {
 
   private final String groupId;
