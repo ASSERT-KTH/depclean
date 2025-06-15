@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Disabled;
 import se.kth.depclean.util.OsUtils;
 
 /**
- * This class executes integration tests against the DepCleanMojo. 
- * The projects used for testing are in src/test/resources-its/se/kth/depclean/DepCleanMojoIT. 
- * The results of the DepClean executions for each project are in target/maven-it/se/kth/depclean/DepCleanMojoIT.
- * 
+ * This class executes integration tests against the DepCleanMojo. The projects used for testing are in src/test/resources-its/se/kth/depclean/DepCleanMojoIT. The results of the DepClean executions
+ * for each project are in target/maven-it/se/kth/depclean/DepCleanMojoIT.
+ * <p>
+ *
  * @see <a https://khmarbaise.github.io/maven-it-extension/itf-documentation/background/background.html#_assertions_in_maven_tests</a>
  */
 @MavenJupiterExtension
@@ -251,14 +251,6 @@ public class DepCleanMojoIT {
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: "
         );
-  }
-
-  @MavenTest
-  void print_graph_output(MavenExecutionResult result) throws IOException {
-    log.trace("Test that DepClean prints the dependency graph as an image");
-    assertThat(result).isSuccessful();
-    File expectedGraphFile = new File(result.getMavenProjectResult().getTargetProjectDirectory().toFile(), "target/dependency-graph-test.png");
-    assertThat(expectedGraphFile).exists().isNotEmpty();
   }
 }
 

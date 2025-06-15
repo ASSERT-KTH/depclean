@@ -49,7 +49,6 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   private final MavenSession session;
   private final DependencyGraphBuilder dependencyGraphBuilder;
   private final Model model;
-  private MavenDependencyGraph mavenDependencyGraph;
 
   /**
    * Creates the manager.
@@ -104,16 +103,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
     buildingRequest.setProject(project);
     DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
-    this.mavenDependencyGraph = new MavenDependencyGraph(project, model, rootNode);
-    return this.mavenDependencyGraph;
-  }
-
-  /**
-   * Returns the MavenDependencyGraph instance for external use (e.g., for
-   * Graphviz export).
-   */
-  public MavenDependencyGraph getMavenDependencyGraph() {
-    return this.mavenDependencyGraph;
+    return new MavenDependencyGraph(project, model, rootNode);
   }
 
   @Override
@@ -146,7 +136,6 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
 
   /**
    * Maven processors are defined like this.
-   * 
    * <pre>{@code
    *       <plugin>
    *         <groupId>org.bsc.maven</groupId>
@@ -200,7 +189,8 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     return new MavenDebloater(
         analysis,
         project,
-        model);
+        model
+    );
   }
 
   @Override
@@ -231,6 +221,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
         treeFile,
         analysis,
         classUsageFile,
-        createCallGraphCsv).parseTreeToJson();
+        createCallGraphCsv
+    ).parseTreeToJson();
   }
 }
