@@ -1,0 +1,11 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.checkstyle.configuration": "${workspaceFolder}/checkstyle.xml",
+    "files.autoSave": "onFocusChange",
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 160,
+    "editor.rulers": [160],
+    "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+    "java.format.settings.profile": "GoogleStyle",
+    "editor.formatOnSave": true
+}
