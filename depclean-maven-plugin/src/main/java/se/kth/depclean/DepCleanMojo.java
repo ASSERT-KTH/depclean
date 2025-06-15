@@ -35,14 +35,17 @@ import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.wrapper.MavenDependencyManager;
 
 /**
- * This Maven mojo is the main class of DepClean. DepClean is built on top of the maven-dependency-analyzer component.
- * It produces a clean copy of the project's pom file, without bloated dependencies.
+ * This Maven mojo is the main class of DepClean. DepClean is built on top of
+ * the maven-dependency-analyzer component.
+ * It produces a clean copy of the project's pom file, without bloated
+ * dependencies.
  *
- * @see <a href="https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin"></a>
- * @see <a href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html"></a>
+ * @see <a href=
+ *      "https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin"></a>
+ * @see <a href=
+ *      "http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html"></a>
  */
-@Mojo(name = "depclean", defaultPhase = LifecyclePhase.PACKAGE,
-    requiresDependencyCollection = ResolutionScope.TEST,
+@Mojo(name = "depclean", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyCollection = ResolutionScope.TEST,
     requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 @Slf4j
 public class DepCleanMojo extends AbstractMojo {
@@ -60,30 +63,34 @@ public class DepCleanMojo extends AbstractMojo {
   private MavenSession session;
 
   /**
-   * If this is true, DepClean creates a debloated version of the pom without unused dependencies, called
+   * If this is true, DepClean creates a debloated version of the pom without
+   * unused dependencies, called
    * "debloated-pom.xml", in root of the project.
    */
   @Parameter(property = "createPomDebloated", defaultValue = "false")
   private boolean createPomDebloated;
 
   /**
-   * If this is true, DepClean creates a JSON file with the result of the analysis. The file is called
+   * If this is true, DepClean creates a JSON file with the result of the
+   * analysis. The file is called
    * "debloat-result.json" and it is located in /target.
    */
   @Parameter(property = "createResultJson", defaultValue = "false")
   private boolean createResultJson;
 
-
   /**
-   * If this is true, DepClean creates a CSV file with the result of the analysis with the columns:
-   * OriginClass,TargetClass,OriginDependency,TargetDependency. The file is called "depclean-callgraph.csv" and it is located in /target.
+   * If this is true, DepClean creates a CSV file with the result of the analysis
+   * with the columns:
+   * OriginClass,TargetClass,OriginDependency,TargetDependency. The file is called
+   * "depclean-callgraph.csv" and it is located in /target.
    */
   @Parameter(property = "createCallGraphCsv", defaultValue = "false")
   private boolean createCallGraphCsv;
-
   /**
-   * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during the analysis and
-   * considered as used dependencies. Useful to override incomplete result caused by bytecode-level analysis Dependency
+   * Add a list of dependencies, identified by their coordinates, to be ignored by
+   * DepClean during the analysis and
+   * considered as used dependencies. Useful to override incomplete result caused
+   * by bytecode-level analysis Dependency
    * format is <code>groupId:artifactId:version</code>.
    */
   @Parameter(property = "ignoreDependencies")
@@ -96,35 +103,42 @@ public class DepCleanMojo extends AbstractMojo {
   private Set<String> ignoreScopes;
 
   /**
-   * If this is true, DepClean will not analyze the test sources in the project, and, therefore, the dependencies that
-   * are only used for testing will be considered unused. This property is useful to detect dependencies that have a
-   * compile scope but are only used during testing. Hence, these dependencies should have a test scope.
+   * If this is true, DepClean will not analyze the test sources in the project,
+   * and, therefore, the dependencies that
+   * are only used for testing will be considered unused. This property is useful
+   * to detect dependencies that have a
+   * compile scope but are only used during testing. Hence, these dependencies
+   * should have a test scope.
    */
   @Parameter(property = "ignoreTests", defaultValue = "false")
   private boolean ignoreTests;
 
   /**
-   * If this is true, and DepClean reported any unused direct dependency in the dependency tree, then the project's
+   * If this is true, and DepClean reported any unused direct dependency in the
+   * dependency tree, then the project's
    * build fails immediately after running DepClean.
    */
   @Parameter(property = "failIfUnusedDirect", defaultValue = "false")
   private boolean failIfUnusedDirect;
 
   /**
-   * If this is true, and DepClean reported any unused transitive dependency in the dependency tree, then the project's
+   * If this is true, and DepClean reported any unused transitive dependency in
+   * the dependency tree, then the project's
    * build fails immediately after running DepClean.
    */
   @Parameter(property = "failIfUnusedTransitive", defaultValue = "false")
   private boolean failIfUnusedTransitive;
 
   /**
-   * If this is true, and DepClean reported any unused inherited dependency in the dependency tree, then the project's
+   * If this is true, and DepClean reported any unused inherited dependency in the
+   * dependency tree, then the project's
    * build fails immediately after running DepClean.
    */
   @Parameter(property = "failIfUnusedInheritedDirect", defaultValue = "false")
   private boolean failIfUnusedInheritedDirect;
   /**
-   * If this is true, and DepClean reported any unused inherited dependency in the dependency tree, then the project's
+   * If this is true, and DepClean reported any unused inherited dependency in the
+   * dependency tree, then the project's
    * build fails immediately after running DepClean.
    */
   @Parameter(property = "failIfUnusedInheritedTransitive", defaultValue = "false")
@@ -142,17 +156,29 @@ public class DepCleanMojo extends AbstractMojo {
   @Component(hint = "default")
   private DependencyGraphBuilder dependencyGraphBuilder;
 
+  /**
+   * If this is true, DepClean prints the dependency graph as an image using
+   * Graphviz.
+   */
+  @Parameter(property = "printDependencyGraph", defaultValue = "false")
+  private boolean printDependencyGraph;
+
+  /**
+   * The path where the dependency graph image will be saved.
+   */
+  @Parameter(property = "dependencyGraphImagePath", defaultValue = "${project.build.directory}/dependency-graph.png")
+  private String dependencyGraphImagePath;
+
   @SneakyThrows
   @Override
   public final void execute() {
     try {
-      new DepCleanManager(
+      DepCleanManager manager = new DepCleanManager(
           new MavenDependencyManager(
               getLog(),
               project,
               session,
-              dependencyGraphBuilder
-          ),
+              dependencyGraphBuilder),
           skipDepClean,
           ignoreTests,
           ignoreScopes,
@@ -163,8 +189,21 @@ public class DepCleanMojo extends AbstractMojo {
           failIfUnusedInheritedTransitive,
           createPomDebloated,
           createResultJson,
-          createCallGraphCsv
-      ).execute();
+          createCallGraphCsv);
+      manager.execute();
+
+      // Print dependency graph if requested
+      if (printDependencyGraph) {
+        try {
+          se.kth.depclean.graph.MavenDependencyGraph depGraph = ((se.kth.depclean.wrapper.MavenDependencyManager) manager
+              .getDependencyManager())
+              .getMavenDependencyGraph();
+          se.kth.depclean.util.GraphvizExporter.export(depGraph, new java.io.File(dependencyGraphImagePath));
+          getLog().info("Dependency graph image generated at: " + dependencyGraphImagePath);
+        } catch (Exception e) {
+          getLog().error("Failed to generate dependency graph image", e);
+        }
+      }
     } catch (AnalysisFailureException e) {
       throw new MojoExecutionException(e.getMessage(), e);
     }

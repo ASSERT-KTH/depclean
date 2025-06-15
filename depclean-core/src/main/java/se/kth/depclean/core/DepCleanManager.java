@@ -48,6 +48,15 @@ public class DepCleanManager {
   private final boolean createCallGraphCsv;
 
   /**
+   * Returns the dependency manager wrapper.
+   *
+   * @return The dependency manager wrapper.
+   */
+  public DependencyManagerWrapper getDependencyManager() {
+    return this.dependencyManager;
+  }
+
+  /**
    * Execute the depClean manager.
    */
   @SneakyThrows
