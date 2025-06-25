@@ -29,7 +29,7 @@ dependencies {
   compileOnly('org.projectlombok:lombok:1.18.38')
   annotationProcessor 'org.projectlombok:lombok:1.18.38'
   testImplementation('org.spockframework:spock-core:2.3-groovy-4.0')
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.0'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.2'
 }
 
 test {
