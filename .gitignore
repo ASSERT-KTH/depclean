@@ -29,3 +29,5 @@ depclean-maven-plugin/target/generated-sources/
 depclean-maven-plugin/target/generated-test-sources/
 depclean-parent-pom.iml
 /.java-version
+
+.vscode/
