@@ -100,51 +100,29 @@ public class ConstantPoolParser {
     for (int ix = 1, num = buf.getChar(); ix < num; ix++) {
       byte tag = buf.get();
       switch (tag) {
-        case CONSTANT_UTF8:
-          stringConstants.put(ix, decodeString(buf));
-          continue;
-        case CONSTANT_CLASS:
-        case CONSTANT_STRING:
-        case CONSTANT_METHOD_TYPE:
-          classes.add((int) buf.getChar());
-          break;
-        case CONSTANT_FIELDREF:
-        case CONSTANT_METHODREF:
-        case CONSTANT_INTERFACEMETHODREF:
-        case CONSTANT_NAME_AND_TYPE:
+        case CONSTANT_UTF8 -> stringConstants.put(ix, decodeString(buf));
+        case CONSTANT_CLASS, CONSTANT_STRING, CONSTANT_METHOD_TYPE -> classes.add((int) buf.getChar());
+        case CONSTANT_FIELDREF, CONSTANT_METHODREF, CONSTANT_INTERFACEMETHODREF, CONSTANT_NAME_AND_TYPE,
+             CONSTANT_INVOKE_DYNAMIC -> {
           buf.getChar();
           buf.getChar();
-          break;
-        case CONSTANT_INTEGER:
-          buf.getInt();
-          break;
-        case CONSTANT_FLOAT:
-          buf.getFloat();
-          break;
-        case CONSTANT_DOUBLE:
+        }
+        case CONSTANT_INTEGER -> buf.getInt();
+        case CONSTANT_FLOAT -> buf.getFloat();
+        case CONSTANT_DOUBLE -> {
           buf.getDouble();
           ix++;
-          break;
-        case CONSTANT_LONG:
+        }
+        case CONSTANT_LONG -> {
           buf.getLong();
           ix++;
-          break;
-        case CONSTANT_METHODHANDLE:
+        }
+        case CONSTANT_METHODHANDLE -> {
           buf.get();
           buf.getChar();
-          break;
-        case CONSTANT_INVOKE_DYNAMIC:
-          buf.getChar();
-          buf.getChar();
-          break;
-        case CONSTANT_MODULE:
-          buf.getChar();
-          break;
-        case CONSTANT_PACKAGE:
-          buf.getChar();
-          break;
-        default:
-          throw new RuntimeException("Unknown constant pool type '" + tag + "'");
+        }
+        case CONSTANT_MODULE, CONSTANT_PACKAGE -> buf.getChar();
+        default -> throw new RuntimeException("Unknown constant pool type '" + tag + "'");
       }
     }
     Set<String> result = new HashSet<>();
