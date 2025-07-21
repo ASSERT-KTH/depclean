@@ -31,7 +31,7 @@
     <slf4j-log4j12.version>2.0.17</slf4j-log4j12.version>
     <findbugs.annotations.version>3.0.1u2</findbugs.annotations.version>
     <!-- do not change -->
-    <junit5.version>5.13.3</junit5.version>
+    <junit5.version>5.13.4</junit5.version>
   </properties>
 
   <!-- Project description-->
