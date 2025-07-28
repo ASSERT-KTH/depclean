@@ -21,9 +21,9 @@ package se.kth.depclean.core.analysis.asm;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.objectweb.asm.Type;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.objectweb.asm.Type;
 
 /**
  * Used for storing the types visited statically.

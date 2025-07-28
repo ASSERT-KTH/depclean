@@ -19,6 +19,8 @@ package se.kth.depclean.core.analysis.asm;
  * under the License.
  */
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -27,8 +29,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
 /**

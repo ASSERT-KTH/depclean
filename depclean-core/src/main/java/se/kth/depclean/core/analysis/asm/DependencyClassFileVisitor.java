@@ -45,7 +45,7 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
   /**
    * Visit a class file.
    *
-   * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String.java.io.InputStream)
+   * @see se.kth.depclean.core.analysis.ClassFileVisitor#visitClass(java.lang.String, java.io.InputStream)
    */
   @Override
   public void visitClass(String className, InputStream in) {

@@ -50,7 +50,7 @@ public class MavenDependencyGraph implements DependencyGraph {
     // The model gets only the direct dependencies (not the inherited ones)
     this.directDependencies = getDirectDependencies(model);
     // The project gets all the direct dependencies (with the inherited ones)
-    //noinspection deprecation
+    // noinspection deprecation
     this.inheritedDirectDependencies = inheritedDirectDependencies(project.getDependencyArtifacts());
     this.inheritedTransitiveDependencies = inheritedTransitiveDependencies(inheritedDirectDependencies, new HashSet<>());
     this.transitiveDependencies = transitiveDependencies(allDependencies);

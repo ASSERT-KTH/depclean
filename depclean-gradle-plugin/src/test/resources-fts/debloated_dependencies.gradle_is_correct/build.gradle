@@ -9,7 +9,6 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'maven-publish'
 }
 
 apply plugin: 'se.kth.castor.depclean-gradle-plugin'
@@ -31,12 +30,6 @@ repositories {
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.2'
     compileOnly 'org.mapstruct:mapstruct-processor:1.4.2.Final'
-}
-
-publishing {
-    repositories {
-        mavenLocal()
-    }
 }
 
 tasks.withType(JavaCompile).configureEach {

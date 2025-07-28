@@ -229,7 +229,7 @@ public class ProjectDependencyAnalysis {
   }
 
   private void printString(final String string) {
-    System.out.println(string); //NOSONAR avoid a warning of non-used logger
+    System.out.println(string); // NOSONAR avoid a warning of non-used logger
   }
 
   /**

@@ -15,8 +15,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-group 'se.kth.castor'
-version '2.2.0-SNAPSHOT'
+group = 'se.kth.castor'
+version = '2.2.0-SNAPSHOT'
 
 repositories {
   mavenLocal()

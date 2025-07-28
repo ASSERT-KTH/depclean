@@ -19,11 +19,11 @@ package se.kth.depclean.core.analysis.asm;
  * under the License.
  */
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Computes the set of classes referenced by visited code. Inspired by

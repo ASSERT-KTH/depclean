@@ -19,9 +19,9 @@ package se.kth.depclean.core.analysis.asm;
  * under the License.
  */
 
+import org.jspecify.annotations.NonNull;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureVisitor;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Computes the set of classes referenced by visited code. Inspired by
