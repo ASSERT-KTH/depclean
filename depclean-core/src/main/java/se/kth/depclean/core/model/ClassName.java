@@ -4,9 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jspecify.annotations.NonNull;
 
-/**
- * Represents a class to be analysed.
- */
+/** Represents a class to be analysed. */
 @Getter
 @EqualsAndHashCode
 public class ClassName implements Comparable<ClassName> {

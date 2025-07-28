@@ -3,10 +3,10 @@ package se.kth.depclean.core.fake;
 import static com.google.common.collect.ImmutableSet.of;
 
 import com.google.common.collect.ImmutableSet;
-import se.kth.depclean.core.analysis.graph.DependencyGraph;
-import se.kth.depclean.core.model.Dependency;
 import java.io.File;
 import java.util.Set;
+import se.kth.depclean.core.analysis.graph.DependencyGraph;
+import se.kth.depclean.core.model.Dependency;
 
 public class FakeDependencyGraph implements DependencyGraph {
 
@@ -59,12 +59,6 @@ public class FakeDependencyGraph implements DependencyGraph {
 
   static Dependency createDependency(String name) {
     final File jarFile = new File("src/test/resources/analysisResources/" + name + ".jar");
-    return new Dependency(
-        "se.kth.depclean.core.test",
-        name,
-        "1.0.0",
-        "compile",
-        jarFile
-    );
+    return new Dependency("se.kth.depclean.core.test", name, "1.0.0", "compile", jarFile);
   }
 }

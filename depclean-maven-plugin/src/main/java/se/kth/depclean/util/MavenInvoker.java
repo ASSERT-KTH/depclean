@@ -25,26 +25,25 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Utility class to execute Maven tasks from the command line.
- */
+/** Utility class to execute Maven tasks from the command line. */
 @Slf4j
 public final class MavenInvoker {
 
-  private MavenInvoker() {
-  }
+  private MavenInvoker() {}
 
   /**
-   * Creates a native process to execute a custom command. This method is used to invoke maven plugins directly.
+   * Creates a native process to execute a custom command. This method is used to invoke maven
+   * plugins directly.
    *
-   * @param cmd       The command to be executed.
-   * @param directory The working directory of the subprocess,
-   *                  or null if the subprocess should inherit the working directory of the current process.
+   * @param cmd The command to be executed.
+   * @param directory The working directory of the subprocess, or null if the subprocess should
+   *     inherit the working directory of the current process.
    * @return The console output.
-   * @throws IOException          In case of IO issues.
+   * @throws IOException In case of IO issues.
    * @throws InterruptedException In case of IO issues.
    */
-  public static String[] runCommand(String cmd, File directory) throws IOException, InterruptedException {
+  public static String[] runCommand(String cmd, File directory)
+      throws IOException, InterruptedException {
     Process process;
     ArrayList<String> list;
     if (OsUtils.isUnix()) {
@@ -62,10 +61,9 @@ public final class MavenInvoker {
     return new String[0]; // return an empty array otherwise
   }
 
-  /**
-   * Print the output of the command to the standard output.
-   */
-  private static String[] outputToConsole(Process process, ArrayList<String> list, BufferedReader br)
+  /** Print the output of the command to the standard output. */
+  private static String[] outputToConsole(
+      Process process, ArrayList<String> list, BufferedReader br)
       throws IOException, InterruptedException {
     String s;
     while ((s = br.readLine()) != null) {

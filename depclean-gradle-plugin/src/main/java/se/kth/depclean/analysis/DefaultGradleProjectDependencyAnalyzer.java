@@ -20,46 +20,33 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
-import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
+import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.asm.AsmDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.utils.DependencyUtils;
 
-/**
- * This is principal class that perform the dependency analysis in a Gradle
- * project.
- */
+/** This is principal class that perform the dependency analysis in a Gradle project. */
 @Slf4j
-public class DefaultGradleProjectDependencyAnalyzer
-    implements GradleProjectDependencyAnalyzer {
+public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDependencyAnalyzer {
 
   private final ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
 
   private final DependencyAnalyzer dependencyAnalyzer = new AsmDependencyAnalyzer();
 
-  /**
-   * If true, the project's classes in target/test-classes are not going to be
-   * analyzed.
-   */
+  /** If true, the project's classes in target/test-classes are not going to be analyzed. */
   private final boolean isIgnoredTest;
 
-  /**
-   * A map [artifact] -> [allTypes].
-   */
+  /** A map [artifact] -> [allTypes]. */
   private Map<ResolvedArtifact, Set<String>> artifactClassesMap;
 
-  /**
-   * A map [artifact] -> [usedTypes].
-   */
+  /** A map [artifact] -> [usedTypes]. */
   private final Map<ResolvedArtifact, Set<String>> artifactUsedClassesMap = new HashMap<>();
 
-  /**
-   * Ctor.
-   */
+  /** Ctor. */
   public DefaultGradleProjectDependencyAnalyzer(final boolean isIgnoredTest) {
     this.isIgnoredTest = isIgnoredTest;
   }
@@ -68,8 +55,8 @@ public class DefaultGradleProjectDependencyAnalyzer
    * Analyze the dependencies in a project.
    *
    * @param project The Gradle project to be analyzed.
-   * @return An object with the usedDeclaredArtifacts, usedUndeclaredArtifacts,
-   *         and unusedDeclaredArtifacts.
+   * @return An object with the usedDeclaredArtifacts, usedUndeclaredArtifacts, and
+   *     unusedDeclaredArtifacts.
    * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
    */
   @SneakyThrows
@@ -107,9 +94,9 @@ public class DefaultGradleProjectDependencyAnalyzer
     /* ******************** usage analysis ********************* */
 
     // search for the dependencies used by the project
-    Set<ResolvedArtifact> usedArtifacts = collectUsedArtifacts(
-        artifactClassesMap,
-        DefaultCallGraph.referencedClassMembers(projectClasses));
+    Set<ResolvedArtifact> usedArtifacts =
+        collectUsedArtifacts(
+            artifactClassesMap, DefaultCallGraph.referencedClassMembers(projectClasses));
 
     /*
      * ******************** results as statically used at the bytecode
@@ -128,14 +115,13 @@ public class DefaultGradleProjectDependencyAnalyzer
     Set<ResolvedArtifact> unusedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
     unusedDeclaredArtifacts = removeAll(unusedDeclaredArtifacts, usedArtifacts);
 
-    return new GradleProjectDependencyAnalysis(usedDeclaredArtifacts,
-        usedUndeclaredArtifacts, unusedDeclaredArtifacts);
-
+    return new GradleProjectDependencyAnalysis(
+        usedDeclaredArtifacts, usedUndeclaredArtifacts, unusedDeclaredArtifacts);
   }
 
   /**
-   * Returns a map with the artifacts (dependencies) in a Gradle project and
-   * their corresponding classes.
+   * Returns a map with the artifacts (dependencies) in a Gradle project and their corresponding
+   * classes.
    *
    * @param allArtifacts File of each artifact.
    * @return A map of artifact -> classes.
@@ -237,7 +223,7 @@ public class DefaultGradleProjectDependencyAnalyzer
   /**
    * Determine the artifacts that are used.
    *
-   * @param artifactClassMap  A map of [artifact] -> [classes in the artifact].
+   * @param artifactClassMap A map of [artifact] -> [classes in the artifact].
    * @param referencedClasses A set of classes that are detected as used.
    * @return The set of used artifacts.
    */
@@ -262,12 +248,11 @@ public class DefaultGradleProjectDependencyAnalyzer
    * Utility method to find whether a provided key is present in the map or not.
    *
    * @param artifactClassMap The map
-   * @param className        The String (Expected key)
+   * @param className The String (Expected key)
    * @return Key if it is present otherwise null.
    */
   private ResolvedArtifact findArtifactForClassName(
-      final Map<ResolvedArtifact, Set<String>> artifactClassMap,
-      final String className) {
+      final Map<ResolvedArtifact, Set<String>> artifactClassMap, final String className) {
     for (Map.Entry<ResolvedArtifact, Set<String>> entry : artifactClassMap.entrySet()) {
       if (entry.getValue().contains(className)) {
         return entry.getKey();
@@ -277,18 +262,15 @@ public class DefaultGradleProjectDependencyAnalyzer
   }
 
   /**
-   * This method defines a new way to remove the artifacts by using the conflict
-   * id.
-   * We don't care about the version here because there can be only 1 for a given
-   * artifact anyway.
+   * This method defines a new way to remove the artifacts by using the conflict id. We don't care
+   * about the version here because there can be only 1 for a given artifact anyway.
    *
-   * @param start  initial set
+   * @param start initial set
    * @param remove set to exclude
    * @return set with remove excluded
    */
   private Set<ResolvedArtifact> removeAll(
-      final Set<ResolvedArtifact> start,
-      final Set<ResolvedArtifact> remove) {
+      final Set<ResolvedArtifact> start, final Set<ResolvedArtifact> remove) {
     Set<ResolvedArtifact> results = new LinkedHashSet<>(start.size());
     for (ResolvedArtifact artifact : start) {
       boolean found = false;
@@ -337,18 +319,18 @@ public class DefaultGradleProjectDependencyAnalyzer
       }
 
       if (artifactUsedClassesMap.containsKey(resolvedArtifact)) {
-        dependenciesClassMap
-            .put(resolvedArtifact.getModuleVersion().toString(),
-                new DependencyTypes(
-                    allClassNameSet, // get all the typesSet
-                    usedClassNameSet // get used typesSet
+        dependenciesClassMap.put(
+            resolvedArtifact.getModuleVersion().toString(),
+            new DependencyTypes(
+                allClassNameSet, // get all the typesSet
+                usedClassNameSet // get used typesSet
                 ));
       } else {
-        dependenciesClassMap
-            .put(resolvedArtifact.getModuleVersion().toString(),
-                new DependencyTypes(
-                    allClassNameSet, // get all the typesSet
-                    new HashSet<>() // get used typesSet
+        dependenciesClassMap.put(
+            resolvedArtifact.getModuleVersion().toString(),
+            new DependencyTypes(
+                allClassNameSet, // get all the typesSet
+                new HashSet<>() // get used typesSet
                 ));
       }
     }

@@ -1,8 +1,6 @@
 package se.kth.depclean.core.wrapper;
 
-/**
- * Wraps the dependency manager's logger.
- */
+/** Wraps the dependency manager's logger. */
 public interface LogWrapper {
 
   /**

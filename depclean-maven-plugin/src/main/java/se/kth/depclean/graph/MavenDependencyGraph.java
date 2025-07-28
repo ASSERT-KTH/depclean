@@ -21,9 +21,7 @@ import org.jspecify.annotations.NonNull;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.model.Dependency;
 
-/**
- * A dependency graph for maven reactor.
- */
+/** A dependency graph for maven reactor. */
 @Slf4j
 public class MavenDependencyGraph implements DependencyGraph {
 
@@ -34,15 +32,17 @@ public class MavenDependencyGraph implements DependencyGraph {
   private final Set<Dependency> transitiveDependencies;
   private final Set<Dependency> inheritedDirectDependencies;
   private final Set<Dependency> inheritedTransitiveDependencies;
-  private final Multimap<Dependency, Dependency> dependenciesPerDependency = ArrayListMultimap.create();
+  private final Multimap<Dependency, Dependency> dependenciesPerDependency =
+      ArrayListMultimap.create();
 
   /**
    * Create a maven dependency graph.
    *
-   * @param project  the maven project
+   * @param project the maven project
    * @param rootNode the graph's root node
    */
-  public MavenDependencyGraph(@NonNull MavenProject project, @NonNull Model model, @NonNull DependencyNode rootNode) {
+  public MavenDependencyGraph(
+      @NonNull MavenProject project, @NonNull Model model, @NonNull DependencyNode rootNode) {
     this.project = project;
     this.rootNode = rootNode;
     buildDependencyDependencies(rootNode);
@@ -51,8 +51,10 @@ public class MavenDependencyGraph implements DependencyGraph {
     this.directDependencies = getDirectDependencies(model);
     // The project gets all the direct dependencies (with the inherited ones)
     // noinspection deprecation
-    this.inheritedDirectDependencies = inheritedDirectDependencies(project.getDependencyArtifacts());
-    this.inheritedTransitiveDependencies = inheritedTransitiveDependencies(inheritedDirectDependencies, new HashSet<>());
+    this.inheritedDirectDependencies =
+        inheritedDirectDependencies(project.getDependencyArtifacts());
+    this.inheritedTransitiveDependencies =
+        inheritedTransitiveDependencies(inheritedDirectDependencies, new HashSet<>());
     this.transitiveDependencies = transitiveDependencies(allDependencies);
 
     log.debug("Direct dependencies" + directDependencies);
@@ -62,12 +64,13 @@ public class MavenDependencyGraph implements DependencyGraph {
 
     // Logs
     if (log.isDebugEnabled()) {
-      this.allDependencies.forEach(dep -> {
-        log.debug("Found dependency {}", dep);
-        if (dependenciesPerDependency.get(dep) != null) {
-          dependenciesPerDependency.get(dep).forEach(transDep -> log.debug("# {}", transDep));
-        }
-      });
+      this.allDependencies.forEach(
+          dep -> {
+            log.debug("Found dependency {}", dep);
+            if (dependenciesPerDependency.get(dep) != null) {
+              dependenciesPerDependency.get(dep).forEach(transDep -> log.debug("# {}", transDep));
+            }
+          });
     }
   }
 
@@ -75,8 +78,18 @@ public class MavenDependencyGraph implements DependencyGraph {
   @Override
   public Dependency projectCoordinates() {
     File projectJarFile;
-    if (new File(project.getBuild().getDirectory() + File.separator + project.getBuild().getFinalName() + ".jar").exists()) {
-      projectJarFile = new File(project.getBuild().getDirectory() + File.separator + project.getBuild().getFinalName() + ".jar");
+    if (new File(
+            project.getBuild().getDirectory()
+                + File.separator
+                + project.getBuild().getFinalName()
+                + ".jar")
+        .exists()) {
+      projectJarFile =
+          new File(
+              project.getBuild().getDirectory()
+                  + File.separator
+                  + project.getBuild().getFinalName()
+                  + ".jar");
     } else {
       projectJarFile = null;
     }
@@ -84,8 +97,7 @@ public class MavenDependencyGraph implements DependencyGraph {
         rootNode.getArtifact().getGroupId(),
         rootNode.getArtifact().getArtifactId(),
         rootNode.getArtifact().getVersion(),
-        projectJarFile
-    );
+        projectJarFile);
   }
 
   @Override
@@ -114,9 +126,8 @@ public class MavenDependencyGraph implements DependencyGraph {
 
   @NonNull
   private Set<Dependency> inheritedDirectDependencies(Set<Artifact> dependencyArtifacts) {
-    final Set<Dependency> visibleDependencies = dependencyArtifacts.stream()
-        .map(this::toDepCleanDependency)
-        .collect(Collectors.toSet());
+    final Set<Dependency> visibleDependencies =
+        dependencyArtifacts.stream().map(this::toDepCleanDependency).collect(Collectors.toSet());
     visibleDependencies.removeAll(this.directDependencies);
     return copyOf(visibleDependencies);
   }
@@ -127,19 +138,25 @@ public class MavenDependencyGraph implements DependencyGraph {
   }
 
   @NonNull
-  private Set<Dependency> inheritedTransitiveDependencies(Set<Dependency> inheritedDirectDependencies, Set<Dependency> inheritedTransitiveDependencies) {
+  private Set<Dependency> inheritedTransitiveDependencies(
+      Set<Dependency> inheritedDirectDependencies,
+      Set<Dependency> inheritedTransitiveDependencies) {
     if (!inheritedDirectDependencies.isEmpty()) {
       for (Dependency inheritedDirectDependency : inheritedDirectDependencies) {
         Set<Dependency> c = new HashSet<>(dependenciesPerDependency.get(inheritedDirectDependency));
         for (Dependency d : c) {
           project.getArtifacts().stream()
-              .filter(artifact -> artifact.getGroupId().equals(d.getGroupId()) && artifact.getArtifactId().equals(d.getDependencyId()))
+              .filter(
+                  artifact ->
+                      artifact.getGroupId().equals(d.getGroupId())
+                          && artifact.getArtifactId().equals(d.getDependencyId()))
               .findFirst()
-              .ifPresent(artifact -> {
-                if (artifact.getVersion().equals(d.getVersion())) {
-                  inheritedTransitiveDependencies.add(toDepCleanDependency(artifact));
-                }
-              });
+              .ifPresent(
+                  artifact -> {
+                    if (artifact.getVersion().equals(d.getVersion())) {
+                      inheritedTransitiveDependencies.add(toDepCleanDependency(artifact));
+                    }
+                  });
         }
         inheritedTransitiveDependencies(c, inheritedTransitiveDependencies);
       }
@@ -158,10 +175,15 @@ public class MavenDependencyGraph implements DependencyGraph {
   }
 
   private void buildDependencyDependencies(DependencyNode parentNode) {
-    parentNode.getChildren().forEach(childNode -> {
-      dependenciesPerDependency.put(toDepCleanDependency(parentNode.getArtifact()), toDepCleanDependency(childNode.getArtifact()));
-      buildDependencyDependencies(childNode);
-    });
+    parentNode
+        .getChildren()
+        .forEach(
+            childNode -> {
+              dependenciesPerDependency.put(
+                  toDepCleanDependency(parentNode.getArtifact()),
+                  toDepCleanDependency(childNode.getArtifact()));
+              buildDependencyDependencies(childNode);
+            });
   }
 
   private Dependency toDepCleanDependency(Artifact artifact) {
@@ -170,8 +192,7 @@ public class MavenDependencyGraph implements DependencyGraph {
         artifact.getArtifactId(),
         artifact.getVersion(),
         artifact.getScope(),
-        artifact.getFile()
-    );
+        artifact.getFile());
   }
 
   private Dependency toDepCleanDependency(DependencyNode node) {
@@ -188,7 +209,8 @@ public class MavenDependencyGraph implements DependencyGraph {
     return null;
   }
 
-  private boolean matches(Dependency dependencyCoordinate, org.apache.maven.model.Dependency dependency) {
+  private boolean matches(
+      Dependency dependencyCoordinate, org.apache.maven.model.Dependency dependency) {
     return dependencyCoordinate.getGroupId().equalsIgnoreCase(dependency.getGroupId())
         && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId());
   }

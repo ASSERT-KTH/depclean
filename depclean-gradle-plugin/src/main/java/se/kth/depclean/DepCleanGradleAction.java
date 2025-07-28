@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
-import org.jspecify.annotations.NonNull;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
@@ -28,29 +27,24 @@ import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.UnresolvedDependency;
 import org.gradle.api.logging.Logger;
-import se.kth.depclean.utils.DependencyUtils;
-import se.kth.depclean.utils.GradleWritingUtils;
+import org.jspecify.annotations.NonNull;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
+import se.kth.depclean.utils.DependencyUtils;
+import se.kth.depclean.utils.GradleWritingUtils;
 import se.kth.depclean.utils.JarUtils;
 import se.kth.depclean.utils.json.JsonResultWriter;
 
-/**
- * Depclean default and only action.
- */
+/** Depclean default and only action. */
 public class DepCleanGradleAction implements Action<Project> {
 
   // To get some clear visible results.
   private static final String SEPARATOR = "-------------------------------------------------------";
 
-  /**
-   * A map [artifact] -> [configuration].
-   */
+  /** A map [artifact] -> [configuration]. */
   private static Map<ResolvedArtifact, String> ArtifactConfigurationMap = new HashMap<>();
 
-  /**
-   * A map [dependencies] -> [size].
-   */
+  /** A map [dependencies] -> [size]. */
   private static final Map<String, Long> SizeOfDependencies = new HashMap<>();
 
   // Extensions fields =====================================
@@ -73,8 +67,8 @@ public class DepCleanGradleAction implements Action<Project> {
     Logger logger = project.getLogger();
 
     // If the user provided some configuration.
-    DepCleanGradlePluginExtension extension = project.getExtensions()
-        .getByType(DepCleanGradlePluginExtension.class);
+    DepCleanGradlePluginExtension extension =
+        project.getExtensions().getByType(DepCleanGradlePluginExtension.class);
     getPluginExtensions(extension);
 
     if (skipDepClean) {
@@ -112,7 +106,8 @@ public class DepCleanGradleAction implements Action<Project> {
     Set<ResolvedArtifact> allArtifacts = utils.getAllArtifacts(allDependencies);
 
     // all unresolved dependencies including transitive ones of the project.
-    Set<UnresolvedDependency> allUnresolvedDependencies = utils.getAllUnresolvedDependencies(configurations);
+    Set<UnresolvedDependency> allUnresolvedDependencies =
+        utils.getAllUnresolvedDependencies(configurations);
 
     // All declared dependencies of the project.
     Set<ResolvedDependency> declaredDependencies = utils.getDeclaredDependencies(configurations);
@@ -158,8 +153,8 @@ public class DepCleanGradleAction implements Action<Project> {
 
     /* Analyze dependencies usage status */
     GradleProjectDependencyAnalysis projectDependencyAnalysis;
-    DefaultGradleProjectDependencyAnalyzer dependencyAnalyzer = new DefaultGradleProjectDependencyAnalyzer(
-        isIgnoreTest);
+    DefaultGradleProjectDependencyAnalyzer dependencyAnalyzer =
+        new DefaultGradleProjectDependencyAnalyzer(isIgnoreTest);
     projectDependencyAnalysis = dependencyAnalyzer.analyze(project);
 
     /*
@@ -167,9 +162,12 @@ public class DepCleanGradleAction implements Action<Project> {
      * dependency analysis has been completed.
      */
     assert projectDependencyAnalysis != null;
-    Set<ResolvedArtifact> usedTransitiveArtifacts = projectDependencyAnalysis.getUsedUndeclaredArtifacts();
-    Set<ResolvedArtifact> usedDirectArtifacts = projectDependencyAnalysis.getUsedDeclaredArtifacts();
-    Set<ResolvedArtifact> unusedDirectArtifacts = projectDependencyAnalysis.getUnusedDeclaredArtifacts();
+    Set<ResolvedArtifact> usedTransitiveArtifacts =
+        projectDependencyAnalysis.getUsedUndeclaredArtifacts();
+    Set<ResolvedArtifact> usedDirectArtifacts =
+        projectDependencyAnalysis.getUsedDeclaredArtifacts();
+    Set<ResolvedArtifact> unusedDirectArtifacts =
+        projectDependencyAnalysis.getUnusedDeclaredArtifacts();
     Set<ResolvedArtifact> unusedTransitiveArtifacts = new HashSet<>(allArtifacts);
 
     // --- used dependencies
@@ -230,8 +228,10 @@ public class DepCleanGradleAction implements Action<Project> {
       usedTransitiveArtifactsCoordinates = excludeConfiguration(usedTransitiveArtifactsCoordinates);
       usedInheritedArtifactsCoordinates = excludeConfiguration(usedInheritedArtifactsCoordinates);
       unusedDirectArtifactsCoordinates = excludeConfiguration(unusedDirectArtifactsCoordinates);
-      unusedTransitiveArtifactsCoordinates = excludeConfiguration(unusedTransitiveArtifactsCoordinates);
-      unusedInheritedArtifactsCoordinates = excludeConfiguration(unusedInheritedArtifactsCoordinates);
+      unusedTransitiveArtifactsCoordinates =
+          excludeConfiguration(unusedTransitiveArtifactsCoordinates);
+      unusedInheritedArtifactsCoordinates =
+          excludeConfiguration(unusedInheritedArtifactsCoordinates);
     }
 
     // Excluding dependencies ignored by the user from post analysis result.
@@ -242,8 +242,10 @@ public class DepCleanGradleAction implements Action<Project> {
       usedTransitiveArtifactsCoordinates = excludeDependencies(usedTransitiveArtifactsCoordinates);
       usedInheritedArtifactsCoordinates = excludeDependencies(usedInheritedArtifactsCoordinates);
       unusedDirectArtifactsCoordinates = excludeDependencies(unusedDirectArtifactsCoordinates);
-      unusedTransitiveArtifactsCoordinates = excludeDependencies(unusedTransitiveArtifactsCoordinates);
-      unusedInheritedArtifactsCoordinates = excludeDependencies(unusedInheritedArtifactsCoordinates);
+      unusedTransitiveArtifactsCoordinates =
+          excludeDependencies(unusedTransitiveArtifactsCoordinates);
+      unusedInheritedArtifactsCoordinates =
+          excludeDependencies(unusedInheritedArtifactsCoordinates);
     }
 
     /* Printing the results to the terminal */
@@ -251,18 +253,15 @@ public class DepCleanGradleAction implements Action<Project> {
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
     printString(SEPARATOR);
     printString(SEPARATOR);
-    printInfoOfDependencies("Used direct dependencies",
-        usedDirectArtifactsCoordinates);
-    printInfoOfDependencies("Used inherited dependencies",
-        usedInheritedArtifactsCoordinates);
-    printInfoOfDependencies("Used transitive dependencies",
-        usedTransitiveArtifactsCoordinates);
-    printInfoOfDependencies("Potentially unused direct dependencies",
-        unusedDirectArtifactsCoordinates);
-    printInfoOfDependencies("Potentially unused inherited dependencies",
-        unusedInheritedArtifactsCoordinates);
-    printInfoOfDependencies("Potentially unused transitive dependencies",
-        unusedTransitiveArtifactsCoordinates);
+    printInfoOfDependencies("Used direct dependencies", usedDirectArtifactsCoordinates);
+    printInfoOfDependencies("Used inherited dependencies", usedInheritedArtifactsCoordinates);
+    printInfoOfDependencies("Used transitive dependencies", usedTransitiveArtifactsCoordinates);
+    printInfoOfDependencies(
+        "Potentially unused direct dependencies", unusedDirectArtifactsCoordinates);
+    printInfoOfDependencies(
+        "Potentially unused inherited dependencies", unusedInheritedArtifactsCoordinates);
+    printInfoOfDependencies(
+        "Potentially unused transitive dependencies", unusedTransitiveArtifactsCoordinates);
 
     printString(SEPARATOR);
 
@@ -271,7 +270,10 @@ public class DepCleanGradleAction implements Action<Project> {
     if (!allUnresolvedDependencies.isEmpty()) {
       printString(
           "\nDependencies that can't be resolved during the analysis"
-              + " [" + allUnresolvedDependencies.size() + "]" + ": ");
+              + " ["
+              + allUnresolvedDependencies.size()
+              + "]"
+              + ": ");
       allUnresolvedDependencies.forEach(s -> printString("\t" + s));
     }
 
@@ -279,7 +281,10 @@ public class DepCleanGradleAction implements Action<Project> {
     if (ignoreConfiguration != null) {
       printString(
           "\nConfigurations ignored in the analysis by the user : "
-              + " [" + ignoreConfiguration.size() + "]" + ": ");
+              + " ["
+              + ignoreConfiguration.size()
+              + "]"
+              + ": ");
       ignoreConfiguration.forEach(s -> printString("\t" + s));
     }
 
@@ -287,26 +292,32 @@ public class DepCleanGradleAction implements Action<Project> {
     if (ignoreDependencies != null) {
       printString(
           "\nDependencies ignored in the analysis by the user"
-              + " [" + ignoreDependencies.size() + "]" + ": ");
+              + " ["
+              + ignoreDependencies.size()
+              + "]"
+              + ": ");
       ignoreDependencies.forEach(s -> printString("\t" + s));
     }
 
     /* Fail the build if there are unused direct dependencies */
     if (failIfUnusedDirect && !unusedDirectArtifactsCoordinates.isEmpty()) {
-      throw new GradleException("Build failed due to unused direct dependencies"
-          + " in the dependency tree of the project.");
+      throw new GradleException(
+          "Build failed due to unused direct dependencies"
+              + " in the dependency tree of the project.");
     }
 
     /* Fail the build if there are unused direct dependencies */
     if (failIfUnusedTransitive && !unusedTransitiveArtifactsCoordinates.isEmpty()) {
-      throw new GradleException("Build failed due to unused transitive dependencies"
-          + " in the dependency tree of the project.");
+      throw new GradleException(
+          "Build failed due to unused transitive dependencies"
+              + " in the dependency tree of the project.");
     }
 
     /* Fail the build if there are unused direct dependencies */
     if (failIfUnusedInherited && !unusedInheritedArtifactsCoordinates.isEmpty()) {
-      throw new GradleException("Build failed due to unused inherited dependencies"
-          + " in the dependency tree of the project.");
+      throw new GradleException(
+          "Build failed due to unused inherited dependencies"
+              + " in the dependency tree of the project.");
     }
 
     /* Writing the debloated version of the pom */
@@ -318,9 +329,7 @@ public class DepCleanGradleAction implements Action<Project> {
 
       /* Adding used direct dependencies */
       try {
-        logger
-            .lifecycle("Adding " + usedDirectArtifacts.size()
-                + " used direct dependencies");
+        logger.lifecycle("Adding " + usedDirectArtifacts.size() + " used direct dependencies");
         dependenciesToAdd.addAll(usedDirectArtifacts);
       } catch (Exception e) {
         throw new GradleException(e.getMessage(), e);
@@ -329,8 +338,9 @@ public class DepCleanGradleAction implements Action<Project> {
       /* Add used transitive as direct dependencies */
       try {
         if (!usedTransitiveArtifacts.isEmpty()) {
-          logger
-              .lifecycle("Adding " + usedTransitiveArtifacts.size()
+          logger.lifecycle(
+              "Adding "
+                  + usedTransitiveArtifacts.size()
                   + " used transitive dependencies as direct dependencies.");
           dependenciesToAdd.addAll(usedTransitiveArtifacts);
         }
@@ -353,8 +363,9 @@ public class DepCleanGradleAction implements Action<Project> {
       Set<ResolvedDependency> allChildren = getAllChildren(allDependencies);
       try {
         if (!unusedTransitiveArtifacts.isEmpty()) {
-          logger
-              .lifecycle("Excluding " + unusedTransitiveArtifactsCoordinates.size()
+          logger.lifecycle(
+              "Excluding "
+                  + unusedTransitiveArtifactsCoordinates.size()
                   + " unused transitive dependencies one-by-one.");
           for (String artifact : unusedTransitiveArtifactsCoordinates) {
             String unusedTransitiveDependencyId = getArtifactGroupArtifactId(artifact);
@@ -362,8 +373,10 @@ public class DepCleanGradleAction implements Action<Project> {
               if (dependency.getName().equals(unusedTransitiveDependencyId)) {
                 // i.e. this dependency should be excluded from all it's parents.
                 Set<ResolvedDependency> parents = dependency.getParents();
-                parents.forEach(s -> excludedTransitiveArtifactsMap
-                    .put(s.getName(), unusedTransitiveDependencyId));
+                parents.forEach(
+                    s ->
+                        excludedTransitiveArtifactsMap.put(
+                            s.getName(), unusedTransitiveDependencyId));
                 break; // Not need to check further.
               }
             }
@@ -374,7 +387,8 @@ public class DepCleanGradleAction implements Action<Project> {
       }
 
       /* Write the debloated-dependencies.gradle file */
-      final Path pathToDebloatedDependencies = projectDirPath.resolve("debloated-dependencies.gradle");
+      final Path pathToDebloatedDependencies =
+          projectDirPath.resolve("debloated-dependencies.gradle");
       File debloatedDependencies = pathToDebloatedDependencies.toFile();
       try {
         // Delete the previous existence (if exist).
@@ -387,43 +401,46 @@ public class DepCleanGradleAction implements Action<Project> {
       }
 
       try {
-        GradleWritingUtils.writeGradle(debloatedDependencies,
-            dependenciesToAdd,
-            excludedTransitiveArtifactsMap);
+        GradleWritingUtils.writeGradle(
+            debloatedDependencies, dependenciesToAdd, excludedTransitiveArtifactsMap);
       } catch (IOException e) {
         throw new GradleException(e.getMessage(), e);
       }
       logger.lifecycle("Dependencies debloated successfully");
-      logger.lifecycle("debloated-dependencies.gradle file created in: "
-          + pathToDebloatedDependencies);
+      logger.lifecycle(
+          "debloated-dependencies.gradle file created in: " + pathToDebloatedDependencies);
     }
 
     /* Writing the JSON file with the debloat results */
     if (createResultJson) {
       printString("Creating depclean-results.json, please wait...");
-      final File jsonFile = projectDirPath.resolve("build" + File.separator + "depclean-results.json").toFile();
-      final File classUsageFile = projectDirPath.resolve("build" + File.separator + "class-usage.csv").toFile();
+      final File jsonFile =
+          projectDirPath.resolve("build" + File.separator + "depclean-results.json").toFile();
+      final File classUsageFile =
+          projectDirPath.resolve("build" + File.separator + "class-usage.csv").toFile();
       if (createClassUsageCsv) {
         printString("Creating class-usage.csv, please wait...");
         try {
-          FileUtils.write(classUsageFile, "OriginClass,TargetClass,Dependency\n", Charset.defaultCharset());
+          FileUtils.write(
+              classUsageFile, "OriginClass,TargetClass,Dependency\n", Charset.defaultCharset());
         } catch (IOException e) {
           logger.error("Error writing the CSV header.");
         }
       }
-      JsonResultWriter jsonResultWriter = new JsonResultWriter(
-          project,
-          classUsageFile,
-          dependencyAnalyzer,
-          SizeOfDependencies,
-          createClassUsageCsv,
-          declaredDependencies,
-          usedDirectArtifactsCoordinates,
-          usedInheritedArtifactsCoordinates,
-          usedTransitiveArtifactsCoordinates,
-          unusedDirectArtifactsCoordinates,
-          unusedInheritedArtifactsCoordinates,
-          unusedTransitiveArtifactsCoordinates);
+      JsonResultWriter jsonResultWriter =
+          new JsonResultWriter(
+              project,
+              classUsageFile,
+              dependencyAnalyzer,
+              SizeOfDependencies,
+              createClassUsageCsv,
+              declaredDependencies,
+              usedDirectArtifactsCoordinates,
+              usedInheritedArtifactsCoordinates,
+              usedTransitiveArtifactsCoordinates,
+              unusedDirectArtifactsCoordinates,
+              unusedInheritedArtifactsCoordinates,
+              unusedTransitiveArtifactsCoordinates);
       try {
         FileWriter fw = new FileWriter(jsonFile, Charset.defaultCharset());
         jsonResultWriter.write(fw);
@@ -439,7 +456,6 @@ public class DepCleanGradleAction implements Action<Project> {
         logger.lifecycle("class-usage.csv file created in: " + classUsageFile.getAbsolutePath());
       }
     }
-
   }
 
   /**
@@ -465,13 +481,12 @@ public class DepCleanGradleAction implements Action<Project> {
    * Copies the dependency locally inside the build/Dependency directory.
    *
    * @param dependencyDirPath Directory path
-   * @param allArtifacts      All project's artifacts (all dependencies)
+   * @param allArtifacts All project's artifacts (all dependencies)
    * @return A file which contain the copied dependencies.
    */
   @NonNull
   public File copyDependenciesLocally(
-      @NonNull final Path dependencyDirPath,
-      @NonNull final Set<ResolvedArtifact> allArtifacts) {
+      @NonNull final Path dependencyDirPath, @NonNull final Set<ResolvedArtifact> allArtifacts) {
     File dependencyDirectory = dependencyDirPath.toFile();
     for (ResolvedArtifact artifact : allArtifacts) {
       // copying jar files directly from the user's .m2 directory
@@ -490,14 +505,14 @@ public class DepCleanGradleAction implements Action<Project> {
   /**
    * To get the size of each dependency (artifact).
    *
-   * @param dependencyDirPath Directory path where all the copied dependencies are
-   *                          stored.
-   * @param logger            To show some warnings.
+   * @param dependencyDirPath Directory path where all the copied dependencies are stored.
+   * @param logger To show some warnings.
    */
-  public void addDependencySize(@NonNull final Path dependencyDirPath, @NonNull final Logger logger) {
+  public void addDependencySize(
+      @NonNull final Path dependencyDirPath, @NonNull final Logger logger) {
     if (dependencyDirPath.toFile().exists()) {
-      Iterator<File> iterator = FileUtils.iterateFiles(
-          dependencyDirPath.toFile(), new String[] { "jar" }, true);
+      Iterator<File> iterator =
+          FileUtils.iterateFiles(dependencyDirPath.toFile(), new String[] {"jar"}, true);
       while (iterator.hasNext()) {
         File file = iterator.next();
         SizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
@@ -511,11 +526,10 @@ public class DepCleanGradleAction implements Action<Project> {
    * Only decompress the jar files inside any directory.
    *
    * @param dependencyDirectory The directory.
-   * @param dependencyDirPath   Path to the directory.
+   * @param dependencyDirPath Path to the directory.
    */
   public void decompressDependencies(
-      @NonNull final File dependencyDirectory,
-      @NonNull final String dependencyDirPath) {
+      @NonNull final File dependencyDirectory, @NonNull final String dependencyDirPath) {
     if (dependencyDirectory.exists()) {
       JarUtils.decompress(dependencyDirPath);
     } else {
@@ -526,13 +540,12 @@ public class DepCleanGradleAction implements Action<Project> {
   /**
    * Util function to print the information of the analyzed artifacts.
    *
-   * @param info         The usage status (used or unused) and type (direct,
-   *                     transitive, inherited) of artifacts.
+   * @param info The usage status (used or unused) and type (direct, transitive, inherited) of
+   *     artifacts.
    * @param dependencies The GAV of the artifact.
    */
   private void printInfoOfDependencies(
-      @NonNull final String info,
-      @NonNull final Set<String> dependencies) {
+      @NonNull final String info, @NonNull final Set<String> dependencies) {
     printString(info.toUpperCase() + " [" + dependencies.size() + "]" + ": ");
     printDependencies(dependencies);
   }
@@ -547,14 +560,13 @@ public class DepCleanGradleAction implements Action<Project> {
   }
 
   /**
-   * Print the status of the dependencies to the standard output.
-   * The format is: "[coordinates][scope] [(size)]"
+   * Print the status of the dependencies to the standard output. The format is:
+   * "[coordinates][scope] [(size)]"
    *
    * @param dependencies The set dependencies to print.
    */
   private void printDependencies(@NonNull final Set<String> dependencies) {
-    dependencies
-        .stream()
+    dependencies.stream()
         .sorted(Comparator.comparing(this::getSizeOfDependency))
         .collect(Collectors.toCollection(LinkedList::new))
         .descendingIterator()
@@ -562,13 +574,12 @@ public class DepCleanGradleAction implements Action<Project> {
   }
 
   /**
-   * Utility method to obtain the size of a dependency from a map of
-   * dependency -> size. If the size of the dependency cannot be obtained form
-   * the map (no key with the name of the dependency exists), then it returns 0.
+   * Utility method to obtain the size of a dependency from a map of dependency -> size. If the size
+   * of the dependency cannot be obtained form the map (no key with the name of the dependency
+   * exists), then it returns 0.
    *
    * @param dependency The coordinates of a dependency.
-   * @return The size of the dependency if its name is a key in the map,
-   *         otherwise it returns 0.
+   * @return The size of the dependency if its name is a key in the map, otherwise it returns 0.
    */
   @NonNull
   private Long getSizeOfDependency(@NonNull final String dependency) {
@@ -611,25 +622,28 @@ public class DepCleanGradleAction implements Action<Project> {
   }
 
   /**
-   * Normalize configuration names to maintain backward compatibility.
-   * Maps modern Gradle configuration names to legacy names expected by tests.
+   * Normalize configuration names to maintain backward compatibility. Maps modern Gradle
+   * configuration names to legacy names expected by tests.
    */
   private static String normalizeConfigurationName(String configuration) {
     if (configuration == null) {
       return "compile"; // default fallback
     }
-    
+
     // Map modern configuration names back to legacy names for display
     return switch (configuration) {
       case "runtimeElements", "runtimeClasspath", "apiElements", "compileClasspath" -> "compile";
-      case "testRuntimeElements", "testRuntimeClasspath", "testApiElements", "testCompileClasspath" -> "testCompile";
+      case "testRuntimeElements",
+              "testRuntimeClasspath",
+              "testApiElements",
+              "testCompileClasspath" ->
+          "testCompile";
       default -> configuration; // keep original for other cases
     };
   }
 
   /**
-   * Remove those artifacts coordinates which belong to the configuration, ignored
-   * by the user.
+   * Remove those artifacts coordinates which belong to the configuration, ignored by the user.
    *
    * @param artifactCoordinates Coordinates of the artifact.
    * @return Un-ignored coordinates.
@@ -683,7 +697,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @return Set of all children
    */
   @NonNull
-  public Set<ResolvedDependency> getAllChildren(@NonNull final Set<ResolvedDependency> allDependencies) {
+  public Set<ResolvedDependency> getAllChildren(
+      @NonNull final Set<ResolvedDependency> allDependencies) {
     Set<ResolvedDependency> allChildren = new HashSet<>();
     for (ResolvedDependency dependency : allDependencies) {
       allChildren.addAll(dependency.getChildren());

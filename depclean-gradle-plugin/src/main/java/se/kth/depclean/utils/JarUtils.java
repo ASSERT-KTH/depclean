@@ -17,8 +17,6 @@
 
 package se.kth.depclean.utils;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -28,20 +26,17 @@ import java.util.Enumeration;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
-/**
- * Utility class to handle JAR files.
- */
+/** Utility class to handle JAR files. */
 @Slf4j
 public final class JarUtils {
 
-  /**
-   * Size of the buffer to read/write data.
-   */
+  /** Size of the buffer to read/write data. */
   private static final int BUFFER_SIZE = 16384;
 
-  private JarUtils() {
-  }
+  private JarUtils() {}
 
   /**
    * Decompress all JAR files located in a given directory.
@@ -51,7 +46,9 @@ public final class JarUtils {
   public static void decompress(final String outputDirectory) {
     File files = new File(outputDirectory);
     for (File f : Objects.requireNonNull(files.listFiles())) {
-      if (f.getName().endsWith(".jar") || f.getName().endsWith(".war") || f.getName().endsWith(".ear")) {
+      if (f.getName().endsWith(".jar")
+          || f.getName().endsWith(".war")
+          || f.getName().endsWith(".ear")) {
         try {
           JarUtils.decompressDependencyFiles(f.getAbsolutePath());
           // delete the original dependency jar file
@@ -99,7 +96,9 @@ public final class JarUtils {
             is.close();
           }
         }
-        if (currentEntry.endsWith(".jar") || currentEntry.endsWith(".war") || currentEntry.endsWith(".ear")) {
+        if (currentEntry.endsWith(".jar")
+            || currentEntry.endsWith(".war")
+            || currentEntry.endsWith(".ear")) {
           // found a zip file, try to open
           decompressDependencyFiles(destFile.getAbsolutePath());
           FileUtils.forceDelete(new File(destFile.getAbsolutePath()));

@@ -4,9 +4,7 @@ import java.util.Set;
 import lombok.Getter;
 import se.kth.depclean.core.model.Dependency;
 
-/**
- * A debloated dependency.
- */
+/** A debloated dependency. */
 @Getter
 public class DebloatedDependency extends Dependency {
 

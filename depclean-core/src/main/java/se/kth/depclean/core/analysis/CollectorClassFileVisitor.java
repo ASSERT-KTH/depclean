@@ -28,13 +28,10 @@ import java.util.Set;
  *
  * @see #getClasses()
  */
-public class CollectorClassFileVisitor
-    implements ClassFileVisitor {
+public class CollectorClassFileVisitor implements ClassFileVisitor {
   // fields -----------------------------------------------------------------
 
-  /**
-   * Set of all classes.
-   */
+  /** Set of all classes. */
   private final Set<String> classes;
 
   // constructors -----------------------------------------------------------
@@ -49,7 +46,7 @@ public class CollectorClassFileVisitor
    * {@link ClassFileVisitor}.
    *
    * @param className Name of the class
-   * @param in        To read the bytes.
+   * @param in To read the bytes.
    */
   @Override
   public void visitClass(String className, InputStream in) {

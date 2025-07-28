@@ -29,21 +29,21 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 /**
- * A directed graph G = (V, E) where V is a set of classes and E is a set of
- * edges. Edges represent class member calls between the classes in V.
+ * A directed graph G = (V, E) where V is a set of classes and E is a set of edges. Edges represent
+ * class member calls between the classes in V.
  */
 @Slf4j
 public class DefaultCallGraph {
 
-  private static final AbstractBaseGraph<String, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(
-      DefaultEdge.class);
+  private static final AbstractBaseGraph<String, DefaultEdge> directedGraph =
+      new DefaultDirectedGraph<>(DefaultEdge.class);
   private static final Set<String> projectVertices = new HashSet<>();
   private static final Map<String, Set<String>> usagesPerClass = new HashMap<>();
 
   /**
    * Add an edge to the call graph of classes.
    *
-   * @param clazz                  The source.
+   * @param clazz The source.
    * @param referencedClassMembers The target.
    */
   public static void addEdge(String clazz, Set<String> referencedClassMembers) {
@@ -61,8 +61,8 @@ public class DefaultCallGraph {
   }
 
   /**
-   * Traverses the call graph to obtain a set of all the reachable classes from a
-   * set of classes. Classes are vertices in the graph.
+   * Traverses the call graph to obtain a set of all the reachable classes from a set of classes.
+   * Classes are vertices in the graph.
    *
    * @param projectClasses The classes in the Maven project.
    * @return All the referenced classes.
@@ -113,5 +113,4 @@ public class DefaultCallGraph {
   public static Map<String, Set<String>> getUsagesPerClass() {
     return usagesPerClass;
   }
-
 }

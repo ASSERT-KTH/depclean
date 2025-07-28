@@ -32,8 +32,8 @@ import org.objectweb.asm.signature.SignatureVisitor;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
 /**
- * Computes the set of classes referenced by visited code. Inspired by
- * <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
+ * Computes the set of classes referenced by visited code. Inspired by <code>
+ * org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
  */
 public class DefaultClassVisitor extends ClassVisitor {
 
@@ -43,10 +43,9 @@ public class DefaultClassVisitor extends ClassVisitor {
   private final FieldVisitor fieldVisitor;
   private final MethodVisitor methodVisitor;
 
-  /**
-   * Ctor.
-   */
-  public DefaultClassVisitor(@NonNull SignatureVisitor signatureVisitor,
+  /** Ctor. */
+  public DefaultClassVisitor(
+      @NonNull SignatureVisitor signatureVisitor,
       @NonNull AnnotationVisitor annotationVisitor,
       @NonNull FieldVisitor fieldVisitor,
       @NonNull MethodVisitor methodVisitor,
@@ -60,8 +59,13 @@ public class DefaultClassVisitor extends ClassVisitor {
   }
 
   @Override
-  public void visit(final int version, final int access, @Nullable final String name, @Nullable final String signature,
-      @Nullable final String superName, @Nullable final String[] interfaces) {
+  public void visit(
+      final int version,
+      final int access,
+      @Nullable final String name,
+      @Nullable final String signature,
+      @Nullable final String superName,
+      @Nullable final String[] interfaces) {
     ClassMembersVisitorCounter.addVisitedClass();
     if (signature == null) {
       resultCollector.addName(superName);
@@ -90,7 +94,11 @@ public class DefaultClassVisitor extends ClassVisitor {
   }
 
   @Override
-  public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
+  public FieldVisitor visitField(
+      final int access,
+      final String name,
+      final String desc,
+      final String signature,
       final Object value) {
     ClassMembersVisitorCounter.addVisitedField();
     if (signature == null) {
@@ -105,7 +113,11 @@ public class DefaultClassVisitor extends ClassVisitor {
   }
 
   @Override
-  public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
+  public MethodVisitor visitMethod(
+      final int access,
+      final String name,
+      final String desc,
+      final String signature,
       final String[] exceptions) {
     ClassMembersVisitorCounter.addVisitedMethod();
     if (signature == null) {

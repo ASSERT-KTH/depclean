@@ -8,9 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for {@link FileUtils}.
- */
+/** Unit tests for {@link FileUtils}. */
 @Slf4j
 class FileUtilsTest {
 
@@ -22,10 +20,7 @@ class FileUtilsTest {
   void setUp() {
     try {
       // make a copy of the directory containing the JAR files
-      org.apache.commons.io.FileUtils.copyDirectory(
-          originalDir,
-          copyDir
-      );
+      org.apache.commons.io.FileUtils.copyDirectory(originalDir, copyDir);
     } catch (IOException e) {
       log.error("Error copying the directory: src/test/resources/JarUtilsResources");
     }
@@ -39,5 +34,4 @@ class FileUtilsTest {
     }
     Assertions.assertFalse(copyDir.exists());
   }
-
 }

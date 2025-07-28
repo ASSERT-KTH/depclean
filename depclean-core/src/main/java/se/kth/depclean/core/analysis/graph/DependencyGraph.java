@@ -4,7 +4,8 @@ import java.util.Set;
 import se.kth.depclean.core.model.Dependency;
 
 /**
- * Should build a graph of dependencies, so that it can be requested for any representation of this graph.
+ * Should build a graph of dependencies, so that it can be requested for any representation of this
+ * graph.
  */
 public interface DependencyGraph {
 

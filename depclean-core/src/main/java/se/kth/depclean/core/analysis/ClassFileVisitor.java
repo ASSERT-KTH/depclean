@@ -21,16 +21,14 @@ package se.kth.depclean.core.analysis;
 
 import java.io.InputStream;
 
-/**
- * Visits the class' bytecode constructs.
- */
+/** Visits the class' bytecode constructs. */
 public interface ClassFileVisitor {
 
   /**
    * To visit the classes.
    *
    * @param className Name of the class
-   * @param in        To read the bytes.
+   * @param in To read the bytes.
    */
   void visitClass(String className, InputStream in);
 }

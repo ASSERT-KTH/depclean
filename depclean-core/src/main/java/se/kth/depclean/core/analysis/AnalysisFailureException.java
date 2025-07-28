@@ -1,8 +1,6 @@
 package se.kth.depclean.core.analysis;
 
-/**
- * Indicates the analysis should fail.
- */
+/** Indicates the analysis should fail. */
 public class AnalysisFailureException extends Exception {
 
   /**

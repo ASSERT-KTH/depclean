@@ -10,12 +10,10 @@ import org.junit.jupiter.api.Test;
 class ClassFileVisitorUtilsTest {
 
   @BeforeEach
-  void setUp() {
-  }
+  void setUp() {}
 
   @AfterEach
-  void tearDown() {
-  }
+  void tearDown() {}
 
   @Test
   void testGetChild() {
@@ -23,5 +21,4 @@ class ClassFileVisitorUtilsTest {
     Path child = Paths.get("Documents", "SVG");
     Assertions.assertEquals(child.toString(), ClassFileVisitorUtils.getChild(parent.toString()));
   }
-
 }

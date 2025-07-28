@@ -38,9 +38,7 @@ import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
 
-/**
- * Project dependencies analysis result.
- */
+/** Project dependencies analysis result. */
 @Getter
 @EqualsAndHashCode
 @Slf4j
@@ -59,9 +57,7 @@ public class ProjectDependencyAnalysis {
   private final Map<Dependency, DependencyTypes> dependencyClassesMap;
   private final DependencyGraph dependencyGraph;
 
-  /**
-   * Creates a project dependency analysis result.
-   */
+  /** Creates a project dependency analysis result. */
   public ProjectDependencyAnalysis(
       Set<Dependency> usedDirectDependencies,
       Set<Dependency> usedTransitiveDependencies,
@@ -107,26 +103,35 @@ public class ProjectDependencyAnalysis {
     return !unusedInheritedTransitiveDependencies.isEmpty();
   }
 
-  /**
-   * Displays the analysis result.
-   */
+  /** Displays the analysis result. */
   public void print() {
     printString(SEPARATOR);
     printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
     printString(SEPARATOR);
     printInfoOfDependencies("Used direct dependencies", getUsedDirectDependencies());
     printInfoOfDependencies("Used transitive dependencies", getUsedTransitiveDependencies());
-    printInfoOfDependencies("Used inherited direct dependencies", getUsedInheritedDirectDependencies());
-    printInfoOfDependencies("Used inherited transitive dependencies", getUsedInheritedTransitiveDependencies());
-    printInfoOfDependencies("Potentially unused direct dependencies", getUnusedDirectDependencies());
-    printInfoOfDependencies("Potentially unused transitive dependencies", getUnusedTransitiveDependencies());
-    printInfoOfDependencies("Potentially unused inherited direct dependencies", getUnusedInheritedDirectDependencies());
-    printInfoOfDependencies("Potentially unused inherited transitive dependencies", getUnusedInheritedTransitiveDependencies());
+    printInfoOfDependencies(
+        "Used inherited direct dependencies", getUsedInheritedDirectDependencies());
+    printInfoOfDependencies(
+        "Used inherited transitive dependencies", getUsedInheritedTransitiveDependencies());
+    printInfoOfDependencies(
+        "Potentially unused direct dependencies", getUnusedDirectDependencies());
+    printInfoOfDependencies(
+        "Potentially unused transitive dependencies", getUnusedTransitiveDependencies());
+    printInfoOfDependencies(
+        "Potentially unused inherited direct dependencies", getUnusedInheritedDirectDependencies());
+    printInfoOfDependencies(
+        "Potentially unused inherited transitive dependencies",
+        getUnusedInheritedTransitiveDependencies());
     if (!ignoredDependencies.isEmpty()) {
       printString(SEPARATOR);
       printString(
           "Dependencies ignored in the analysis by the user"
-              + " [" + ignoredDependencies.size() + "]" + ":" + " ");
+              + " ["
+              + ignoredDependencies.size()
+              + "]"
+              + ":"
+              + " ");
       ignoredDependencies.forEach(s -> printString("\t" + s));
     }
   }
@@ -149,8 +154,7 @@ public class ProjectDependencyAnalysis {
         getType(dependency),
         dependency.getSize(),
         toValue(dependencyClassesMap.get(dependency).getAllTypes()),
-        toValue(dependencyClassesMap.get(dependency).getUsedTypes())
-    );
+        toValue(dependencyClassesMap.get(dependency).getUsedTypes()));
   }
 
   /**
@@ -163,9 +167,7 @@ public class ProjectDependencyAnalysis {
     dependencies.addAll(getUsedInheritedDirectDependencies());
     dependencies.addAll(getUsedInheritedTransitiveDependencies());
     dependencies.addAll(getUsedTransitiveDependencies());
-    return dependencies.stream()
-        .map(this::toDebloatedDependency)
-        .collect(toImmutableSet());
+    return dependencies.stream().map(this::toDebloatedDependency).collect(toImmutableSet());
   }
 
   /**
@@ -178,22 +180,19 @@ public class ProjectDependencyAnalysis {
     dependencies.addAll(getUnusedInheritedDirectDependencies());
     dependencies.addAll(getUnusedInheritedTransitiveDependencies());
     dependencies.addAll(getUnusedTransitiveDependencies());
-    return dependencies.stream()
-        .map(this::toDebloatedDependency)
-        .collect(toImmutableSet());
+    return dependencies.stream().map(this::toDebloatedDependency).collect(toImmutableSet());
   }
 
   private Dependency findByCoordinates(String coordinate) {
     return dependencyClassesMap.keySet().stream()
         .filter(dc -> dc.toString().contains(coordinate))
         .findFirst()
-        .orElseThrow(() -> new RuntimeException("Unable to find " + coordinate + " in dependencies"));
+        .orElseThrow(
+            () -> new RuntimeException("Unable to find " + coordinate + " in dependencies"));
   }
 
   private TreeSet<String> toValue(Set<ClassName> types) {
-    return types.stream()
-        .map(ClassName::getValue)
-        .collect(toCollection(TreeSet::new));
+    return types.stream().map(ClassName::getValue).collect(toCollection(TreeSet::new));
   }
 
   private String getStatus(Dependency coordinates) {
@@ -204,10 +203,11 @@ public class ProjectDependencyAnalysis {
       return "used";
     } else {
       return (unusedDirectDependencies.contains(coordinates)
-          || unusedInheritedDirectDependencies.contains(coordinates)
-          || unusedInheritedTransitiveDependencies.contains(coordinates)
-          || unusedTransitiveDependencies.contains(coordinates))
-          ? "bloated" : "unknown";
+              || unusedInheritedDirectDependencies.contains(coordinates)
+              || unusedInheritedTransitiveDependencies.contains(coordinates)
+              || unusedTransitiveDependencies.contains(coordinates))
+          ? "bloated"
+          : "unknown";
     }
   }
 
@@ -222,9 +222,9 @@ public class ProjectDependencyAnalysis {
       return "inherited";
     } else {
       return (usedTransitiveDependencies.contains(coordinates)
-          || unusedTransitiveDependencies
-          .contains(coordinates))
-          ? "transitive" : "unknown";
+              || unusedTransitiveDependencies.contains(coordinates))
+          ? "transitive"
+          : "unknown";
     }
   }
 
@@ -235,7 +235,8 @@ public class ProjectDependencyAnalysis {
   /**
    * Util function to print the information of the analyzed artifacts.
    *
-   * @param info         The usage status (used or unused) and type (direct, transitive, inherited) of artifacts.
+   * @param info The usage status (used or unused) and type (direct, transitive, inherited) of
+   *     artifacts.
    * @param dependencies The GAV of the artifact.
    */
   private void printInfoOfDependencies(final String info, final Set<Dependency> dependencies) {
@@ -244,13 +245,13 @@ public class ProjectDependencyAnalysis {
   }
 
   /**
-   * Print the status of the dependencies to the standard output. The format is: "[coordinates][scope] [(size)]"
+   * Print the status of the dependencies to the standard output. The format is:
+   * "[coordinates][scope] [(size)]"
    *
    * @param dependencies The set dependencies to print.
    */
   private void printDependencies(final Set<Dependency> dependencies) {
-    dependencies
-        .stream()
+    dependencies.stream()
         .sorted(Comparator.comparing(Dependency::getSize))
         .collect(Collectors.toCollection(LinkedList::new))
         .descendingIterator()
@@ -258,10 +259,12 @@ public class ProjectDependencyAnalysis {
   }
 
   private DebloatedDependency toDebloatedDependency(Dependency dependency) {
-    final Set<Dependency> dependenciesForParent = dependencyGraph.getDependenciesForParent(dependency);
-    final Set<Dependency> dependenciesToExclude = dependenciesForParent.stream()
-        .filter(dep -> getUnusedTransitiveDependencies().contains(dep))
-        .collect(Collectors.toSet());
+    final Set<Dependency> dependenciesForParent =
+        dependencyGraph.getDependenciesForParent(dependency);
+    final Set<Dependency> dependenciesToExclude =
+        dependenciesForParent.stream()
+            .filter(dep -> getUnusedTransitiveDependencies().contains(dep))
+            .collect(Collectors.toSet());
     return new DebloatedDependency(dependency, copyOf(dependenciesToExclude));
   }
 }

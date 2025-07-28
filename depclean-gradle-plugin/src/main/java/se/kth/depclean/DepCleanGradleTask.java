@@ -6,21 +6,14 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 
-/**
- * Task that configures out the bloated dependencies.
- */
+/** Task that configures out the bloated dependencies. */
 public abstract class DepCleanGradleTask extends DefaultTask {
 
-  /**
-   * The project instance injected during configuration to avoid Task.project
-   * deprecation.
-   */
+  /** The project instance injected during configuration to avoid Task.project deprecation. */
   @Internal
   public abstract Property<Project> getTargetProject();
 
-  /**
-   * Action that analyzes the project dependencies and show the results.
-   */
+  /** Action that analyzes the project dependencies and show the results. */
   @TaskAction
   public void analyzeProject() {
 
@@ -37,5 +30,4 @@ public abstract class DepCleanGradleTask extends DefaultTask {
       defaultAction.execute(subproject);
     }
   }
-
 }

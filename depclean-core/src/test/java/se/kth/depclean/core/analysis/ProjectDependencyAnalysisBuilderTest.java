@@ -98,9 +98,17 @@ class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
     final ProjectDependencyAnalysisBuilder analysisBuilder =
         new ProjectDependencyAnalysisBuilder(context, actualUsedClasses);
 
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_IO_DEPENDENCY.toString()).getStatus())
+    assertThat(
+            analysisBuilder
+                .analyse()
+                .getDependencyInfo(COMMONS_IO_DEPENDENCY.toString())
+                .getStatus())
         .isEqualTo("used");
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_LANG_DEPENDENCY.toString()).getStatus())
+    assertThat(
+            analysisBuilder
+                .analyse()
+                .getDependencyInfo(COMMONS_LANG_DEPENDENCY.toString())
+                .getStatus())
         .isEqualTo("bloated");
   }
 
@@ -112,11 +120,20 @@ class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
     final ProjectDependencyAnalysisBuilder analysisBuilder =
         new ProjectDependencyAnalysisBuilder(context, actualUsedClasses);
 
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_IO_DEPENDENCY.toString()).getType())
+    assertThat(
+            analysisBuilder.analyse().getDependencyInfo(COMMONS_IO_DEPENDENCY.toString()).getType())
         .isEqualTo("direct");
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_LANG_DEPENDENCY.toString()).getType())
+    assertThat(
+            analysisBuilder
+                .analyse()
+                .getDependencyInfo(COMMONS_LANG_DEPENDENCY.toString())
+                .getType())
         .isEqualTo("inherited");
-    assertThat(analysisBuilder.analyse().getDependencyInfo(COMMONS_LOGGING_DEPENDENCY.toString()).getType())
+    assertThat(
+            analysisBuilder
+                .analyse()
+                .getDependencyInfo(COMMONS_LOGGING_DEPENDENCY.toString())
+                .getType())
         .isEqualTo("transitive");
   }
 
@@ -129,17 +146,23 @@ class ProjectDependencyAnalysisBuilderTest implements ProjectContextCreator {
         new ProjectDependencyAnalysisBuilder(context, actualUsedClasses);
 
     assertThat(analysisBuilder.analyse().getDependencyClassesMap())
-        .hasEntrySatisfying(COMMONS_IO_DEPENDENCY, dependencyTypes -> {
-          assertThat(dependencyTypes.getAllTypes()).hasSize(123);
-          assertThat(dependencyTypes.getUsedTypes()).hasSize(1);
-        })
-        .hasEntrySatisfying(COMMONS_LANG_DEPENDENCY, dependencyTypes -> {
-          assertThat(dependencyTypes.getAllTypes()).hasSize(345);
-          assertThat(dependencyTypes.getUsedTypes()).isEmpty();
-        })
-        .hasEntrySatisfying(COMMONS_LOGGING_DEPENDENCY, dependencyTypes -> {
-          assertThat(dependencyTypes.getAllTypes()).hasSize(20);
-          assertThat(dependencyTypes.getUsedTypes()).isEmpty();
-        });
+        .hasEntrySatisfying(
+            COMMONS_IO_DEPENDENCY,
+            dependencyTypes -> {
+              assertThat(dependencyTypes.getAllTypes()).hasSize(123);
+              assertThat(dependencyTypes.getUsedTypes()).hasSize(1);
+            })
+        .hasEntrySatisfying(
+            COMMONS_LANG_DEPENDENCY,
+            dependencyTypes -> {
+              assertThat(dependencyTypes.getAllTypes()).hasSize(345);
+              assertThat(dependencyTypes.getUsedTypes()).isEmpty();
+            })
+        .hasEntrySatisfying(
+            COMMONS_LOGGING_DEPENDENCY,
+            dependencyTypes -> {
+              assertThat(dependencyTypes.getAllTypes()).hasSize(20);
+              assertThat(dependencyTypes.getUsedTypes()).isEmpty();
+            });
   }
 }

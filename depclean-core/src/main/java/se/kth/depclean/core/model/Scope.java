@@ -5,9 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * Represents a dependency scope.
- */
+/** Represents a dependency scope. */
 @Getter
 @ToString
 @EqualsAndHashCode

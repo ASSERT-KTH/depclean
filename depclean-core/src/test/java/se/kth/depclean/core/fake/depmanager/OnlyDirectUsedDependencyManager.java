@@ -1,9 +1,10 @@
 package se.kth.depclean.core.fake.depmanager;
 
 import static com.google.common.collect.ImmutableSet.of;
-import org.apache.log4j.Logger;
+
 import java.nio.file.Path;
 import java.util.Set;
+import org.apache.log4j.Logger;
 
 public class OnlyDirectUsedDependencyManager extends FakeDependencyManager {
 

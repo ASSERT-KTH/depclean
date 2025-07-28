@@ -10,28 +10,20 @@ import org.jspecify.annotations.Nullable;
 
 public class GradleProjectDependencyAnalysis {
 
-  /**
-   * Store all the used declared artifacts (ie. used direct dependencies).
-   */
+  /** Store all the used declared artifacts (ie. used direct dependencies). */
   private final Set<ResolvedArtifact> usedDeclaredArtifacts;
 
-  /**
-   * Store all the used undeclared artifacts (ie. used transitive dependencies).
-   */
+  /** Store all the used undeclared artifacts (ie. used transitive dependencies). */
   private final Set<ResolvedArtifact> usedUndeclaredArtifacts;
 
-  /**
-   * Store all the unused declared artifacts (ie. unused transitive dependencies).
-   */
+  /** Store all the unused declared artifacts (ie. unused transitive dependencies). */
   private final Set<ResolvedArtifact> unusedDeclaredArtifacts;
 
-  /**
-   * The only or default constructor to invoke this class object.
-   */
+  /** The only or default constructor to invoke this class object. */
   public GradleProjectDependencyAnalysis(
-          @Nullable final Set<ResolvedArtifact> usedDeclaredArtifacts,
-          @Nullable final Set<ResolvedArtifact> usedUndeclaredArtifacts,
-          @Nullable final Set<ResolvedArtifact> unusedDeclaredArtifacts) {
+      @Nullable final Set<ResolvedArtifact> usedDeclaredArtifacts,
+      @Nullable final Set<ResolvedArtifact> usedUndeclaredArtifacts,
+      @Nullable final Set<ResolvedArtifact> unusedDeclaredArtifacts) {
     this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
     this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
     this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
@@ -45,13 +37,12 @@ public class GradleProjectDependencyAnalysis {
    */
   @NonNull
   private Set<ResolvedArtifact> safeCopy(@Nullable final Set<ResolvedArtifact> set) {
-    return (set == null) ? Collections.emptySet()
+    return (set == null)
+        ? Collections.emptySet()
         : Collections.unmodifiableSet(new LinkedHashSet<ResolvedArtifact>(set));
   }
 
-  /**
-   * Overrides the hash code value method of the object.
-   */
+  /** Overrides the hash code value method of the object. */
   @Override
   public int hashCode() {
     int hashCode = getUsedDeclaredArtifacts().hashCode();
@@ -66,7 +57,9 @@ public class GradleProjectDependencyAnalysis {
    * @return {@link Artifact}
    */
   @NonNull
-  public Set<ResolvedArtifact> getUsedDeclaredArtifacts() { return usedDeclaredArtifacts; }
+  public Set<ResolvedArtifact> getUsedDeclaredArtifacts() {
+    return usedDeclaredArtifacts;
+  }
 
   /**
    * Used but not declared artifacts.
@@ -88,9 +81,7 @@ public class GradleProjectDependencyAnalysis {
     return unusedDeclaredArtifacts;
   }
 
-  /**
-   * Overrides the standard equals method of Object.
-   */
+  /** Overrides the standard equals method of Object. */
   @Override
   public boolean equals(@Nullable final Object object) {
     if (object instanceof GradleProjectDependencyAnalysis) {
@@ -102,9 +93,7 @@ public class GradleProjectDependencyAnalysis {
     return false;
   }
 
-  /**
-   * Overrides de toString standard method of class Object @see java.lang.Object#toString().
-   */
+  /** Overrides de toString standard method of class Object @see java.lang.Object#toString(). */
   @NonNull
   @Override
   public String toString() {

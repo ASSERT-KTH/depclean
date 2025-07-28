@@ -25,9 +25,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.Type;
 
-/**
- * Used for storing the types visited statically.
- */
+/** Used for storing the types visited statically. */
 public class ResultCollector {
 
   private final Set<String> classes = new HashSet<>();

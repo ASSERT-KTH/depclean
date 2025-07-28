@@ -24,9 +24,7 @@ import java.net.URL;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * The default class analyzer.
- */
+/** The default class analyzer. */
 @Slf4j
 public class DefaultClassAnalyzer implements ClassAnalyzer {
 
@@ -47,5 +45,4 @@ public class DefaultClassAnalyzer implements ClassAnalyzer {
     }
     return visitor.getClasses();
   }
-
 }

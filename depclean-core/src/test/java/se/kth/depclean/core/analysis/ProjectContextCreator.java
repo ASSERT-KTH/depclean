@@ -36,8 +36,7 @@ public interface ProjectContextCreator {
             of(COMMONS_IO_DEPENDENCY, JUNIT_DEPENDENCY),
             of(COMMONS_LANG_DEPENDENCY),
             of(COMMONS_MATH_DEPENDENCY),
-            of(COMMONS_LOGGING_DEPENDENCY)
-        ),
+            of(COMMONS_LOGGING_DEPENDENCY)),
         of(Paths.get("target/classes")),
         of(Paths.get("target/test-classes")),
         Paths.get("/main"),
@@ -45,8 +44,7 @@ public interface ProjectContextCreator {
         Paths.get(""),
         Collections.emptySet(),
         Collections.emptySet(),
-        Collections.emptySet()
-    );
+        Collections.emptySet());
   }
 
   default ProjectContext createContextIgnoringTests() {
@@ -56,8 +54,7 @@ public interface ProjectContextCreator {
             of(COMMONS_IO_DEPENDENCY, JUNIT_DEPENDENCY),
             of(COMMONS_LANG_DEPENDENCY),
             of(COMMONS_MATH_DEPENDENCY),
-            of(COMMONS_LOGGING_DEPENDENCY)
-        ),
+            of(COMMONS_LOGGING_DEPENDENCY)),
         of(Paths.get("target/classes")),
         of(Paths.get("target/test-classes")),
         Paths.get("/main"),
@@ -65,8 +62,7 @@ public interface ProjectContextCreator {
         Paths.get(""),
         of(new Scope("test")),
         Collections.emptySet(),
-        Collections.emptySet()
-    );
+        Collections.emptySet());
   }
 
   default ProjectContext createContextIgnoringDependency() {
@@ -76,8 +72,7 @@ public interface ProjectContextCreator {
             of(COMMONS_IO_DEPENDENCY),
             of(COMMONS_LANG_DEPENDENCY),
             of(COMMONS_MATH_DEPENDENCY),
-            of(COMMONS_LOGGING_DEPENDENCY)
-        ),
+            of(COMMONS_LOGGING_DEPENDENCY)),
         of(Paths.get("target/classes")),
         of(Paths.get("target/test-classes")),
         Paths.get("/main"),
@@ -85,30 +80,17 @@ public interface ProjectContextCreator {
         Paths.get(""),
         of(new Scope("test")),
         of(COMMONS_IO_DEPENDENCY),
-        Collections.emptySet()
-    );
+        Collections.emptySet());
   }
 
   static Dependency createDependency(String name) {
     final File jarFile = new File("src/test/resources/analysisResources/" + name + ".jar");
-    return new Dependency(
-        "se.kth.depclean.core.analysis",
-        name,
-        "1.0.0",
-        "compile",
-        jarFile
-    );
+    return new Dependency("se.kth.depclean.core.analysis", name, "1.0.0", "compile", jarFile);
   }
 
   static Dependency createTestDependency(String name) {
     final File jarFile = new File("src/test/resources/analysisResources/" + name + ".jar");
-    return new Dependency(
-        "se.kth.depclean.core.analysis",
-        name,
-        "1.0.0",
-        "test",
-        jarFile
-    );
+    return new Dependency("se.kth.depclean.core.analysis", name, "1.0.0", "test", jarFile);
   }
 
   @AllArgsConstructor

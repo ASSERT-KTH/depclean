@@ -6,9 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * The result of a dependency analysis.
- */
+/** The result of a dependency analysis. */
 @Getter
 @ToString
 @EqualsAndHashCode

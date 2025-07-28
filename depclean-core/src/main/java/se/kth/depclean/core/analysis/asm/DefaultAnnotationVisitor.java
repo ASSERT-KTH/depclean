@@ -26,8 +26,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 /**
- * Computes the set of classes referenced by visited code. Inspired by
- * <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
+ * Computes the set of classes referenced by visited code. Inspired by <code>
+ * org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
  */
 public class DefaultAnnotationVisitor extends AnnotationVisitor {
 
@@ -46,13 +46,15 @@ public class DefaultAnnotationVisitor extends AnnotationVisitor {
   }
 
   @Override
-  public void visitEnum(@Nullable final String name, @NonNull final String desc, @Nullable final String value) {
+  public void visitEnum(
+      @Nullable final String name, @NonNull final String desc, @Nullable final String value) {
     resultCollector.addDesc(desc);
   }
 
   @Override
   @Nullable
-  public AnnotationVisitor visitAnnotation(@Nullable final String name, @NonNull final String desc) {
+  public AnnotationVisitor visitAnnotation(
+      @Nullable final String name, @NonNull final String desc) {
     resultCollector.addDesc(desc);
     return this;
   }

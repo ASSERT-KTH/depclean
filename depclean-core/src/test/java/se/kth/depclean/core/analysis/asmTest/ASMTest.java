@@ -22,8 +22,8 @@ import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 public class ASMTest {
 
   // Resource class for testing.
-  private static final File classFile = new File(
-          "src/test/resources/asmAndGraphResources/ExampleClass.class");
+  private static final File classFile =
+      new File("src/test/resources/asmAndGraphResources/ExampleClass.class");
 
   @Test
   @DisplayName("Test that the default asm classes are working fine.")
@@ -35,22 +35,12 @@ public class ASMTest {
 
     AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(resultCollector);
     SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(resultCollector);
-    FieldVisitor fieldVisitor = new DefaultFieldVisitor(
-        annotationVisitor,
-        resultCollector
-    );
-    MethodVisitor methodVisitor = new DefaultMethodVisitor(
-        annotationVisitor,
-        signatureVisitor,
-        resultCollector
-    );
-    DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
-        signatureVisitor,
-        annotationVisitor,
-        fieldVisitor,
-        methodVisitor,
-        resultCollector
-    );
+    FieldVisitor fieldVisitor = new DefaultFieldVisitor(annotationVisitor, resultCollector);
+    MethodVisitor methodVisitor =
+        new DefaultMethodVisitor(annotationVisitor, signatureVisitor, resultCollector);
+    DefaultClassVisitor defaultClassVisitor =
+        new DefaultClassVisitor(
+            signatureVisitor, annotationVisitor, fieldVisitor, methodVisitor, resultCollector);
 
     reader.accept(defaultClassVisitor, 0);
 

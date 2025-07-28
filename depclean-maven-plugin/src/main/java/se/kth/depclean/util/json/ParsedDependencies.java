@@ -17,8 +17,9 @@ import lombok.AllArgsConstructor;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /**
- * Uses the DepClean analysis results and the dependency tree of the project to produce a JSON file. This file represent
- * the structure of the dependency tree enriched with metadata of the usage or not of each dependency.
+ * Uses the DepClean analysis results and the dependency tree of the project to produce a JSON file.
+ * This file represent the structure of the dependency tree enriched with metadata of the usage or
+ * not of each dependency.
  */
 @AllArgsConstructor
 public class ParsedDependencies {
@@ -29,27 +30,24 @@ public class ParsedDependencies {
   private final boolean createCallgraphCsv;
 
   /**
-   * Creates string with the JSON representation of the enriched dependency tree of the Maven project.
+   * Creates string with the JSON representation of the enriched dependency tree of the Maven
+   * project.
    *
-   * @return The JSON representation of the dependency tree of the project with additional metadata of the
-   *         used/unused dependencies.
-   *
+   * @return The JSON representation of the dependency tree of the project with additional metadata
+   *     of the used/unused dependencies.
    * @throws ParseException if there are parsing errors.
-   * @throws IOException    if the JSON file cannot be written.
+   * @throws IOException if the JSON file cannot be written.
    */
   public String parseTreeToJson() throws ParseException, IOException {
     InputType type = InputType.TEXT;
-    Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(treeFile), StandardCharsets.UTF_8));
+    Reader r =
+        new BufferedReader(
+            new InputStreamReader(new FileInputStream(treeFile), StandardCharsets.UTF_8));
     Parser parser = type.newParser();
     Node tree = parser.parse(r);
-    NodeAdapter nodeAdapter = new NodeAdapter(
-        analysis,
-        classUsageFile,
-        createCallgraphCsv
-    );
-    GsonBuilder gsonBuilder = new GsonBuilder()
-        .setPrettyPrinting()
-        .registerTypeAdapter(Node.class, nodeAdapter);
+    NodeAdapter nodeAdapter = new NodeAdapter(analysis, classUsageFile, createCallgraphCsv);
+    GsonBuilder gsonBuilder =
+        new GsonBuilder().setPrettyPrinting().registerTypeAdapter(Node.class, nodeAdapter);
     Gson gson = gsonBuilder.create();
     return gson.toJson(tree);
   }

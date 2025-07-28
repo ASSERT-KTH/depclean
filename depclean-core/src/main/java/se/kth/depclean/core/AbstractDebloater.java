@@ -8,18 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.model.DebloatedDependency;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
-/**
- * Analyses the analysis result and writes the debloated config file.
- */
+/** Analyses the analysis result and writes the debloated config file. */
 @Slf4j
 @AllArgsConstructor
 public abstract class AbstractDebloater<T> {
 
   protected final ProjectDependencyAnalysis analysis;
 
-  /**
-   * Writes the debloated config file down.
-   */
+  /** Writes the debloated config file down. */
   public void write() throws IOException {
     log.info("Starting debloating POM file...");
     logChanges();
@@ -41,30 +37,31 @@ public abstract class AbstractDebloater<T> {
   protected abstract void logDependencies();
 
   /**
-   * In order to keep the version as variable (property) for dependencies that
-   * were declared as such,
-   * post-process dependencies to replace interpolated version with the initial
-   * one.
+   * In order to keep the version as variable (property) for dependencies that were declared as
+   * such, post-process dependencies to replace interpolated version with the initial one.
    */
   protected abstract void postProcessDependencies();
 
   private void logChanges() {
     if (analysis.hasUsedTransitiveDependencies()) {
       final int nbUsedTransitiveDeps = analysis.getUsedTransitiveDependencies().size();
-      log.info("Adding {} used transitive {} as direct {}.",
+      log.info(
+          "Adding {} used transitive {} as direct {}.",
           nbUsedTransitiveDeps,
           getDependencyWording(nbUsedTransitiveDeps),
           getDependencyWording(nbUsedTransitiveDeps));
     }
     if (analysis.hasUnusedDirectDependencies()) {
       final int nbUnusedDirectDeps = analysis.getUnusedDirectDependencies().size();
-      log.info("Removing {} unused direct {}.",
+      log.info(
+          "Removing {} unused direct {}.",
           nbUnusedDirectDeps,
           getDependencyWording(nbUnusedDirectDeps));
     }
     if (analysis.hasUnusedTransitiveDependencies()) {
       final int nbUnusedTransitiveDeps = analysis.getUnusedTransitiveDependencies().size();
-      log.info("Excluding {} unused transitive {} one-by-one.",
+      log.info(
+          "Excluding {} unused transitive {} one-by-one.",
           nbUnusedTransitiveDeps,
           getDependencyWording(nbUnusedTransitiveDeps));
     }

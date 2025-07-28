@@ -22,14 +22,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Utility class to handle files and directories.
- */
+/** Utility class to handle files and directories. */
 @Slf4j
 public final class FileUtils {
 
-  private FileUtils() {
-  }
+  private FileUtils() {}
 
   /**
    * Deletes a directory recursively.
@@ -79,7 +76,7 @@ public final class FileUtils {
       throw new IllegalArgumentException(message);
     }
     final File[] files = directory.listFiles();
-    if (files == null) {  // null if security restricted
+    if (files == null) { // null if security restricted
       throw new IOException("Failed to list contents of " + directory);
     }
     return files;

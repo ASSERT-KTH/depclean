@@ -7,7 +7,8 @@ import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.ProjectContext;
 
 /**
- * Contains the actual classes used in the project (i.e. in classes, processors, configurations, etc.)
+ * Contains the actual classes used in the project (i.e. in classes, processors, configurations,
+ * etc.)
  */
 @Slf4j
 public class ActualUsedClasses {

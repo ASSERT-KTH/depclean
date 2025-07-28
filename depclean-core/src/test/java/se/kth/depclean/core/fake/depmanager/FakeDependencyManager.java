@@ -25,8 +25,7 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
   private final FakeDependencyGraph dependencyGraph;
 
   public FakeDependencyManager(Logger log) {
-    this(log, new FakeDependencyGraph() {
-    });
+    this(log, new FakeDependencyGraph() {});
   }
 
   public FakeDependencyManager(Logger log, FakeDependencyGraph dependencyGraph) {
@@ -105,7 +104,8 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public AbstractDebloater<? extends Serializable> getDebloater(ProjectDependencyAnalysis analysis) {
+  public AbstractDebloater<? extends Serializable> getDebloater(
+      ProjectDependencyAnalysis analysis) {
     return null;
   }
 
@@ -115,13 +115,14 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public void generateDependencyTree(File treeFile) {
-
-  }
+  public void generateDependencyTree(File treeFile) {}
 
   @Override
-  public String getTreeAsJson(File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile,
-                              boolean createClassUsageCsv) {
+  public String getTreeAsJson(
+      File treeFile,
+      ProjectDependencyAnalysis analysis,
+      File classUsageFile,
+      boolean createClassUsageCsv) {
     return null;
   }
 }
