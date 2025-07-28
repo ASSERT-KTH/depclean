@@ -1,55 +1,260 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
   <!-- Coordinates -->
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-parent-pom</artifactId>
   <version>2.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <modelVersion>4.0.0</modelVersion>
 
   <!-- Name of the parent module -->
   <name>depclean-parent-pom</name>
 
-  <!-- Global properties -->
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <!-- plugins -->
-    <compiler.release>21</compiler.release>
-    <javadoc.source>21</javadoc.source>
-    <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
-    <jacoco.plugin.version>0.8.13</jacoco.plugin.version>
-    <coveralls.plugin.version>4.3.0</coveralls.plugin.version>
-    <surefire.plugin.version>3.5.3</surefire.plugin.version>
-    <compiler.plugin.version>3.14.0</compiler.plugin.version>
-    <!-- dependencies -->
-    <lombok.version>1.18.38</lombok.version>
-    <slf4j-api.version>2.0.17</slf4j-api.version>
-    <slf4j-log4j12.version>2.0.17</slf4j-log4j12.version>
-    <findbugs.annotations.version>3.0.1u2</findbugs.annotations.version>
-    <!-- do not change -->
-    <junit5.version>5.13.4</junit5.version>
-  </properties>
-
   <!-- Project description-->
   <description>DepClean is a tool that automatically debloats dependencies in Java projects</description>
+
+  <!-- List of modules -->
+  <modules>
+    <module>depclean-core</module>
+    <module>depclean-maven-plugin</module>
+  </modules>
+
+  <!-- Global properties -->
+  <properties>
+    <!-- Dependencies -->
+    <assertj.version>3.27.3</assertj.version>
+    <jaxb-api.version>2.3.1</jaxb-api.version>
+    <junit-jupiter.version>5.13.4</junit-jupiter.version>
+    <lombok.version>1.18.38</lombok.version>
+    <slf4j-reload4j.version>2.0.17</slf4j-reload4j.version>
+
+    <!-- Plugins -->
+    <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
+    <error_prone_core.version>2.41.0</error_prone_core.version>
+    <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+    <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
+    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+    <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
+    <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
+    <maven-project-info-reports-plugin.version>3.9.0</maven-project-info-reports-plugin.version>
+    <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
+    <maven-site-plugin.version>3.21.0</maven-site-plugin.version>
+    <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+    <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+    <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
+    <nullaway.version>0.12.7</nullaway.version>
+    <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
+    <spotbugs-annotations.version>4.9.3</spotbugs-annotations.version>
+    <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
+
+    <!-- Sonar, Checkstyle, etc. -->
+    <linkXRef>false</linkXRef>
+    <java.version>17</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
+  <!-- List of global dependencies -->
+  <dependencies>
+    <!-- Utils -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>${spotbugs-annotations.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-reload4j</artifactId>
+      <version>${slf4j-reload4j.version}</version>
+    </dependency>
+
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+    </dependency>
+  </dependencies>
+
+  <!-- Build options -->
+  <build>
+    <pluginManagement>
+      <plugins>
+        <!-- Coveralls plugin -->
+        <plugin>
+          <groupId>org.eluder.coveralls</groupId>
+          <artifactId>coveralls-maven-plugin</artifactId>
+          <version>${coveralls-maven-plugin.version}</version>
+          <configuration>
+            <jacocoReports>
+              <jacocoReport>${project.basedir}/depclean-core/target/site/jacoco/jacoco.xml</jacocoReport>
+              <jacocoReport>${project.basedir}/depclean-maven-plugin/target/site/jacoco/jacoco.xml</jacocoReport>
+            </jacocoReports>
+            <failOnServiceError>false</failOnServiceError>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>javax.xml.bind</groupId>
+              <artifactId>jaxb-api</artifactId>
+              <version>${jaxb-api.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+
+        <!-- SonarCloud plugin -->
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <!-- see versions at https://search.maven.org/search?q=g:org.sonarsource.scanner.maven%20AND%20a:sonar-maven-plugin -->
+          <version>${sonar-maven-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <!-- Maven compiler plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <release>${java.version}</release>
+          <compilerArgs>
+            <arg>-parameters</arg>
+            <arg>-XDcompilePolicy=simple</arg>
+            <!-- arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=se.kth.depclean</arg -->
+          </compilerArgs>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+            <!-- path>
+              <groupId>com.google.errorprone</groupId>
+              <artifactId>error_prone_core</artifactId>
+              <version>${error_prone_core.version}</version>
+            </path>
+            <path>
+              <groupId>com.uber.nullaway</groupId>
+              <artifactId>nullaway</artifactId>
+              <version>${nullaway.version}</version>
+            </path -->
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+
+      <!-- Javadoc plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven-javadoc-plugin.version}</version>
+        <configuration>
+          <source>${java.version}</source>
+          <doclint>none</doclint>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Maven site -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>${maven-site-plugin.version}</version>
+      </plugin>
+
+      <!-- Maven project info -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>${maven-project-info-reports-plugin.version}</version>
+      </plugin>
+
+      <!-- Surefire plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+        <configuration>
+          <excludes>
+            <exclude>**/resources/**/*.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <!-- Spotless plugin for code formatting -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless-maven-plugin.version}</version>
+        <configuration>
+          <java>
+            <googleJavaFormat></googleJavaFormat>
+          </java>
+        </configuration>
+        <!-- check for latest -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>apply</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--JaCoCo plugin-->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <phase>prepare-package</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
   <url>https://github.com/castor-software/depclean</url>
-
-  <!-- Issues are managed on GitHub -->
-  <issueManagement>
-    <system>GitHub Issues</system>
-    <url>https://github.com/castor-software/depclean/issues</url>
-  </issueManagement>
-
-  <!-- SCM -->
-  <scm>
-    <url>https://github.com/castor-software/depclean/</url>
-    <connection>scm:git:git:github.com/castor-software/depclean.git</connection>
-    <developerConnection>scm:git:git@github.com:castor-software/depclean.git</developerConnection>
-  </scm>
 
   <!-- License statement -->
   <licenses>
@@ -71,176 +276,29 @@
     </developer>
   </developers>
 
-  <!-- List of modules -->
-  <modules>
-    <module>depclean-core</module>
-    <module>depclean-maven-plugin</module>
-  </modules>
+  <!-- SCM -->
+  <scm>
+    <connection>scm:git:git:github.com/castor-software/depclean.git</connection>
+    <developerConnection>scm:git:git@github.com:castor-software/depclean.git</developerConnection>
+    <url>https://github.com/castor-software/depclean/</url>
+  </scm>
 
-  <!-- List of global dependencies -->
-  <dependencies>
-    <!-- Utils -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <!-- Logging -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${slf4j-api.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4j-log4j12.version}</version>
-    </dependency>
-    <!-- Testing -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit5.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit5.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>${junit5.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Dependencies -->
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
-      <version>${findbugs.annotations.version}</version>
-    </dependency>
-  </dependencies>
+  <!-- Issues are managed on GitHub -->
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/castor-software/depclean/issues</url>
+  </issueManagement>
 
   <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
     <repository>
       <id>ossrh</id>
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
   </distributionManagement>
-
-  <!-- Build options -->
-  <build>
-    <pluginManagement>
-      <plugins>
-        <!-- Coveralls plugin -->
-        <plugin>
-          <groupId>org.eluder.coveralls</groupId>
-          <artifactId>coveralls-maven-plugin</artifactId>
-          <version>${coveralls.plugin.version}</version>
-          <dependencies>
-            <dependency>
-              <groupId>javax.xml.bind</groupId>
-              <artifactId>jaxb-api</artifactId>
-              <version>2.3.1</version>
-            </dependency>
-          </dependencies>
-          <configuration>
-            <jacocoReports>
-              <jacocoReport>
-                ${project.basedir}/depclean-core/target/site/jacoco/jacoco.xml
-              </jacocoReport>
-              <jacocoReport>
-                ${project.basedir}/depclean-maven-plugin/target/site/jacoco/jacoco.xml
-              </jacocoReport>
-            </jacocoReports>
-            <failOnServiceError>false</failOnServiceError>
-          </configuration>
-        </plugin>
-        <!-- SonarCloud plugin -->
-        <plugin>
-          <groupId>org.sonarsource.scanner.maven</groupId>
-          <artifactId>sonar-maven-plugin</artifactId>
-          <!-- see versions at https://search.maven.org/search?q=g:org.sonarsource.scanner.maven%20AND%20a:sonar-maven-plugin -->
-          <version>3.11.0.3922</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-
-    <plugins>
-      <!-- Maven compiler plugin -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${compiler.plugin.version}</version>
-        <configuration>
-          <release>21</release>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-              <version>${lombok.version}</version>
-            </path>
-          </annotationProcessorPaths>
-          <source>21</source>
-          <target>21</target>
-          <compilerArgs>
-            <arg>-parameters</arg>
-          </compilerArgs>
-          <fork>true</fork>
-        </configuration>
-      </plugin>
-      <!-- Maven site -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>3.21.0</version>
-      </plugin>
-      <!-- Maven project info -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.9.0</version>
-      </plugin>
-      <!-- Surefire plugin -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.plugin.version}</version>
-        <configuration>
-          <excludes>
-            <exclude>**/resources/**/*.java</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-      <!--JaCoCo plugin-->
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${jacoco.plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>report</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 
   <profiles>
     <!-- To deploy via command line use: `mvn deploy -P deploy` -->
@@ -248,20 +306,12 @@
       <id>deploy</id>
       <build>
         <plugins>
-          <!-- Maven compiler plugin -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.14.0</version>
-            <configuration>
-              <release>21</release>
-            </configuration>
-          </plugin>
+
           <!-- Maven source plugin -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.3.1</version>
+            <version>${maven-source-plugin.version}</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -271,44 +321,28 @@
               </execution>
             </executions>
           </plugin>
-          <!-- Javadoc plugin -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.11.2</version>
-            <configuration>
-              <source>${javadoc.source}</source>
-              <doclint>none</doclint>
-            </configuration>
-            <executions>
-              <execution>
-                <id>attach-javadocs</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
+
           <!-- Maven GPG plugin to sign the components -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.2.8</version>
+            <version>${maven-gpg-plugin.version}</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
-                <phase>verify</phase>
                 <goals>
                   <goal>sign</goal>
                 </goals>
+                <phase>verify</phase>
               </execution>
             </executions>
           </plugin>
+
           <!-- Nexus Staging Maven plugin for deployment to Sonatype-->
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.7.0</version>
+            <version>${nexus-staging-maven-plugin.version}</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>ossrh</serverId>
@@ -316,12 +350,13 @@
               <autoReleaseAfterClose>true</autoReleaseAfterClose>
             </configuration>
           </plugin>
+
           <!-- Performing a release deployment with the Maven Release Plugin -->
           <!-- see https://central.sonatype.org/pages/apache-maven.html -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-release-plugin</artifactId>
-            <version>3.1.1</version>
+            <version>${maven-release-plugin.version}</version>
             <configuration>
               <autoVersionSubmodules>true</autoVersionSubmodules>
               <useReleaseProfile>false</useReleaseProfile>

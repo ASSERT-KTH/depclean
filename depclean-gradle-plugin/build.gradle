@@ -1,14 +1,18 @@
 plugins {
-  id 'java'
-  id 'groovy'
-  id 'java-gradle-plugin'
-  id 'maven-publish'
+    id 'java'
+    id 'groovy'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+    // id "net.ltgt.errorprone" version "4.3.0"  // Temporarily disabled
+    id 'jvm-test-suite'
 }
 
 java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(21))
-  }
+    toolchain {
+      languageVersion.set(JavaLanguageVersion.of(17))
+    }
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 group 'se.kth.castor'
@@ -19,28 +23,73 @@ repositories {
   mavenCentral()
 }
 
+ext {
+    depcleanVersion = '2.2.0-SNAPSHOT'
+    findbugsAnnotationsVersion = '3.0.1u2'
+    jspecifyVersion = '1.0.0'
+    junitVersion = '5.13.3'
+    lombokVersion = '1.18.38'
+    nullawayVersion = '0.12.7'
+    errorProneCoreVersion = '2.41.0'
+    errorProneJavacVersion = '9+181-r4173-1'
+    slf4jVersion = '2.0.17'
+    spockVersion = '2.3-groovy-3.0'
+}
+
 dependencies {
   implementation(gradleApi())
   implementation(gradleTestKit())
-  implementation('se.kth.castor:depclean-core:2.2.0-SNAPSHOT')
-  implementation('se.kth.castor:depclean-maven-plugin:2.2.0-SNAPSHOT')
-  implementation('org.slf4j:slf4j-log4j12:2.0.17')
-  implementation('com.google.code.findbugs:annotations:3.0.1')
-  compileOnly('org.projectlombok:lombok:1.18.38')
-  annotationProcessor 'org.projectlombok:lombok:1.18.38'
-  testImplementation('org.spockframework:spock-core:2.3-groovy-4.0')
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.4'
+    implementation("se.kth.castor:depclean-core:${depcleanVersion}")
+    implementation("se.kth.castor:depclean-maven-plugin:${depcleanVersion}")
+    implementation("org.slf4j:slf4j-log4j12:${slf4jVersion}")
+    compileOnly("org.jspecify:jspecify:${jspecifyVersion}")
+    implementation("com.google.code.findbugs:annotations:${findbugsAnnotationsVersion}")
+
+    compileOnly("org.projectlombok:lombok:${lombokVersion}")
+    annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+
+    testImplementation("org.spockframework:spock-core:${spockVersion}")
+
+    implementation("com.google.code.findbugs:annotations:${findbugsAnnotationsVersion}")
+
+    // ErrorProne dependencies - temporarily disabled
+    // annotationProcessor("com.uber.nullaway:nullaway:${nullawayVersion}")
+    // errorprone("com.google.errorprone:error_prone_core:${errorProneCoreVersion}")
+    // compileOnly("com.google.errorprone:error_prone_annotations:${errorProneCoreVersion}")
+    // errorproneJavac("com.google.errorprone:javac:${errorProneJavacVersion}")
 }
 
-test {
-  useJUnitPlatform()
+testing {
+    suites {
+        test {
+            useSpock()
+        }
+    }
 }
 
 gradlePlugin {
   plugins {
-    demoPlugin {
+        depcleanPlugin {
       id = 'se.kth.castor.depclean-gradle-plugin'
       implementationClass = 'se.kth.depclean.DepCleanGradlePlugin'
+            displayName = 'DepClean Gradle Plugin'
+            description = 'A plugin to analyze and debloat dependencies in Gradle projects'
     }
   }
 }
+
+// ErrorProne configuration - temporarily disabled
+/*
+import net.ltgt.gradle.errorprone.CheckSeverity
+
+tasks.withType(JavaCompile).configureEach {
+    options.errorprone {
+        check("NullAway", CheckSeverity.ERROR)
+        option("NullAway:AnnotatedPackages", "se.kth.depclean")
+        // Disable NullAway on test code
+        if (name.toLowerCase().contains("test")) {
+            disable("NullAway")
+        }
+    }
+}
+*/

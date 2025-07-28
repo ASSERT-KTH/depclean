@@ -137,7 +137,7 @@ If all the tests pass, and the project builds correctly after these changes, the
 
 Prerequisites:
 
-- [Java OpenJDK 21](https://openjdk.java.net) or above
+- [Java OpenJDK 17](https://openjdk.java.net) or above
 - [Apache Maven](https://maven.apache.org/)
 
 In a terminal clone the repository and switch to the cloned folder:
