@@ -36,21 +36,21 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: "CheckStyle"
-        run: mvn validate --errors
+        run: mvn -ntp validate --errors
 
       - name: "Compile and Install"
-        run: mvn clean install -DskipTests --errors
+        run: mvn -ntp clean install -DskipTests --errors
 
       - name: "Unit Tests"
-        run: mvn test --errors --fail-at-end
+        run: mvn -ntp test --errors --fail-at-end
 
       - name: "Integration Tests"
-        run: mvn failsafe:integration-test --errors --fail-at-end
+        run: mvn -ntp failsafe:integration-test --errors --fail-at-end
 
         # The following is only executed on Ubuntu on Java 21
       - name: "JaCoCo Coverage Report"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        run: mvn jacoco:report
+        run: mvn -ntp jacoco:report
 
       - name: "Codecov"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
@@ -70,7 +70,7 @@ jobs:
 
       - name: "SonarCloud"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        run: mvn sonar:sonar -Dsonar.projectKey=castor-software_depclean -Dsonar.organization=castor-software -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.java.source=21 -Dsonar.java.target=21
+        run: mvn -ntp sonar:sonar -Dsonar.projectKey=castor-software_depclean -Dsonar.organization=castor-software -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.java.source=21 -Dsonar.java.target=21
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
