@@ -138,14 +138,35 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
         try (JarFile jarFile = new JarFile(file)) {
           Enumeration<JarEntry> jarEntries = jarFile.entries();
           Set<String> classes = new HashSet<>();
-          while (jarEntries.hasMoreElements()) {
-            String entry = jarEntries.nextElement().getName();
+
+          // Protection against ZIP bomb attacks
+          int maxEntries = 100_000; // Maximum number of entries to process
+          int entryCount = 0;
+
+          while (jarEntries.hasMoreElements() && entryCount < maxEntries) {
+            JarEntry jarEntry = jarEntries.nextElement();
+            String entry = jarEntry.getName();
+            entryCount++;
+
+            // Additional protection: skip entries with suspicious characteristics
+            if (entry.length() > 1000) { // Skip entries with very long names
+              continue;
+            }
+
             if (entry.endsWith(".class")) {
               String className = entry.replace('/', '.');
               className = className.substring(0, className.length() - ".class".length());
               classes.add(className);
             }
           }
+
+          if (entryCount >= maxEntries) {
+            log.warn(
+                "JAR file {} has too many entries ({}), processing truncated",
+                file.getName(),
+                entryCount);
+          }
+
           artifactClassMap.put(artifact, classes);
         }
       } else if (file.isDirectory()) {
