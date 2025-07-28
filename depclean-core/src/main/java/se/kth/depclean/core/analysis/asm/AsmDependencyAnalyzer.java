@@ -28,7 +28,7 @@ import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 /**
  * Dependency analyzer.
  */
-public class ASMDependencyAnalyzer implements DependencyAnalyzer {
+public class AsmDependencyAnalyzer implements DependencyAnalyzer {
 
   /**
    * Analyze the Updates the {@link ClassMembersVisitorCounter} class counters.

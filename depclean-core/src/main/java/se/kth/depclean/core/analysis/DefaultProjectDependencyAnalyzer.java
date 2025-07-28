@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
+import se.kth.depclean.core.analysis.asm.AsmDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.model.ClassName;
@@ -36,7 +36,7 @@ import se.kth.depclean.core.model.ProjectContext;
 @Slf4j
 public class DefaultProjectDependencyAnalyzer {
 
-  private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
+  private final DependencyAnalyzer dependencyAnalyzer = new AsmDependencyAnalyzer();
 
   /**
    * Analyze the dependencies in a project.

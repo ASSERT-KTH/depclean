@@ -23,7 +23,7 @@ import se.kth.depclean.core.model.ClassName;
  * tree enriched with metadata of the usage or not of each dependency.
  */
 @Slf4j
-public class writeJsonResult {
+public class JsonResultWriter {
 
   private final Project project;
   private final Set<ResolvedDependency> allDependencies;
@@ -41,7 +41,7 @@ public class writeJsonResult {
   /**
    * Ctor.
    */
-  public writeJsonResult(Project project,
+  public JsonResultWriter(Project project,
                          File classUsageFile,
                          DefaultGradleProjectDependencyAnalyzer dependencyAnalyzer,
                          Map<String, Long> sizeOfDependencies,

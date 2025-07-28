@@ -27,27 +27,29 @@ import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
-import se.kth.depclean.core.analysis.asm.ASMDependencyAnalyzer;
+import se.kth.depclean.core.analysis.asm.AsmDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.utils.DependencyUtils;
 
 /**
- * This is principal class that perform the dependency analysis in a Gradle project.
+ * This is principal class that perform the dependency analysis in a Gradle
+ * project.
  */
 @Slf4j
 @Component(role = GradleProjectDependencyAnalyzer.class)
 public class DefaultGradleProjectDependencyAnalyzer
-        implements GradleProjectDependencyAnalyzer {
+    implements GradleProjectDependencyAnalyzer {
 
   @Requirement
   private final ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
 
   @Requirement
-  private final DependencyAnalyzer dependencyAnalyzer = new ASMDependencyAnalyzer();
+  private final DependencyAnalyzer dependencyAnalyzer = new AsmDependencyAnalyzer();
 
   /**
-   * If true, the project's classes in target/test-classes are not going to be analyzed.
+   * If true, the project's classes in target/test-classes are not going to be
+   * analyzed.
    */
   private final boolean isIgnoredTest;
 
@@ -73,66 +75,68 @@ public class DefaultGradleProjectDependencyAnalyzer
    *
    * @param project The Gradle project to be analyzed.
    * @return An object with the usedDeclaredArtifacts, usedUndeclaredArtifacts,
-   *        and unusedDeclaredArtifacts.
+   *         and unusedDeclaredArtifacts.
    * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
    */
   @SneakyThrows
   @Override
   public GradleProjectDependencyAnalysis analyze(final Project project) {
-      // project's configurations.
-      ConfigurationContainer configurationContainer = project.getConfigurations();
-      Set<Configuration> configurations = new HashSet<>(configurationContainer);
+    // project's configurations.
+    ConfigurationContainer configurationContainer = project.getConfigurations();
+    Set<Configuration> configurations = new HashSet<>(configurationContainer);
 
-      DependencyUtils utils = new DependencyUtils();
-      // all resolved dependencies including transitive ones of the project.
-      Set<ResolvedDependency> allDependencies = utils.getAllDependencies(configurations);
+    DependencyUtils utils = new DependencyUtils();
+    // all resolved dependencies including transitive ones of the project.
+    Set<ResolvedDependency> allDependencies = utils.getAllDependencies(configurations);
 
-      // all resolved artifacts of this project
-      Set<ResolvedArtifact> allArtifacts = new HashSet<>();
-      for (ResolvedDependency dependency : allDependencies) {
-        allArtifacts.addAll(dependency.getModuleArtifacts());
-      }
+    // all resolved artifacts of this project
+    Set<ResolvedArtifact> allArtifacts = new HashSet<>();
+    for (ResolvedDependency dependency : allDependencies) {
+      allArtifacts.addAll(dependency.getModuleArtifacts());
+    }
 
-      // a map of [dependency] -> [classes]
-      artifactClassesMap = buildArtifactClassMap(allArtifacts);
+    // a map of [dependency] -> [classes]
+    artifactClassesMap = buildArtifactClassMap(allArtifacts);
 
-      // direct dependencies of the project
-      Set<ResolvedDependency> declaredDependencies = utils.getDeclaredDependencies(configurations);
+    // direct dependencies of the project
+    Set<ResolvedDependency> declaredDependencies = utils.getDeclaredDependencies(configurations);
 
-      // direct artifacts of the project
-      Set<ResolvedArtifact> declaredArtifacts = utils.getDeclaredArtifacts(declaredDependencies);
+    // direct artifacts of the project
+    Set<ResolvedArtifact> declaredArtifacts = utils.getDeclaredArtifacts(declaredDependencies);
 
-      /* ******************** bytecode analysis ********************* */
+    /* ******************** bytecode analysis ********************* */
 
-      // execute the analysis (note that the order of these operations matters!)
-      buildProjectDependencyClasses(project);
-      Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
-      buildDependenciesDependencyClasses(project);
+    // execute the analysis (note that the order of these operations matters!)
+    buildProjectDependencyClasses(project);
+    Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
+    buildDependenciesDependencyClasses(project);
 
-      /* ******************** usage analysis ********************* */
+    /* ******************** usage analysis ********************* */
 
-      // search for the dependencies used by the project
-      Set<ResolvedArtifact> usedArtifacts = collectUsedArtifacts(
-              artifactClassesMap,
-              DefaultCallGraph.referencedClassMembers(projectClasses)
-      );
+    // search for the dependencies used by the project
+    Set<ResolvedArtifact> usedArtifacts = collectUsedArtifacts(
+        artifactClassesMap,
+        DefaultCallGraph.referencedClassMembers(projectClasses));
 
-      /* ******************** results as statically used at the bytecode *********************** */
+    /*
+     * ******************** results as statically used at the bytecode
+     * ***********************
+     */
 
-      // for the used dependencies, get the ones that are declared
-      Set<ResolvedArtifact> usedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
-      usedDeclaredArtifacts.retainAll(usedArtifacts);
+    // for the used dependencies, get the ones that are declared
+    Set<ResolvedArtifact> usedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
+    usedDeclaredArtifacts.retainAll(usedArtifacts);
 
-      // for the used dependencies, remove the ones that are declared
-      Set<ResolvedArtifact> usedUndeclaredArtifacts = new LinkedHashSet<>(usedArtifacts);
-      usedUndeclaredArtifacts = removeAll(usedUndeclaredArtifacts, declaredArtifacts);
+    // for the used dependencies, remove the ones that are declared
+    Set<ResolvedArtifact> usedUndeclaredArtifacts = new LinkedHashSet<>(usedArtifacts);
+    usedUndeclaredArtifacts = removeAll(usedUndeclaredArtifacts, declaredArtifacts);
 
-      // for the declared dependencies, get the ones that are not used
-      Set<ResolvedArtifact> unusedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
-      unusedDeclaredArtifacts = removeAll(unusedDeclaredArtifacts, usedArtifacts);
+    // for the declared dependencies, get the ones that are not used
+    Set<ResolvedArtifact> unusedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
+    unusedDeclaredArtifacts = removeAll(unusedDeclaredArtifacts, usedArtifacts);
 
-      return new GradleProjectDependencyAnalysis(usedDeclaredArtifacts,
-              usedUndeclaredArtifacts, unusedDeclaredArtifacts);
+    return new GradleProjectDependencyAnalysis(usedDeclaredArtifacts,
+        usedUndeclaredArtifacts, unusedDeclaredArtifacts);
 
   }
 
@@ -145,7 +149,7 @@ public class DefaultGradleProjectDependencyAnalyzer
    * @throws IOException If the class cannot be analyzed.
    */
   public Map<ResolvedArtifact, Set<String>> buildArtifactClassMap(
-          final Set<ResolvedArtifact> allArtifacts) throws IOException {
+      final Set<ResolvedArtifact> allArtifacts) throws IOException {
     Map<ResolvedArtifact, Set<String>> artifactClassMap = new LinkedHashMap<>();
     for (ResolvedArtifact artifact : allArtifacts) {
       File file = artifact.getFile();
@@ -179,7 +183,7 @@ public class DefaultGradleProjectDependencyAnalyzer
    * @param project The gradle project.
    * @throws IOException In case of IO issues.
    */
-  private void  buildProjectDependencyClasses(final Project project) throws IOException {
+  private void buildProjectDependencyClasses(final Project project) throws IOException {
     Path classesDir = Paths.get(project.getProjectDir().getAbsolutePath(), "build", "classes");
 
     // Analyze src classes in the project
@@ -208,7 +212,7 @@ public class DefaultGradleProjectDependencyAnalyzer
    * @throws IOException In case of IO issues.
    */
   private void buildDependenciesDependencyClasses(final Project project) throws IOException {
-    Path path = Paths.get(project.getProjectDir().getAbsolutePath(),"build", "Dependency");
+    Path path = Paths.get(project.getProjectDir().getAbsolutePath(), "build", "Dependency");
     File dependenciesDirectory = path.toFile();
     checkThenCollectDependencyClasses(dependenciesDirectory);
   }
@@ -245,8 +249,8 @@ public class DefaultGradleProjectDependencyAnalyzer
    * @return The set of used artifacts.
    */
   private Set<ResolvedArtifact> collectUsedArtifacts(
-          final Map<ResolvedArtifact, Set<String>> artifactClassMap,
-          final Set<String> referencedClasses) {
+      final Map<ResolvedArtifact, Set<String>> artifactClassMap,
+      final Set<String> referencedClasses) {
     Set<ResolvedArtifact> usedArtifacts = new HashSet<>();
     for (String clazz : referencedClasses) {
       ResolvedArtifact artifact = findArtifactForClassName(artifactClassMap, clazz);
@@ -265,12 +269,12 @@ public class DefaultGradleProjectDependencyAnalyzer
    * Utility method to find whether a provided key is present in the map or not.
    *
    * @param artifactClassMap The map
-   * @param className The String (Expected key)
+   * @param className        The String (Expected key)
    * @return Key if it is present otherwise null.
    */
   private ResolvedArtifact findArtifactForClassName(
-          final Map<ResolvedArtifact, Set<String>> artifactClassMap,
-          final String className) {
+      final Map<ResolvedArtifact, Set<String>> artifactClassMap,
+      final String className) {
     for (Map.Entry<ResolvedArtifact, Set<String>> entry : artifactClassMap.entrySet()) {
       if (entry.getValue().contains(className)) {
         return entry.getKey();
@@ -280,22 +284,24 @@ public class DefaultGradleProjectDependencyAnalyzer
   }
 
   /**
-   * This method defines a new way to remove the artifacts by using the conflict id.
-   * We don't care about the version here because there can be only 1 for a given artifact anyway.
+   * This method defines a new way to remove the artifacts by using the conflict
+   * id.
+   * We don't care about the version here because there can be only 1 for a given
+   * artifact anyway.
    *
    * @param start  initial set
    * @param remove set to exclude
    * @return set with remove excluded
    */
   private Set<ResolvedArtifact> removeAll(
-          final Set<ResolvedArtifact> start,
-          final Set<ResolvedArtifact> remove) {
+      final Set<ResolvedArtifact> start,
+      final Set<ResolvedArtifact> remove) {
     Set<ResolvedArtifact> results = new LinkedHashSet<>(start.size());
     for (ResolvedArtifact artifact : start) {
       boolean found = false;
       for (ResolvedArtifact artifact2 : remove) {
         if (artifact.getId().equals(artifact2.getId())
-                && artifact.getName().equals(artifact2.getName())) {
+            && artifact.getName().equals(artifact2.getName())) {
           found = true;
           break;
         }
@@ -340,17 +346,17 @@ public class DefaultGradleProjectDependencyAnalyzer
       if (artifactUsedClassesMap.containsKey(resolvedArtifact)) {
         dependenciesClassMap
             .put(resolvedArtifact.getModuleVersion().toString(),
-            new DependencyTypes(
-                allClassNameSet, // get all the typesSet
-                usedClassNameSet // get used typesSet
-            ));
+                new DependencyTypes(
+                    allClassNameSet, // get all the typesSet
+                    usedClassNameSet // get used typesSet
+                ));
       } else {
         dependenciesClassMap
             .put(resolvedArtifact.getModuleVersion().toString(),
-            new DependencyTypes(
-                allClassNameSet, // get all the typesSet
-                new HashSet<>() // get used typesSet
-            ));
+                new DependencyTypes(
+                    allClassNameSet, // get all the typesSet
+                    new HashSet<>() // get used typesSet
+                ));
       }
     }
     return dependenciesClassMap;
