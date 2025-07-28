@@ -19,17 +19,17 @@ package se.kth.depclean.core.analysis.model;
  * under the License.
  */
 
-import static com.google.common.collect.ImmutableSet.copyOf;
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.stream.Collectors.toCollection;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -70,15 +70,17 @@ public class ProjectDependencyAnalysis {
       Set<Dependency> ignoredDependencies,
       Map<Dependency, DependencyTypes> dependencyClassesMap,
       DependencyGraph dependencyGraph) {
-    this.usedDirectDependencies = copyOf(usedDirectDependencies);
-    this.usedTransitiveDependencies = copyOf(usedTransitiveDependencies);
-    this.usedInheritedDirectDependencies = copyOf(usedInheritedDirectDependencies);
-    this.usedInheritedTransitiveDependencies = copyOf(usedInheritedTransitiveDependencies);
-    this.unusedDirectDependencies = copyOf(unusedDirectDependencies);
-    this.unusedTransitiveDependencies = copyOf(unusedTransitiveDependencies);
-    this.unusedInheritedDirectDependencies = copyOf(unusedInheritedDirectDependencies);
-    this.unusedInheritedTransitiveDependencies = copyOf(unusedInheritedTransitiveDependencies);
-    this.ignoredDependencies = copyOf(ignoredDependencies);
+    this.usedDirectDependencies = ImmutableSet.copyOf(usedDirectDependencies);
+    this.usedTransitiveDependencies = ImmutableSet.copyOf(usedTransitiveDependencies);
+    this.usedInheritedDirectDependencies = ImmutableSet.copyOf(usedInheritedDirectDependencies);
+    this.usedInheritedTransitiveDependencies =
+        ImmutableSet.copyOf(usedInheritedTransitiveDependencies);
+    this.unusedDirectDependencies = ImmutableSet.copyOf(unusedDirectDependencies);
+    this.unusedTransitiveDependencies = ImmutableSet.copyOf(unusedTransitiveDependencies);
+    this.unusedInheritedDirectDependencies = ImmutableSet.copyOf(unusedInheritedDirectDependencies);
+    this.unusedInheritedTransitiveDependencies =
+        ImmutableSet.copyOf(unusedInheritedTransitiveDependencies);
+    this.ignoredDependencies = ImmutableSet.copyOf(ignoredDependencies);
     this.dependencyClassesMap = dependencyClassesMap;
     this.dependencyGraph = dependencyGraph;
   }
@@ -142,6 +144,7 @@ public class ProjectDependencyAnalysis {
    * @param coordinate the dependency coordinate (groupId:dependencyId:version)
    * @return the information about the dependency
    */
+  @Nullable
   public DependencyAnalysisInfo getDependencyInfo(String coordinate) {
     Dependency dependency;
     try {
@@ -149,12 +152,16 @@ public class ProjectDependencyAnalysis {
     } catch (RuntimeException e) {
       return null;
     }
+    DependencyTypes dependencyTypes = dependencyClassesMap.get(dependency);
+    if (dependencyTypes == null) {
+      return null;
+    }
     return new DependencyAnalysisInfo(
         getStatus(dependency),
         getType(dependency),
         dependency.getSize(),
-        toValue(dependencyClassesMap.get(dependency).getAllTypes()),
-        toValue(dependencyClassesMap.get(dependency).getUsedTypes()));
+        toValue(dependencyTypes.getAllTypes()),
+        toValue(dependencyTypes.getUsedTypes()));
   }
 
   /**
@@ -167,7 +174,9 @@ public class ProjectDependencyAnalysis {
     dependencies.addAll(getUsedInheritedDirectDependencies());
     dependencies.addAll(getUsedInheritedTransitiveDependencies());
     dependencies.addAll(getUsedTransitiveDependencies());
-    return dependencies.stream().map(this::toDebloatedDependency).collect(toImmutableSet());
+    return dependencies.stream()
+        .map(this::toDebloatedDependency)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
@@ -180,7 +189,9 @@ public class ProjectDependencyAnalysis {
     dependencies.addAll(getUnusedInheritedDirectDependencies());
     dependencies.addAll(getUnusedInheritedTransitiveDependencies());
     dependencies.addAll(getUnusedTransitiveDependencies());
-    return dependencies.stream().map(this::toDebloatedDependency).collect(toImmutableSet());
+    return dependencies.stream()
+        .map(this::toDebloatedDependency)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   private Dependency findByCoordinates(String coordinate) {
@@ -191,6 +202,7 @@ public class ProjectDependencyAnalysis {
             () -> new RuntimeException("Unable to find " + coordinate + " in dependencies"));
   }
 
+  @SuppressWarnings("NonApiType") // TreeSet required by DependencyAnalysisInfo constructor
   private TreeSet<String> toValue(Set<ClassName> types) {
     return types.stream().map(ClassName::getValue).collect(toCollection(TreeSet::new));
   }
@@ -240,7 +252,7 @@ public class ProjectDependencyAnalysis {
    * @param dependencies The GAV of the artifact.
    */
   private void printInfoOfDependencies(final String info, final Set<Dependency> dependencies) {
-    printString(info.toUpperCase() + " [" + dependencies.size() + "]" + ": ");
+    printString(info.toUpperCase(Locale.ROOT) + " [" + dependencies.size() + "]" + ": ");
     printDependencies(dependencies);
   }
 
@@ -252,10 +264,8 @@ public class ProjectDependencyAnalysis {
    */
   private void printDependencies(final Set<Dependency> dependencies) {
     dependencies.stream()
-        .sorted(Comparator.comparing(Dependency::getSize))
-        .collect(Collectors.toCollection(LinkedList::new))
-        .descendingIterator()
-        .forEachRemaining(s -> printString("\t" + s.printWithSize()));
+        .sorted(Comparator.comparing(Dependency::getSize).reversed())
+        .forEach(s -> printString("\t" + s.printWithSize()));
   }
 
   private DebloatedDependency toDebloatedDependency(Dependency dependency) {
@@ -265,6 +275,6 @@ public class ProjectDependencyAnalysis {
         dependenciesForParent.stream()
             .filter(dep -> getUnusedTransitiveDependencies().contains(dep))
             .collect(Collectors.toSet());
-    return new DebloatedDependency(dependency, copyOf(dependenciesToExclude));
+    return new DebloatedDependency(dependency, ImmutableSet.copyOf(dependenciesToExclude));
   }
 }

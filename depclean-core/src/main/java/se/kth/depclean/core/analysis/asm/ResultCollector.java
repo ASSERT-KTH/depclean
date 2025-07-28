@@ -45,13 +45,11 @@ public class ResultCollector {
 
   void addType(@NonNull final Type t) {
     switch (t.getSort()) {
-      case Type.ARRAY:
-        addType(t.getElementType());
-        break;
-      case Type.OBJECT:
-        addName(t.getClassName().replace('.', '/'));
-        break;
-      default:
+      case Type.ARRAY -> addType(t.getElementType());
+      case Type.OBJECT -> addName(t.getClassName().replace('.', '/'));
+      default -> {
+        // no-op
+      }
     }
   }
 

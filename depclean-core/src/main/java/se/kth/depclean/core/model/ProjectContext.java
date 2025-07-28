@@ -1,8 +1,7 @@
 package se.kth.depclean.core.model;
 
-import static com.google.common.collect.ImmutableSet.copyOf;
-
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -82,11 +81,11 @@ public final class ProjectContext {
   }
 
   public Set<ClassName> getClassesForDependency(Dependency dependency) {
-    return copyOf(classesPerDependency.get(dependency));
+    return ImmutableSet.copyOf(classesPerDependency.get(dependency));
   }
 
   public Set<Dependency> getDependenciesForClass(ClassName className) {
-    return copyOf(dependenciesPerClass.get(className));
+    return ImmutableSet.copyOf(dependenciesPerClass.get(className));
   }
 
   public boolean hasNoDependencyOnClass(ClassName className) {
@@ -101,7 +100,7 @@ public final class ProjectContext {
   public Set<Dependency> getAllDependencies() {
     final Set<Dependency> dependencies = new HashSet<>(dependencyGraph.allDependencies());
     dependencies.add(dependencyGraph.projectCoordinates());
-    return copyOf(dependencies);
+    return ImmutableSet.copyOf(dependencies);
   }
 
   public boolean ignoreTests() {
@@ -129,6 +128,9 @@ public final class ProjectContext {
     final String declaredScope = dc.getScope();
     log.debug("ignoreScopes: " + ignoredScopes);
     log.debug("dc = " + dc + " declaredScope = " + declaredScope);
+    if (declaredScope == null) {
+      return true; // Don't exclude if scope is null
+    }
     return ignoredScopes.stream().map(Scope::getValue).noneMatch(declaredScope::equalsIgnoreCase);
   }
 }

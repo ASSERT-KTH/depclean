@@ -1,7 +1,6 @@
 package se.kth.depclean.core.model;
 
-import static com.google.common.collect.ImmutableSet.copyOf;
-
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -132,7 +131,7 @@ public class Dependency {
             + ":"
             + file);
     log.trace("Related classes: " + relatedClasses);
-    return copyOf(relatedClasses);
+    return ImmutableSet.copyOf(relatedClasses);
   }
 
   @NonNull
@@ -150,10 +149,9 @@ public class Dependency {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof Dependency that)) {
       return false;
     }
-    Dependency that = (Dependency) o;
     return Objects.equals(groupId, that.groupId)
         && Objects.equals(dependencyId, that.dependencyId)
         && Objects.equals(version, that.version)

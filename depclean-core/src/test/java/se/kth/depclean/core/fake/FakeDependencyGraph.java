@@ -1,7 +1,5 @@
 package se.kth.depclean.core.fake;
 
-import static com.google.common.collect.ImmutableSet.of;
-
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.util.Set;
@@ -31,30 +29,30 @@ public class FakeDependencyGraph implements DependencyGraph {
 
   @Override
   public Set<Dependency> directDependencies() {
-    return of(COMMONS_IO_DEPENDENCY);
+    return ImmutableSet.of(COMMONS_IO_DEPENDENCY);
   }
 
   @Override
   public Set<Dependency> transitiveDependencies() {
-    return of(COMMONS_LOGGING_DEPENDENCY);
+    return ImmutableSet.of(COMMONS_LOGGING_DEPENDENCY);
   }
 
   @Override
   public Set<Dependency> inheritedDirectDependencies() {
-    return of(COMMONS_LANG_DEPENDENCY);
+    return ImmutableSet.of(COMMONS_LANG_DEPENDENCY);
   }
 
   @Override
   public Set<Dependency> inheritedTransitiveDependencies() {
-    return of(COMMONS_LANG_DEPENDENCY);
+    return ImmutableSet.of(COMMONS_LANG_DEPENDENCY);
   }
 
   @Override
   public Set<Dependency> getDependenciesForParent(Dependency parent) {
     if (COMMONS_IO_DEPENDENCY.equals(parent) || COMMONS_LANG_DEPENDENCY.equals(parent)) {
-      return of(COMMONS_LOGGING_DEPENDENCY);
+      return ImmutableSet.of(COMMONS_LOGGING_DEPENDENCY);
     }
-    return of();
+    return ImmutableSet.of();
   }
 
   static Dependency createDependency(String name) {

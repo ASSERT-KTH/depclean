@@ -1,6 +1,5 @@
 package se.kth.depclean.graph;
 
-import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -9,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,7 +67,7 @@ public class MavenDependencyGraph implements DependencyGraph {
       this.allDependencies.forEach(
           dep -> {
             log.debug("Found dependency {}", dep);
-            if (dependenciesPerDependency.get(dep) != null) {
+            if (dependenciesPerDependency.containsKey(dep)) {
               dependenciesPerDependency.get(dep).forEach(transDep -> log.debug("# {}", transDep));
             }
           });
@@ -116,7 +116,7 @@ public class MavenDependencyGraph implements DependencyGraph {
     allTransitiveDependencies.removeAll(this.directDependencies);
     allTransitiveDependencies.removeAll(this.inheritedDirectDependencies);
     allTransitiveDependencies.removeAll(this.inheritedTransitiveDependencies);
-    return copyOf(allTransitiveDependencies);
+    return ImmutableSet.copyOf(allTransitiveDependencies);
   }
 
   @Override
@@ -129,7 +129,7 @@ public class MavenDependencyGraph implements DependencyGraph {
     final Set<Dependency> visibleDependencies =
         dependencyArtifacts.stream().map(this::toDepCleanDependency).collect(Collectors.toSet());
     visibleDependencies.removeAll(this.directDependencies);
-    return copyOf(visibleDependencies);
+    return ImmutableSet.copyOf(visibleDependencies);
   }
 
   @Override
@@ -161,12 +161,12 @@ public class MavenDependencyGraph implements DependencyGraph {
         inheritedTransitiveDependencies(c, inheritedTransitiveDependencies);
       }
     }
-    return copyOf(inheritedTransitiveDependencies);
+    return ImmutableSet.copyOf(inheritedTransitiveDependencies);
   }
 
   @Override
   public Set<Dependency> getDependenciesForParent(Dependency parent) {
-    return copyOf(dependenciesPerDependency.get(parent));
+    return ImmutableSet.copyOf(dependenciesPerDependency.get(parent));
   }
 
   @Override
@@ -195,10 +195,6 @@ public class MavenDependencyGraph implements DependencyGraph {
         artifact.getFile());
   }
 
-  private Dependency toDepCleanDependency(DependencyNode node) {
-    return toDepCleanDependency(node.getArtifact());
-  }
-
   private Dependency toDepCleanDependency(org.apache.maven.model.Dependency dependency) {
     for (Dependency artifact : allDependencies) {
       if (matches(artifact, dependency)) {
@@ -206,13 +202,20 @@ public class MavenDependencyGraph implements DependencyGraph {
       }
     }
     // This should never happen.
-    return null;
+    throw new IllegalStateException(
+        "Could not find dependency: " + dependency.getGroupId() + ":" + dependency.getArtifactId());
   }
 
   private boolean matches(
       Dependency dependencyCoordinate, org.apache.maven.model.Dependency dependency) {
-    return dependencyCoordinate.getGroupId().equalsIgnoreCase(dependency.getGroupId())
-        && dependencyCoordinate.getDependencyId().equalsIgnoreCase(dependency.getArtifactId());
+    return dependencyCoordinate
+            .getGroupId()
+            .toLowerCase(Locale.ROOT)
+            .equals(dependency.getGroupId().toLowerCase(Locale.ROOT))
+        && dependencyCoordinate
+            .getDependencyId()
+            .toLowerCase(Locale.ROOT)
+            .equals(dependency.getArtifactId().toLowerCase(Locale.ROOT));
   }
 
   private ImmutableSet<Dependency> getAllDependencies(MavenProject project) {

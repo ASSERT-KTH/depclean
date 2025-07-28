@@ -1,14 +1,18 @@
 package se.kth.depclean.utils;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import se.kth.depclean.DepCleanGradleAction;
@@ -32,7 +36,7 @@ public class GradleWritingUtils {
     Multimap<String, String> configurationDependencyMap = getNewConfigurations(dependenciesToAdd);
 
     /* Writing starts */
-    FileWriter fileWriter = new FileWriter(file, true);
+    FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8, true);
     BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
     PrintWriter writer = new PrintWriter(bufferedWriter);
 
@@ -41,14 +45,18 @@ public class GradleWritingUtils {
     for (String configuration : configurationDependencyMap.keySet()) {
       writer.print("\t" + configuration);
 
-      /* Getting all the dependencies with specified configuration and converting
-      it to an array for ease in writing. */
+      /*
+       * Getting all the dependencies with specified configuration and converting
+       * it to an array for ease in writing.
+       */
       Collection<String> dependency = configurationDependencyMap.get(configuration);
       String[] dep = dependency.toArray(new String[dependency.size()]);
 
-      /* Writing those dependencies which do not have to exclude any dependency(s).
-      Simultaneously, also getting those dependencies which have to exclude
-      some transitive dependencies. */
+      /*
+       * Writing those dependencies which do not have to exclude any dependency(s).
+       * Simultaneously, also getting those dependencies which have to exclude
+       * some transitive dependencies.
+       */
       Set<String> excludeChildrenDependencies =
           writeNonExcluded(writer, dep, excludedTransitiveArtifactsMap);
 
@@ -80,9 +88,10 @@ public class GradleWritingUtils {
     for (ResolvedArtifact artifact : dependenciesToAdd) {
       String artifactName = DepCleanGradleAction.getName(artifact);
       String dependency = DepCleanGradleAction.getArtifactGroupArtifactId(artifactName);
-      String oldConfiguration = artifactName.split(":")[3];
+      String oldConfiguration = Iterables.get(Splitter.on(':').split(artifactName), 3);
       String configuration =
-          oldConfiguration.startsWith("test") || oldConfiguration.endsWith("Elements")
+          oldConfiguration != null
+                  && (oldConfiguration.startsWith("test") || oldConfiguration.endsWith("Elements"))
               ? "testImplementation"
               : "implementation";
       configurationDependencyMap.put(configuration, dependency);
@@ -134,13 +143,11 @@ public class GradleWritingUtils {
       writer.println("\t" + configuration + " ('" + excludeDep + "') {");
       Collection<String> excludeDependencies = excludedTransitiveArtifactsMap.get(excludeDep);
       excludeDependencies.forEach(
-          s ->
-              writer.println(
-                  "\t\t\texclude group: '"
-                      + s.split(":")[0]
-                      + "', module: '"
-                      + s.split(":")[1]
-                      + "'"));
+          s -> {
+            List<String> parts = Splitter.on(':').splitToList(s);
+            writer.println(
+                "\t\t\texclude group: '" + parts.get(0) + "', module: '" + parts.get(1) + "'");
+          });
       writer.println("\t}");
     }
   }

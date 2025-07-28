@@ -141,10 +141,23 @@
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
           <release>${java.version}</release>
+          <fork>true</fork>
+          <executable>${JAVA_HOME}/bin/javac</executable>
           <compilerArgs>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
             <arg>-parameters</arg>
+            <arg>--should-stop=ifError=FLOW</arg>
             <arg>-XDcompilePolicy=simple</arg>
-            <!-- arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=se.kth.depclean</arg -->
+            <arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=se.kth.depclean</arg>
           </compilerArgs>
           <annotationProcessorPaths>
             <path>
@@ -152,7 +165,7 @@
               <artifactId>lombok</artifactId>
               <version>${lombok.version}</version>
             </path>
-            <!-- path>
+            <path>
               <groupId>com.google.errorprone</groupId>
               <artifactId>error_prone_core</artifactId>
               <version>${error_prone_core.version}</version>
@@ -161,7 +174,7 @@
               <groupId>com.uber.nullaway</groupId>
               <artifactId>nullaway</artifactId>
               <version>${nullaway.version}</version>
-            </path -->
+            </path>
           </annotationProcessorPaths>
         </configuration>
       </plugin>

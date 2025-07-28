@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 /** Utility class to execute Maven tasks from the command line. */
@@ -50,20 +52,22 @@ public final class MavenInvoker {
       list = new ArrayList<>();
       process = Runtime.getRuntime().exec(cmd, null, directory);
       InputStream inputStream = process.getInputStream();
-      BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+      BufferedReader br =
+          new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
       return outputToConsole(process, list, br);
     } else if (OsUtils.isWindows()) {
       list = new ArrayList<>();
       process = Runtime.getRuntime().exec("cmd /C " + cmd, null, directory);
-      BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      BufferedReader br =
+          new BufferedReader(
+              new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
       return outputToConsole(process, list, br);
     }
     return new String[0]; // return an empty array otherwise
   }
 
   /** Print the output of the command to the standard output. */
-  private static String[] outputToConsole(
-      Process process, ArrayList<String> list, BufferedReader br)
+  private static String[] outputToConsole(Process process, List<String> list, BufferedReader br)
       throws IOException, InterruptedException {
     String s;
     while ((s = br.readLine()) != null) {

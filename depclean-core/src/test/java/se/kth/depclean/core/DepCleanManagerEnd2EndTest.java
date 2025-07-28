@@ -1,9 +1,9 @@
 package se.kth.depclean.core;
 
-import static com.google.common.collect.ImmutableSet.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +49,7 @@ class DepCleanManagerEnd2EndTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldBeSkipped() throws AnalysisFailureException {
     final DepCleanManager depCleanManager = new DepCleanManagerBuilder().skipDepClean().build();
 
@@ -58,6 +59,7 @@ class DepCleanManagerEnd2EndTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldBeSkippedBecauseOfType() throws AnalysisFailureException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -70,6 +72,7 @@ class DepCleanManagerEnd2EndTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldPassForEmptyProject() throws AnalysisFailureException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -78,16 +81,18 @@ class DepCleanManagerEnd2EndTest {
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
-    assertThat(analysis.getUsedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUsedInheritedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUsedTransitiveDependencies()).isEmpty();
-    assertThat(analysis.getUnusedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isEmpty();
-    assertThat(analysis.getUnusedTransitiveDependencies()).isEmpty();
+    assertThat(analysis).isNotNull();
+    assertThat(analysis.getUsedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUsedTransitiveDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedTransitiveDependencies()).isNotNull().isEmpty();
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldReportAllDependencyUsed() throws AnalysisFailureException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -96,16 +101,18 @@ class DepCleanManagerEnd2EndTest {
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
-    assertThat(analysis.getUsedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUsedInheritedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUsedTransitiveDependencies()).hasSize(1);
-    assertThat(analysis.getUnusedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isEmpty();
-    assertThat(analysis.getUnusedTransitiveDependencies()).isEmpty();
+    assertThat(analysis).isNotNull();
+    assertThat(analysis.getUsedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUsedTransitiveDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUnusedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedTransitiveDependencies()).isNotNull().isEmpty();
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldReportNoDependencyUsed() throws AnalysisFailureException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -114,16 +121,18 @@ class DepCleanManagerEnd2EndTest {
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
-    assertThat(analysis.getUsedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUsedInheritedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUsedTransitiveDependencies()).isEmpty();
-    assertThat(analysis.getUnusedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUnusedInheritedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).hasSize(1);
-    assertThat(analysis.getUnusedTransitiveDependencies()).hasSize(1);
+    assertThat(analysis).isNotNull();
+    assertThat(analysis.getUsedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUsedTransitiveDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUnusedTransitiveDependencies()).isNotNull().hasSize(1);
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldReportOnlyDirectAndInheritedDependenciesUsed() throws AnalysisFailureException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -132,16 +141,19 @@ class DepCleanManagerEnd2EndTest {
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
-    assertThat(analysis.getUsedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUsedInheritedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUsedTransitiveDependencies()).isEmpty();
-    assertThat(analysis.getUnusedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isEmpty();
-    assertThat(analysis.getUnusedTransitiveDependencies()).hasSize(1);
+    assertThat(analysis).isNotNull();
+
+    assertThat(analysis.getUsedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUsedTransitiveDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedTransitiveDependencies()).isNotNull().hasSize(1);
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldReportOnlyDirectDependencyUsed() throws AnalysisFailureException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -150,16 +162,19 @@ class DepCleanManagerEnd2EndTest {
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
-    assertThat(analysis.getUsedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUsedInheritedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUsedTransitiveDependencies()).isEmpty();
-    assertThat(analysis.getUnusedDirectDependencies()).isEmpty();
-    assertThat(analysis.getUnusedInheritedDirectDependencies()).hasSize(1);
-    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).hasSize(1);
-    assertThat(analysis.getUnusedTransitiveDependencies()).hasSize(1);
+    assertThat(analysis).isNotNull();
+
+    assertThat(analysis.getUsedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUsedTransitiveDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUnusedTransitiveDependencies()).isNotNull().hasSize(1);
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldFailForUnusedDirectDependency() {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -174,6 +189,7 @@ class DepCleanManagerEnd2EndTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldFailForUnusedInheritedDependency() {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -188,6 +204,7 @@ class DepCleanManagerEnd2EndTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldFailForUnusedTransitiveDependency() {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -202,24 +219,29 @@ class DepCleanManagerEnd2EndTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void shouldIgnoreDependencies() throws AnalysisFailureException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(OnlyDirectAndInheritedUsedDependencyManager.class)
             .withIgnoreDependencies(
-                of(
+                ImmutableSet.of(
                     "se.kth.depclean.core.test:commons-io:.*",
                     "se.kth.depclean.core.test:commons-logging-api:.*"))
             .build();
 
     final ProjectDependencyAnalysis analysis = depCleanManager.execute();
 
-    assertThat(analysis.getIgnoredDependencies()).hasSize(2);
+    assertThat(analysis).isNotNull();
+
+    assertThat(analysis.getIgnoredDependencies()).isNotNull().hasSize(2);
     assertThat(analysis.getIgnoredDependencies())
+        .isNotNull()
         .contains(
             new Dependency(
                 "se.kth.depclean.core.test", "commons-io", "1.0.0", "compile", new File("")));
     assertThat(analysis.getIgnoredDependencies())
+        .isNotNull()
         .contains(
             new Dependency(
                 "se.kth.depclean.core.test",
@@ -269,8 +291,8 @@ class DepCleanManagerEnd2EndTest {
     private DependencyManagerWrapper dependencyManager = new FakeDependencyManager(logger);
     private boolean skipDepClean = false;
     private boolean ignoreTests = false;
-    private Set<String> ignoreScopes = of();
-    private Set<String> ignoreDependencies = of();
+    private Set<String> ignoreScopes = ImmutableSet.of();
+    private Set<String> ignoreDependencies = ImmutableSet.of();
     private boolean failIfUnusedDirect = false;
     private boolean failIfUnusedTransitive = false;
     private boolean failIfUnusedInheritedDirect = false;

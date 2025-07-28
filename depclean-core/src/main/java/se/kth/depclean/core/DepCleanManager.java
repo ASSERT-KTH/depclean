@@ -2,7 +2,7 @@ package se.kth.depclean.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
@@ -46,6 +47,7 @@ public class DepCleanManager {
 
   /** Execute the depClean manager. */
   @SneakyThrows
+  @Nullable
   public ProjectDependencyAnalysis execute() throws AnalysisFailureException {
     final long startTime = System.currentTimeMillis();
 
@@ -137,7 +139,10 @@ public class DepCleanManager {
   }
 
   private void copyDependencies(Dependency dependency, File destFolder) {
-    copyDependencies(dependency.getFile(), destFolder);
+    File file = dependency.getFile();
+    if (file != null) {
+      copyDependencies(file, destFolder);
+    }
   }
 
   @SneakyThrows
@@ -167,7 +172,7 @@ public class DepCleanManager {
         FileUtils.write(
             csvFile,
             "OriginClass,TargetClass,OriginDependency,TargetDependency\n",
-            Charset.defaultCharset());
+            StandardCharsets.UTF_8);
       } catch (IOException e) {
         getLog().error("Error writing the CSV header.");
       }
@@ -176,7 +181,7 @@ public class DepCleanManager {
         dependencyManager.getTreeAsJson(treeFile, analysis, csvFile, createCallGraphCsv);
 
     try {
-      FileUtils.write(jsonFile, treeAsJson, Charset.defaultCharset());
+      FileUtils.write(jsonFile, treeAsJson, StandardCharsets.UTF_8);
     } catch (IOException e) {
       getLog().error("Unable to generate " + jsonFile.getName() + " file.");
     }
@@ -233,7 +238,7 @@ public class DepCleanManager {
    * Returns a set of {@code DependencyCoordinate}s that match given string representations.
    *
    * @param allDependencies all known dependencies
-   * @param dependencyPatterns string representation of dependencies to match
+   * @param patternString string representation of dependencies to match
    * @return a set of {@code Dependency} that match given string representations
    */
   private Set<Dependency> toDependency(Set<Dependency> allDependencies, String patternString) {

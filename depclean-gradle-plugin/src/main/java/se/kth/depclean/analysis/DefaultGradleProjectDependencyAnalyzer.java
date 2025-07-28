@@ -20,6 +20,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
+import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
@@ -41,7 +42,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
   private final boolean isIgnoredTest;
 
   /** A map [artifact] -> [allTypes]. */
-  private Map<ResolvedArtifact, Set<String>> artifactClassesMap;
+  private Map<ResolvedArtifact, Set<String>> artifactClassesMap = new HashMap<>();
 
   /** A map [artifact] -> [usedTypes]. */
   private final Map<ResolvedArtifact, Set<String>> artifactUsedClassesMap = new HashMap<>();
@@ -251,6 +252,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    * @param className The String (Expected key)
    * @return Key if it is present otherwise null.
    */
+  @Nullable
   private ResolvedArtifact findArtifactForClassName(
       final Map<ResolvedArtifact, Set<String>> artifactClassMap, final String className) {
     for (Map.Entry<ResolvedArtifact, Set<String>> entry : artifactClassMap.entrySet()) {

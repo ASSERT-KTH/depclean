@@ -1,7 +1,6 @@
 package se.kth.depclean.core.fake.depmanager;
 
-import static com.google.common.collect.ImmutableSet.of;
-
+import com.google.common.collect.ImmutableSet;
 import java.nio.file.Path;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
@@ -18,43 +17,43 @@ public class EmptyProjectDependencyManager extends FakeDependencyManager {
 
           @Override
           public Set<Dependency> directDependencies() {
-            return of();
+            return ImmutableSet.of();
           }
 
           @Override
           public Set<Dependency> inheritedDirectDependencies() {
-            return of();
+            return ImmutableSet.of();
           }
 
           @Override
           public Set<Dependency> inheritedTransitiveDependencies() {
-            return of();
+            return ImmutableSet.of();
           }
 
           @Override
           public Set<Dependency> transitiveDependencies() {
-            return of();
+            return ImmutableSet.of();
           }
 
           @Override
           public Set<Dependency> allDependencies() {
-            return of();
+            return ImmutableSet.of();
           }
 
           @Override
           public Set<Dependency> getDependenciesForParent(Dependency parent) {
-            return of();
+            return ImmutableSet.of();
           }
         });
   }
 
   @Override
   public Set<Path> getOutputDirectories() {
-    return of(FileUtils.getTempDirectory().toPath());
+    return ImmutableSet.of(FileUtils.getTempDirectory().toPath());
   }
 
   @Override
   public Set<Path> getTestOutputDirectories() {
-    return of(FileUtils.getTempDirectory().toPath());
+    return ImmutableSet.of(FileUtils.getTempDirectory().toPath());
   }
 }

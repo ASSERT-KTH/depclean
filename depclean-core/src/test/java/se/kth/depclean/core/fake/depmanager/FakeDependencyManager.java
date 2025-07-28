@@ -1,7 +1,6 @@
 package se.kth.depclean.core.fake.depmanager;
 
-import static com.google.common.collect.ImmutableSet.of;
-
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -80,17 +79,17 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
 
   @Override
   public Set<Path> getOutputDirectories() {
-    return of();
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<Path> getTestOutputDirectories() {
-    return of();
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<String> collectUsedClassesFromProcessors() {
-    return of();
+    return ImmutableSet.of();
   }
 
   @Override
@@ -100,10 +99,11 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
 
   @Override
   public Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testDirectory) {
-    return of();
+    return ImmutableSet.of();
   }
 
   @Override
+  @SuppressWarnings("NullAway")
   public AbstractDebloater<? extends Serializable> getDebloater(
       ProjectDependencyAnalysis analysis) {
     return null;
@@ -118,6 +118,7 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
   public void generateDependencyTree(File treeFile) {}
 
   @Override
+  @SuppressWarnings("NullAway")
   public String getTreeAsJson(
       File treeFile,
       ProjectDependencyAnalysis analysis,

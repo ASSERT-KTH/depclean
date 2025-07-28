@@ -1,11 +1,11 @@
 package se.kth.depclean.wrapper;
 
-import static com.google.common.collect.ImmutableSet.of;
-
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -126,7 +126,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     FileReader reader;
     MavenXpp3Reader mavenReader = new MavenXpp3Reader();
     try {
-      reader = new FileReader(pomFile);
+      reader = new FileReader(pomFile, StandardCharsets.UTF_8);
       model = mavenReader.read(reader);
       model.setPomFile(pomFile);
     } catch (Exception ex) {
@@ -166,7 +166,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
         .map(config -> config.getChild("processors"))
         .map(Xpp3Dom::getChildren)
         .map(arr -> Arrays.stream(arr).map(Xpp3Dom::getValue).collect(Collectors.toSet()))
-        .orElse(of());
+        .orElse(ImmutableSet.of());
   }
 
   @Override
@@ -210,6 +210,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
+  @SuppressWarnings("NullAway") // directory parameter can be null per MavenInvoker.runCommand API
   public void generateDependencyTree(File treeFile) throws IOException, InterruptedException {
     MavenInvoker.runCommand(
         "mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true", null);

@@ -7,7 +7,7 @@ import com.soebes.itf.jupiter.extension.MavenTest;
 import com.soebes.itf.jupiter.maven.MavenExecutionResult;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
@@ -169,7 +169,7 @@ public class DepCleanMojoIT {
       File expectedJsonFile =
           new File("src/test/resources/DepCleanMojoResources/depclean-results.json");
       String expectedJsonContent =
-          FileUtils.readFileToString(expectedJsonFile, Charset.defaultCharset());
+          FileUtils.readFileToString(expectedJsonFile, StandardCharsets.UTF_8);
       assertThat(result)
           .isSuccessful()
           .project()

@@ -1,9 +1,8 @@
 package se.kth.depclean.core.analysis;
 
-import static com.google.common.collect.ImmutableSet.copyOf;
-import static com.google.common.collect.ImmutableSet.of;
 import static org.assertj.core.util.Sets.newHashSet;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -33,12 +32,12 @@ public interface ProjectContextCreator {
     return new ProjectContext(
         new TestDependencyGraph(
             createDependency("ExampleClass"),
-            of(COMMONS_IO_DEPENDENCY, JUNIT_DEPENDENCY),
-            of(COMMONS_LANG_DEPENDENCY),
-            of(COMMONS_MATH_DEPENDENCY),
-            of(COMMONS_LOGGING_DEPENDENCY)),
-        of(Paths.get("target/classes")),
-        of(Paths.get("target/test-classes")),
+            ImmutableSet.of(COMMONS_IO_DEPENDENCY, JUNIT_DEPENDENCY),
+            ImmutableSet.of(COMMONS_LANG_DEPENDENCY),
+            ImmutableSet.of(COMMONS_MATH_DEPENDENCY),
+            ImmutableSet.of(COMMONS_LOGGING_DEPENDENCY)),
+        ImmutableSet.of(Paths.get("target/classes")),
+        ImmutableSet.of(Paths.get("target/test-classes")),
         Paths.get("/main"),
         Paths.get("/test"),
         Paths.get(""),
@@ -51,16 +50,16 @@ public interface ProjectContextCreator {
     return new ProjectContext(
         new TestDependencyGraph(
             createDependency("ExampleClass"),
-            of(COMMONS_IO_DEPENDENCY, JUNIT_DEPENDENCY),
-            of(COMMONS_LANG_DEPENDENCY),
-            of(COMMONS_MATH_DEPENDENCY),
-            of(COMMONS_LOGGING_DEPENDENCY)),
-        of(Paths.get("target/classes")),
-        of(Paths.get("target/test-classes")),
+            ImmutableSet.of(COMMONS_IO_DEPENDENCY, JUNIT_DEPENDENCY),
+            ImmutableSet.of(COMMONS_LANG_DEPENDENCY),
+            ImmutableSet.of(COMMONS_MATH_DEPENDENCY),
+            ImmutableSet.of(COMMONS_LOGGING_DEPENDENCY)),
+        ImmutableSet.of(Paths.get("target/classes")),
+        ImmutableSet.of(Paths.get("target/test-classes")),
         Paths.get("/main"),
         Paths.get("/test"),
         Paths.get(""),
-        of(new Scope("test")),
+        ImmutableSet.of(new Scope("test")),
         Collections.emptySet(),
         Collections.emptySet());
   }
@@ -69,17 +68,17 @@ public interface ProjectContextCreator {
     return new ProjectContext(
         new TestDependencyGraph(
             createDependency("ExampleClass"),
-            of(COMMONS_IO_DEPENDENCY),
-            of(COMMONS_LANG_DEPENDENCY),
-            of(COMMONS_MATH_DEPENDENCY),
-            of(COMMONS_LOGGING_DEPENDENCY)),
-        of(Paths.get("target/classes")),
-        of(Paths.get("target/test-classes")),
+            ImmutableSet.of(COMMONS_IO_DEPENDENCY),
+            ImmutableSet.of(COMMONS_LANG_DEPENDENCY),
+            ImmutableSet.of(COMMONS_MATH_DEPENDENCY),
+            ImmutableSet.of(COMMONS_LOGGING_DEPENDENCY)),
+        ImmutableSet.of(Paths.get("target/classes")),
+        ImmutableSet.of(Paths.get("target/test-classes")),
         Paths.get("/main"),
         Paths.get("/test"),
         Paths.get(""),
-        of(new Scope("test")),
-        of(COMMONS_IO_DEPENDENCY),
+        ImmutableSet.of(new Scope("test")),
+        ImmutableSet.of(COMMONS_IO_DEPENDENCY),
         Collections.emptySet());
   }
 
@@ -133,15 +132,15 @@ public interface ProjectContextCreator {
       dependencies.addAll(inheritedDirectDependencies);
       dependencies.addAll(inheritedTransitiveDependencies);
       dependencies.addAll(transitiveDependencies);
-      return copyOf(dependencies);
+      return ImmutableSet.copyOf(dependencies);
     }
 
     @Override
     public Set<Dependency> getDependenciesForParent(Dependency parent) {
       if (parent.equals(COMMONS_LANG_DEPENDENCY) || parent.equals(COMMONS_IO_DEPENDENCY)) {
-        return of(COMMONS_LOGGING_DEPENDENCY);
+        return ImmutableSet.of(COMMONS_LOGGING_DEPENDENCY);
       }
-      return of();
+      return ImmutableSet.of();
     }
   }
 }

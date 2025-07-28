@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
@@ -139,12 +140,12 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
   private boolean matches(Artifact artifact, se.kth.depclean.core.model.Dependency coordinate) {
     return coordinate
         .toString()
-        .toLowerCase()
+        .toLowerCase(Locale.ROOT)
         .contains(
             String.format(
                     "%s:%s:%s",
                     artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion())
-                .toLowerCase());
+                .toLowerCase(Locale.ROOT));
   }
 
   private boolean matches(Dependency dep, Dependency initialDependency) {

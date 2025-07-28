@@ -1,18 +1,21 @@
 package se.kth.depclean;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -28,6 +31,7 @@ import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.UnresolvedDependency;
 import org.gradle.api.logging.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
 import se.kth.depclean.utils.DependencyUtils;
@@ -48,7 +52,7 @@ public class DepCleanGradleAction implements Action<Project> {
   private static final Map<String, Long> SizeOfDependencies = new HashMap<>();
 
   // Extensions fields =====================================
-  private Project project;
+  @Nullable private Project project = null; // Will be set in execute method
   private boolean skipDepClean;
   private boolean isIgnoreTest;
   private boolean failIfUnusedDirect;
@@ -57,8 +61,8 @@ public class DepCleanGradleAction implements Action<Project> {
   private boolean createBuildDebloated;
   private boolean createResultJson;
   private boolean createClassUsageCsv;
-  private Set<String> ignoreConfiguration;
-  private Set<String> ignoreDependencies;
+  private Set<String> ignoreConfiguration = new HashSet<>();
+  private Set<String> ignoreDependencies = new HashSet<>();
 
   @SneakyThrows
   @Override
@@ -125,7 +129,7 @@ public class DepCleanGradleAction implements Action<Project> {
     }
 
     // Copying dependencies locally to get their size.
-    File dependencyDirectory = copyDependenciesLocally(dependencyDirPath, allArtifacts);
+    File dependencyDirectory = copyDependenciesLocally(dependencyDirPath, allArtifacts, logger);
 
     // Copying files from libs directory to dependency directory.
     if (libsDirPath.toFile().exists()) {
@@ -278,7 +282,7 @@ public class DepCleanGradleAction implements Action<Project> {
     }
 
     // Configurations ignored by the depclean analysis on user's wish.
-    if (ignoreConfiguration != null) {
+    if (ignoreConfiguration != null && !ignoreConfiguration.isEmpty()) {
       printString(
           "\nConfigurations ignored in the analysis by the user : "
               + " ["
@@ -289,7 +293,7 @@ public class DepCleanGradleAction implements Action<Project> {
     }
 
     // Dependencies ignored by depclean analysis on user's wish.
-    if (ignoreDependencies != null) {
+    if (ignoreDependencies != null && !ignoreDependencies.isEmpty()) {
       printString(
           "\nDependencies ignored in the analysis by the user"
               + " ["
@@ -397,7 +401,7 @@ public class DepCleanGradleAction implements Action<Project> {
           debloatedDependencies.createNewFile();
         }
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.error("Error managing debloated dependencies file", e);
       }
 
       try {
@@ -422,7 +426,7 @@ public class DepCleanGradleAction implements Action<Project> {
         printString("Creating class-usage.csv, please wait...");
         try {
           FileUtils.write(
-              classUsageFile, "OriginClass,TargetClass,Dependency\n", Charset.defaultCharset());
+              classUsageFile, "OriginClass,TargetClass,Dependency\n", StandardCharsets.UTF_8);
         } catch (IOException e) {
           logger.error("Error writing the CSV header.");
         }
@@ -442,7 +446,7 @@ public class DepCleanGradleAction implements Action<Project> {
               unusedInheritedArtifactsCoordinates,
               unusedTransitiveArtifactsCoordinates);
       try {
-        FileWriter fw = new FileWriter(jsonFile, Charset.defaultCharset());
+        FileWriter fw = new FileWriter(jsonFile, StandardCharsets.UTF_8);
         jsonResultWriter.write(fw);
         fw.flush();
         fw.close();
@@ -464,7 +468,10 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param extension Plugin extension class.
    */
   public void getPluginExtensions(@NonNull final DepCleanGradlePluginExtension extension) {
-    this.project = extension.getProject();
+    Project extensionProject = extension.getProject();
+    if (extensionProject != null) {
+      this.project = extensionProject;
+    }
     this.skipDepClean = extension.isSkipDepClean();
     this.isIgnoreTest = extension.isIgnoreTest();
     this.failIfUnusedDirect = extension.isFailIfUnusedDirect();
@@ -473,8 +480,14 @@ public class DepCleanGradleAction implements Action<Project> {
     this.createBuildDebloated = extension.isCreateBuildDebloated();
     this.createResultJson = extension.isCreateResultJson();
     this.createClassUsageCsv = extension.isCreateClassUsageCsv();
-    this.ignoreConfiguration = extension.getIgnoreConfiguration();
-    this.ignoreDependencies = extension.getIgnoreDependency();
+    Set<String> extensionIgnoreConfiguration = extension.getIgnoreConfiguration();
+    if (extensionIgnoreConfiguration != null) {
+      this.ignoreConfiguration = extensionIgnoreConfiguration;
+    }
+    Set<String> extensionIgnoreDependencies = extension.getIgnoreDependency();
+    if (extensionIgnoreDependencies != null) {
+      this.ignoreDependencies = extensionIgnoreDependencies;
+    }
   }
 
   /**
@@ -482,11 +495,14 @@ public class DepCleanGradleAction implements Action<Project> {
    *
    * @param dependencyDirPath Directory path
    * @param allArtifacts All project's artifacts (all dependencies)
+   * @param logger Logger for error reporting
    * @return A file which contain the copied dependencies.
    */
   @NonNull
   public File copyDependenciesLocally(
-      @NonNull final Path dependencyDirPath, @NonNull final Set<ResolvedArtifact> allArtifacts) {
+      @NonNull final Path dependencyDirPath,
+      @NonNull final Set<ResolvedArtifact> allArtifacts,
+      @NonNull final Logger logger) {
     File dependencyDirectory = dependencyDirPath.toFile();
     for (ResolvedArtifact artifact : allArtifacts) {
       // copying jar files directly from the user's .m2 directory
@@ -495,7 +511,7 @@ public class DepCleanGradleAction implements Action<Project> {
         try {
           FileUtils.copyFileToDirectory(jarFile, dependencyDirectory);
         } catch (IOException e) {
-          e.printStackTrace();
+          logger.error("Error copying jar file: " + jarFile.getAbsolutePath(), e);
         }
       }
     }
@@ -546,7 +562,7 @@ public class DepCleanGradleAction implements Action<Project> {
    */
   private void printInfoOfDependencies(
       @NonNull final String info, @NonNull final Set<String> dependencies) {
-    printString(info.toUpperCase() + " [" + dependencies.size() + "]" + ": ");
+    printString(info.toUpperCase(Locale.ROOT) + " [" + dependencies.size() + "]" + ": ");
     printDependencies(dependencies);
   }
 
@@ -566,11 +582,11 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param dependencies The set dependencies to print.
    */
   private void printDependencies(@NonNull final Set<String> dependencies) {
-    dependencies.stream()
-        .sorted(Comparator.comparing(this::getSizeOfDependency))
-        .collect(Collectors.toCollection(LinkedList::new))
-        .descendingIterator()
-        .forEachRemaining(s -> printString("\t" + s + " (" + getSize(s) + ")"));
+    List<String> sortedDependencies =
+        dependencies.stream()
+            .sorted(Comparator.comparing(this::getSizeOfDependency).reversed())
+            .collect(Collectors.toList());
+    sortedDependencies.forEach(s -> printString("\t" + s + " (" + getSize(s) + ")"));
   }
 
   /**
@@ -583,7 +599,9 @@ public class DepCleanGradleAction implements Action<Project> {
    */
   @NonNull
   private Long getSizeOfDependency(@NonNull final String dependency) {
-    Long size = SizeOfDependencies.get(dependency + ".jar");
+    List<String> parts = Splitter.on(':').splitToList(dependency);
+    String dep = parts.get(1) + "-" + parts.get(2);
+    Long size = SizeOfDependencies.get(dep + ".jar");
     return Objects.requireNonNullElse(size, 0L);
   }
 
@@ -595,9 +613,9 @@ public class DepCleanGradleAction implements Action<Project> {
    */
   @NonNull
   private String getSize(@NonNull final String dependency) {
-    String[] break1 = dependency.split("\\)");
-    String[] a = break1[0].split(":");
-    String dep = a[1] + "-" + a[2];
+    List<String> break1 = Splitter.on(')').splitToList(dependency);
+    List<String> a = Splitter.on(':').splitToList(break1.get(0));
+    String dep = a.get(1) + "-" + a.get(2);
     if (SizeOfDependencies.containsKey(dep + ".jar")) {
       return FileUtils.byteCountToDisplaySize(SizeOfDependencies.get(dep + ".jar"));
     } else {
@@ -616,7 +634,8 @@ public class DepCleanGradleAction implements Action<Project> {
   @NonNull
   public static String getName(@NonNull final ResolvedArtifact artifact) {
     String configuration = ArtifactConfigurationMap.get(artifact);
-    // Normalize configuration names for backward compatibility with test expectations
+    // Normalize configuration names for backward compatibility with test
+    // expectations
     String normalizedConfiguration = normalizeConfigurationName(configuration);
     return artifact.getModuleVersion() + ":" + normalizedConfiguration;
   }
@@ -625,7 +644,7 @@ public class DepCleanGradleAction implements Action<Project> {
    * Normalize configuration names to maintain backward compatibility. Maps modern Gradle
    * configuration names to legacy names expected by tests.
    */
-  private static String normalizeConfigurationName(String configuration) {
+  private static String normalizeConfigurationName(@Nullable String configuration) {
     if (configuration == null) {
       return "compile"; // default fallback
     }
@@ -652,7 +671,7 @@ public class DepCleanGradleAction implements Action<Project> {
   public Set<String> excludeConfiguration(@NonNull final Set<String> artifactCoordinates) {
     Set<String> nonExcludedConfigurations = new HashSet<>();
     for (String coordinates : artifactCoordinates) {
-      String configuration = coordinates.split(":")[3];
+      String configuration = Iterables.get(Splitter.on(':').split(coordinates), 3);
       if (!ignoreConfiguration.contains(configuration)) {
         nonExcludedConfigurations.add(coordinates);
       }
@@ -686,8 +705,8 @@ public class DepCleanGradleAction implements Action<Project> {
    */
   @NonNull
   public static String getArtifactGroupArtifactId(@NonNull final String artifact) {
-    String[] parts = artifact.split(":");
-    return parts[0] + ":" + parts[1] + ":" + parts[2];
+    List<String> parts = Splitter.on(':').splitToList(artifact);
+    return parts.get(0) + ":" + parts.get(1) + ":" + parts.get(2);
   }
 
   /**

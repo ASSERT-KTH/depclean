@@ -1,10 +1,11 @@
 plugins {
-    id 'java'
+    id "net.ltgt.errorprone" version "4.3.0"
+    id 'com.diffplug.spotless' version '7.2.1'
     id 'groovy'
+    id 'java'
     id 'java-gradle-plugin'
-    id 'maven-publish'
-    // id "net.ltgt.errorprone" version "4.3.0"  // Temporarily disabled
     id 'jvm-test-suite'
+    id 'maven-publish'
 }
 
 java {
@@ -25,13 +26,13 @@ repositories {
 
 ext {
     depcleanVersion = '2.2.0-SNAPSHOT'
+    errorProneCoreVersion = '2.41.0'
+    errorProneJavacVersion = '9+181-r4173-1'
     findbugsAnnotationsVersion = '3.0.1u2'
     jspecifyVersion = '1.0.0'
     junitVersion = '5.13.3'
     lombokVersion = '1.18.38'
     nullawayVersion = '0.12.7'
-    errorProneCoreVersion = '2.41.0'
-    errorProneJavacVersion = '9+181-r4173-1'
     slf4jVersion = '2.0.17'
     spockVersion = '2.3-groovy-3.0'
 }
@@ -46,16 +47,14 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
-
+    implementation("com.google.code.findbugs:annotations:${findbugsAnnotationsVersion}")
+    
     testImplementation("org.spockframework:spock-core:${spockVersion}")
 
-    implementation("com.google.code.findbugs:annotations:${findbugsAnnotationsVersion}")
-
-    // ErrorProne dependencies - temporarily disabled
-    // annotationProcessor("com.uber.nullaway:nullaway:${nullawayVersion}")
-    // errorprone("com.google.errorprone:error_prone_core:${errorProneCoreVersion}")
-    // compileOnly("com.google.errorprone:error_prone_annotations:${errorProneCoreVersion}")
-    // errorproneJavac("com.google.errorprone:javac:${errorProneJavacVersion}")
+    errorprone("com.google.errorprone:error_prone_core:${errorProneCoreVersion}")
+    compileOnly("com.google.errorprone:error_prone_annotations:${errorProneCoreVersion}")
+    errorproneJavac("com.google.errorprone:javac:${errorProneJavacVersion}")
+    annotationProcessor("com.uber.nullaway:nullaway:${nullawayVersion}")
 }
 
 testing {
@@ -64,6 +63,12 @@ testing {
             useSpock()
         }
     }
+}
+
+spotless {
+  java {
+    googleJavaFormat()
+  }
 }
 
 gradlePlugin {
@@ -77,18 +82,11 @@ gradlePlugin {
     }
 }
 
-// ErrorProne configuration - temporarily disabled
-/*
 import net.ltgt.gradle.errorprone.CheckSeverity
 
 tasks.withType(JavaCompile).configureEach {
     options.errorprone {
         check("NullAway", CheckSeverity.ERROR)
         option("NullAway:AnnotatedPackages", "se.kth.depclean")
-        // Disable NullAway on test code
-        if (name.toLowerCase().contains("test")) {
-            disable("NullAway")
-        }
     }
 }
-*/

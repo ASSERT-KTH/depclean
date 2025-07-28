@@ -40,9 +40,11 @@ import se.kth.depclean.wrapper.MavenDependencyManager;
  * bloated dependencies.
  *
  * @see <a
- *     href="https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin"></a>
+ *     href="https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin">Stack
+ *     Overflow: Access to Maven's dependency hierarchy within a plugin</a>
  * @see <a
- *     href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html"></a>
+ *     href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html">Maven
+ *     Guide: Optional and Excludes Dependencies</a>
  */
 @Mojo(
     name = "depclean",
@@ -55,10 +57,12 @@ public class DepCleanMojo extends AbstractMojo {
 
   /** The Maven project to analyze. */
   @Parameter(defaultValue = "${project}", readonly = true)
+  @SuppressWarnings("NullAway") // Injected by Maven
   private MavenProject project;
 
   /** The Maven session to analyze. */
   @Parameter(defaultValue = "${session}", readonly = true)
+  @SuppressWarnings("NullAway") // Injected by Maven
   private MavenSession session;
 
   /**
@@ -89,10 +93,12 @@ public class DepCleanMojo extends AbstractMojo {
    * by bytecode-level analysis Dependency format is <code>groupId:artifactId:version</code>.
    */
   @Parameter(property = "ignoreDependencies")
+  @SuppressWarnings("NullAway") // Injected by Maven
   private Set<String> ignoreDependencies;
 
   /** Ignore dependencies with specific scopes from the DepClean analysis. */
   @Parameter(property = "ignoreScopes")
+  @SuppressWarnings("NullAway") // Injected by Maven
   private Set<String> ignoreScopes;
 
   /**
@@ -138,6 +144,7 @@ public class DepCleanMojo extends AbstractMojo {
 
   /** To build the dependency graph. */
   @Component(hint = "default")
+  @SuppressWarnings("NullAway") // Injected by Maven
   private DependencyGraphBuilder dependencyGraphBuilder;
 
   @SneakyThrows

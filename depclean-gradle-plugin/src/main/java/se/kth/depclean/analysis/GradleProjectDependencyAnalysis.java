@@ -84,8 +84,7 @@ public class GradleProjectDependencyAnalysis {
   /** Overrides the standard equals method of Object. */
   @Override
   public boolean equals(@Nullable final Object object) {
-    if (object instanceof GradleProjectDependencyAnalysis) {
-      GradleProjectDependencyAnalysis analysis = (GradleProjectDependencyAnalysis) object;
+    if (object instanceof GradleProjectDependencyAnalysis analysis) {
       return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
           && getUsedUndeclaredArtifacts().equals(analysis.getUsedUndeclaredArtifacts())
           && getUnusedDeclaredArtifacts().equals(analysis.getUnusedDeclaredArtifacts());

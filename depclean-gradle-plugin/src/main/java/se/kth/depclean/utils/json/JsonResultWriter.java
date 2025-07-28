@@ -1,11 +1,13 @@
 package se.kth.depclean.utils.json;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.gson.stream.JsonWriter;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +79,7 @@ public class JsonResultWriter {
     BufferedWriter bw = new BufferedWriter(fw, 512000);
     JsonWriter jsonWriter = new JsonWriter(bw);
 
-    /*  First adding the project artifact as the json parent. */
+    /* First adding the project artifact as the json parent. */
     String projectGroupId = project.getGroup().toString();
     String projectArtifactId = project.getName();
     String projectVersion = project.getVersion().toString();
@@ -128,7 +130,7 @@ public class JsonResultWriter {
       String configuration = dependency.getConfiguration();
       String coordinates = dependencyId + ":" + configuration;
       String groupId = dependency.getModuleGroup();
-      String artifactId = coordinates.split(":")[1];
+      String artifactId = Iterables.get(Splitter.on(':').split(coordinates), 1);
       String version = dependency.getModuleVersion();
       String dependencyJar = artifactId + "-" + version + ".jar";
 
@@ -271,9 +273,9 @@ public class JsonResultWriter {
                 .getDependenciesClassesMap()
                 .get(dependencyId)
                 .getAllTypes()
-                .contains(s)) {
+                .contains(new ClassName(s))) {
           String triplet = key + "," + s + "," + dependencyId + "\n";
-          FileUtils.write(classUsageFile, triplet, Charset.defaultCharset(), true);
+          FileUtils.write(classUsageFile, triplet, StandardCharsets.UTF_8, true);
         }
       }
     }

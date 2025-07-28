@@ -6,7 +6,7 @@ import com.google.gson.stream.JsonWriter;
 import fr.dutra.tools.maven.deptree.core.Node;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -121,7 +121,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
       Set<String> value = usagePerClassMap.getValue();
       for (String s : value) {
         String triplet = key + "," + s + "," + canonical + "\n";
-        FileUtils.write(callGraphFile, triplet, Charset.defaultCharset(), true);
+        FileUtils.write(callGraphFile, triplet, StandardCharsets.UTF_8, true);
       }
     }
   }

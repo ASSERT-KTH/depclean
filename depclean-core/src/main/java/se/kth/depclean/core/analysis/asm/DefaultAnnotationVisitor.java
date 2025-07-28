@@ -59,7 +59,9 @@ public class DefaultAnnotationVisitor extends AnnotationVisitor {
     return this;
   }
 
-  /*
+  /**
+   * Visit annotation array.
+   *
    * @see org.objectweb.asm.AnnotationVisitor#visitArray(java.lang.String)
    */
   @Override
