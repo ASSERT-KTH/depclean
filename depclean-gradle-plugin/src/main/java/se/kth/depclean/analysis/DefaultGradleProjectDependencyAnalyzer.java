@@ -16,11 +16,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
 import se.kth.depclean.core.analysis.DependencyTypes;
@@ -37,14 +34,11 @@ import se.kth.depclean.utils.DependencyUtils;
  * project.
  */
 @Slf4j
-@Component(role = GradleProjectDependencyAnalyzer.class)
 public class DefaultGradleProjectDependencyAnalyzer
     implements GradleProjectDependencyAnalyzer {
 
-  @Requirement
   private final ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
 
-  @Requirement
   private final DependencyAnalyzer dependencyAnalyzer = new AsmDependencyAnalyzer();
 
   /**
@@ -81,11 +75,10 @@ public class DefaultGradleProjectDependencyAnalyzer
   @SneakyThrows
   @Override
   public GradleProjectDependencyAnalysis analyze(final Project project) {
-    // project's configurations.
-    ConfigurationContainer configurationContainer = project.getConfigurations();
-    Set<Configuration> configurations = new HashSet<>(configurationContainer);
-
+    // Use the filtered resolvable configurations instead of all configurations
     DependencyUtils utils = new DependencyUtils();
+    Set<Configuration> configurations = utils.getResolvableConfigurations(project);
+
     // all resolved dependencies including transitive ones of the project.
     Set<ResolvedDependency> allDependencies = utils.getAllDependencies(configurations);
 

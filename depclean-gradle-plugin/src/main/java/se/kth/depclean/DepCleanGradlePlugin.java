@@ -5,8 +5,10 @@ import org.gradle.api.Project;
 import org.jspecify.annotations.NonNull;
 
 /**
- * This plugin checks the bytecode of a gradle project and configure out whether a dependency
- * is used in that project or not. After analysis, it also configures out the source of that
+ * This plugin checks the bytecode of a gradle project and configure out whether
+ * a dependency
+ * is used in that project or not. After analysis, it also configures out the
+ * source of that
  * dependency i.e. whether <br>
  * <b>1)</b> It is declared directly in your build.gradle file or, <br>
  * <b>2)</b> Inherited from any direct dependency or, <br>
@@ -33,8 +35,11 @@ public class DepCleanGradlePlugin implements Plugin<Project> {
    */
   public void createTask(final Project project) {
     final String depCleanTaskName = "debloat";
-    DepCleanGradleTask task = project.getTasks().create(depCleanTaskName, DepCleanGradleTask.class);
+    DepCleanGradleTask task = project.getTasks().register(depCleanTaskName, DepCleanGradleTask.class).get();
     task.setGroup("dependency management");
     task.setDescription("Analyze the project byte-code and configure out the debloated dependencies.");
+
+    // Inject the project to avoid Task.project deprecation
+    task.getTargetProject().set(project);
   }
 }

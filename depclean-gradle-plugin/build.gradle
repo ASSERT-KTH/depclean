@@ -37,8 +37,8 @@ ext {
 }
 
 dependencies {
-  implementation(gradleApi())
-  implementation(gradleTestKit())
+    implementation(gradleApi())
+    implementation(gradleTestKit())
     implementation("se.kth.castor:depclean-core:${depcleanVersion}")
     implementation("se.kth.castor:depclean-maven-plugin:${depcleanVersion}")
     implementation("org.slf4j:slf4j-log4j12:${slf4jVersion}")
@@ -67,14 +67,14 @@ testing {
 }
 
 gradlePlugin {
-  plugins {
+    plugins {
         depcleanPlugin {
-      id = 'se.kth.castor.depclean-gradle-plugin'
-      implementationClass = 'se.kth.depclean.DepCleanGradlePlugin'
+            id = 'se.kth.castor.depclean-gradle-plugin'
+            implementationClass = 'se.kth.depclean.DepCleanGradlePlugin'
             displayName = 'DepClean Gradle Plugin'
             description = 'A plugin to analyze and debloat dependencies in Gradle projects'
+        }
     }
-  }
 }
 
 // ErrorProne configuration - temporarily disabled
