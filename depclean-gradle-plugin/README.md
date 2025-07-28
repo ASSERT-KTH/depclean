@@ -18,7 +18,7 @@ First, you need to add the plugin to your `build.gradle` file:
 
 ```groovy
 plugins {
-    id 'se.kth.depclean' version '0.1.0-SNAPSHOT'
+    id 'se.kth.depclean' version '2.2.0-SNAPSHOT'
 }
 ```
 Then, you can run the `debloat` task to analyze your project and remove unused dependencies:

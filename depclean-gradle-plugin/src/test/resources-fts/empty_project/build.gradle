@@ -3,7 +3,7 @@ buildscript{
       mavenLocal()
 
       dependencies{
-        classpath 'se.kth.castor:depclean-gradle-plugin:1.0-SNAPSHOT'
+        classpath 'se.kth.castor:depclean-gradle-plugin:2.2.0-SNAPSHOT'
       }
   }
 }

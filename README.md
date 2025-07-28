@@ -49,7 +49,7 @@ Configure the `pom.xml` file of your Maven project to use DepClean as part of th
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0-SNAPSHOT</version>
   <executions>
     <execution>
       <goals>
@@ -66,7 +66,7 @@ Or you can run DepClean directly from the command line.
 cd {PATH_TO_MAVEN_PROJECT}
 mvn compile
 mvn compiler:testCompile
-mvn se.kth.castor:depclean-maven-plugin:2.1.0:depclean
+mvn se.kth.castor:depclean-maven-plugin:2.2.0-SNAPSHOT:depclean
 ```
 
 Let's see an example of running DepClean version 2.0.1 in the project [Apache Commons Numbers](https://github.com/apache/commons-numbers/tree/master/commons-numbers-examples/examples-jmh)!
@@ -98,7 +98,7 @@ For example, if you want to fail the build in the presence of unused direct depe
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0-SNAPSHOT</version>
   <executions>
     <execution>
       <goals>
@@ -116,7 +116,7 @@ For example, if you want to fail the build in the presence of unused direct depe
 Of course, it is also possible to execute DepClean with parameters directly from the command line. The previous example can be executed directly as follows:
 
 ```bash
-mvn se.kth.castor:depclean-maven-plugin:2.1.0:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
+mvn se.kth.castor:depclean-maven-plugin:2.2.0-SNAPSHOT:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
 
 ## How does DepClean works?
