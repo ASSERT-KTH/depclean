@@ -5,6 +5,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.component.Artifact;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class GradleProjectDependencyAnalysis {
 
@@ -27,9 +29,9 @@ public class GradleProjectDependencyAnalysis {
    * The only or default constructor to invoke this class object.
    */
   public GradleProjectDependencyAnalysis(
-          final Set<ResolvedArtifact> usedDeclaredArtifacts,
-          final Set<ResolvedArtifact> usedUndeclaredArtifacts,
-          final Set<ResolvedArtifact> unusedDeclaredArtifacts) {
+          @Nullable final Set<ResolvedArtifact> usedDeclaredArtifacts,
+          @Nullable final Set<ResolvedArtifact> usedUndeclaredArtifacts,
+          @Nullable final Set<ResolvedArtifact> unusedDeclaredArtifacts) {
     this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
     this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
     this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
@@ -41,7 +43,8 @@ public class GradleProjectDependencyAnalysis {
    * @param set required set.
    * @return An unmodifiable set corresponding to the provided set.
    */
-  private Set<ResolvedArtifact> safeCopy(final Set<ResolvedArtifact> set) {
+  @NonNull
+  private Set<ResolvedArtifact> safeCopy(@Nullable final Set<ResolvedArtifact> set) {
     return (set == null) ? Collections.emptySet()
         : Collections.unmodifiableSet(new LinkedHashSet<ResolvedArtifact>(set));
   }
@@ -62,6 +65,7 @@ public class GradleProjectDependencyAnalysis {
    *
    * @return {@link Artifact}
    */
+  @NonNull
   public Set<ResolvedArtifact> getUsedDeclaredArtifacts() { return usedDeclaredArtifacts; }
 
   /**
@@ -69,6 +73,7 @@ public class GradleProjectDependencyAnalysis {
    *
    * @return {@link Artifact}
    */
+  @NonNull
   public Set<ResolvedArtifact> getUsedUndeclaredArtifacts() {
     return usedUndeclaredArtifacts;
   }
@@ -78,6 +83,7 @@ public class GradleProjectDependencyAnalysis {
    *
    * @return {@link Artifact}
    */
+  @NonNull
   public Set<ResolvedArtifact> getUnusedDeclaredArtifacts() {
     return unusedDeclaredArtifacts;
   }
@@ -86,7 +92,7 @@ public class GradleProjectDependencyAnalysis {
    * Overrides the standard equals method of Object.
    */
   @Override
-  public boolean equals(final Object object) {
+  public boolean equals(@Nullable final Object object) {
     if (object instanceof GradleProjectDependencyAnalysis) {
       GradleProjectDependencyAnalysis analysis = (GradleProjectDependencyAnalysis) object;
       return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
@@ -99,6 +105,7 @@ public class GradleProjectDependencyAnalysis {
   /**
    * Overrides de toString standard method of class Object @see java.lang.Object#toString().
    */
+  @NonNull
   @Override
   public String toString() {
     StringBuilder buffer = new StringBuilder();

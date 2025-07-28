@@ -17,7 +17,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.model.Dependency;
 
@@ -42,7 +42,7 @@ public class MavenDependencyGraph implements DependencyGraph {
    * @param project  the maven project
    * @param rootNode the graph's root node
    */
-  public MavenDependencyGraph(MavenProject project, Model model, DependencyNode rootNode) {
+  public MavenDependencyGraph(@NonNull MavenProject project, @NonNull Model model, @NonNull DependencyNode rootNode) {
     this.project = project;
     this.rootNode = rootNode;
     buildDependencyDependencies(rootNode);
@@ -71,6 +71,7 @@ public class MavenDependencyGraph implements DependencyGraph {
     }
   }
 
+  @NonNull
   @Override
   public Dependency projectCoordinates() {
     File projectJarFile;
@@ -97,7 +98,7 @@ public class MavenDependencyGraph implements DependencyGraph {
     return transitiveDependencies;
   }
 
-  @NotNull
+  @NonNull
   private Set<Dependency> transitiveDependencies(Set<Dependency> allDependencies) {
     Set<Dependency> allTransitiveDependencies = newHashSet(allDependencies);
     allTransitiveDependencies.removeAll(this.directDependencies);
@@ -111,7 +112,7 @@ public class MavenDependencyGraph implements DependencyGraph {
     return inheritedDirectDependencies;
   }
 
-  @NotNull
+  @NonNull
   private Set<Dependency> inheritedDirectDependencies(Set<Artifact> dependencyArtifacts) {
     final Set<Dependency> visibleDependencies = dependencyArtifacts.stream()
         .map(this::toDepCleanDependency)
@@ -125,7 +126,7 @@ public class MavenDependencyGraph implements DependencyGraph {
     return inheritedTransitiveDependencies;
   }
 
-  @NotNull
+  @NonNull
   private Set<Dependency> inheritedTransitiveDependencies(Set<Dependency> inheritedDirectDependencies, Set<Dependency> inheritedTransitiveDependencies) {
     if (!inheritedDirectDependencies.isEmpty()) {
       for (Dependency inheritedDirectDependency : inheritedDirectDependencies) {

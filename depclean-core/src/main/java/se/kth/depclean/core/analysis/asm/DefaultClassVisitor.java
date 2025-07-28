@@ -27,6 +27,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
 /**
@@ -44,11 +46,11 @@ public class DefaultClassVisitor extends ClassVisitor {
   /**
    * Ctor.
    */
-  public DefaultClassVisitor(SignatureVisitor signatureVisitor,
-      AnnotationVisitor annotationVisitor,
-      FieldVisitor fieldVisitor,
-      MethodVisitor methodVisitor,
-      ResultCollector resultCollector) {
+  public DefaultClassVisitor(@NonNull SignatureVisitor signatureVisitor,
+      @NonNull AnnotationVisitor annotationVisitor,
+      @NonNull FieldVisitor fieldVisitor,
+      @NonNull MethodVisitor methodVisitor,
+      @NonNull ResultCollector resultCollector) {
     super(Opcodes.ASM9);
     this.signatureVisitor = signatureVisitor;
     this.annotationVisitor = annotationVisitor;
@@ -58,8 +60,8 @@ public class DefaultClassVisitor extends ClassVisitor {
   }
 
   @Override
-  public void visit(final int version, final int access, final String name, final String signature,
-      final String superName, final String[] interfaces) {
+  public void visit(final int version, final int access, @Nullable final String name, @Nullable final String signature,
+      @Nullable final String superName, @Nullable final String[] interfaces) {
     ClassMembersVisitorCounter.addVisitedClass();
     if (signature == null) {
       resultCollector.addName(superName);
@@ -70,12 +72,13 @@ public class DefaultClassVisitor extends ClassVisitor {
   }
 
   @Override
-  public void visitNestHost(final String nestHost) {
+  public void visitNestHost(@Nullable final String nestHost) {
     resultCollector.addName(nestHost);
   }
 
   @Override
-  public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+  @Nullable
+  public AnnotationVisitor visitAnnotation(@NonNull final String desc, final boolean visible) {
     ClassMembersVisitorCounter.addVisitedAnnotation();
     resultCollector.addDesc(desc);
     return annotationVisitor;

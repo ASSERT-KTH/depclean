@@ -2,7 +2,7 @@ package se.kth.depclean;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * This plugin checks the bytecode of a gradle project and configure out whether a dependency
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 public class DepCleanGradlePlugin implements Plugin<Project> {
 
   @Override
-  public void apply(@NotNull Project project) {
+  public void apply(@NonNull Project project) {
 
     final String depCleanConfigurationName = "depclean";
 

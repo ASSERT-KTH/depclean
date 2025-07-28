@@ -2,7 +2,7 @@ package se.kth.depclean.core.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Represents a class to be analysed.
@@ -17,7 +17,7 @@ public class ClassName implements Comparable<ClassName> {
    *
    * @param name the class name
    */
-  public ClassName(String name) {
+  public ClassName(@NonNull String name) {
     String className = name.replace('/', '.');
     if (className.endsWith(".class")) {
       className = className.substring(0, className.length() - ".class".length());
@@ -26,12 +26,13 @@ public class ClassName implements Comparable<ClassName> {
   }
 
   @Override
+  @NonNull
   public String toString() {
     return value;
   }
 
   @Override
-  public int compareTo(@NotNull ClassName cn) {
+  public int compareTo(@NonNull ClassName cn) {
     return value.compareTo(cn.value);
   }
 }

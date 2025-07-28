@@ -2,6 +2,7 @@ package se.kth.depclean;
 
 import java.util.Set;
 import org.gradle.api.Project;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This extension class allows you to add optional parameters to the default (debloat) task.
@@ -11,6 +12,7 @@ public class DepCleanGradlePluginExtension {
   /**
    * The Gradle project to analyze.
    */
+  @Nullable
   public Project project = null;
 
   /**
@@ -66,6 +68,7 @@ public class DepCleanGradlePluginExtension {
   /**
    * Ignore dependencies with specific configurations from the DepClean analysis.
    */
+  @Nullable
   public Set<String> ignoreConfiguration;
 
   /**
@@ -73,10 +76,12 @@ public class DepCleanGradlePluginExtension {
    * the analysis and considered as used dependencies. Useful to override incomplete result caused
    * by bytecode-level analysis Dependency format is <code>groupId:artifactId:version</code>.
    */
+  @Nullable
   public Set<String> ignoreDependency;
 
   // Getters ==========================================
 
+  @Nullable
   public Project getProject() {
     return project;
   }
@@ -105,10 +110,12 @@ public class DepCleanGradlePluginExtension {
 
   public boolean isCreateClassUsageCsv() { return createClassUsageCsv; }
 
+  @Nullable
   public Set<String> getIgnoreConfiguration() {
     return ignoreConfiguration;
   }
 
+  @Nullable
   public Set<String> getIgnoreDependency() {
     return ignoreDependency;
   }

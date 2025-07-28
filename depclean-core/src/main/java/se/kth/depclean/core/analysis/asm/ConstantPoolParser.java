@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A small parser to read the constant pool directly, in case it contains references ASM does not support.
@@ -154,7 +154,7 @@ public class ConstantPoolParser {
     return result;
   }
 
-  @NotNull
+  @NonNull
   private static String decodeString(ByteBuffer buf) {
     int size = buf.getChar();
     // Explicit cast for compatibility with covariant return type on JDK 9's ByteBuffer

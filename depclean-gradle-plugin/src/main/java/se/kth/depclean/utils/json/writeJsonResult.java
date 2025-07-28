@@ -10,7 +10,7 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.ResolvedDependency;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import com.google.gson.stream.JsonWriter;
 import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
@@ -194,7 +194,7 @@ public class writeJsonResult {
     localWriter.endArray();
   }
 
-  @NotNull
+  @NonNull
   private String getStatus(String coordinates) {
     return (usedDirectArtifactsCoordinates.contains(coordinates) || usedInheritedArtifactsCoordinates
         .contains(coordinates) || usedTransitiveArtifactsCoordinates.contains(coordinates))
@@ -204,7 +204,7 @@ public class writeJsonResult {
             ? "bloated" : "unknown";
   }
 
-  @NotNull
+  @NonNull
   private String getType(String coordinates) {
     return (usedDirectArtifactsCoordinates.contains(coordinates) || unusedDirectArtifactsCoordinates
         .contains(coordinates)) ? "direct" :

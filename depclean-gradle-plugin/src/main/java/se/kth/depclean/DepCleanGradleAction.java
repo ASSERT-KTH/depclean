@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
@@ -27,7 +29,7 @@ import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.UnresolvedDependency;
 import org.gradle.api.logging.Logger;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import se.kth.depclean.utils.DependencyUtils;
 import se.kth.depclean.utils.GradleWritingUtils;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
@@ -69,7 +71,7 @@ public class DepCleanGradleAction implements Action<Project> {
 
   @SneakyThrows
   @Override
-  public void execute(@NotNull Project project) {
+  public void execute(@NonNull Project project) {
 
     Logger logger = project.getLogger();
 
@@ -450,7 +452,7 @@ public class DepCleanGradleAction implements Action<Project> {
    *
    * @param extension Plugin extension class.
    */
-  public void getPluginExtensions(final DepCleanGradlePluginExtension extension) {
+  public void getPluginExtensions(@NonNull final DepCleanGradlePluginExtension extension) {
     this.project = extension.getProject();
     this.skipDepClean = extension.isSkipDepClean();
     this.isIgnoreTest = extension.isIgnoreTest();
@@ -471,9 +473,10 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param allArtifacts All project's artifacts (all dependencies)
    * @return A file which contain the copied dependencies.
    */
+  @NonNull
   public File copyDependenciesLocally(
-          final Path dependencyDirPath,
-          final Set<ResolvedArtifact> allArtifacts) {
+          @NonNull final Path dependencyDirPath,
+          @NonNull final Set<ResolvedArtifact> allArtifacts) {
     File dependencyDirectory = dependencyDirPath.toFile();
     for (ResolvedArtifact artifact : allArtifacts) {
       // copying jar files directly from the user's .m2 directory
@@ -495,7 +498,7 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param dependencyDirPath Directory path where all the copied dependencies are stored.
    * @param logger To show some warnings.
    */
-  public void addDependencySize(final Path dependencyDirPath, final Logger logger) {
+  public void addDependencySize(@NonNull final Path dependencyDirPath, @NonNull final Logger logger) {
     if (dependencyDirPath.toFile().exists()) {
       Iterator<File> iterator = FileUtils.iterateFiles(
                       dependencyDirPath.toFile(), new String[]{"jar"}, true);
@@ -515,8 +518,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param dependencyDirPath Path to the directory.
    */
   public void decompressDependencies(
-          final File dependencyDirectory,
-          final String dependencyDirPath) {
+          @NonNull final File dependencyDirectory,
+          @NonNull final String dependencyDirPath) {
     if (dependencyDirectory.exists()) {
       JarUtils.decompress(dependencyDirPath);
     } else {
@@ -532,8 +535,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param dependencies The GAV of the artifact.
    */
   private void printInfoOfDependencies(
-          final String info,
-          final Set<String> dependencies) {
+          @NonNull final String info,
+          @NonNull final Set<String> dependencies) {
     printString(info.toUpperCase() + " [" + dependencies.size() + "]" + ": ");
     printDependencies(dependencies);
   }
@@ -543,7 +546,7 @@ public class DepCleanGradleAction implements Action<Project> {
    *
    * @param string String to be printed.
    */
-  private void printString(final String string) {
+  private void printString(@NonNull final String string) {
     System.out.println(string); //NOSONAR avoid a warning of non-used logger
   }
 
@@ -553,7 +556,7 @@ public class DepCleanGradleAction implements Action<Project> {
    *
    * @param dependencies The set dependencies to print.
    */
-  private void printDependencies(final Set<String> dependencies) {
+  private void printDependencies(@NonNull final Set<String> dependencies) {
     dependencies
             .stream()
             .sorted(Comparator.comparing(this::getSizeOfDependency))
@@ -571,7 +574,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @return The size of the dependency if its name is a key in the map,
    *        otherwise it returns 0.
    */
-  private Long getSizeOfDependency(final String dependency) {
+  @NonNull
+  private Long getSizeOfDependency(@NonNull final String dependency) {
     Long size = SizeOfDependencies.get(dependency + ".jar");
     return Objects.requireNonNullElse(size, 0L);
   }
@@ -582,7 +586,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param dependency The dependency.
    * @return The human readable representation of the dependency size.
    */
-  private String getSize(final String dependency) {
+  @NonNull
+  private String getSize(@NonNull final String dependency) {
     String[] break1 = dependency.split("\\)");
     String[] a = break1[0].split(":");
     String dep = a[1] + "-" + a[2];
@@ -601,7 +606,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param artifact Artifact
    * @return Name of artifact
    */
-  public static String getName(final ResolvedArtifact artifact) {
+  @NonNull
+  public static String getName(@NonNull final ResolvedArtifact artifact) {
     return artifact.getModuleVersion() + ":" + ArtifactConfigurationMap.get(artifact);
   }
 
@@ -611,7 +617,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param artifactCoordinates Coordinates of the artifact.
    * @return Un-ignored coordinates.
    */
-  public Set<String> excludeConfiguration(final Set<String> artifactCoordinates) {
+  @NonNull
+  public Set<String> excludeConfiguration(@NonNull final Set<String> artifactCoordinates) {
     Set<String> nonExcludedConfigurations = new HashSet<>();
     for (String coordinates : artifactCoordinates) {
       String configuration = coordinates.split(":")[3];
@@ -628,7 +635,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param artifactCoordinates Coordinates of the artifact.
    * @return Un-ignored coordinates.
    */
-  public Set<String> excludeDependencies(final Set<String> artifactCoordinates) {
+  @NonNull
+  public Set<String> excludeDependencies(@NonNull final Set<String> artifactCoordinates) {
     Set<String> nonExcludedDependencies = new HashSet<>();
     for (String coordinates : artifactCoordinates) {
       if (!ignoreDependencies.contains(coordinates)) {
@@ -645,7 +653,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param artifact Artifact
    * @return Name of artifact without scope.
    */
-  public static String getArtifactGroupArtifactId(final String artifact) {
+  @NonNull
+  public static String getArtifactGroupArtifactId(@NonNull final String artifact) {
     String[] parts = artifact.split(":");
     return parts[0] + ":" + parts[1] + ":" + parts[2];
   }
@@ -656,7 +665,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param allDependencies Set of all dependencies
    * @return Set of all children
    */
-  public Set<ResolvedDependency> getAllChildren(final Set<ResolvedDependency> allDependencies) {
+  @NonNull
+  public Set<ResolvedDependency> getAllChildren(@NonNull final Set<ResolvedDependency> allDependencies) {
     Set<ResolvedDependency> allChildren = new HashSet<>();
     for (ResolvedDependency dependency : allDependencies) {
       allChildren.addAll(dependency.getChildren());

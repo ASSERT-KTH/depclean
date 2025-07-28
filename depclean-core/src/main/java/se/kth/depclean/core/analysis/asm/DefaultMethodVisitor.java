@@ -27,6 +27,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.TypePath;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Computes the set of classes referenced by visited code. Inspired by
@@ -41,8 +43,8 @@ public class DefaultMethodVisitor extends MethodVisitor {
   /**
    * Ctor.
    */
-  public DefaultMethodVisitor(AnnotationVisitor annotationVisitor, SignatureVisitor signatureVisitor,
-      ResultCollector resultCollector) {
+  public DefaultMethodVisitor(@NonNull AnnotationVisitor annotationVisitor, @NonNull SignatureVisitor signatureVisitor,
+      @NonNull ResultCollector resultCollector) {
     super(Opcodes.ASM9);
     this.annotationVisitor = annotationVisitor;
     this.signatureVisitor = signatureVisitor;
@@ -50,7 +52,8 @@ public class DefaultMethodVisitor extends MethodVisitor {
   }
 
   @Override
-  public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+  @Nullable
+  public AnnotationVisitor visitAnnotation(@NonNull final String desc, final boolean visible) {
     resultCollector.addDesc(desc);
     return annotationVisitor;
   }

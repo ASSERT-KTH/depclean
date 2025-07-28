@@ -4,6 +4,7 @@ import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Task that configures out the bloated dependencies.

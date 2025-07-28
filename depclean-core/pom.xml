@@ -23,7 +23,6 @@
     <checkstyle.version>10.26.1</checkstyle.version>
     <commons-io.version>2.20.0</commons-io.version>
     <guava.version>33.4.8-jre</guava.version>
-    <jetbrains-annotations.version>1.7.0</jetbrains-annotations.version>
     <jgrapht.version>1.5.2</jgrapht.version>
     <jspecify.version>1.0.0</jspecify.version>
     <maven-core.version>3.9.11</maven-core.version>
@@ -91,12 +90,6 @@
     </dependency>
 
     <!-- Utils -->
-    <dependency>
-      <groupId>org.realityforge.org.jetbrains.annotations</groupId>
-      <artifactId>org.jetbrains.annotations</artifactId>
-      <version>${jetbrains-annotations.version}</version>
-      <scope>compile</scope>
-    </dependency>
     <dependency>
       <groupId>org.jspecify</groupId>
       <artifactId>jspecify</artifactId>

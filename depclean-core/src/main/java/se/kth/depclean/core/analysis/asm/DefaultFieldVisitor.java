@@ -22,6 +22,8 @@ package se.kth.depclean.core.analysis.asm;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Computes the set of classes referenced by visited code. Inspired by
@@ -35,14 +37,15 @@ public class DefaultFieldVisitor extends FieldVisitor {
   /**
    * Ctor.
    */
-  public DefaultFieldVisitor(AnnotationVisitor annotationVisitor, ResultCollector resultCollector) {
+  public DefaultFieldVisitor(@NonNull AnnotationVisitor annotationVisitor, @NonNull ResultCollector resultCollector) {
     super(Opcodes.ASM9);
     this.annotationVisitor = annotationVisitor;
     this.resultCollector = resultCollector;
   }
 
   @Override
-  public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+  @Nullable
+  public AnnotationVisitor visitAnnotation(@NonNull final String desc, final boolean visible) {
     resultCollector.addDesc(desc);
     return annotationVisitor;
   }

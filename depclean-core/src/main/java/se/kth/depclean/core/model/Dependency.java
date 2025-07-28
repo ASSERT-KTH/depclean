@@ -14,6 +14,8 @@ import java.util.jar.JarFile;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 
@@ -24,13 +26,20 @@ import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 @Getter
 public class Dependency {
 
+  @NonNull
   private final String groupId;
+  @NonNull
   private final String dependencyId;
+  @NonNull
   private final String version;
+  @Nullable
   private final String scope;
+  @Nullable
   private final File file;
+  @NonNull
   private final Long size;
 
+  @NonNull
   private final Iterable<ClassName> relatedClasses;
 
   /**
@@ -42,7 +51,7 @@ public class Dependency {
    * @param scope        scope
    * @param file         the related dependency file (a jar in most cases)
    */
-  public Dependency(String groupId, String dependencyId, String version, String scope, File file) {
+  public Dependency(@NonNull String groupId, @NonNull String dependencyId, @NonNull String version, @Nullable String scope, @Nullable File file) {
     this.groupId = groupId;
     this.dependencyId = dependencyId;
     this.version = version;
@@ -60,25 +69,28 @@ public class Dependency {
    * @param version      version
    * @param file         the related dependency file (a jar in most cases)
    */
-  public Dependency(String groupId, String dependencyId, String version, File file) {
+  public Dependency(@NonNull String groupId, @NonNull String dependencyId, @NonNull String version, @Nullable File file) {
     this(groupId, dependencyId, version, null, file);
   }
 
   @SuppressWarnings("CopyConstructorMissesField")
-  protected Dependency(Dependency dependency) {
+  protected Dependency(@NonNull Dependency dependency) {
     this(dependency.getGroupId(), dependency.getDependencyId(), dependency.getVersion(),
         dependency.getScope(), dependency.getFile());
   }
 
   @Override
+  @NonNull
   public String toString() {
     return String.format("%s:%s:%s:%s", groupId, dependencyId, version, scope);
   }
 
+  @NonNull
   public String printWithSize() {
     return String.format("%s (%s)", this, FileUtils.byteCountToDisplaySize(getSize()));
   }
 
+  @NonNull
   private Iterable<ClassName> findRelatedClasses() {
     final Set<ClassName> relatedClasses = new HashSet<>();
     if (file != null && file.getName().endsWith(".jar")) {
@@ -110,7 +122,8 @@ public class Dependency {
     return copyOf(relatedClasses);
   }
 
-  private Long calculateSize(File file) {
+  @NonNull
+  private Long calculateSize(@Nullable File file) {
     try {
       return FileUtils.sizeOf(file);
     } catch (IllegalArgumentException | NullPointerException e) {
@@ -120,7 +133,7 @@ public class Dependency {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
