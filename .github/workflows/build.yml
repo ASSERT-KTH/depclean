@@ -101,11 +101,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build with maven (Getting missing dependencies)
+      - name: Build with maven (Building missing/local dependencies)
         run: mvn clean install -DskipTests -q
 
       - name: Build with Gradle
         working-directory: ./depclean-gradle-plugin
         run: |
           git update-index --chmod=+x gradlew
-          ./gradlew build -x test
+          ./gradlew clean publishToMavenLocal build
