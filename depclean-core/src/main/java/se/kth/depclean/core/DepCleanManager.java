@@ -2,9 +2,8 @@ package se.kth.depclean.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -13,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
@@ -24,9 +24,7 @@ import se.kth.depclean.core.util.JarUtils;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.core.wrapper.LogWrapper;
 
-/**
- * Runs the depclean process, regardless of a specific dependency manager.
- */
+/** Runs the depclean process, regardless of a specific dependency manager. */
 @AllArgsConstructor
 @Slf4j
 public class DepCleanManager {
@@ -47,10 +45,9 @@ public class DepCleanManager {
   private final boolean createResultJson;
   private final boolean createCallGraphCsv;
 
-  /**
-   * Execute the depClean manager.
-   */
+  /** Execute the depClean manager. */
   @SneakyThrows
+  @Nullable
   public ProjectDependencyAnalysis execute() throws AnalysisFailureException {
     final long startTime = System.currentTimeMillis();
 
@@ -68,8 +65,10 @@ public class DepCleanManager {
 
     extractClassesFromDependencies();
 
-    final DefaultProjectDependencyAnalyzer projectDependencyAnalyzer = new DefaultProjectDependencyAnalyzer();
-    final ProjectDependencyAnalysis analysis = projectDependencyAnalyzer.analyze(buildProjectContext());
+    final DefaultProjectDependencyAnalyzer projectDependencyAnalyzer =
+        new DefaultProjectDependencyAnalyzer();
+    final ProjectDependencyAnalysis analysis =
+        projectDependencyAnalyzer.analyze(buildProjectContext());
     analysis.print();
 
     /* Fail the build if there are unused direct dependencies */
@@ -114,10 +113,12 @@ public class DepCleanManager {
 
   @SneakyThrows
   private void extractClassesFromDependencies() {
-    File dependencyDirectory = dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES)
-        .toFile();
+    File dependencyDirectory =
+        dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES).toFile();
     FileUtils.deleteDirectory(dependencyDirectory);
-    dependencyManager.dependencyGraph().allDependencies()
+    dependencyManager
+        .dependencyGraph()
+        .allDependencies()
         .forEach(jarFile -> copyDependencies(jarFile, dependencyDirectory));
 
     // Workaround for dependencies that are in located in a project's libs
@@ -125,8 +126,7 @@ public class DepCleanManager {
     if (dependencyManager.getBuildDirectory().resolve("libs").toFile().exists()) {
       try {
         FileUtils.copyDirectory(
-            dependencyManager.getBuildDirectory().resolve("libs").toFile(),
-            dependencyDirectory);
+            dependencyManager.getBuildDirectory().resolve("libs").toFile(), dependencyDirectory);
       } catch (IOException | NullPointerException e) {
         getLog().error("Error copying directory libs to" + dependencyDirectory.getAbsolutePath());
       }
@@ -139,7 +139,10 @@ public class DepCleanManager {
   }
 
   private void copyDependencies(Dependency dependency, File destFolder) {
-    copyDependencies(dependency.getFile(), destFolder);
+    File file = dependency.getFile();
+    if (file != null) {
+      copyDependencies(file, destFolder);
+    }
   }
 
   @SneakyThrows
@@ -149,9 +152,12 @@ public class DepCleanManager {
 
   private void createResultJson(ProjectDependencyAnalysis analysis) {
     printString("Creating depclean-results.json, please wait...");
-    final File jsonFile = new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-results.json");
-    final File treeFile = new File(dependencyManager.getBuildDirectory() + File.separator + "tree.txt");
-    final File csvFile = new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-callgraph.csv");
+    final File jsonFile =
+        new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-results.json");
+    final File treeFile =
+        new File(dependencyManager.getBuildDirectory() + File.separator + "tree.txt");
+    final File csvFile =
+        new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-callgraph.csv");
     try {
       dependencyManager.generateDependencyTree(treeFile);
     } catch (IOException | InterruptedException e) {
@@ -163,20 +169,19 @@ public class DepCleanManager {
     if (createCallGraphCsv) {
       printString("Creating " + csvFile.getName() + ", please wait...");
       try {
-        FileUtils.write(csvFile, "OriginClass,TargetClass,OriginDependency,TargetDependency\n",
-            Charset.defaultCharset());
+        FileUtils.write(
+            csvFile,
+            "OriginClass,TargetClass,OriginDependency,TargetDependency\n",
+            StandardCharsets.UTF_8);
       } catch (IOException e) {
         getLog().error("Error writing the CSV header.");
       }
     }
-    String treeAsJson = dependencyManager.getTreeAsJson(
-        treeFile,
-        analysis,
-        csvFile,
-        createCallGraphCsv);
+    String treeAsJson =
+        dependencyManager.getTreeAsJson(treeFile, analysis, csvFile, createCallGraphCsv);
 
     try {
-      FileUtils.write(jsonFile, treeAsJson, Charset.defaultCharset());
+      FileUtils.write(jsonFile, treeAsJson, StandardCharsets.UTF_8);
     } catch (IOException e) {
       getLog().error("Unable to generate " + jsonFile.getName() + " file.");
     }
@@ -195,18 +200,19 @@ public class DepCleanManager {
 
     // Consider are used all the classes declared in Maven processors
     Set<ClassName> allUsedClasses = new HashSet<>();
-    Set<ClassName> usedClassesFromProcessors = dependencyManager
-        .collectUsedClassesFromProcessors().stream()
-        .map(ClassName::new)
-        .collect(Collectors.toSet());
+    Set<ClassName> usedClassesFromProcessors =
+        dependencyManager.collectUsedClassesFromProcessors().stream()
+            .map(ClassName::new)
+            .collect(Collectors.toSet());
 
     // Consider as used all the classes located in the imports of the source code
-    Set<ClassName> usedClassesFromSource = dependencyManager.collectUsedClassesFromSource(
-        dependencyManager.getSourceDirectory(),
-        dependencyManager.getTestDirectory())
-        .stream()
-        .map(ClassName::new)
-        .collect(Collectors.toSet());
+    Set<ClassName> usedClassesFromSource =
+        dependencyManager
+            .collectUsedClassesFromSource(
+                dependencyManager.getSourceDirectory(), dependencyManager.getTestDirectory())
+            .stream()
+            .map(ClassName::new)
+            .collect(Collectors.toSet());
 
     allUsedClasses.addAll(usedClassesFromProcessors);
     allUsedClasses.addAll(usedClassesFromSource);
@@ -218,22 +224,21 @@ public class DepCleanManager {
         dependencyManager.getSourceDirectory(),
         dependencyManager.getTestDirectory(),
         dependencyManager.getDependenciesDirectory(),
-        ignoreScopes.stream()
-            .map(scope -> new Scope(scope))
-            .collect(Collectors.toSet()),
+        ignoreScopes.stream().map(scope -> new Scope(scope)).collect(Collectors.toSet()),
         ignoreDependencies.stream()
-            .map(pattern -> toDependency(dependencyManager.dependencyGraph().allDependencies(), pattern))
+            .map(
+                pattern ->
+                    toDependency(dependencyManager.dependencyGraph().allDependencies(), pattern))
             .flatMap(Set::stream)
             .collect(Collectors.toSet()),
         allUsedClasses);
   }
 
   /**
-   * Returns a set of {@code DependencyCoordinate}s that match given string
-   * representations.
+   * Returns a set of {@code DependencyCoordinate}s that match given string representations.
    *
-   * @param allDependencies    all known dependencies
-   * @param dependencyPatterns string representation of dependencies to match
+   * @param allDependencies all known dependencies
+   * @param patternString string representation of dependencies to match
    * @return a set of {@code Dependency} that match given string representations
    */
   private Set<Dependency> toDependency(Set<Dependency> allDependencies, String patternString) {

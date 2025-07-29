@@ -17,8 +17,6 @@
 
 package se.kth.depclean.utils;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -28,20 +26,17 @@ import java.util.Enumeration;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
-/**
- * Utility class to handle JAR files.
- */
+/** Utility class to handle JAR files. */
 @Slf4j
 public final class JarUtils {
 
-  /**
-   * Size of the buffer to read/write data.
-   */
+  /** Size of the buffer to read/write data. */
   private static final int BUFFER_SIZE = 16384;
 
-  private JarUtils() {
-  }
+  private JarUtils() {}
 
   /**
    * Decompress all JAR files located in a given directory.
@@ -51,7 +46,9 @@ public final class JarUtils {
   public static void decompress(final String outputDirectory) {
     File files = new File(outputDirectory);
     for (File f : Objects.requireNonNull(files.listFiles())) {
-      if (f.getName().endsWith(".jar") || f.getName().endsWith(".war") || f.getName().endsWith(".ear")) {
+      if (f.getName().endsWith(".jar")
+          || f.getName().endsWith(".war")
+          || f.getName().endsWith(".ear")) {
         try {
           JarUtils.decompressDependencyFiles(f.getAbsolutePath());
           // delete the original dependency jar file
@@ -74,36 +71,79 @@ public final class JarUtils {
       String newPath = zipFile.substring(0, zipFile.length() - 4);
       new File(newPath).mkdir();
       Enumeration<? extends ZipEntry> zipFileEntries = zip.entries();
+
+      // Protection against ZIP bomb attacks
+      int maxEntries = 10_000; // Maximum number of entries to process
+      long maxTotalSize = 1_000_000_000L; // 1 GB maximum total uncompressed size
+      double maxCompressionRatio = 100.0; // Maximum compression ratio
+
+      int entryCount = 0;
+      long totalSizeUncompressed = 0;
+
       // Process each entry
-      while (zipFileEntries.hasMoreElements()) {
+      while (zipFileEntries.hasMoreElements() && entryCount < maxEntries) {
         // grab a zip file entry
         ZipEntry entry = zipFileEntries.nextElement();
         String currentEntry = entry.getName();
+        entryCount++;
+
+        // Skip entries with suspicious characteristics
+        if (currentEntry.length() > 1000) { // Skip entries with very long names
+          continue;
+        }
+
         File destFile = new File(newPath, currentEntry);
         File destinationParent = destFile.getParentFile();
         // create the parent directory structure if needed
         destinationParent.mkdirs();
         if (!entry.isDirectory()) {
-          BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
-          int currentByte;
-          // establish buffer for writing file
-          byte[] data = new byte[BUFFER_SIZE];
-          // write the current file to disk
-          FileOutputStream fos = new FileOutputStream(destFile);
-          try (BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER_SIZE)) {
+          try (BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
+              FileOutputStream fos = new FileOutputStream(destFile);
+              BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER_SIZE)) {
+
+            int currentByte;
+            // establish buffer for writing file
+            byte[] data = new byte[BUFFER_SIZE];
+            long entrySizeUncompressed = 0;
+
             // read and write until last byte is encountered
             while ((currentByte = is.read(data, 0, BUFFER_SIZE)) != -1) {
               dest.write(data, 0, currentByte);
+              entrySizeUncompressed += currentByte;
+              totalSizeUncompressed += currentByte;
+
+              // Check compression ratio for this entry
+              if (entry.getCompressedSize() > 0) {
+                double compressionRatio =
+                    (double) entrySizeUncompressed / entry.getCompressedSize();
+                if (compressionRatio > maxCompressionRatio) {
+                  throw new IOException(
+                      "ZIP bomb detected: compression ratio too high for entry " + currentEntry);
+                }
+              }
+
+              // Check total uncompressed size
+              if (totalSizeUncompressed > maxTotalSize) {
+                throw new IOException("ZIP bomb detected: total uncompressed size exceeds limit");
+              }
             }
             dest.flush();
             is.close();
           }
         }
-        if (currentEntry.endsWith(".jar") || currentEntry.endsWith(".war") || currentEntry.endsWith(".ear")) {
+        if (currentEntry.endsWith(".jar")
+            || currentEntry.endsWith(".war")
+            || currentEntry.endsWith(".ear")) {
           // found a zip file, try to open
           decompressDependencyFiles(destFile.getAbsolutePath());
           FileUtils.forceDelete(new File(destFile.getAbsolutePath()));
         }
+      }
+
+      // Check if processing was truncated due to too many entries
+      if (entryCount >= maxEntries) {
+        throw new IOException(
+            "ZIP bomb detected: too many entries in archive (" + entryCount + ")");
       }
     }
   }

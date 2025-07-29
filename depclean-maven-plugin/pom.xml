@@ -1,31 +1,47 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Parent -->
   <parent>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-parent-pom</artifactId>
-    <version>2.1.0</version>
+    <version>2.2.0-SNAPSHOT</version>
   </parent>
 
   <!-- Coordinates -->
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>depclean-maven-plugin</name>
 
+  <description>DepClean automatically removes unused dependencies in Maven projects</description>
+
   <properties>
-    <java.version>21</java.version>
-    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <!-- Dependencies -->
+    <checkstyle.version>10.26.1</checkstyle.version>
+    <commons-io.version>2.20.0</commons-io.version>
+    <gson.version>2.13.1</gson.version>
+    <itf-jupiter-extension.version>0.13.1</itf-jupiter-extension.version>
+    <jspecify.version>1.0.0</jspecify.version>
+    <maven-core.version>3.9.11</maven-core.version>
+    <maven-dependency-tree.version>3.3.0</maven-dependency-tree.version>
+    <maven-dependency-tree-parser.version>1.0.6</maven-dependency-tree-parser.version>
+    <maven-plugin-annotations.version>3.15.1</maven-plugin-annotations.version>
+    <maven-plugin-testing-tools.version>3.3.0</maven-plugin-testing-tools.version>
+    <maven-project.version>3.0-alpha-2</maven-project.version>
+
+    <!-- Plugins -->
+    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+    <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
+    <maven-plugin-plugin.version>3.15.1</maven-plugin-plugin.version>
+
+    <!-- Sonar, Checkstyle, etc. -->
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
-    <linkXRef>false</linkXRef>
-    <!-- Encoding for the failsafe-plugin -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
-
-  <description>DepClean automatically removes unused dependencies in Maven projects</description>
 
   <!-- Build options -->
   <dependencies>
@@ -33,83 +49,87 @@
     <dependency>
       <groupId>se.kth.castor</groupId>
       <artifactId>depclean-core</artifactId>
-      <version>2.1.0</version>
+      <version>${project.parent.version}</version>
     </dependency>
+
     <!--Maven tools for plugin construction-->
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
-      <version>3.9.11</version>
+      <version>${maven-core.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>3.9.11</version>
+      <version>${maven-core.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>3.9.11</version>
+      <artifactId>maven-project</artifactId>
+      <version>${maven-project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.15.1</version>
+      <version>${maven-plugin-annotations.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-tree</artifactId>
-      <version>3.3.0</version>
+      <version>${maven-dependency-tree.version}</version>
     </dependency>
+
     <!-- Utils -->
+    <dependency>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
+      <version>${jspecify.version}</version>
+      <scope>compile</scope>
+    </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.20.0</version>
+      <version>${commons-io.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.13.1</version>
+      <version>${gson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.whitesource</groupId>
       <artifactId>maven-dependency-tree-parser</artifactId>
-      <version>1.0.6</version>
+      <version>${maven-dependency-tree-parser.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-plugin-testing-tools</artifactId>
-      <version>3.3.0</version>
+      <version>${maven-plugin-testing-tools.version}</version>
       <scope>compile</scope>
     </dependency>
+
     <!-- Integration tests -->
     <!-- see https://khmarbaise.github.io/maven-it-extension/itf-documentation/usersguide/usersguide.html#_grouping_test_cases -->
     <dependency>
       <groupId>com.soebes.itf.jupiter.extension</groupId>
       <artifactId>itf-extension-maven</artifactId>
-      <version>0.13.1</version>
+      <version>${itf-jupiter-extension.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.soebes.itf.jupiter.extension</groupId>
       <artifactId>itf-assertj</artifactId>
-      <version>0.13.1</version>
+      <version>${itf-jupiter-extension.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.soebes.itf.jupiter.extension</groupId>
       <artifactId>itf-jupiter-extension</artifactId>
-      <version>0.13.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>3.27.3</version>
+      <version>${itf-jupiter-extension.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -117,33 +137,35 @@
   <build>
     <testResources>
       <testResource>
-        <directory>src/test/resources</directory>
         <filtering>false</filtering>
+        <directory>src/test/resources</directory>
       </testResource>
       <testResource>
-        <directory>src/test/resources-its</directory>
         <filtering>true</filtering>
+        <directory>src/test/resources-its</directory>
       </testResource>
     </testResources>
+
     <plugins>
       <plugin>
         <groupId>com.soebes.itf.jupiter.extension</groupId>
         <artifactId>itf-maven-plugin</artifactId>
-        <version>0.13.1</version>
+        <version>${itf-jupiter-extension.version}</version>
         <executions>
           <execution>
             <id>installing</id>
-            <phase>pre-integration-test</phase>
             <goals>
               <goal>install</goal>
             </goals>
+            <phase>pre-integration-test</phase>
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.5.3</version>
+        <version>${maven-failsafe-plugin.version}</version>
         <configuration>
           <includes>
             <include>**/*IT.java</include>
@@ -157,11 +179,12 @@
           </execution>
         </executions>
       </plugin>
+
       <!-- Maven plugin to create Maven plugins-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.15.1</version>
+        <version>${maven-plugin-plugin.version}</version>
         <configuration>
           <goalPrefix>depclean</goalPrefix>
           <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
@@ -169,56 +192,55 @@
         <executions>
           <execution>
             <id>mojo-descriptor</id>
-            <phase>process-classes</phase>
             <goals>
               <goal>descriptor</goal>
             </goals>
+            <phase>process-classes</phase>
           </execution>
         </executions>
       </plugin>
+
       <!-- Checkstyle-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>${maven-checkstyle-plugin.version}</version>
         <dependencies>
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>8.41</version>
+            <version>${checkstyle.version}</version>
           </dependency>
         </dependencies>
         <executions>
           <execution>
             <id>check for errors</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>validate</phase>
             <configuration>
               <!-- Change to warning to enforce strong style rules -->
               <violationSeverity>error</violationSeverity>
               <failsOnError>true</failsOnError>
               <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
-              <configLocation>../checkstyle.xml</configLocation>
-              <encoding>UTF-8</encoding>
+              <configLocation>${checkstyle.config.location}</configLocation>
               <consoleOutput>true</consoleOutput>
             </configuration>
-            <phase>validate</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
           </execution>
           <execution>
             <id>checkstyle report</id>
-            <configuration>
-              <failsOnError>true</failsOnError>
-              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
-              <configLocation>../checkstyle.xml</configLocation>
-              <encoding>UTF-8</encoding>
-              <consoleOutput>true</consoleOutput>
-            </configuration>
-            <phase>verify</phase>
             <goals>
               <!-- Generate a Checkstyle report -->
               <goal>checkstyle</goal>
             </goals>
+            <phase>verify</phase>
+            <configuration>
+              <failsOnError>true</failsOnError>
+              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <configLocation>${checkstyle.config.location}</configLocation>
+              <consoleOutput>true</consoleOutput>
+            </configuration>
           </execution>
         </executions>
       </plugin>

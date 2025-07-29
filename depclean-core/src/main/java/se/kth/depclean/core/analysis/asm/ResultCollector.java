@@ -21,15 +21,16 @@ package se.kth.depclean.core.analysis.asm;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.Type;
 
-/**
- * Used for storing the types visited statically.
- */
+/** Used for storing the types visited statically. */
 public class ResultCollector {
 
   private final Set<String> classes = new HashSet<>();
 
+  @NonNull
   public Set<String> getDependencies() {
     return classes;
   }
@@ -38,27 +39,25 @@ public class ResultCollector {
     classes.clear();
   }
 
-  public void addDesc(final String desc) {
+  public void addDesc(@NonNull final String desc) {
     addType(Type.getType(desc));
   }
 
-  void addType(final Type t) {
+  void addType(@NonNull final Type t) {
     switch (t.getSort()) {
-      case Type.ARRAY:
-        addType(t.getElementType());
-        break;
-      case Type.OBJECT:
-        addName(t.getClassName().replace('.', '/'));
-        break;
-      default:
+      case Type.ARRAY -> addType(t.getElementType());
+      case Type.OBJECT -> addName(t.getClassName().replace('.', '/'));
+      default -> {
+        // no-op
+      }
     }
   }
 
-  public void add(String name) {
+  public void add(@NonNull String name) {
     classes.add(name);
   }
 
-  void addNames(final String[] names) {
+  void addNames(@Nullable final String[] names) {
     if (names == null) {
       return;
     }
@@ -67,7 +66,7 @@ public class ResultCollector {
     }
   }
 
-  void addName(String name) {
+  void addName(@Nullable String name) {
     if (name == null) {
       return;
     }
@@ -80,7 +79,7 @@ public class ResultCollector {
     classes.add(name);
   }
 
-  void addMethodDesc(final String desc) {
+  void addMethodDesc(@NonNull final String desc) {
     addType(Type.getReturnType(desc));
     Type[] types = Type.getArgumentTypes(desc);
     for (Type type : types) {

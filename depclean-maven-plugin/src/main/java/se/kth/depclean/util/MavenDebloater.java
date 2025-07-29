@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
@@ -17,9 +18,7 @@ import se.kth.depclean.core.AbstractDebloater;
 import se.kth.depclean.core.analysis.model.DebloatedDependency;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
-/**
- * Writes a debloated pom is needed.
- */
+/** Writes a debloated pom is needed. */
 @Slf4j
 public class MavenDebloater extends AbstractDebloater<Dependency> {
 
@@ -31,8 +30,8 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
    * Creates the debloater.
    *
    * @param analysis the depclean analysis result
-   * @param project  the maven project
-   * @param model    the maven model
+   * @param project the maven project
+   * @param model the maven model
    */
   public MavenDebloater(ProjectDependencyAnalysis analysis, MavenProject project, Model model) {
     super(analysis);
@@ -43,21 +42,34 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
 
   @Override
   protected void logDependencies() {
-    model.getDependencies().forEach(dep -> {
-      log.info("Adding {}:{}:{}:{}", dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), dep.getScope()
-      );
-      dep.getExclusions().forEach(excl ->
-          log.info("Excluding {}:{} from {}:{}:{}",
-          excl.getGroupId(), excl.getArtifactId(), dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), dep.getScope())
-      );
-    });
+    model
+        .getDependencies()
+        .forEach(
+            dep -> {
+              log.info(
+                  "Adding {}:{}:{}:{}",
+                  dep.getGroupId(),
+                  dep.getArtifactId(),
+                  dep.getVersion(),
+                  dep.getScope());
+              dep.getExclusions()
+                  .forEach(
+                      excl ->
+                          log.info(
+                              "Excluding {}:{} from {}:{}:{}",
+                              excl.getGroupId(),
+                              excl.getArtifactId(),
+                              dep.getGroupId(),
+                              dep.getArtifactId(),
+                              dep.getVersion(),
+                              dep.getScope()));
+            });
   }
 
   @Override
   protected Dependency toProviderDependency(DebloatedDependency debloatedDependency) {
     final Dependency dependency = createDependency(debloatedDependency);
-    debloatedDependency.getExclusions()
-        .forEach(depToExclude -> exclude(dependency, depToExclude));
+    debloatedDependency.getExclusions().forEach(depToExclude -> exclude(dependency, depToExclude));
     return dependency;
   }
 
@@ -66,7 +78,8 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
     model.setDependencies(dependencies);
   }
 
-  private void exclude(Dependency dependency, se.kth.depclean.core.model.Dependency dependencyToExclude) {
+  private void exclude(
+      Dependency dependency, se.kth.depclean.core.model.Dependency dependencyToExclude) {
     Exclusion exclusion = new Exclusion();
     exclusion.setGroupId(dependencyToExclude.getGroupId());
     exclusion.setArtifactId(dependencyToExclude.getDependencyId());
@@ -75,19 +88,22 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
 
   @Override
   protected void postProcessDependencies() {
-    model.getDependencies().forEach(dep -> {
-      for (Dependency initialDependency : initialDependencies) {
-        if (hasVersionAsProperty(initialDependency) && matches(dep, initialDependency)) {
-          dep.setVersion(initialDependency.getVersion());
-        }
-      }
-    });
+    model
+        .getDependencies()
+        .forEach(
+            dep -> {
+              for (Dependency initialDependency : initialDependencies) {
+                if (hasVersionAsProperty(initialDependency) && matches(dep, initialDependency)) {
+                  dep.setVersion(initialDependency.getVersion());
+                }
+              }
+            });
   }
 
   @Override
   protected void writeFile() throws IOException {
-    String pathToDebloatedPom = project.getBasedir().getAbsolutePath()
-        + File.separator + "pom-debloated.xml";
+    String pathToDebloatedPom =
+        project.getBasedir().getAbsolutePath() + File.separator + "pom-debloated.xml";
     Path path = Paths.get(pathToDebloatedPom);
     writePom(path);
     log.info("POM debloated successfully");
@@ -117,13 +133,19 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
     return project.getArtifacts().stream()
         .filter(artifact -> matches(artifact, dependency))
         .findFirst()
-        .orElseThrow(() -> new RuntimeException("Unable to find " + dependency + " in dependencies"));
+        .orElseThrow(
+            () -> new RuntimeException("Unable to find " + dependency + " in dependencies"));
   }
 
   private boolean matches(Artifact artifact, se.kth.depclean.core.model.Dependency coordinate) {
-    return coordinate.toString().toLowerCase().contains(
-        String.format("%s:%s:%s", artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion())
-            .toLowerCase());
+    return coordinate
+        .toString()
+        .toLowerCase(Locale.ROOT)
+        .contains(
+            String.format(
+                    "%s:%s:%s",
+                    artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion())
+                .toLowerCase(Locale.ROOT));
   }
 
   private boolean matches(Dependency dep, Dependency initialDependency) {
@@ -132,18 +154,19 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
   }
 
   /**
-   * This method creates a Maven {@link Dependency} object from a depclean {@link se.kth.depclean.core.model.Dependency}.
+   * This method creates a Maven {@link Dependency} object from a depclean {@link
+   * se.kth.depclean.core.model.Dependency}.
    *
    * @param dependency The depclean dependency to create the maven dependency.
    * @return The Dependency object.
    */
-  private Dependency createDependency(
-      final se.kth.depclean.core.model.Dependency dependency) {
+  private Dependency createDependency(final se.kth.depclean.core.model.Dependency dependency) {
     return createDependency(findArtifact(dependency));
   }
 
   /**
-   * This method creates a {@link Dependency} object from a Maven {@link org.apache.maven.artifact.Artifact}.
+   * This method creates a {@link Dependency} object from a Maven {@link
+   * org.apache.maven.artifact.Artifact}.
    *
    * @param artifact The artifact to create the dependency.
    * @return The Dependency object.

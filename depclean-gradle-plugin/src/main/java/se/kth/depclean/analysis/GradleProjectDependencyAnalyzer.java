@@ -10,4 +10,3 @@ public interface GradleProjectDependencyAnalyzer {
   // public methods ---------------------------------------------------------
   GradleProjectDependencyAnalysis analyze(Project project);
 }
-

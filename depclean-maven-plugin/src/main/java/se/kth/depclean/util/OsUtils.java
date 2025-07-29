@@ -1,20 +1,19 @@
 package se.kth.depclean.util;
 
-/**
- * Utility class to determine the operative system being used.
- */
+import java.util.Locale;
+
+/** Utility class to determine the operative system being used. */
 public class OsUtils {
 
-  private static final String OS = System.getProperty("os.name").toLowerCase();
+  private static final String OS = System.getProperty("os.name").toLowerCase(Locale.ROOT);
 
-  private OsUtils() {
-  }
+  private OsUtils() {}
 
   public static boolean isUnix() {
-    return (OS.contains("nix") || OS.contains("nux") || OS.contains("mac os"));
+    return OS.contains("nix") || OS.contains("nux") || OS.contains("mac os");
   }
 
   public static boolean isWindows() {
-    return (OS.contains("win"));
+    return OS.contains("win");
   }
 }

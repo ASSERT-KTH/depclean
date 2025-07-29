@@ -19,30 +19,32 @@ package se.kth.depclean.core.analysis.asm;
  * under the License.
  */
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
 
 /**
- * Computes the set of classes referenced by visited code. Inspired by
- * <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
+ * Computes the set of classes referenced by visited code. Inspired by <code>
+ * org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
  */
 public class DefaultFieldVisitor extends FieldVisitor {
 
   private final AnnotationVisitor annotationVisitor;
   private final ResultCollector resultCollector;
 
-  /**
-   * Ctor.
-   */
-  public DefaultFieldVisitor(AnnotationVisitor annotationVisitor, ResultCollector resultCollector) {
+  /** Ctor. */
+  public DefaultFieldVisitor(
+      @NonNull AnnotationVisitor annotationVisitor, @NonNull ResultCollector resultCollector) {
     super(Opcodes.ASM9);
     this.annotationVisitor = annotationVisitor;
     this.resultCollector = resultCollector;
   }
 
   @Override
-  public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+  @Nullable
+  public AnnotationVisitor visitAnnotation(@NonNull final String desc, final boolean visible) {
     resultCollector.addDesc(desc);
     return annotationVisitor;
   }

@@ -32,8 +32,8 @@ import se.kth.depclean.core.analysis.ClassFileVisitor;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
 /**
- * Computes the set of classes referenced by visited class files, using
- * <a href="DependencyVisitor.html">DependencyVisitor</a>.
+ * Computes the set of classes referenced by visited class files, using <a
+ * href="DependencyVisitor.html">DependencyVisitor</a>.
  *
  * @see #getDependencies()
  */
@@ -45,36 +45,29 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
   /**
    * Visit a class file.
    *
-   * @see org.apache.invoke.shared.dependency.analyzer.ClassFileVisitor#visitClass(java.lang.String.java.io.InputStream)
+   * @see se.kth.depclean.core.analysis.ClassFileVisitor#visitClass(java.lang.String,
+   *     java.io.InputStream)
    */
   @Override
   public void visitClass(String className, InputStream in) {
     try {
       ClassReader reader = new ClassReader(in);
 
-      final Set<String> constantPoolClassRefs = ConstantPoolParser.getConstantPoolClassReferences(reader.b);
+      final Set<String> constantPoolClassRefs =
+          ConstantPoolParser.getConstantPoolClassReferences(reader.b);
       for (String string : constantPoolClassRefs) {
         resultCollector.addName(string);
       }
 
       /* visit class members */
-      AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(
-          resultCollector);
-      SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(
-          resultCollector);
-      FieldVisitor fieldVisitor = new DefaultFieldVisitor(
-          annotationVisitor,
-          resultCollector);
-      MethodVisitor methodVisitor = new DefaultMethodVisitor(
-          annotationVisitor,
-          signatureVisitor,
-          resultCollector);
-      DefaultClassVisitor defaultClassVisitor = new DefaultClassVisitor(
-          signatureVisitor,
-          annotationVisitor,
-          fieldVisitor,
-          methodVisitor,
-          resultCollector);
+      AnnotationVisitor annotationVisitor = new DefaultAnnotationVisitor(resultCollector);
+      SignatureVisitor signatureVisitor = new DefaultSignatureVisitor(resultCollector);
+      FieldVisitor fieldVisitor = new DefaultFieldVisitor(annotationVisitor, resultCollector);
+      MethodVisitor methodVisitor =
+          new DefaultMethodVisitor(annotationVisitor, signatureVisitor, resultCollector);
+      DefaultClassVisitor defaultClassVisitor =
+          new DefaultClassVisitor(
+              signatureVisitor, annotationVisitor, fieldVisitor, methodVisitor, resultCollector);
 
       reader.accept(defaultClassVisitor, 0);
 

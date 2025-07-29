@@ -19,29 +19,30 @@ package se.kth.depclean.core.analysis.asm;
  * under the License.
  */
 
+import org.jspecify.annotations.NonNull;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 /**
- * Computes the set of classes referenced by visited code. Inspired by
- * <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
+ * Computes the set of classes referenced by visited code. Inspired by <code>
+ * org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
  */
 public class DefaultSignatureVisitor extends SignatureVisitor {
 
   private final ResultCollector resultCollector;
 
-  public DefaultSignatureVisitor(ResultCollector resultCollector) {
+  public DefaultSignatureVisitor(@NonNull ResultCollector resultCollector) {
     super(Opcodes.ASM9);
     this.resultCollector = resultCollector;
   }
 
   @Override
-  public void visitClassType(final String name) {
+  public void visitClassType(@NonNull final String name) {
     resultCollector.addName(name);
   }
 
   @Override
-  public void visitInnerClassType(final String name) {
+  public void visitInnerClassType(@NonNull final String name) {
     resultCollector.addName(name);
   }
 }

@@ -1,37 +1,38 @@
-buildscript{
-  repositories {
-      mavenLocal()
-
-      dependencies{
-        classpath 'se.kth.castor:depclean-gradle-plugin:1.0-SNAPSHOT'
-      }
-  }
-}
-plugins {
-    id 'java'
-    id 'maven-publish'
-}
-apply plugin: 'se.kth.castor.depclean-gradle-plugin'
-repositories {
-    mavenLocal()
-    maven {
-        url = uri('https://repo.maven.apache.org/maven2/')
+buildscript {
+    repositories {
+        mavenLocal()
+    }
+    dependencies {
+        classpath 'se.kth.castor:depclean-gradle-plugin:2.2.0-SNAPSHOT'
     }
 }
+
+plugins {
+    id 'java'
+}
+
+apply plugin: 'se.kth.castor.depclean-gradle-plugin'
 
 group = 'org.foo.bar'
 version = '1.0.0-SNAPSHOT'
 description = 'foobar'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from(components.java)
-        }
-    }
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.withType(JavaCompile) {
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.jcabi:jcabi-manifests:1.1'
+    implementation 'commons-io:commons-io:2.8.0'
+    implementation 'commons-codec:commons-codec:1.15'
+}
+
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }

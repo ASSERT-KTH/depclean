@@ -116,11 +116,15 @@ public interface DependencyManagerWrapper {
   /**
    * Gets the JSON representation of the dependency tree.
    *
-   * @param treeFile           the file containing the tree
-   * @param analysis           the depclean analysis result
-   * @param classUsageFile     the class usage file
+   * @param treeFile the file containing the tree
+   * @param analysis the depclean analysis result
+   * @param classUsageFile the class usage file
    * @param createCallGraphCsv whether to write the call graph of usages down
    * @return the JSON tree
    */
-  String getTreeAsJson(File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv);
+  String getTreeAsJson(
+      File treeFile,
+      ProjectDependencyAnalysis analysis,
+      File classUsageFile,
+      boolean createCallGraphCsv);
 }

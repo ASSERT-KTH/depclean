@@ -15,12 +15,13 @@ import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 class DependencyClassFileVisitorTest {
 
   // Resource class for testing.
-  private static final File classFile = new File(
-          "src/test/resources/asmAndGraphResources/ExampleClass.class");
+  private static final File classFile =
+      new File("src/test/resources/asmAndGraphResources/ExampleClass.class");
   private static final String className = "ExampleClass";
 
   @Test
-  @DisplayName("Test that the asm and graph are working together and performing"
+  @DisplayName(
+      "Test that the asm and graph are working together and performing"
           + " their work (Adding classes and dependencies as edges).")
   void test_that_graph_is_collecting_edges_from_asm_correctly() throws IOException {
 

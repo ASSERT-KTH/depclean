@@ -33,19 +33,14 @@ import java.util.jar.JarInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.plexus.util.DirectoryScanner;
 
-/**
- * Utility to visit classes in a library given either as a jar file or an
- * exploded directory.
- */
+/** Utility to visit classes in a library given either as a jar file or an exploded directory. */
 @Slf4j
 public final class ClassFileVisitorUtils {
 
-  private static final String[] CLASS_INCLUDES = { "**/*.class" };
+  private static final String[] CLASS_INCLUDES = {"**/*.class"};
   public static final String CLASS = ".class";
 
-  /**
-   * Ctor.
-   */
+  /** Ctor. */
   private ClassFileVisitorUtils() {
     // private constructor for utility class
   }
@@ -53,7 +48,7 @@ public final class ClassFileVisitorUtils {
   /**
    * Accepts a jar or directory to be analyzed.
    *
-   * @param url     The jar or directory
+   * @param url The jar or directory
    * @param visitor A {@link ClassFileVisitor}.
    */
   public static void accept(URL url, ClassFileVisitor visitor) {
@@ -81,7 +76,7 @@ public final class ClassFileVisitorUtils {
   /**
    * Accepts a jar to be analyzed.
    *
-   * @param url     URL of jar
+   * @param url URL of jar
    * @param visitor A {@link ClassFileVisitor}.
    */
   private static void acceptJar(URL url, ClassFileVisitor visitor) {
@@ -103,7 +98,7 @@ public final class ClassFileVisitorUtils {
    * Accepts a directory to be analyzed.
    *
    * @param directory Directory or File to be analyzed.
-   * @param visitor   A {@link ClassFileVisitor}.
+   * @param visitor A {@link ClassFileVisitor}.
    */
   private static void acceptDirectory(File directory, ClassFileVisitor visitor) {
     if (!directory.isDirectory()) {
@@ -143,8 +138,8 @@ public final class ClassFileVisitorUtils {
   /**
    * Visits the classes.
    *
-   * @param path    Path of the class.
-   * @param in      read the input bytes.
+   * @param path Path of the class.
+   * @param in read the input bytes.
    * @param visitor A {@link ClassFileVisitor}.
    */
   private static void visitClass(String path, InputStream in, ClassFileVisitor visitor) {
@@ -156,5 +151,4 @@ public final class ClassFileVisitorUtils {
     className = className.replace(File.separatorChar, '.');
     visitor.visitClass(className, in);
   }
-
 }

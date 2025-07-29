@@ -2,27 +2,22 @@ package se.kth.depclean;
 
 import java.util.Set;
 import org.gradle.api.Project;
+import org.jspecify.annotations.Nullable;
 
-/**
- * This extension class allows you to add optional parameters to the default (debloat) task.
- */
+/** This extension class allows you to add optional parameters to the default (debloat) task. */
 public class DepCleanGradlePluginExtension {
 
-  /**
-   * The Gradle project to analyze.
-   */
-  public Project project = null;
+  /** The Gradle project to analyze. */
+  @Nullable public Project project = null;
 
-  /**
-   * Skip plugin execution completely.
-   */
+  /** Skip plugin execution completely. */
   public boolean skipDepClean = false;
 
   /**
-   * If this is true, DepClean will not analyze the test sources in the project, and, therefore,
-   * the dependencies that are only used for testing will be considered unused. This property is
-   * useful to detect dependencies that have a compile scope but are only used during testing.
-   * Hence, these dependencies should have a test scope.
+   * If this is true, DepClean will not analyze the test sources in the project, and, therefore, the
+   * dependencies that are only used for testing will be considered unused. This property is useful
+   * to detect dependencies that have a compile scope but are only used during testing. Hence, these
+   * dependencies should have a test scope.
    */
   public boolean ignoreTest = false;
 
@@ -45,38 +40,37 @@ public class DepCleanGradlePluginExtension {
   public boolean failIfUnusedInherited = false;
 
   /**
-   * If this is true, DepClean creates a debloated version of the build.gradle without
-   * unused dependencies, called "debloated-build.gradle", in root of the project.
+   * If this is true, DepClean creates a debloated version of the build.gradle without unused
+   * dependencies, called "debloated-build.gradle", in root of the project.
    */
   public boolean createBuildDebloated = false;
 
   /**
-   * If this is true, DepClean creates a JSON file with the result of the analysis.
-   * The file is called "debloat-result.json" and it is located in /build.
+   * If this is true, DepClean creates a JSON file with the result of the analysis. The file is
+   * called "debloat-result.json" and it is located in /build.
    */
   public boolean createResultJson = false;
 
   /**
-   * If this is true, DepClean creates a CSV file with the result of the analysis
-   * with the columns: OriginClass,TargetClass,Dependency. The file is called
-   * "class-usage.csv" and it is located in /target.
+   * If this is true, DepClean creates a CSV file with the result of the analysis with the columns:
+   * OriginClass,TargetClass,Dependency. The file is called "class-usage.csv" and it is located in
+   * /target.
    */
   public boolean createClassUsageCsv;
 
-  /**
-   * Ignore dependencies with specific configurations from the DepClean analysis.
-   */
-  public Set<String> ignoreConfiguration;
+  /** Ignore dependencies with specific configurations from the DepClean analysis. */
+  @Nullable public Set<String> ignoreConfiguration;
 
   /**
    * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during
    * the analysis and considered as used dependencies. Useful to override incomplete result caused
    * by bytecode-level analysis Dependency format is <code>groupId:artifactId:version</code>.
    */
-  public Set<String> ignoreDependency;
+  @Nullable public Set<String> ignoreDependency;
 
   // Getters ==========================================
 
+  @Nullable
   public Project getProject() {
     return project;
   }
@@ -89,7 +83,9 @@ public class DepCleanGradlePluginExtension {
     return ignoreTest;
   }
 
-  public boolean isFailIfUnusedDirect() { return failIfUnusedDirect; }
+  public boolean isFailIfUnusedDirect() {
+    return failIfUnusedDirect;
+  }
 
   public boolean isFailIfUnusedTransitive() {
     return failIfUnusedTransitive;
@@ -99,16 +95,24 @@ public class DepCleanGradlePluginExtension {
     return failIfUnusedInherited;
   }
 
-  public boolean isCreateBuildDebloated() { return createBuildDebloated; }
+  public boolean isCreateBuildDebloated() {
+    return createBuildDebloated;
+  }
 
-  public boolean isCreateResultJson() { return createResultJson; }
+  public boolean isCreateResultJson() {
+    return createResultJson;
+  }
 
-  public boolean isCreateClassUsageCsv() { return createClassUsageCsv; }
+  public boolean isCreateClassUsageCsv() {
+    return createClassUsageCsv;
+  }
 
+  @Nullable
   public Set<String> getIgnoreConfiguration() {
     return ignoreConfiguration;
   }
 
+  @Nullable
   public Set<String> getIgnoreDependency() {
     return ignoreDependency;
   }

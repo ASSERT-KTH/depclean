@@ -14,18 +14,14 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
-/**
- * All the classes imported in the source code of the project.
- */
+/** All the classes imported in the source code of the project. */
 @Data
 @AllArgsConstructor
 @Slf4j
 public class ImportsAnalyzer {
-  private static final String[] SOURCE_FILE_EXTENSIONS = new String[]{"java"};
+  private static final String[] SOURCE_FILE_EXTENSIONS = new String[] {"java"};
 
-  /**
-   * A directory with Java source files.
-   */
+  /** A directory with Java source files. */
   private Path directoryPath;
 
   /**

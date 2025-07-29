@@ -1,28 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Parent pom -->
   <parent>
     <groupId>se.kth.castor</groupId>
     <artifactId>depclean-parent-pom</artifactId>
-    <version>2.1.0</version>
+    <version>2.2.0-SNAPSHOT</version>
   </parent>
 
   <!-- Coordinates -->
   <artifactId>depclean-core</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <description>Core library of DepClean</description>
   <name>depclean-core</name>
+  <description>Core library of DepClean</description>
 
   <properties>
-    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <!-- Dependencies -->
+    <asm.version>9.8</asm.version>
+    <assertj.version>3.27.3</assertj.version>
+    <checkstyle.version>10.26.1</checkstyle.version>
+    <commons-io.version>2.20.0</commons-io.version>
+    <guava.version>33.4.8-jre</guava.version>
+    <jgrapht.version>1.5.2</jgrapht.version>
+    <jspecify.version>1.0.0</jspecify.version>
+    <maven-core.version>3.9.11</maven-core.version>
+    <plexus-component-annotations.version>2.2.0</plexus-component-annotations.version>
+    <plexus-utils.version>4.0.2</plexus-utils.version>
+    <plexus-xml.version>4.1.0</plexus-xml.version>
+    <qdox.version>2.2.0</qdox.version>
+
+    <!-- Plugins -->
+    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+
+    <!-- Sonar, Checkstyle, etc. -->
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
-    <linkXRef>false</linkXRef>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
+
+  <dependencies>
+    <!-- Source code manipulation -->
+    <dependency>
+      <groupId>com.thoughtworks.qdox</groupId>
+      <artifactId>qdox</artifactId>
+      <version>${qdox.version}</version>
+    </dependency>
+
+    <!-- Bytecode manipulation -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>${asm.version}</version>
+    </dependency>
+
+    <!-- Maven dependencies -->
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-component-annotations</artifactId>
+      <version>${plexus-component-annotations.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>${plexus-utils.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-xml</artifactId>
+      <version>${plexus-xml.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${maven-core.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- Graph construction and analysis -->
+    <dependency>
+      <groupId>org.jgrapht</groupId>
+      <artifactId>jgrapht-core</artifactId>
+      <version>${jgrapht.version}</version>
+    </dependency>
+
+    <!-- Utils -->
+    <dependency>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
+      <version>${jspecify.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+    </dependency>
+  </dependencies>
 
   <build>
     <plugins>
@@ -30,120 +114,47 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>${maven-checkstyle-plugin.version}</version>
         <dependencies>
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>8.41</version>
+            <version>${checkstyle.version}</version>
           </dependency>
         </dependencies>
         <executions>
           <execution>
             <id>check for errors</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>validate</phase>
             <configuration>
               <!-- Change to warning to enforce strong style rules -->
               <violationSeverity>error</violationSeverity>
               <failsOnError>true</failsOnError>
               <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
-              <configLocation>../checkstyle.xml</configLocation>
-              <encoding>UTF-8</encoding>
+              <configLocation>${checkstyle.config.location}</configLocation>
               <consoleOutput>true</consoleOutput>
             </configuration>
-            <phase>validate</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
           </execution>
           <execution>
             <id>checkstyle report</id>
-            <configuration>
-              <failsOnError>true</failsOnError>
-              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
-              <configLocation>../checkstyle.xml</configLocation>
-              <encoding>UTF-8</encoding>
-              <consoleOutput>true</consoleOutput>
-            </configuration>
-            <phase>verify</phase>
             <goals>
               <!-- Generate a Checkstyle report -->
               <goal>checkstyle</goal>
             </goals>
+            <phase>verify</phase>
+            <configuration>
+              <failsOnError>true</failsOnError>
+              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <configLocation>${checkstyle.config.location}</configLocation>
+              <consoleOutput>true</consoleOutput>
+            </configuration>
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>21</source>
-          <target>21</target>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
-
-  <dependencies>
-    <!-- Source code manipulation -->
-    <dependency>
-      <groupId>com.thoughtworks.qdox</groupId>
-      <artifactId>qdox</artifactId>
-      <version>2.2.0</version>
-    </dependency>
-    <!-- Bytecode manipulation -->
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <version>9.8</version>
-    </dependency>
-    <!-- Maven dependencies -->
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-component-annotations</artifactId>
-      <version>2.2.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-      <version>3.6.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>3.9.11</version>
-      <scope>compile</scope>
-    </dependency>
-    <!-- Graph construction and analysis -->
-    <dependency>
-      <groupId>org.jgrapht</groupId>
-      <artifactId>jgrapht-core</artifactId>
-      <version>1.5.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains</groupId>
-      <artifactId>annotations</artifactId>
-      <version>23.1.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <!-- Utils -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>33.4.8-jre</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.20.0</version>
-    </dependency>
-    <!-- Tests -->
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>3.27.3</version>
-    </dependency>
-  </dependencies>
 
 </project>

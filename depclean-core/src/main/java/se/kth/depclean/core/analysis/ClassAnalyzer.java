@@ -24,16 +24,14 @@ import java.net.URL;
 import java.util.Set;
 
 /**
- * Gets the set of classes contained in a dependency given either
- * as a jar file or an exploded directory.
+ * Gets the set of classes contained in a dependency given either as a jar file or an exploded
+ * directory.
  */
 public interface ClassAnalyzer {
 
   // fields -----------------------------------------------------------------
 
-  /**
-   * To store the name of the class.
-   */
+  /** To store the name of the class. */
   String ROLE = ClassAnalyzer.class.getName();
 
   // public methods ---------------------------------------------------------
@@ -45,6 +43,5 @@ public interface ClassAnalyzer {
    * @return A set of classes.
    * @throws IOException In case of IO issues.
    */
-  Set<String> analyze(URL url)
-      throws IOException;
+  Set<String> analyze(URL url) throws IOException;
 }

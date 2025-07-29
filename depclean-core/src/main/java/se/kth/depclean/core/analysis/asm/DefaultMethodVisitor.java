@@ -19,6 +19,8 @@
 
 package se.kth.depclean.core.analysis.asm;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -29,8 +31,8 @@ import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 /**
- * Computes the set of classes referenced by visited code. Inspired by
- * <code>org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
+ * Computes the set of classes referenced by visited code. Inspired by <code>
+ * org.objectweb.asm.depend.DependencyVisitor</code> in the ASM dependencies example.
  */
 public class DefaultMethodVisitor extends MethodVisitor {
 
@@ -38,11 +40,11 @@ public class DefaultMethodVisitor extends MethodVisitor {
   private final SignatureVisitor signatureVisitor;
   private final ResultCollector resultCollector;
 
-  /**
-   * Ctor.
-   */
-  public DefaultMethodVisitor(AnnotationVisitor annotationVisitor, SignatureVisitor signatureVisitor,
-      ResultCollector resultCollector) {
+  /** Ctor. */
+  public DefaultMethodVisitor(
+      @NonNull AnnotationVisitor annotationVisitor,
+      @NonNull SignatureVisitor signatureVisitor,
+      @NonNull ResultCollector resultCollector) {
     super(Opcodes.ASM9);
     this.annotationVisitor = annotationVisitor;
     this.signatureVisitor = signatureVisitor;
@@ -50,19 +52,22 @@ public class DefaultMethodVisitor extends MethodVisitor {
   }
 
   @Override
-  public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+  @Nullable
+  public AnnotationVisitor visitAnnotation(@NonNull final String desc, final boolean visible) {
     resultCollector.addDesc(desc);
     return annotationVisitor;
   }
 
   @Override
-  public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
+  public AnnotationVisitor visitTypeAnnotation(
+      int typeRef, TypePath typePath, String desc, boolean visible) {
     resultCollector.addDesc(desc);
     return annotationVisitor;
   }
 
   @Override
-  public AnnotationVisitor visitParameterAnnotation(final int parameter, final String desc, final boolean visible) {
+  public AnnotationVisitor visitParameterAnnotation(
+      final int parameter, final String desc, final boolean visible) {
     resultCollector.addDesc(desc);
     return annotationVisitor;
   }
@@ -77,7 +82,8 @@ public class DefaultMethodVisitor extends MethodVisitor {
   }
 
   @Override
-  public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
+  public void visitFieldInsn(
+      final int opcode, final String owner, final String name, final String desc) {
     resultCollector.addName(owner);
     /*
      * NOTE: Merely accessing a field does not impose a direct dependency on its type. For example, the code line
@@ -105,13 +111,19 @@ public class DefaultMethodVisitor extends MethodVisitor {
   }
 
   @Override
-  public void visitTryCatchBlock(final Label start, final Label end, final Label handler, final String type) {
+  public void visitTryCatchBlock(
+      final Label start, final Label end, final Label handler, final String type) {
     resultCollector.addName(type);
   }
 
   @Override
-  public void visitLocalVariable(final String name, final String desc, final String signature, final Label start,
-      final Label end, final int index) {
+  public void visitLocalVariable(
+      final String name,
+      final String desc,
+      final String signature,
+      final Label start,
+      final Label end,
+      final int index) {
     if (signature == null) {
       resultCollector.addDesc(desc);
     } else {
@@ -120,8 +132,14 @@ public class DefaultMethodVisitor extends MethodVisitor {
   }
 
   @Override
-  public AnnotationVisitor visitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start, Label[] end,
-      int[] index, String desc, boolean visible) {
+  public AnnotationVisitor visitLocalVariableAnnotation(
+      int typeRef,
+      TypePath typePath,
+      Label[] start,
+      Label[] end,
+      int[] index,
+      String desc,
+      boolean visible) {
     resultCollector.addDesc(desc);
     return annotationVisitor;
   }

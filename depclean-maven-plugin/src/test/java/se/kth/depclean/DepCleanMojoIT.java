@@ -7,7 +7,7 @@ import com.soebes.itf.jupiter.extension.MavenTest;
 import com.soebes.itf.jupiter.maven.MavenExecutionResult;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
@@ -15,11 +15,14 @@ import org.junit.jupiter.api.Disabled;
 import se.kth.depclean.util.OsUtils;
 
 /**
- * This class executes integration tests against the DepCleanMojo. The projects used for testing are in src/test/resources-its/se/kth/depclean/DepCleanMojoIT. The results of the DepClean executions
+ * This class executes integration tests against the DepCleanMojo. The projects used for testing are
+ * in src/test/resources-its/se/kth/depclean/DepCleanMojoIT. The results of the DepClean executions
  * for each project are in target/maven-it/se/kth/depclean/DepCleanMojoIT.
+ *
  * <p>
  *
- * @see <a https://khmarbaise.github.io/maven-it-extension/itf-documentation/background/background.html#_assertions_in_maven_tests</a>
+ * @see <a
+ *     https://khmarbaise.github.io/maven-it-extension/itf-documentation/background/background.html#_assertions_in_maven_tests</a>
  */
 @MavenJupiterExtension
 @Slf4j
@@ -34,8 +37,11 @@ public class DepCleanMojoIT {
   @MavenTest
   void used_java_record(MavenExecutionResult result) {
     log.trace("Test that DepClean identifies dependency used in Java record");
-    assertThat(result).isSuccessful().out()
-        .plain().contains(
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
@@ -48,15 +54,17 @@ public class DepCleanMojoIT {
             "	org.apache.commons:commons-compress:1.21:compile (994 KB)",
             "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
-            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: "
-        );
+            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
   }
 
   @MavenTest
   void all_dependencies_unused(MavenExecutionResult result) {
     log.trace("Test that DepClean identifies all dependencies as unused");
-    assertThat(result).isSuccessful().out()
-        .plain().contains(
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
@@ -77,15 +85,17 @@ public class DepCleanMojoIT {
             "	com.google.j2objc:j2objc-annotations:1.3:compile (8 KB)",
             "	com.google.guava:failureaccess:1.0.1:compile (4 KB)",
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
-            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: "
-        );
+            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
   }
 
   @MavenTest
   void all_dependencies_used(MavenExecutionResult result) {
     log.trace("Test that DepClean identifies all dependencies as used");
-    assertThat(result).isSuccessful().out()
-        .plain().contains(
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
@@ -101,15 +111,17 @@ public class DepCleanMojoIT {
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
-            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: "
-        );
+            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
   }
 
   @MavenTest
   void used_indirectly(MavenExecutionResult result) {
     log.trace("Test that dependencies used indirectly (org.tukaani:xz is used indirectly)");
-    assertThat(result).isSuccessful().out()
-        .plain().contains(
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
@@ -122,15 +134,17 @@ public class DepCleanMojoIT {
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
-            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: "
-        );
+            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
   }
 
   @MavenTest
   void processor_used(MavenExecutionResult result) {
     log.trace("Test that DepClean runs in a Maven project with processors");
-    assertThat(result).isSuccessful().out()
-        .plain().contains(
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
@@ -145,17 +159,19 @@ public class DepCleanMojoIT {
             "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [1]: ",
             "	com.fasterxml.jackson.core:jackson-annotations:2.12.2:compile (73 KB)",
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
-            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: "
-        );
+            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
   }
 
   @MavenTest
   void json_should_be_correct(MavenExecutionResult result) throws IOException {
     if (OsUtils.isUnix()) {
       log.trace("Test that DepClean creates a proper depclean-results.json file");
-      File expectedJsonFile = new File("src/test/resources/DepCleanMojoResources/depclean-results.json");
-      String expectedJsonContent = FileUtils.readFileToString(expectedJsonFile, Charset.defaultCharset());
-      assertThat(result).isSuccessful()
+      File expectedJsonFile =
+          new File("src/test/resources/DepCleanMojoResources/depclean-results.json");
+      String expectedJsonContent =
+          FileUtils.readFileToString(expectedJsonFile, StandardCharsets.UTF_8);
+      assertThat(result)
+          .isSuccessful()
           .project()
           .hasTarget()
           .withFile("depclean-results.json")
@@ -166,11 +182,14 @@ public class DepCleanMojoIT {
   @MavenTest
   void debloated_pom_is_correct(MavenExecutionResult result) {
     log.trace("Test that DepClean creates a proper pom-debloated.xml file");
-    String path = "target/maven-it/se/kth/depclean/DepCleanMojoIT/debloated_pom_is_correct/project/pom-debloated.xml";
+    String path =
+        "target/maven-it/se/kth/depclean/DepCleanMojoIT/debloated_pom_is_correct/project/pom-debloated.xml";
     File generated_pom_debloated = new File(path);
-    assertThat(result).isSuccessful()
+    assertThat(result)
+        .isSuccessful()
         .out()
-        .plain().contains(
+        .plain()
+        .contains(
             "[INFO] Starting debloating POM file...",
             "[INFO] Adding 1 used transitive dependency as direct dependency.",
             "[INFO] Removing 1 unused direct dependency.",
@@ -180,19 +199,24 @@ public class DepCleanMojoIT {
             "[INFO] Adding com.fasterxml.jackson.core:jackson-databind:2.12.2:compile",
             "[INFO] Excluding com.fasterxml.jackson.core:jackson-annotations from com.fasterxml.jackson.core:jackson-databind:2.12.2",
             "[INFO] POM debloated successfully",
-            "[INFO] pom-debloated.xml file created in: " + generated_pom_debloated.getAbsolutePath());
+            "[INFO] pom-debloated.xml file created in: "
+                + generated_pom_debloated.getAbsolutePath());
     Assertions.assertTrue(generated_pom_debloated.exists());
-    assertThat(generated_pom_debloated).
-        hasSameTextualContentAs(new File(
-            "src/test/resources/DepCleanMojoResources/pom-debloated.xml"));
+    assertThat(generated_pom_debloated)
+        .hasSameTextualContentAs(
+            new File("src/test/resources/DepCleanMojoResources/pom-debloated.xml"));
   }
 
   @MavenTest
   @Disabled
   void unused_inherited_exists(MavenExecutionResult result) {
-    log.trace("Test that DepClean detects unused inherited dependencies in a Maven project with a parent");
-    assertThat(result).isSuccessful().out()
-        .plain().contains(
+    log.trace(
+        "Test that DepClean detects unused inherited dependencies in a Maven project with a parent");
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
@@ -217,17 +241,19 @@ public class DepCleanMojoIT {
             "	org.junit.platform:junit-platform-commons:1.9.1:test (100 KB)",
             "	org.hamcrest:hamcrest-core:1.3:test (43 KB)",
             "	org.opentest4j:opentest4j:1.2.0:test (7 KB)",
-            "	org.apiguardian:apiguardian-api:1.1.2:test (6 KB)"
-        );
+            "	org.apiguardian:apiguardian-api:1.1.2:test (6 KB)");
   }
-
 
   @MavenTest
   @Disabled
   void ignored_scopes(MavenExecutionResult result) {
-    log.trace("Test that DepClean ignores dependencies (considers them as used) with the ignored scopes");
-    assertThat(result).isSuccessful().out()
-        .plain().contains(
+    log.trace(
+        "Test that DepClean ignores dependencies (considers them as used) with the ignored scopes");
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
@@ -249,8 +275,6 @@ public class DepCleanMojoIT {
             "	com.google.guava:failureaccess:1.0.1:compile (4 KB)",
             "	com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava:compile (2 KB)",
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
-            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: "
-        );
+            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
   }
 }
-

@@ -1,11 +1,11 @@
 package se.kth.depclean.wrapper;
 
-import static com.google.common.collect.ImmutableSet.of;
-
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -36,9 +36,7 @@ import se.kth.depclean.util.MavenDebloater;
 import se.kth.depclean.util.MavenInvoker;
 import se.kth.depclean.util.json.ParsedDependencies;
 
-/**
- * Maven's implementation of the dependency manager wrapper.
- */
+/** Maven's implementation of the dependency manager wrapper. */
 @AllArgsConstructor
 public class MavenDependencyManager implements DependencyManagerWrapper {
 
@@ -53,12 +51,15 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   /**
    * Creates the manager.
    *
-   * @param logger                 the logger
-   * @param project                the maven project
-   * @param session                the maven session
+   * @param logger the logger
+   * @param project the maven project
+   * @param session the maven session
    * @param dependencyGraphBuilder a tool to build the dependency graph
    */
-  public MavenDependencyManager(Log logger, MavenProject project, MavenSession session,
+  public MavenDependencyManager(
+      Log logger,
+      MavenProject project,
+      MavenSession session,
       DependencyGraphBuilder dependencyGraphBuilder) {
     this.logger = logger;
     this.project = project;
@@ -100,7 +101,8 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   @Override
   @SneakyThrows
   public DependencyGraph dependencyGraph() {
-    ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+    ProjectBuildingRequest buildingRequest =
+        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
     buildingRequest.setProject(project);
     DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
     return new MavenDependencyGraph(project, model, rootNode);
@@ -124,7 +126,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     FileReader reader;
     MavenXpp3Reader mavenReader = new MavenXpp3Reader();
     try {
-      reader = new FileReader(pomFile);
+      reader = new FileReader(pomFile, StandardCharsets.UTF_8);
       model = mavenReader.read(reader);
       model.setPomFile(pomFile);
     } catch (Exception ex) {
@@ -136,22 +138,23 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
 
   /**
    * Maven processors are defined like this.
+   *
    * <pre>{@code
-   *       <plugin>
-   *         <groupId>org.bsc.maven</groupId>
-   *         <artifactId>maven-processor-plugin</artifactId>
-   *         <executions>
-   *           <execution>
-   *             <id>process</id>
-   *             [...]
-   *             <configuration>
-   *               <processors>
-   *                 <processor>XXXProcessor</processor>
-   *               </processors>
-   *             </configuration>
-   *           </execution>
-   *         </executions>
-   *       </plugin>
+   * <plugin>
+   *   <groupId>org.bsc.maven</groupId>
+   *   <artifactId>maven-processor-plugin</artifactId>
+   *   <executions>
+   *     <execution>
+   *       <id>process</id>
+   *       [...]
+   *       <configuration>
+   *         <processors>
+   *           <processor>XXXProcessor</processor>
+   *         </processors>
+   *       </configuration>
+   *     </execution>
+   *   </executions>
+   * </plugin>
    * }</pre>
    */
   @Override
@@ -163,12 +166,13 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
         .map(config -> config.getChild("processors"))
         .map(Xpp3Dom::getChildren)
         .map(arr -> Arrays.stream(arr).map(Xpp3Dom::getValue).collect(Collectors.toSet()))
-        .orElse(of());
+        .orElse(ImmutableSet.of());
   }
 
   @Override
   public Path getDependenciesDirectory() {
-    String dependencyDirectoryName = project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
+    String dependencyDirectoryName =
+        project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
     return new File(dependencyDirectoryName).toPath();
   }
 
@@ -185,12 +189,9 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public AbstractDebloater<? extends Serializable> getDebloater(ProjectDependencyAnalysis analysis) {
-    return new MavenDebloater(
-        analysis,
-        project,
-        model
-    );
+  public AbstractDebloater<? extends Serializable> getDebloater(
+      ProjectDependencyAnalysis analysis) {
+    return new MavenDebloater(analysis, project, model);
   }
 
   @Override
@@ -209,19 +210,20 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
+  @SuppressWarnings("NullAway") // directory parameter can be null per MavenInvoker.runCommand API
   public void generateDependencyTree(File treeFile) throws IOException, InterruptedException {
-    MavenInvoker.runCommand("mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true", null);
+    MavenInvoker.runCommand(
+        "mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true", null);
   }
 
   @SneakyThrows
   @Override
   public String getTreeAsJson(
-      File treeFile, ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv) {
-    return new ParsedDependencies(
-        treeFile,
-        analysis,
-        classUsageFile,
-        createCallGraphCsv
-    ).parseTreeToJson();
+      File treeFile,
+      ProjectDependencyAnalysis analysis,
+      File classUsageFile,
+      boolean createCallGraphCsv) {
+    return new ParsedDependencies(treeFile, analysis, classUsageFile, createCallGraphCsv)
+        .parseTreeToJson();
   }
 }

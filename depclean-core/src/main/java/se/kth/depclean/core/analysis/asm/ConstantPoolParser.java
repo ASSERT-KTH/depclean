@@ -26,17 +26,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
- * A small parser to read the constant pool directly, in case it contains references ASM does not support.
+ * A small parser to read the constant pool directly, in case it contains references ASM does not
+ * support.
  *
  * <p>Adapted from http://stackoverflow.com/a/32278587/23691
  *
  * <p>Constant pool types:
  *
- * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.4">JVM 9 Sepc</a>
- * @see <a href="https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.4">JVM 10 Sepc</a>
+ * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.4">JVM 9
+ *     Sepc</a>
+ * @see <a href="https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-4.html#jvms-4.4">JVM 10
+ *     Sepc</a>
  */
 public class ConstantPoolParser {
 
@@ -100,51 +103,39 @@ public class ConstantPoolParser {
     for (int ix = 1, num = buf.getChar(); ix < num; ix++) {
       byte tag = buf.get();
       switch (tag) {
-        case CONSTANT_UTF8:
+        case CONSTANT_UTF8 -> {
           stringConstants.put(ix, decodeString(buf));
           continue;
-        case CONSTANT_CLASS:
-        case CONSTANT_STRING:
-        case CONSTANT_METHOD_TYPE:
-          classes.add((int) buf.getChar());
-          break;
-        case CONSTANT_FIELDREF:
-        case CONSTANT_METHODREF:
-        case CONSTANT_INTERFACEMETHODREF:
-        case CONSTANT_NAME_AND_TYPE:
+        }
+        case CONSTANT_CLASS, CONSTANT_STRING, CONSTANT_METHOD_TYPE ->
+            classes.add((int) buf.getChar());
+        case CONSTANT_FIELDREF,
+            CONSTANT_METHODREF,
+            CONSTANT_INTERFACEMETHODREF,
+            CONSTANT_NAME_AND_TYPE -> {
           buf.getChar();
           buf.getChar();
-          break;
-        case CONSTANT_INTEGER:
-          buf.getInt();
-          break;
-        case CONSTANT_FLOAT:
-          buf.getFloat();
-          break;
-        case CONSTANT_DOUBLE:
+        }
+        case CONSTANT_INTEGER -> buf.getInt();
+        case CONSTANT_FLOAT -> buf.getFloat();
+        case CONSTANT_DOUBLE -> {
           buf.getDouble();
           ix++;
-          break;
-        case CONSTANT_LONG:
+        }
+        case CONSTANT_LONG -> {
           buf.getLong();
           ix++;
-          break;
-        case CONSTANT_METHODHANDLE:
+        }
+        case CONSTANT_METHODHANDLE -> {
           buf.get();
           buf.getChar();
-          break;
-        case CONSTANT_INVOKE_DYNAMIC:
+        }
+        case CONSTANT_INVOKE_DYNAMIC -> {
           buf.getChar();
           buf.getChar();
-          break;
-        case CONSTANT_MODULE:
-          buf.getChar();
-          break;
-        case CONSTANT_PACKAGE:
-          buf.getChar();
-          break;
-        default:
-          throw new RuntimeException("Unknown constant pool type '" + tag + "'");
+        }
+        case CONSTANT_MODULE, CONSTANT_PACKAGE -> buf.getChar();
+        default -> throw new RuntimeException("Unknown constant pool type '" + tag + "'");
       }
     }
     Set<String> result = new HashSet<>();
@@ -154,7 +145,7 @@ public class ConstantPoolParser {
     return result;
   }
 
-  @NotNull
+  @NonNull
   private static String decodeString(ByteBuffer buf) {
     int size = buf.getChar();
     // Explicit cast for compatibility with covariant return type on JDK 9's ByteBuffer
@@ -168,10 +159,10 @@ public class ConstantPoolParser {
       } else {
         int b2 = buf.get();
         if ((b & OXF0) != OXE0) {
-          sb.append((char) ((b & 0x1F) << 6 | b2 & OX3F));
+          sb.append((char) (((b & 0x1F) << 6) | (b2 & OX3F)));
         } else {
           int b3 = buf.get();
-          sb.append((char) ((b & 0x0F) << 12 | (b2 & OX3F) << 6 | b3 & OX3F));
+          sb.append((char) (((b & 0x0F) << 12) | ((b2 & OX3F) << 6) | (b3 & OX3F)));
         }
       }
     }

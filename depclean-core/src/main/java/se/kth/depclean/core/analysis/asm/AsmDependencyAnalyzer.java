@@ -25,15 +25,13 @@ import se.kth.depclean.core.analysis.ClassFileVisitorUtils;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
-/**
- * Dependency analyzer.
- */
-public class ASMDependencyAnalyzer implements DependencyAnalyzer {
+/** Dependency analyzer. */
+public class AsmDependencyAnalyzer implements DependencyAnalyzer {
 
   /**
    * Analyze the Updates the {@link ClassMembersVisitorCounter} class counters.
    *
-   * @see org.apache.invoke.shared.dependency.analyzer.DependencyAnalyzer#analyze(java.net.URL)
+   * @see se.kth.depclean.core.analysis.DependencyAnalyzer#analyze(java.net.URL)
    */
   @Override
   public Set<String> analyze(URL url) {

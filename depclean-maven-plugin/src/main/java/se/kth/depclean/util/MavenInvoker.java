@@ -22,50 +22,52 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Utility class to execute Maven tasks from the command line.
- */
+/** Utility class to execute Maven tasks from the command line. */
 @Slf4j
 public final class MavenInvoker {
 
-  private MavenInvoker() {
-  }
+  private MavenInvoker() {}
 
   /**
-   * Creates a native process to execute a custom command. This method is used to invoke maven plugins directly.
+   * Creates a native process to execute a custom command. This method is used to invoke maven
+   * plugins directly.
    *
-   * @param cmd       The command to be executed.
-   * @param directory The working directory of the subprocess,
-   *                  or null if the subprocess should inherit the working directory of the current process.
+   * @param cmd The command to be executed.
+   * @param directory The working directory of the subprocess, or null if the subprocess should
+   *     inherit the working directory of the current process.
    * @return The console output.
-   * @throws IOException          In case of IO issues.
+   * @throws IOException In case of IO issues.
    * @throws InterruptedException In case of IO issues.
    */
-  public static String[] runCommand(String cmd, File directory) throws IOException, InterruptedException {
+  public static String[] runCommand(String cmd, File directory)
+      throws IOException, InterruptedException {
     Process process;
     ArrayList<String> list;
     if (OsUtils.isUnix()) {
       list = new ArrayList<>();
       process = Runtime.getRuntime().exec(cmd, null, directory);
       InputStream inputStream = process.getInputStream();
-      BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+      BufferedReader br =
+          new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
       return outputToConsole(process, list, br);
     } else if (OsUtils.isWindows()) {
       list = new ArrayList<>();
       process = Runtime.getRuntime().exec("cmd /C " + cmd, null, directory);
-      BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      BufferedReader br =
+          new BufferedReader(
+              new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
       return outputToConsole(process, list, br);
     }
     return new String[0]; // return an empty array otherwise
   }
 
-  /**
-   * Print the output of the command to the standard output.
-   */
-  private static String[] outputToConsole(Process process, ArrayList<String> list, BufferedReader br)
+  /** Print the output of the command to the standard output. */
+  private static String[] outputToConsole(Process process, List<String> list, BufferedReader br)
       throws IOException, InterruptedException {
     String s;
     while ((s = br.readLine()) != null) {

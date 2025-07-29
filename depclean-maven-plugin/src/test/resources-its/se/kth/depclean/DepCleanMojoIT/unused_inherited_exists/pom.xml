@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.apache.commons</groupId>
     <artifactId>commons-math-parent</artifactId>
     <version>4.0-beta1</version>
-    <!--commons-math-parent has the following dependency: -->
-    <!--<dependency>-->
-    <!--  <groupId>org.junit.jupiter</groupId>-->
-    <!--  <artifactId>junit-jupiter</artifactId>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
   </parent>
 
   <groupId>org.foo.bar</groupId>
@@ -33,7 +26,6 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>2.12.2</version>
-      <!--<scope>test</scope>-->
     </dependency>
   </dependencies>
   <build>
@@ -45,17 +37,17 @@
         <executions>
           <execution>
             <id>first_very_simple</id>
-            <phase>initialize</phase>
             <goals>
               <goal>failure</goal>
             </goals>
+            <phase>initialize</phase>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <groupId>se.kth.castor</groupId>
         <artifactId>depclean-maven-plugin</artifactId>
-        <version>2.0.6</version>
+        <version>2.2.0-SNAPSHOT</version>
         <executions>
           <execution>
             <goals>
