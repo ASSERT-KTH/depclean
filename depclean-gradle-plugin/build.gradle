@@ -28,13 +28,13 @@ ext {
     depcleanVersion = '2.2.0-SNAPSHOT'
     errorProneCoreVersion = '2.41.0'
     errorProneJavacVersion = '9+181-r4173-1'
-    findbugsAnnotationsVersion = '3.0.1u2'
     jspecifyVersion = '1.0.0'
     junitVersion = '5.13.3'
     lombokVersion = '1.18.38'
     nullawayVersion = '0.12.7'
     slf4jVersion = '2.0.17'
     spockVersion = '2.3-groovy-3.0'
+    spotbugsAnnotationsVersion = '4.9.3'
 }
 
 dependencies {
@@ -47,7 +47,7 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
-    implementation("com.google.code.findbugs:annotations:${findbugsAnnotationsVersion}")
+    implementation("com.github.spotbugs:spotbugs-annotations:${spotbugsAnnotationsVersion}")
     
     testImplementation("org.spockframework:spock-core:${spockVersion}")
 
