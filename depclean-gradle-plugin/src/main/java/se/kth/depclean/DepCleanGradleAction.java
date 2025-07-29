@@ -34,9 +34,9 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
+import se.kth.depclean.core.util.JarUtils;
 import se.kth.depclean.utils.DependencyUtils;
 import se.kth.depclean.utils.GradleWritingUtils;
-import se.kth.depclean.utils.JarUtils;
 import se.kth.depclean.utils.json.JsonResultWriter;
 
 /** Depclean default and only action. */
