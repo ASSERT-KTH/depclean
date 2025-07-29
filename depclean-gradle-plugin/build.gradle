@@ -28,7 +28,7 @@ ext {
     depcleanVersion = '2.2.0-SNAPSHOT'
     errorProneCoreVersion = '2.41.0'
     errorProneJavacVersion = '9+181-r4173-1'
-    findbugsAnnotationsVersion = '3.0.1u2'
+    findbugsAnnotationsVersion = '3.0.1'
     jspecifyVersion = '1.0.0'
     junitVersion = '5.13.3'
     lombokVersion = '1.18.38'
