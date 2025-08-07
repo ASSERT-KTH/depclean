@@ -23,7 +23,7 @@
   <!-- Global properties -->
   <properties>
     <!-- Dependencies -->
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.4</assertj.version>
     <jaxb-api.version>2.3.1</jaxb-api.version>
     <junit-jupiter.version>5.13.4</junit-jupiter.version>
     <lombok.version>1.18.38</lombok.version>
