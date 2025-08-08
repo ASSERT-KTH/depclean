@@ -56,8 +56,7 @@ class JarUtilsTest {
   @DisplayName("Test that the JAR files are removed after being decompressed")
   void whenDecompressJarFiles_thenJarFilesAreRemoved() throws RuntimeException, IOException {
     if (jcabiSSHJar.exists() && jcabiXMLJar.exists() && warWAR.exists() && jLibraryEAR.exists()) {
-      // Decompress all the jar files in the current directory
-      decompress();
+      JarUtils.decompress(copyDir.getAbsolutePath());
       assertFalse(FileUtils.directoryContains(copyDir, jcabiSSHJar));
       assertFalse(FileUtils.directoryContains(copyDir, jcabiXMLJar));
       assertFalse(FileUtils.directoryContains(copyDir, jLibraryEAR));
@@ -74,7 +73,7 @@ class JarUtilsTest {
         && jcabiXMLJar.exists()
         && jLibraryEAR.exists()
         && jcabiXMLJar.exists()) {
-      decompress();
+      JarUtils.decompress(copyDir.getAbsolutePath());
       // JAR
       assertTrue(
           new File(
@@ -121,14 +120,6 @@ class JarUtilsTest {
           new File(
                   "src/test/resources/JarUtilsResources_copy/jlibrary-ear-1.2/jlibrary/WEB-INF/lib/jcr-1.0/javax/jcr/Item.class")
               .exists());
-    }
-  }
-
-  private void decompress() {
-    try {
-      JarUtils.decompress(copyDir.getAbsolutePath());
-    } catch (RuntimeException e) {
-      System.out.println("Error decompressing jars in " + copyDir.getAbsolutePath());
     }
   }
 }

@@ -14,7 +14,7 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
@@ -34,15 +34,13 @@ class DepCleanManagerEnd2EndTest {
   private static final TestAppender appender = new TestAppender();
   private static final Logger logger = Logger.getRootLogger();
 
-  @BeforeEach
-  void setUp() {
+  @BeforeAll
+  static void setup(){
     logger.addAppender(appender);
   }
 
   @AfterEach
   void tearDown() {
-    appender.clear();
-    logger.removeAppender(appender);
     // Static classes are evils :)
     DefaultCallGraph.clear();
     ClassMembersVisitorCounter.resetClassCounters();
@@ -280,10 +278,6 @@ class DepCleanManagerEnd2EndTest {
 
     public List<LoggingEvent> getLog() {
       return new ArrayList<>(log);
-    }
-
-    public void clear() {
-      log.clear();
     }
   }
 

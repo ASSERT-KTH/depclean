@@ -1,14 +1,14 @@
 package se.kth.depclean.core.analysis;
 
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.HashSet;
-import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 class CollectorClassFileVisitorTest {
@@ -26,7 +26,6 @@ class CollectorClassFileVisitorTest {
     } catch (IllegalArgumentException e) {
       log.error("Failed to visit the class at: " + classFile.getAbsolutePath());
     }
-    Set<String> visitedClasses = new HashSet<>(collector.getClasses());
-    Assertions.assertFalse(visitedClasses.isEmpty());
+    assertThat(collector.getClasses()).isNotEmpty();
   }
 }
