@@ -45,7 +45,7 @@
     <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
     <nullaway.version>0.12.8</nullaway.version>
     <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
-    <spotbugs-annotations.version>4.9.3</spotbugs-annotations.version>
+    <spotbugs-annotations.version>4.9.4</spotbugs-annotations.version>
     <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
 
     <!-- Sonar, Checkstyle, etc. -->
