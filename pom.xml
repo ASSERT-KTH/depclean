@@ -36,7 +36,7 @@
     <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
     <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
-    <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
+    <maven-javadoc-plugin.version>3.11.3</maven-javadoc-plugin.version>
     <maven-project-info-reports-plugin.version>3.9.0</maven-project-info-reports-plugin.version>
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
     <maven-site-plugin.version>3.21.0</maven-site-plugin.version>
