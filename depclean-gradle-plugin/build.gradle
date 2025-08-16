@@ -33,7 +33,7 @@ ext {
     lombokVersion = '1.18.38'
     nullawayVersion = '0.12.8'
     slf4jVersion = '2.0.17'
-    spockVersion = '2.3-groovy-3.0'
+    spockVersion = '2.3-groovy-4.0'
     spotbugsAnnotationsVersion = '4.9.4'
 }
 
