@@ -19,7 +19,7 @@
 
   <properties>
     <!-- Dependencies -->
-    <checkstyle.version>10.26.1</checkstyle.version>
+    <checkstyle.version>11.0.0</checkstyle.version>
     <commons-io.version>2.20.0</commons-io.version>
     <gson.version>2.13.1</gson.version>
     <itf-jupiter-extension.version>0.13.1</itf-jupiter-extension.version>
