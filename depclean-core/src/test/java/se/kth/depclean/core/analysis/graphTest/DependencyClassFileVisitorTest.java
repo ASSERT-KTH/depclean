@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import se.kth.depclean.core.analysis.asm.DependencyClassFileVisitor;
-import se.kth.depclean.core.analysis.asm.ResultCollector;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
 class DependencyClassFileVisitorTest {
@@ -24,8 +23,6 @@ class DependencyClassFileVisitorTest {
       "Test that the asm and graph are working together and performing"
           + " their work (Adding classes and dependencies as edges).")
   void test_that_graph_is_collecting_edges_from_asm_correctly() throws IOException {
-
-    ResultCollector resultCollector = new ResultCollector();
     FileInputStream fileInputStream = new FileInputStream(classFile);
     AbstractBaseGraph<String, DefaultEdge> directedGraph = DefaultCallGraph.getDirectedGraph();
 
@@ -34,11 +31,11 @@ class DependencyClassFileVisitorTest {
 
     // Checking for the expected results.
     Assertions.assertTrue(directedGraph.containsVertex(className));
-    for (String referencedClassMember : resultCollector.getDependencies()) {
+    for (String referencedClassMember : visitor.getDependencies()) {
       Assertions.assertTrue(directedGraph.containsEdge(className, referencedClassMember));
     }
 
     // Confirming the successful termination of DependencyClassFileVisitor object.
-    Assertions.assertTrue(resultCollector.getDependencies().isEmpty());
+    Assertions.assertTrue(visitor.getDependencies().isEmpty());
   }
 }
