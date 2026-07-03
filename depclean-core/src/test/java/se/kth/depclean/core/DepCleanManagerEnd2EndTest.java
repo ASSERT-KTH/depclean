@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -49,7 +50,8 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldBeSkipped() throws AnalysisFailureException {
-    final DepCleanManager depCleanManager = new DepCleanManagerBuilder().skipDepClean().build();
+    final DepCleanManager<Serializable> depCleanManager =
+        new DepCleanManagerBuilder().skipDepClean().build();
 
     depCleanManager.execute();
 
@@ -59,7 +61,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldBeSkippedBecauseOfType() throws AnalysisFailureException {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(new FakeDependencyManagerWithMavenPomType())
             .build();
@@ -72,7 +74,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldPassForEmptyProject() throws AnalysisFailureException {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(EmptyProjectDependencyManager.class)
             .build();
@@ -92,7 +94,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldReportAllDependencyUsed() throws AnalysisFailureException {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(AllDependenciesUsedDependencyManager.class)
             .build();
@@ -112,7 +114,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldReportNoDependencyUsed() throws AnalysisFailureException {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(NoDependencyUsedDependencyManager.class)
             .build();
@@ -132,7 +134,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldReportOnlyDirectAndInheritedDependenciesUsed() throws AnalysisFailureException {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(OnlyDirectAndInheritedUsedDependencyManager.class)
             .build();
@@ -153,7 +155,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldReportOnlyDirectDependencyUsed() throws AnalysisFailureException {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(OnlyDirectUsedDependencyManager.class)
             .build();
@@ -174,7 +176,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldFailForUnusedDirectDependency() {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(NoDependencyUsedDependencyManager.class)
             .withFailIfUnusedDirectDependency()
@@ -189,7 +191,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldFailForUnusedInheritedDependency() {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(OnlyDirectUsedDependencyManager.class)
             .withFailIfUnusedInheritedDependency()
@@ -204,7 +206,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldFailForUnusedTransitiveDependency() {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(OnlyDirectAndInheritedUsedDependencyManager.class)
             .withFailIfUnusedTransitiveDependency()
@@ -219,7 +221,7 @@ class DepCleanManagerEnd2EndTest {
   @Test
   @SuppressWarnings("NullAway")
   void shouldIgnoreDependencies() throws AnalysisFailureException {
-    final DepCleanManager depCleanManager =
+    final DepCleanManager<Serializable> depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(OnlyDirectAndInheritedUsedDependencyManager.class)
             .withIgnoreDependencies(
@@ -274,7 +276,9 @@ class DepCleanManagerEnd2EndTest {
     }
 
     @Override
-    public void close() {}
+    public void close() {
+      // Test appender keeps logs in memory and has no external resource to release.
+    }
 
     public List<LoggingEvent> getLog() {
       return new ArrayList<>(log);
@@ -282,7 +286,8 @@ class DepCleanManagerEnd2EndTest {
   }
 
   static class DepCleanManagerBuilder {
-    private DependencyManagerWrapper dependencyManager = new FakeDependencyManager(logger);
+    private DependencyManagerWrapper<Serializable> dependencyManager =
+        new FakeDependencyManager(logger);
     private boolean skipDepClean = false;
     private boolean ignoreTests = false;
     private Set<String> ignoreScopes = ImmutableSet.of();
@@ -295,8 +300,8 @@ class DepCleanManagerEnd2EndTest {
     private boolean createResultJson = false;
     private boolean createClassUsageCsv = false;
 
-    public DepCleanManager build() {
-      return new DepCleanManager(
+    public DepCleanManager<Serializable> build() {
+      return new DepCleanManager<>(
           dependencyManager,
           skipDepClean,
           ignoreTests,
@@ -317,7 +322,7 @@ class DepCleanManagerEnd2EndTest {
     }
 
     public DepCleanManagerBuilder withDependencyManager(
-        DependencyManagerWrapper dependencyManager) {
+        DependencyManagerWrapper<Serializable> dependencyManager) {
       this.dependencyManager = dependencyManager;
       return this;
     }

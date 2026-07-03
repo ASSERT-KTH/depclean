@@ -2,7 +2,8 @@ package se.kth.depclean.core;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.model.DebloatedDependency;
@@ -22,7 +23,7 @@ public abstract class AbstractDebloater<T> {
     setDependencies(
         analysis.getUsedDependencies().stream()
             .map(this::toProviderDependency)
-            .collect(Collectors.toList()));
+            .toList());
     logDependencies();
     postProcessDependencies();
     writeFile();

@@ -139,10 +139,16 @@
       <testResource>
         <filtering>false</filtering>
         <directory>src/test/resources</directory>
+        <excludes>
+          <exclude>**/target/**</exclude>
+        </excludes>
       </testResource>
       <testResource>
         <filtering>true</filtering>
         <directory>src/test/resources-its</directory>
+        <excludes>
+          <exclude>**/target/**</exclude>
+        </excludes>
       </testResource>
     </testResources>
 

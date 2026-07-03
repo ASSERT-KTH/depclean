@@ -27,12 +27,12 @@ import se.kth.depclean.core.wrapper.LogWrapper;
 /** Runs the depclean process, regardless of a specific dependency manager. */
 @AllArgsConstructor
 @Slf4j
-public class DepCleanManager {
+public class DepCleanManager<T> {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
   private static final String DIRECTORY_TO_EXTRACT_DEPENDENCIES = "dependency";
 
-  private final DependencyManagerWrapper dependencyManager;
+  private final DependencyManagerWrapper<T> dependencyManager;
   private final boolean skipDepClean;
   private final boolean ignoreTests;
   private final Set<String> ignoreScopes;

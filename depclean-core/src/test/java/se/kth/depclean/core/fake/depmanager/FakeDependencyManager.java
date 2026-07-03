@@ -15,7 +15,7 @@ import se.kth.depclean.core.fake.FakeDependencyGraph;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.core.wrapper.LogWrapper;
 
-public class FakeDependencyManager implements DependencyManagerWrapper {
+public class FakeDependencyManager implements DependencyManagerWrapper<Serializable> {
 
   protected Path RESOURCES_PATH = Paths.get("src/test/resources");
   protected Path END_2_END_PATH = RESOURCES_PATH.resolve("end2end");
@@ -104,8 +104,7 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
 
   @Override
   @SuppressWarnings("NullAway")
-  public AbstractDebloater<? extends Serializable> getDebloater(
-      ProjectDependencyAnalysis analysis) {
+  public AbstractDebloater<Serializable> getDebloater(ProjectDependencyAnalysis analysis) {
     return null;
   }
 

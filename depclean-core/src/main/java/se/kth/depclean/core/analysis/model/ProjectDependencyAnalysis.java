@@ -21,11 +21,13 @@ package se.kth.depclean.core.analysis.model;
 
 import static java.util.stream.Collectors.toCollection;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -57,32 +59,105 @@ public class ProjectDependencyAnalysis {
   private final Map<Dependency, DependencyTypes> dependencyClassesMap;
   private final DependencyGraph dependencyGraph;
 
-  /** Creates a project dependency analysis result. */
-  public ProjectDependencyAnalysis(
-      Set<Dependency> usedDirectDependencies,
-      Set<Dependency> usedTransitiveDependencies,
-      Set<Dependency> usedInheritedDirectDependencies,
-      Set<Dependency> usedInheritedTransitiveDependencies,
-      Set<Dependency> unusedDirectDependencies,
-      Set<Dependency> unusedTransitiveDependencies,
-      Set<Dependency> unusedInheritedDirectDependencies,
-      Set<Dependency> unusedInheritedTransitiveDependencies,
-      Set<Dependency> ignoredDependencies,
-      Map<Dependency, DependencyTypes> dependencyClassesMap,
-      DependencyGraph dependencyGraph) {
-    this.usedDirectDependencies = ImmutableSet.copyOf(usedDirectDependencies);
-    this.usedTransitiveDependencies = ImmutableSet.copyOf(usedTransitiveDependencies);
-    this.usedInheritedDirectDependencies = ImmutableSet.copyOf(usedInheritedDirectDependencies);
+  private ProjectDependencyAnalysis(Builder builder) {
+    this.usedDirectDependencies = ImmutableSet.copyOf(builder.usedDirectDependencies);
+    this.usedTransitiveDependencies = ImmutableSet.copyOf(builder.usedTransitiveDependencies);
+    this.usedInheritedDirectDependencies =
+        ImmutableSet.copyOf(builder.usedInheritedDirectDependencies);
     this.usedInheritedTransitiveDependencies =
-        ImmutableSet.copyOf(usedInheritedTransitiveDependencies);
-    this.unusedDirectDependencies = ImmutableSet.copyOf(unusedDirectDependencies);
-    this.unusedTransitiveDependencies = ImmutableSet.copyOf(unusedTransitiveDependencies);
-    this.unusedInheritedDirectDependencies = ImmutableSet.copyOf(unusedInheritedDirectDependencies);
+        ImmutableSet.copyOf(builder.usedInheritedTransitiveDependencies);
+    this.unusedDirectDependencies = ImmutableSet.copyOf(builder.unusedDirectDependencies);
+    this.unusedTransitiveDependencies = ImmutableSet.copyOf(builder.unusedTransitiveDependencies);
+    this.unusedInheritedDirectDependencies =
+        ImmutableSet.copyOf(builder.unusedInheritedDirectDependencies);
     this.unusedInheritedTransitiveDependencies =
-        ImmutableSet.copyOf(unusedInheritedTransitiveDependencies);
-    this.ignoredDependencies = ImmutableSet.copyOf(ignoredDependencies);
-    this.dependencyClassesMap = dependencyClassesMap;
-    this.dependencyGraph = dependencyGraph;
+        ImmutableSet.copyOf(builder.unusedInheritedTransitiveDependencies);
+    this.ignoredDependencies = ImmutableSet.copyOf(builder.ignoredDependencies);
+    this.dependencyClassesMap = ImmutableMap.copyOf(builder.dependencyClassesMap);
+    this.dependencyGraph = Objects.requireNonNull(builder.dependencyGraph, "dependencyGraph");
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /** Builder for project dependency analysis results. */
+  public static class Builder {
+    private Set<Dependency> usedDirectDependencies = ImmutableSet.of();
+    private Set<Dependency> usedTransitiveDependencies = ImmutableSet.of();
+    private Set<Dependency> usedInheritedDirectDependencies = ImmutableSet.of();
+    private Set<Dependency> usedInheritedTransitiveDependencies = ImmutableSet.of();
+    private Set<Dependency> unusedDirectDependencies = ImmutableSet.of();
+    private Set<Dependency> unusedTransitiveDependencies = ImmutableSet.of();
+    private Set<Dependency> unusedInheritedDirectDependencies = ImmutableSet.of();
+    private Set<Dependency> unusedInheritedTransitiveDependencies = ImmutableSet.of();
+    private Set<Dependency> ignoredDependencies = ImmutableSet.of();
+    private Map<Dependency, DependencyTypes> dependencyClassesMap = ImmutableMap.of();
+    private DependencyGraph dependencyGraph;
+
+    public Builder usedDirectDependencies(Set<Dependency> usedDirectDependencies) {
+      this.usedDirectDependencies = usedDirectDependencies;
+      return this;
+    }
+
+    public Builder usedTransitiveDependencies(Set<Dependency> usedTransitiveDependencies) {
+      this.usedTransitiveDependencies = usedTransitiveDependencies;
+      return this;
+    }
+
+    public Builder usedInheritedDirectDependencies(
+        Set<Dependency> usedInheritedDirectDependencies) {
+      this.usedInheritedDirectDependencies = usedInheritedDirectDependencies;
+      return this;
+    }
+
+    public Builder usedInheritedTransitiveDependencies(
+        Set<Dependency> usedInheritedTransitiveDependencies) {
+      this.usedInheritedTransitiveDependencies = usedInheritedTransitiveDependencies;
+      return this;
+    }
+
+    public Builder unusedDirectDependencies(Set<Dependency> unusedDirectDependencies) {
+      this.unusedDirectDependencies = unusedDirectDependencies;
+      return this;
+    }
+
+    public Builder unusedTransitiveDependencies(Set<Dependency> unusedTransitiveDependencies) {
+      this.unusedTransitiveDependencies = unusedTransitiveDependencies;
+      return this;
+    }
+
+    public Builder unusedInheritedDirectDependencies(
+        Set<Dependency> unusedInheritedDirectDependencies) {
+      this.unusedInheritedDirectDependencies = unusedInheritedDirectDependencies;
+      return this;
+    }
+
+    public Builder unusedInheritedTransitiveDependencies(
+        Set<Dependency> unusedInheritedTransitiveDependencies) {
+      this.unusedInheritedTransitiveDependencies = unusedInheritedTransitiveDependencies;
+      return this;
+    }
+
+    public Builder ignoredDependencies(Set<Dependency> ignoredDependencies) {
+      this.ignoredDependencies = ignoredDependencies;
+      return this;
+    }
+
+    public Builder dependencyClassesMap(
+        Map<Dependency, DependencyTypes> dependencyClassesMap) {
+      this.dependencyClassesMap = dependencyClassesMap;
+      return this;
+    }
+
+    public Builder dependencyGraph(DependencyGraph dependencyGraph) {
+      this.dependencyGraph = dependencyGraph;
+      return this;
+    }
+
+    public ProjectDependencyAnalysis build() {
+      return new ProjectDependencyAnalysis(this);
+    }
   }
 
   public boolean hasUsedTransitiveDependencies() {

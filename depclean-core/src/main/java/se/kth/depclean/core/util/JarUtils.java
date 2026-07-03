@@ -35,6 +35,10 @@ public final class JarUtils {
 
   /** Size of the buffer to read/write data. */
   private static final int BUFFER_SIZE = 16384;
+  private static final int MAX_ENTRIES = 10_000;
+  private static final long MAX_TOTAL_UNCOMPRESSED_SIZE = 1_000_000_000L;
+  private static final double MAX_COMPRESSION_RATIO = 100.0;
+  private static final int MAX_ENTRY_NAME_LENGTH = 1000;
 
   private JarUtils() {}
 
@@ -46,9 +50,7 @@ public final class JarUtils {
   public static void decompress(final String outputDirectory) {
     File files = new File(outputDirectory);
     for (File f : Objects.requireNonNull(files.listFiles())) {
-      if (f.getName().endsWith(".jar")
-          || f.getName().endsWith(".war")
-          || f.getName().endsWith(".ear")) {
+      if (isArchive(f.getName())) {
         try {
           JarUtils.decompressDependencyFiles(f.getAbsolutePath());
           // delete the original dependency jar file
@@ -69,87 +71,137 @@ public final class JarUtils {
   private static void decompressDependencyFiles(String zipFile) throws IOException {
     File file = new File(zipFile);
     try (ZipFile zip = new ZipFile(file)) {
-      String newPath = zipFile.substring(0, zipFile.length() - 4);
-      new File(newPath).mkdir();
-      Enumeration<? extends ZipEntry> zipFileEntries = zip.entries();
-
-      // Protection against ZIP bomb attacks
-      int maxEntries = 10_000; // Maximum number of entries to process
-      long maxTotalSize = 1_000_000_000L; // 1 GB maximum total uncompressed size
-      double maxCompressionRatio = 100.0; // Maximum compression ratio
-
-      int entryCount = 0;
-      long totalSizeUncompressed = 0;
-
-      // Process each entry
-      while (zipFileEntries.hasMoreElements() && entryCount < maxEntries) {
-        // grab a zip file entry
-        ZipEntry entry = zipFileEntries.nextElement();
-        String currentEntry = entry.getName();
-        entryCount++;
-
-        // Skip entries with suspicious characteristics
-        if (currentEntry.length() > 1000) { // Skip entries with very long names
-          continue;
-        }
-
-        File destFile = new File(newPath, currentEntry);
-        // Sonar javasecurity:S6096
-        if (!destFile.getCanonicalPath().startsWith(new File(newPath).getCanonicalPath())) {
-          throw new IOException("Entry is outside of the target directory");
-        }
-        File destinationParent = destFile.getParentFile();
-        // create the parent directory structure if needed
-        destinationParent.mkdirs();
-        if (!entry.isDirectory() && !destFile.isDirectory()) {
-          try (BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
-              FileOutputStream fos = new FileOutputStream(destFile);
-              BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER_SIZE)) {
-
-            int currentByte;
-            // establish buffer for writing file
-            byte[] data = new byte[BUFFER_SIZE];
-            long entrySizeUncompressed = 0;
-
-            // read and write until last byte is encountered
-            while ((currentByte = is.read(data, 0, BUFFER_SIZE)) != -1) {
-              dest.write(data, 0, currentByte);
-              entrySizeUncompressed += currentByte;
-              totalSizeUncompressed += currentByte;
-
-              // Check compression ratio for this entry
-              if (entry.getCompressedSize() > 0) {
-                double compressionRatio =
-                    (double) entrySizeUncompressed / entry.getCompressedSize();
-                if (compressionRatio > maxCompressionRatio) {
-                  throw new IOException(
-                      "ZIP bomb detected: compression ratio too high for entry " + currentEntry);
-                }
-              }
-
-              // Check total uncompressed size
-              if (totalSizeUncompressed > maxTotalSize) {
-                throw new IOException("ZIP bomb detected: total uncompressed size exceeds limit");
-              }
-            }
-            dest.flush();
-            is.close();
-          }
-        }
-        if (currentEntry.endsWith(".jar")
-            || currentEntry.endsWith(".war")
-            || currentEntry.endsWith(".ear")) {
-          // found a zip file, try to open
-          decompressDependencyFiles(destFile.getAbsolutePath());
-          FileUtils.forceDelete(new File(destFile.getAbsolutePath()));
-        }
-      }
-
-      // Check if processing was truncated due to too many entries
-      if (entryCount >= maxEntries) {
-        throw new IOException(
-            "ZIP bomb detected: too many entries in archive (" + entryCount + ")");
-      }
+      extractEntries(zip, createOutputDirectory(zipFile));
     }
+  }
+
+  private static String createOutputDirectory(String zipFile) {
+    String newPath = zipFile.substring(0, zipFile.length() - 4);
+    new File(newPath).mkdir();
+    return newPath;
+  }
+
+  private static void extractEntries(ZipFile zip, String outputDirectory) throws IOException {
+    Enumeration<? extends ZipEntry> zipFileEntries = zip.entries();
+    ExtractionProgress progress = new ExtractionProgress();
+
+    while (zipFileEntries.hasMoreElements() && progress.entryCount < MAX_ENTRIES) {
+      extractEntry(zip, outputDirectory, zipFileEntries.nextElement(), progress);
+    }
+
+    validateEntryLimit(progress.entryCount);
+  }
+
+  private static void extractEntry(
+      ZipFile zip, String outputDirectory, ZipEntry entry, ExtractionProgress progress)
+      throws IOException {
+    String currentEntry = entry.getName();
+    progress.entryCount++;
+
+    if (hasSuspiciousName(currentEntry)) {
+      return;
+    }
+
+    File destFile = resolveDestinationFile(outputDirectory, currentEntry);
+    createParentDirectories(destFile);
+    writeEntry(zip, entry, destFile, progress);
+    decompressNestedArchive(currentEntry, destFile);
+  }
+
+  private static boolean hasSuspiciousName(String entryName) {
+    return entryName.length() > MAX_ENTRY_NAME_LENGTH;
+  }
+
+  private static File resolveDestinationFile(String outputDirectory, String currentEntry)
+      throws IOException {
+    File destFile = new File(outputDirectory, currentEntry);
+    // Sonar javasecurity:S6096
+    if (!destFile.getCanonicalPath().startsWith(new File(outputDirectory).getCanonicalPath())) {
+      throw new IOException("Entry is outside of the target directory");
+    }
+    return destFile;
+  }
+
+  private static void createParentDirectories(File destFile) {
+    File destinationParent = destFile.getParentFile();
+    destinationParent.mkdirs();
+  }
+
+  private static void writeEntry(
+      ZipFile zip, ZipEntry entry, File destFile, ExtractionProgress progress) throws IOException {
+    if (entry.isDirectory() || destFile.isDirectory()) {
+      return;
+    }
+
+    try (BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
+        FileOutputStream fos = new FileOutputStream(destFile);
+        BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER_SIZE)) {
+      writeEntryContent(entry, entry.getName(), is, dest, progress);
+      dest.flush();
+    }
+  }
+
+  private static void writeEntryContent(
+      ZipEntry entry,
+      String currentEntry,
+      BufferedInputStream is,
+      BufferedOutputStream dest,
+      ExtractionProgress progress)
+      throws IOException {
+    int currentByte;
+    byte[] data = new byte[BUFFER_SIZE];
+    long entrySizeUncompressed = 0;
+
+    while ((currentByte = is.read(data, 0, BUFFER_SIZE)) != -1) {
+      dest.write(data, 0, currentByte);
+      entrySizeUncompressed += currentByte;
+      progress.totalSizeUncompressed += currentByte;
+      validateCompressionRatio(entry, currentEntry, entrySizeUncompressed);
+      validateTotalSize(progress.totalSizeUncompressed);
+    }
+  }
+
+  private static void validateCompressionRatio(
+      ZipEntry entry, String currentEntry, long entrySizeUncompressed) throws IOException {
+    if (entry.getCompressedSize() <= 0) {
+      return;
+    }
+
+    double compressionRatio = (double) entrySizeUncompressed / entry.getCompressedSize();
+    if (compressionRatio > MAX_COMPRESSION_RATIO) {
+      throw new IOException(
+          "ZIP bomb detected: compression ratio too high for entry " + currentEntry);
+    }
+  }
+
+  private static void validateTotalSize(long totalSizeUncompressed) throws IOException {
+    if (totalSizeUncompressed > MAX_TOTAL_UNCOMPRESSED_SIZE) {
+      throw new IOException("ZIP bomb detected: total uncompressed size exceeds limit");
+    }
+  }
+
+  private static void decompressNestedArchive(String currentEntry, File destFile)
+      throws IOException {
+    if (!isArchive(currentEntry)) {
+      return;
+    }
+
+    decompressDependencyFiles(destFile.getAbsolutePath());
+    FileUtils.forceDelete(new File(destFile.getAbsolutePath()));
+  }
+
+  private static void validateEntryLimit(int entryCount) throws IOException {
+    if (entryCount >= MAX_ENTRIES) {
+      throw new IOException("ZIP bomb detected: too many entries in archive (" + entryCount + ")");
+    }
+  }
+
+  private static boolean isArchive(String fileName) {
+    return fileName.endsWith(".jar") || fileName.endsWith(".war") || fileName.endsWith(".ear");
+  }
+
+  private static class ExtractionProgress {
+    private int entryCount;
+    private long totalSizeUncompressed;
   }
 }

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,6 +15,7 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.logging.Log;
@@ -38,7 +38,7 @@ import se.kth.depclean.util.json.ParsedDependencies;
 
 /** Maven's implementation of the dependency manager wrapper. */
 @AllArgsConstructor
-public class MavenDependencyManager implements DependencyManagerWrapper {
+public class MavenDependencyManager implements DependencyManagerWrapper<Dependency> {
 
   private static final String DIRECTORY_TO_COPY_DEPENDENCIES = "dependency";
 
@@ -189,8 +189,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public AbstractDebloater<? extends Serializable> getDebloater(
-      ProjectDependencyAnalysis analysis) {
+  public AbstractDebloater<Dependency> getDebloater(ProjectDependencyAnalysis analysis) {
     return new MavenDebloater(analysis, project, model);
   }
 

@@ -91,18 +91,19 @@ public class ProjectDependencyAnalysisBuilder {
         unusedInheritedTransitiveDependencies,
         context.getIgnoredScopes());
 
-    return new ProjectDependencyAnalysis(
-        usedDirectDependencies,
-        usedTransitiveDependencies,
-        usedInheritedDirectDependencies,
-        usedInheritedTransitiveDependencies,
-        unusedDirectDependencies,
-        unusedTransitiveDependencies,
-        unusedInheritedDirectDependencies,
-        unusedInheritedTransitiveDependencies,
-        context.getIgnoredDependencies(),
-        dependencyClassesMap,
-        context.getDependencyGraph());
+    return ProjectDependencyAnalysis.builder()
+        .usedDirectDependencies(usedDirectDependencies)
+        .usedTransitiveDependencies(usedTransitiveDependencies)
+        .usedInheritedDirectDependencies(usedInheritedDirectDependencies)
+        .usedInheritedTransitiveDependencies(usedInheritedTransitiveDependencies)
+        .unusedDirectDependencies(unusedDirectDependencies)
+        .unusedTransitiveDependencies(unusedTransitiveDependencies)
+        .unusedInheritedDirectDependencies(unusedInheritedDirectDependencies)
+        .unusedInheritedTransitiveDependencies(unusedInheritedTransitiveDependencies)
+        .ignoredDependencies(context.getIgnoredDependencies())
+        .dependencyClassesMap(dependencyClassesMap)
+        .dependencyGraph(context.getDependencyGraph())
+        .build();
   }
 
   private Map<Dependency, DependencyTypes> buildDependencyClassesMap() {

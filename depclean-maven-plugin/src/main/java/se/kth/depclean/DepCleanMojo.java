@@ -151,7 +151,7 @@ public class DepCleanMojo extends AbstractMojo {
   @Override
   public final void execute() {
     try {
-      new DepCleanManager(
+      new DepCleanManager<>(
               new MavenDependencyManager(getLog(), project, session, dependencyGraphBuilder),
               skipDepClean,
               ignoreTests,

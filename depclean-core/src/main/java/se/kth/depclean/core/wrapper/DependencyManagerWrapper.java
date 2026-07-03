@@ -12,7 +12,7 @@ import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
  * Tells a dependency manager (i.e. Maven, Gradle, ...) what to expose so the process can be managed
  * from the core rather than from the dependency manager plugin.
  */
-public interface DependencyManagerWrapper {
+public interface DependencyManagerWrapper<T> {
 
   /**
    * The dependency manager logger.
@@ -97,7 +97,7 @@ public interface DependencyManagerWrapper {
    * @param analysis the depclean analysis
    * @return the debloater
    */
-  AbstractDebloater<?> getDebloater(ProjectDependencyAnalysis analysis);
+  AbstractDebloater<T> getDebloater(ProjectDependencyAnalysis analysis);
 
   /**
    * The build directory path.

@@ -23,6 +23,9 @@ import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 @Getter
 public class Dependency {
 
+  private static final int MAX_JAR_ENTRIES = 100_000;
+  private static final int MAX_ENTRY_NAME_LENGTH = 1000;
+
   @NonNull private final String groupId;
   @NonNull private final String dependencyId;
   @NonNull private final String version;
@@ -95,50 +98,81 @@ public class Dependency {
 
   @NonNull
   private Iterable<ClassName> findRelatedClasses() {
-    final Set<ClassName> relatedClasses = new HashSet<>();
-    if (file != null && file.getName().endsWith(".jar")) {
-      // optimized solution for the jar case
-      try (JarFile jarFile = new JarFile(file)) {
-        Enumeration<JarEntry> jarEntries = jarFile.entries();
+    final Set<ClassName> discoveredClasses = new HashSet<>();
+    collectRelatedClasses(discoveredClasses);
+    logRelatedClasses(discoveredClasses);
+    return ImmutableSet.copyOf(discoveredClasses);
+  }
 
-        // Protection against ZIP bomb attacks
-        int maxEntries = 100_000; // Maximum number of entries to process
-        int entryCount = 0;
-
-        while (jarEntries.hasMoreElements() && entryCount < maxEntries) {
-          JarEntry jarEntry = jarEntries.nextElement();
-          String entry = jarEntry.getName();
-          entryCount++;
-
-          // Additional protection: skip entries with suspicious characteristics
-          if (entry.length() > 1000) { // Skip entries with very long names
-            continue;
-          }
-
-          if (entry.endsWith(".class")) {
-            relatedClasses.add(new ClassName(entry));
-          }
-        }
-
-        if (entryCount >= maxEntries) {
-          log.warn(
-              "JAR file {} has too many entries ({}), processing truncated",
-              file.getName(),
-              entryCount);
-        }
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
-    } else if (file != null && file.isDirectory()) {
-      try {
-        URL url = file.toURI().toURL();
-        ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
-        Set<String> classes = classAnalyzer.analyze(url);
-        classes.forEach(c -> relatedClasses.add(new ClassName(c)));
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
+  private void collectRelatedClasses(Set<ClassName> discoveredClasses) {
+    if (file == null) {
+      return;
     }
+
+    try {
+      if (isJarFile(file)) {
+        collectJarClasses(discoveredClasses);
+      } else if (file.isDirectory()) {
+        collectDirectoryClasses(discoveredClasses);
+      }
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    }
+  }
+
+  private boolean isJarFile(File candidateFile) {
+    return candidateFile.getName().endsWith(".jar");
+  }
+
+  private void collectJarClasses(Set<ClassName> discoveredClasses) throws IOException {
+    try (JarFile jarFile = new JarFile(file)) {
+      int entryCount = collectJarEntries(jarFile, discoveredClasses);
+      logTruncatedJar(entryCount);
+    }
+  }
+
+  private int collectJarEntries(JarFile jarFile, Set<ClassName> discoveredClasses) {
+    Enumeration<JarEntry> jarEntries = jarFile.entries();
+    int entryCount = 0;
+
+    while (jarEntries.hasMoreElements() && entryCount < MAX_JAR_ENTRIES) {
+      JarEntry jarEntry = jarEntries.nextElement();
+      entryCount++;
+      addClassEntry(jarEntry.getName(), discoveredClasses);
+    }
+
+    return entryCount;
+  }
+
+  private void addClassEntry(String entryName, Set<ClassName> discoveredClasses) {
+    if (isSuspiciousEntry(entryName) || !entryName.endsWith(".class")) {
+      return;
+    }
+
+    discoveredClasses.add(new ClassName(entryName));
+  }
+
+  private boolean isSuspiciousEntry(String entryName) {
+    return entryName.length() > MAX_ENTRY_NAME_LENGTH;
+  }
+
+  private void logTruncatedJar(int entryCount) {
+    if (entryCount < MAX_JAR_ENTRIES) {
+      return;
+    }
+
+    log.warn(
+        "JAR file {} has too many entries ({}), processing truncated", file.getName(), entryCount);
+  }
+
+  private void collectDirectoryClasses(Set<ClassName> discoveredClasses) throws IOException {
+    URL url = file.toURI().toURL();
+    ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
+    Set<String> classes = classAnalyzer.analyze(url);
+    classes.forEach(c -> discoveredClasses.add(new ClassName(c)));
+  }
+
+  private void logRelatedClasses(Set<ClassName> discoveredClasses) {
     log.trace(
         "Finding related classes for Dependency: "
             + groupId
@@ -150,8 +184,7 @@ public class Dependency {
             + scope
             + ":"
             + file);
-    log.trace("Related classes: " + relatedClasses);
-    return ImmutableSet.copyOf(relatedClasses);
+    log.trace("Related classes: " + discoveredClasses);
   }
 
   @NonNull
