@@ -87,6 +87,11 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
 
     /* ******************** bytecode analysis ********************* */
 
+    // The call graph is kept in static fields, and in a multi-project build the same task action
+    // analyzes every project, so the graph of a previously analyzed project must be discarded
+    // before building the graph of this one.
+    DefaultCallGraph.clear();
+
     // execute the analysis (note that the order of these operations matters!)
     buildProjectDependencyClasses(project);
     Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());

@@ -121,6 +121,42 @@ class DepCleanGradleFT extends Specification {
         assert generatedResultDotJson.exists()
     }
 
+    String projectPath5 = "src/test/resources-fts/multi_project"
+    File multiProject = new File(projectPath5)
+
+    def "Test that the analysis of a project does not leak into the next one"() {
+        given:
+        def project = ProjectBuilder.builder().withProjectDir(multiProject).build()
+
+        when:
+        project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+        BuildResult buildResult = createRunner(multiProject, "build")
+        // Only the root task, which analyzes the root project and then its subprojects, so that the
+        // assertions below cannot be satisfied by the report of the subproject's own task.
+        BuildResult debloatResult = createRunner(multiProject, ":debloat")
+
+        then:
+        assert checkTaskOutcome(buildResult.task(":build").getOutcome())
+        assert checkTaskOutcome(debloatResult.task(":debloat").getOutcome())
+
+        // The root project uses jackson-databind, the subproject only declares it. The subproject
+        // is analyzed after the root project by the same task action, so without resetting the
+        // shared call graph the classes used by the root project are still reachable and
+        // jackson-databind is wrongly reported as used for the subproject.
+        String output = debloatResult.getOutput()
+        String subprojectReport = output.substring(output.indexOf("Analyzing subproject:"))
+        assert subprojectReport.contains("POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]")
+        assert subprojectReport.contains("com.fasterxml.jackson.core:jackson-databind:2.12.2")
+
+        cleanup:
+        FileUtils.forceDelete(new File(projectPath5 + "/build"))
+        FileUtils.forceDelete(new File(projectPath5 + "/unused-subproject/build"))
+        FileUtils.forceDelete(new File(projectPath5 + "/.gradle"))
+        FileUtils.forceDelete(new File(projectPath5 + "/userHome"))
+        FileUtils.forceDelete(new File(projectPath5 + "/.gradle"))
+        FileUtils.forceDelete(new File(projectPath5 + "/userHome"))
+    }
+
     private static BuildResult createRunner(File project, String argument) {
         BuildResult result = GradleRunner.create()
                 .withProjectDir(project)
