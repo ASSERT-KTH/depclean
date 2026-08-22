@@ -7,35 +7,34 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 
 /**
  * Contains all information about the project's context. It doesn't have any reference to a given
  * framework (Maven, Gradle, etc.).
  */
-@Slf4j
-@ToString
-@EqualsAndHashCode
 public final class ProjectContext {
+
+  private static final Logger log = LoggerFactory.getLogger(ProjectContext.class);
 
   private final Multimap<Dependency, ClassName> classesPerDependency = ArrayListMultimap.create();
   private final Multimap<ClassName, Dependency> dependenciesPerClass = ArrayListMultimap.create();
 
-  @Getter private final Set<Path> outputFolders;
-  @Getter private final Set<Path> testOutputFolders;
-  @Getter private final Path sourceFolder;
-  @Getter private final Path testFolder;
-  @Getter private final Path dependenciesFolder;
+  private final Set<Path> outputFolders;
+  private final Set<Path> testOutputFolders;
+  private final Path sourceFolder;
+  private final Path testFolder;
+  private final Path dependenciesFolder;
 
-  @Getter private final Set<Scope> ignoredScopes;
-  @Getter private final Set<Dependency> ignoredDependencies;
-  @Getter private final Set<ClassName> extraClasses;
-  @Getter private final DependencyGraph dependencyGraph;
+  private final Set<Scope> ignoredScopes;
+  private final Set<Dependency> ignoredDependencies;
+  private final Set<ClassName> extraClasses;
+  private final DependencyGraph dependencyGraph;
 
   /**
    * Creates a new project context.
@@ -78,6 +77,42 @@ public final class ProjectContext {
     populateDependenciesAndClassesMap(dependencyGraph.transitiveDependencies());
 
     Multimaps.invertFrom(classesPerDependency, dependenciesPerClass);
+  }
+
+  public Set<Path> getOutputFolders() {
+    return outputFolders;
+  }
+
+  public Set<Path> getTestOutputFolders() {
+    return testOutputFolders;
+  }
+
+  public Path getSourceFolder() {
+    return sourceFolder;
+  }
+
+  public Path getTestFolder() {
+    return testFolder;
+  }
+
+  public Path getDependenciesFolder() {
+    return dependenciesFolder;
+  }
+
+  public Set<Scope> getIgnoredScopes() {
+    return ignoredScopes;
+  }
+
+  public Set<Dependency> getIgnoredDependencies() {
+    return ignoredDependencies;
+  }
+
+  public Set<ClassName> getExtraClasses() {
+    return extraClasses;
+  }
+
+  public DependencyGraph getDependencyGraph() {
+    return dependencyGraph;
   }
 
   public Set<ClassName> getClassesForDependency(Dependency dependency) {
@@ -132,5 +167,70 @@ public final class ProjectContext {
       return true; // Don't exclude if scope is null
     }
     return ignoredScopes.stream().map(Scope::getValue).noneMatch(declaredScope::equalsIgnoreCase);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ProjectContext that = (ProjectContext) o;
+    return Objects.equals(classesPerDependency, that.classesPerDependency)
+        && Objects.equals(dependenciesPerClass, that.dependenciesPerClass)
+        && Objects.equals(outputFolders, that.outputFolders)
+        && Objects.equals(testOutputFolders, that.testOutputFolders)
+        && Objects.equals(sourceFolder, that.sourceFolder)
+        && Objects.equals(testFolder, that.testFolder)
+        && Objects.equals(dependenciesFolder, that.dependenciesFolder)
+        && Objects.equals(ignoredScopes, that.ignoredScopes)
+        && Objects.equals(ignoredDependencies, that.ignoredDependencies)
+        && Objects.equals(extraClasses, that.extraClasses)
+        && Objects.equals(dependencyGraph, that.dependencyGraph);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        classesPerDependency,
+        dependenciesPerClass,
+        outputFolders,
+        testOutputFolders,
+        sourceFolder,
+        testFolder,
+        dependenciesFolder,
+        ignoredScopes,
+        ignoredDependencies,
+        extraClasses,
+        dependencyGraph);
+  }
+
+  @Override
+  public String toString() {
+    return "ProjectContext(classesPerDependency="
+        + classesPerDependency
+        + ", dependenciesPerClass="
+        + dependenciesPerClass
+        + ", outputFolders="
+        + outputFolders
+        + ", testOutputFolders="
+        + testOutputFolders
+        + ", sourceFolder="
+        + sourceFolder
+        + ", testFolder="
+        + testFolder
+        + ", dependenciesFolder="
+        + dependenciesFolder
+        + ", ignoredScopes="
+        + ignoredScopes
+        + ", ignoredDependencies="
+        + ignoredDependencies
+        + ", extraClasses="
+        + extraClasses
+        + ", dependencyGraph="
+        + dependencyGraph
+        + ")";
   }
 }

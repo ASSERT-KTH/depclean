@@ -25,10 +25,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 
 /** Utility class to execute Maven tasks from the command line. */
-@Slf4j
 public final class MavenInvoker {
 
   private MavenInvoker() {}

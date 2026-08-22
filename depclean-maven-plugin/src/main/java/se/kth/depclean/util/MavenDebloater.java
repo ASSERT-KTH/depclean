@@ -7,20 +7,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.AbstractDebloater;
 import se.kth.depclean.core.analysis.model.DebloatedDependency;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /** Writes a debloated pom is needed. */
-@Slf4j
 public class MavenDebloater extends AbstractDebloater<Dependency> {
+
+  private static final Logger log = LoggerFactory.getLogger(MavenDebloater.class);
 
   private final MavenProject project;
   private final Model model;

@@ -22,12 +22,13 @@ package se.kth.depclean.core.analysis.asm;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.signature.SignatureVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.ClassFileVisitor;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 
@@ -37,8 +38,9 @@ import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
  *
  * @see #getDependencies()
  */
-@Slf4j
 public class DependencyClassFileVisitor implements ClassFileVisitor {
+
+  private static final Logger log = LoggerFactory.getLogger(DependencyClassFileVisitor.class);
 
   private final ResultCollector resultCollector = new ResultCollector();
 

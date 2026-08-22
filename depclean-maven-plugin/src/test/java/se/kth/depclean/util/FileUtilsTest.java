@@ -2,15 +2,17 @@ package se.kth.depclean.util;
 
 import java.io.File;
 import java.io.IOException;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Unit tests for {@link FileUtils}. */
-@Slf4j
 class FileUtilsTest {
+
+  private static final Logger log = LoggerFactory.getLogger(FileUtilsTest.class);
 
   // The directories used for testing
   static final File originalDir = new File("src/test/resources/JarUtilsResources");

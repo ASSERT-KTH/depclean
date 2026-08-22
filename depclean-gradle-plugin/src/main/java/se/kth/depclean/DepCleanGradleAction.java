@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -64,7 +63,6 @@ public class DepCleanGradleAction implements Action<Project> {
   private Set<String> ignoreConfiguration = new HashSet<>();
   private Set<String> ignoreDependencies = new HashSet<>();
 
-  @SneakyThrows
   @Override
   public void execute(@NonNull Project project) {
 

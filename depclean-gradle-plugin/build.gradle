@@ -31,7 +31,6 @@ ext {
     depcleanVersion = '2.2.0-SNAPSHOT'
     errorProneCoreVersion = '2.50.0'
     jspecifyVersion = '1.0.1'
-    lombokVersion = '1.18.46'
     nullawayVersion = '0.14.0'
     slf4jVersion = '2.0.18'
     spockVersion = '2.4-groovy-4.0'
@@ -46,8 +45,6 @@ dependencies {
     implementation("org.slf4j:slf4j-reload4j:${slf4jVersion}")
     compileOnly("org.jspecify:jspecify:${jspecifyVersion}")
 
-    compileOnly("org.projectlombok:lombok:${lombokVersion}")
-    annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
     implementation("com.github.spotbugs:spotbugs-annotations:${spotbugsAnnotationsVersion}")
 
     testImplementation("org.spockframework:spock-core:${spockVersion}")

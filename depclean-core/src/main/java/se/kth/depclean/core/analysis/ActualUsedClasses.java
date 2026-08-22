@@ -2,7 +2,8 @@ package se.kth.depclean.core.analysis;
 
 import java.util.HashSet;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.ProjectContext;
 
@@ -10,8 +11,9 @@ import se.kth.depclean.core.model.ProjectContext;
  * Contains the actual classes used in the project (i.e. in classes, processors, configurations,
  * etc.)
  */
-@Slf4j
 public class ActualUsedClasses {
+
+  private static final Logger log = LoggerFactory.getLogger(ActualUsedClasses.class);
 
   private final ProjectContext context;
   private final Set<ClassName> classes = new HashSet<>();

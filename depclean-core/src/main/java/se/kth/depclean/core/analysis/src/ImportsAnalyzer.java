@@ -8,21 +8,34 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** All the classes imported in the source code of the project. */
-@Data
-@AllArgsConstructor
-@Slf4j
 public class ImportsAnalyzer {
+
+  private static final Logger log = LoggerFactory.getLogger(ImportsAnalyzer.class);
+
   private static final String[] SOURCE_FILE_EXTENSIONS = new String[] {"java"};
 
   /** A directory with Java source files. */
   private Path directoryPath;
+
+  public ImportsAnalyzer(Path directoryPath) {
+    this.directoryPath = directoryPath;
+  }
+
+  public Path getDirectoryPath() {
+    return directoryPath;
+  }
+
+  public void setDirectoryPath(Path directoryPath) {
+    this.directoryPath = directoryPath;
+  }
 
   /**
    * Collects the set of all imported classes in all the Java source files in a directory.
@@ -55,5 +68,27 @@ public class ImportsAnalyzer {
       imports.addAll(javaClass.getSource().getImports());
     }
     return imports;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ImportsAnalyzer that = (ImportsAnalyzer) o;
+    return Objects.equals(directoryPath, that.directoryPath);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(directoryPath);
+  }
+
+  @Override
+  public String toString() {
+    return "ImportsAnalyzer(directoryPath=" + directoryPath + ")";
   }
 }

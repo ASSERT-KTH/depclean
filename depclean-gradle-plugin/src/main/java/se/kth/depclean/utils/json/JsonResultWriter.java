@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.ResolvedDependency;
@@ -24,7 +23,6 @@ import se.kth.depclean.core.model.ClassName;
  * file. This file represent the structure of the dependency tree enriched with metadata of the
  * usage or not of each dependency.
  */
-@Slf4j
 public class JsonResultWriter {
 
   private final Project project;

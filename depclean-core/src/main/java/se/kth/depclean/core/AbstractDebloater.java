@@ -3,17 +3,21 @@ package se.kth.depclean.core;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.model.DebloatedDependency;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /** Analyses the analysis result and writes the debloated config file. */
-@Slf4j
-@AllArgsConstructor
 public abstract class AbstractDebloater<T> {
 
+  private static final Logger log = LoggerFactory.getLogger(AbstractDebloater.class);
+
   protected final ProjectDependencyAnalysis analysis;
+
+  public AbstractDebloater(ProjectDependencyAnalysis analysis) {
+    this.analysis = analysis;
+  }
 
   /** Writes the debloated config file down. */
   public void write() throws IOException {
