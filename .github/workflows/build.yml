@@ -15,18 +15,21 @@ jobs:
   # For maven project
   build:
     strategy:
-      max-parallel: 1
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         java: [21]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     name: Maven Build with Java ${{ matrix.java }} on ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
+          persist-credentials: false
 
       - name: Java ${{ matrix.java }}
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
@@ -36,7 +39,7 @@ jobs:
           cache: "maven"
 
       - name: "Build and Verify"
-        run: mvn -ntp clean verify --errors
+        run: ./mvnw -ntp clean verify --errors
 
         # The following is only executed on Ubuntu on Java 21
       - name: "Codecov (unit tests)"
@@ -67,6 +70,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Java 21
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
@@ -81,7 +86,7 @@ jobs:
           validate-wrappers: true
 
       - name: Build with maven (Building missing/local dependencies)
-        run: mvn -ntp clean install -DskipTests -q
+        run: ./mvnw -ntp clean install -DskipTests -q
 
       - name: Build with Gradle
         working-directory: ./depclean-gradle-plugin
