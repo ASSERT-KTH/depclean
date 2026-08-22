@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.io.FileUtils;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -35,31 +37,23 @@ import org.xml.sax.helpers.DefaultHandler;
  * element text node that looks like a fully qualified class name. False positives are harmless:
  * the analysis only considers harvested names that actually resolve to a class of a known
  * dependency.
+ *
+ * @param directoryPath a directory with XML resource files
  */
-public final class XmlClassesAnalyzer {
+public record XmlClassesAnalyzer(Path directoryPath) {
 
   private static final Logger log = LoggerFactory.getLogger(XmlClassesAnalyzer.class);
 
   /**
-   * A dotted identifier whose last segment starts with an uppercase letter, following the Java
-   * class naming convention (e.g. {@code org.example.Foo} or {@code org.example.Foo$Bar}).
+   * A dotted identifier with at least two segments (e.g. {@code org.example.Foo}). Possessive
+   * quantifiers keep the matching linear; class-name filtering happens in {@link
+   * #trimToClassName(String)}.
    */
-  private static final Pattern FQCN_PATTERN =
-      Pattern.compile("(?:[A-Za-z_$][A-Za-z0-9_$]*\\.)+[A-Z][A-Za-z0-9_$]*");
+  private static final Pattern DOTTED_IDENTIFIER_PATTERN =
+      Pattern.compile("[A-Za-z_$][A-Za-z0-9_$]*+(?:\\.[A-Za-z_$][A-Za-z0-9_$]*+)++");
 
   /** Guard against pathological inputs: XML files larger than this are skipped. */
   private static final long MAX_FILE_SIZE_BYTES = 10L * 1024 * 1024;
-
-  /** A directory with XML resource files. */
-  private final Path directoryPath;
-
-  public XmlClassesAnalyzer(Path directoryPath) {
-    this.directoryPath = directoryPath;
-  }
-
-  public Path getDirectoryPath() {
-    return directoryPath;
-  }
 
   /**
    * Collects the class names referenced in all the XML files in the directory, recursively.
@@ -105,7 +99,8 @@ public final class XmlClassesAnalyzer {
    * never resolved. DOCTYPE declarations themselves remain allowed since legacy descriptors (e.g.
    * Servlet 2.3 web.xml or old Spring beans files) legitimately declare them.
    */
-  private static SAXParser newSecureSaxParser() throws Exception {
+  private static SAXParser newSecureSaxParser()
+      throws ParserConfigurationException, SAXException {
     SAXParserFactory factory = SAXParserFactory.newInstance();
     factory.setNamespaceAware(true);
     factory.setXIncludeAware(false);
@@ -128,11 +123,34 @@ public final class XmlClassesAnalyzer {
       return Collections.emptySet();
     }
     Set<String> result = new HashSet<>();
-    Matcher matcher = FQCN_PATTERN.matcher(value);
+    Matcher matcher = DOTTED_IDENTIFIER_PATTERN.matcher(value);
     while (matcher.find()) {
-      addSpellingVariants(matcher.group(), result);
+      String className = trimToClassName(matcher.group());
+      if (className != null) {
+        addSpellingVariants(className, result);
+      }
     }
     return result;
+  }
+
+  /**
+   * Truncates a dotted identifier after its last segment starting with an uppercase letter (the
+   * Java class naming convention), dropping trailing member or package segments. Returns {@code
+   * null} when no segment except the first is class-like (e.g. package names, URLs, versions).
+   */
+  @Nullable
+  private static String trimToClassName(String token) {
+    int end = -1;
+    int segmentStart = 0;
+    for (int i = 0; i <= token.length(); i++) {
+      if (i == token.length() || token.charAt(i) == '.') {
+        if (segmentStart > 0 && Character.isUpperCase(token.charAt(segmentStart))) {
+          end = i;
+        }
+        segmentStart = i + 1;
+      }
+    }
+    return end < 0 ? null : token.substring(0, end);
   }
 
   /**
@@ -215,26 +233,5 @@ public final class XmlClassesAnalyzer {
         parent.append(' ');
       }
     }
-  }
-
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof XmlClassesAnalyzer that)) {
-      return false;
-    }
-    return directoryPath.equals(that.directoryPath);
-  }
-
-  @Override
-  public int hashCode() {
-    return directoryPath.hashCode();
-  }
-
-  @Override
-  public String toString() {
-    return "XmlClassesAnalyzer(directoryPath=" + directoryPath + ")";
   }
 }

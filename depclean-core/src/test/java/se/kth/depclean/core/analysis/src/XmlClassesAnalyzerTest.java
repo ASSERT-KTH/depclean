@@ -275,6 +275,35 @@ class XmlClassesAnalyzerTest {
   }
 
   @Test
+  @DisplayName("Provider, entity and driver classes in persistence.xml are collected")
+  void collectsPersistenceXmlClasses() throws IOException {
+    write(
+        "META-INF/persistence.xml",
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
+          <persistence-unit name="myUnit" transaction-type="RESOURCE_LOCAL">
+            <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+            <class>org.example.model.CustomerEntity</class>
+            <class>org.example.model.OrderEntity</class>
+            <properties>
+              <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+              <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            </properties>
+          </persistence-unit>
+        </persistence>
+        """);
+
+    assertThat(collect())
+        .contains(
+            "org.hibernate.jpa.HibernatePersistenceProvider",
+            "org.example.model.CustomerEntity",
+            "org.example.model.OrderEntity",
+            "org.h2.Driver",
+            "org.hibernate.dialect.H2Dialect");
+  }
+
+  @Test
   @DisplayName("Log4j2-style configuration attributes are collected")
   void collectsLoggingConfigurationClasses() throws IOException {
     write(
