@@ -25,6 +25,14 @@
       "enabled": false
     },
     {
+      "description": "IT/FT fixture dependencies have golden output assertions coupled to exact versions and sizes; never automerge, update the goldens in the same PR instead",
+      "matchFileNames": [
+        "depclean-maven-plugin/src/test/resources-its/**",
+        "depclean-gradle-plugin/src/test/resources-fts/**"
+      ],
+      "automerge": false
+    },
+    {
       "description": "Security fix PRs get top priority",
       "matchJsonata": ["isVulnerabilityAlert"],
       "prPriority": 10
