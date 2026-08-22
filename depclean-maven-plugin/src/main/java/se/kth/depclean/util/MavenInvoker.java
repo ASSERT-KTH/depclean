@@ -23,16 +23,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -252,20 +255,27 @@ public final class MavenInvoker {
       if (!process.isAlive()) {
         return;
       }
-      // Java 8 has no ProcessHandle, so only the process itself can be terminated: its
-      // descendants cannot be enumerated. Child processes are expected to end with their parent.
+      // Snapshot the descendants now: once the process is destroyed they can no longer be listed
+      // through it, but the handles keep working. Empty on a Java 8 runtime, where descendants
+      // cannot be enumerated and children are expected to end with their parent.
+      List<Object> tree = ProcessHandles.treeOf(process);
+
+      ProcessHandles.destroy(tree, false);
       process.destroy();
-      if (awaitProcess(process, deadlineNanos)) {
+      if (awaitProcess(process, deadlineNanos) && awaitHandles(tree, deadlineNanos)) {
         return;
       }
-      // The graceful termination did not work in time. Kill the process, and always allow a
+      // The graceful termination did not work in time. Kill the whole tree, and always allow a
       // short extra window for the operating system to reap it, even if the budget is spent.
+      ProcessHandles.destroy(tree, true);
       process.destroyForcibly();
       long killDeadlineNanos =
           Math.max(deadlineNanos, System.nanoTime())
               + TimeUnit.MILLISECONDS.toNanos(FORCIBLE_KILL_GRACE_MILLIS);
-      if (!awaitProcess(process, killDeadlineNanos)) {
-        log.warn("The process of the command did not end and had to be abandoned");
+      if (!(awaitProcess(process, killDeadlineNanos) && awaitHandles(tree, killDeadlineNanos))) {
+        log.warn(
+            "The process of the command, or one of its child processes, did not end and had to "
+                + "be abandoned");
       }
     }
 
@@ -297,6 +307,33 @@ public final class MavenInvoker {
       return true;
     }
 
+    /** Waits until all the process handles have ended or the deadline is reached. */
+    private boolean awaitHandles(List<Object> handles, long untilNanos) {
+      boolean allDead = true;
+      for (Object handle : handles) {
+        allDead &= awaitHandle(handle, untilNanos);
+      }
+      return allDead;
+    }
+
+    /** Waits for the process handle, and reports whether it ended. */
+    private boolean awaitHandle(Object handle, long untilNanos) {
+      while (ProcessHandles.isAlive(handle)) {
+        long remainingMillis = TimeUnit.NANOSECONDS.toMillis(untilNanos - System.nanoTime());
+        if (remainingMillis <= 0) {
+          return !ProcessHandles.isAlive(handle);
+        }
+        try {
+          // ProcessHandle has no timed wait, so poll it until the deadline, briefly enough to not
+          // overshoot it.
+          Thread.sleep(Math.min(remainingMillis, 50));
+        } catch (InterruptedException e) {
+          interrupted = true;
+        }
+      }
+      return true;
+    }
+
     /** Waits for the thread, and reports whether it ended. */
     private boolean awaitThread(Thread thread) {
       while (thread.isAlive()) {
@@ -315,6 +352,89 @@ public final class MavenInvoker {
 
     private long remainingMillis() {
       return TimeUnit.NANOSECONDS.toMillis(deadlineNanos - System.nanoTime());
+    }
+  }
+
+  /**
+   * Reflective access to {@code ProcessHandle}, which only exists on Java 9+. The bytecode of this
+   * class targets Java 8, but on the Java 9+ runtimes it actually runs on, the descendants of a
+   * process can still be terminated: without this, killing a command wrapped in an interpreter
+   * (e.g. {@code cmd /c} on Windows) would leave the actual process running. On a Java 8 runtime
+   * every method is a no-op.
+   */
+  private static final class ProcessHandles {
+
+    private static final @Nullable Method TO_HANDLE;
+    private static final @Nullable Method DESCENDANTS;
+    private static final @Nullable Method DESTROY;
+    private static final @Nullable Method DESTROY_FORCIBLY;
+    private static final @Nullable Method IS_ALIVE;
+
+    static {
+      Method toHandle = null;
+      Method descendants = null;
+      Method destroy = null;
+      Method destroyForcibly = null;
+      Method isAlive = null;
+      try {
+        Class<?> processHandle = Class.forName("java.lang.ProcessHandle");
+        toHandle = Process.class.getMethod("toHandle");
+        descendants = processHandle.getMethod("descendants");
+        destroy = processHandle.getMethod("destroy");
+        destroyForcibly = processHandle.getMethod("destroyForcibly");
+        isAlive = processHandle.getMethod("isAlive");
+      } catch (ReflectiveOperationException e) {
+        // Java 8 runtime: ProcessHandle is not available
+      }
+      TO_HANDLE = toHandle;
+      DESCENDANTS = descendants;
+      DESTROY = destroy;
+      DESTROY_FORCIBLY = destroyForcibly;
+      IS_ALIVE = isAlive;
+    }
+
+    private ProcessHandles() {}
+
+    /** The handles of the descendants of the process and of the process itself. */
+    private static List<Object> treeOf(Process process) {
+      if (TO_HANDLE == null || DESCENDANTS == null) {
+        return Collections.emptyList();
+      }
+      try {
+        Object handle = TO_HANDLE.invoke(process);
+        List<Object> tree = new ArrayList<>();
+        ((Stream<?>) DESCENDANTS.invoke(handle)).forEach(tree::add);
+        tree.add(handle);
+        return tree;
+      } catch (ReflectiveOperationException | RuntimeException e) {
+        log.debug("Unable to list the process tree: {}", e.getMessage());
+        return Collections.emptyList();
+      }
+    }
+
+    private static void destroy(List<Object> handles, boolean forcibly) {
+      Method method = forcibly ? DESTROY_FORCIBLY : DESTROY;
+      if (method == null) {
+        return;
+      }
+      for (Object handle : handles) {
+        try {
+          method.invoke(handle);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+          log.debug("Unable to terminate a process of the tree: {}", e.getMessage());
+        }
+      }
+    }
+
+    private static boolean isAlive(Object handle) {
+      if (IS_ALIVE == null) {
+        return false;
+      }
+      try {
+        return Boolean.TRUE.equals(IS_ALIVE.invoke(handle));
+      } catch (ReflectiveOperationException | RuntimeException e) {
+        return false;
+      }
     }
   }
 

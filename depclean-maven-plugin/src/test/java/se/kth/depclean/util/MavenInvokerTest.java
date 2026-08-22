@@ -206,7 +206,7 @@ class MavenInvokerTest {
         // The end of the output is the interesting part and has to be kept, the beginning is
         // dropped.
         .hasMessageContaining("error line " + (lines - 1))
-        .matches(t -> !t.getMessage().contains("error line 0" + System.lineSeparator()));
+        .hasMessageNotContaining("error line 0" + System.lineSeparator());
   }
 
   @Test
