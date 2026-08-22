@@ -22,8 +22,8 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.asm.AsmDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
@@ -31,8 +31,10 @@ import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.ProjectContext;
 
 /** This is principal class that perform the dependency analysis in a Maven project. */
-@Slf4j
 public class DefaultProjectDependencyAnalyzer {
+
+  private static final Logger log =
+      LoggerFactory.getLogger(DefaultProjectDependencyAnalyzer.class);
 
   private final DependencyAnalyzer dependencyAnalyzer = new AsmDependencyAnalyzer();
 
@@ -77,17 +79,23 @@ public class DefaultProjectDependencyAnalyzer {
     return new ProjectDependencyAnalysisBuilder(projectContext, actualUsedClasses).analyse();
   }
 
-  @SneakyThrows
   private Iterable<ClassName> getProjectDependencyClasses(Path outputFolder) {
     // Analyze src classes in the project
-    return collectDependencyClasses(outputFolder);
+    try {
+      return collectDependencyClasses(outputFolder);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  @SneakyThrows
   private Iterable<ClassName> getProjectTestDependencyClasses(Path testOutputFolder) {
     // Analyze test classes in the project
     log.trace("# getProjectTestDependencyClasses()");
-    return collectDependencyClasses(testOutputFolder);
+    try {
+      return collectDependencyClasses(testOutputFolder);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private Iterable<ClassName> collectDependencyClasses(Path path) throws IOException {

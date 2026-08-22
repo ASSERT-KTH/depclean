@@ -8,10 +8,11 @@ import com.soebes.itf.jupiter.maven.MavenExecutionResult;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.util.OsUtils;
 
 /**
@@ -25,8 +26,9 @@ import se.kth.depclean.util.OsUtils;
  *     https://khmarbaise.github.io/maven-it-extension/itf-documentation/background/background.html#_assertions_in_maven_tests</a>
  */
 @MavenJupiterExtension
-@Slf4j
 public class DepCleanMojoIT {
+
+  private static final Logger log = LoggerFactory.getLogger(DepCleanMojoIT.class);
 
   @MavenTest
   void empty_project(MavenExecutionResult result) {

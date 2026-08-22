@@ -22,18 +22,20 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A directed graph G = (V, E) where V is a set of classes and E is a set of edges. Edges represent
  * class member calls between the classes in V.
  */
-@Slf4j
 public class DefaultCallGraph {
+
+  private static final Logger log = LoggerFactory.getLogger(DefaultCallGraph.class);
 
   private static final AbstractBaseGraph<String, DefaultEdge> directedGraph =
       new DefaultDirectedGraph<>(DefaultEdge.class);
