@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans">
+  <!-- References a class of the commons-lang3 fake inherited dependency -->
+  <bean id="stringUtils" class="org.apache.commons.lang3.StringUtils"/>
+</beans>

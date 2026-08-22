@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans">
+  <!-- References a class of the commons-io fake dependency -->
+  <bean id="ioUtils" class="org.apache.commons.io.IOUtils"/>
+</beans>

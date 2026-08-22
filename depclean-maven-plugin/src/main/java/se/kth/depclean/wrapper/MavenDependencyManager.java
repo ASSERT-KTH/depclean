@@ -206,6 +206,42 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
+  public Set<Path> getResourcesDirectories() {
+    Set<Path> directories =
+        project.getBuild().getResources().stream()
+            .map(resource -> resolveAgainstBasedir(resource.getDirectory()))
+            .collect(Collectors.toCollection(HashSet::new));
+    directories.add(getWebappDirectory());
+    return directories;
+  }
+
+  @Override
+  public Set<Path> getTestResourcesDirectories() {
+    return project.getBuild().getTestResources().stream()
+        .map(resource -> resolveAgainstBasedir(resource.getDirectory()))
+        .collect(Collectors.toSet());
+  }
+
+  /**
+   * The webapp source directory (containing web.xml), honoring a custom {@code
+   * warSourceDirectory} configured on the maven-war-plugin.
+   */
+  private Path getWebappDirectory() {
+    String warSourceDirectory =
+        Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-war-plugin"))
+            .map(plugin -> (Xpp3Dom) plugin.getConfiguration())
+            .map(config -> config.getChild("warSourceDirectory"))
+            .map(Xpp3Dom::getValue)
+            .orElse("src/main/webapp");
+    return resolveAgainstBasedir(warSourceDirectory);
+  }
+
+  private Path resolveAgainstBasedir(String directory) {
+    Path path = Paths.get(directory);
+    return path.isAbsolute() ? path : project.getBasedir().toPath().resolve(path);
+  }
+
+  @Override
   public AbstractDebloater<? extends Serializable> getDebloater(
       ProjectDependencyAnalysis analysis) {
     return new MavenDebloater(analysis, project, model);
