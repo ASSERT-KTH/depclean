@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Parent -->
@@ -12,34 +14,26 @@
   <!-- Coordinates -->
   <artifactId>depclean-maven-plugin</artifactId>
   <version>2.2.0-SNAPSHOT</version>
-  <packaging>maven-plugin</packaging>
-  <name>depclean-maven-plugin</name>
 
+  <packaging>maven-plugin</packaging>
+
+  <name>depclean-maven-plugin</name>
   <description>DepClean automatically removes unused dependencies in Maven projects</description>
 
   <properties>
     <!-- Dependencies -->
-    <checkstyle.version>10.26.1</checkstyle.version>
-    <commons-io.version>2.20.0</commons-io.version>
-    <gson.version>2.13.1</gson.version>
+    <gson.version>2.14.0</gson.version>
     <itf-jupiter-extension.version>0.13.1</itf-jupiter-extension.version>
-    <jspecify.version>1.0.0</jspecify.version>
-    <maven-core.version>3.9.11</maven-core.version>
-    <maven-dependency-tree.version>3.3.0</maven-dependency-tree.version>
     <maven-dependency-tree-parser.version>1.0.6</maven-dependency-tree-parser.version>
-    <maven-plugin-annotations.version>3.15.1</maven-plugin-annotations.version>
-    <maven-plugin-testing-tools.version>3.3.0</maven-plugin-testing-tools.version>
-    <maven-project.version>3.0-alpha-2</maven-project.version>
+    <maven-dependency-tree.version>3.3.0</maven-dependency-tree.version>
+    <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
 
     <!-- Plugins -->
-    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
     <maven-plugin-plugin.version>3.15.2</maven-plugin-plugin.version>
 
-    <!-- Sonar, Checkstyle, etc. -->
+    <!-- Build settings -->
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
@@ -52,7 +46,8 @@
       <version>${project.parent.version}</version>
     </dependency>
 
-    <!--Maven tools for plugin construction-->
+    <!--Maven
+    tools for plugin construction-->
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
@@ -63,12 +58,6 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
       <version>${maven-core.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>${maven-project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -105,15 +94,9 @@
       <version>${maven-dependency-tree-parser.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.maven.plugin-testing</groupId>
-      <artifactId>maven-plugin-testing-tools</artifactId>
-      <version>${maven-plugin-testing-tools.version}</version>
-      <scope>compile</scope>
-    </dependency>
-
     <!-- Integration tests -->
-    <!-- see https://khmarbaise.github.io/maven-it-extension/itf-documentation/usersguide/usersguide.html#_grouping_test_cases -->
+    <!-- see
+    https://khmarbaise.github.io/maven-it-extension/itf-documentation/usersguide/usersguide.html#_grouping_test_cases -->
     <dependency>
       <groupId>com.soebes.itf.jupiter.extension</groupId>
       <artifactId>itf-extension-maven</artifactId>
@@ -223,7 +206,8 @@
               <!-- Change to warning to enforce strong style rules -->
               <violationSeverity>error</violationSeverity>
               <failsOnError>true</failsOnError>
-              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <!--  Google style is adopted,
+              https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
               <configLocation>${checkstyle.config.location}</configLocation>
               <consoleOutput>true</consoleOutput>
             </configuration>
@@ -237,7 +221,8 @@
             <phase>verify</phase>
             <configuration>
               <failsOnError>true</failsOnError>
-              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <!--  Google style is adopted,
+              https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
               <configLocation>${checkstyle.config.location}</configLocation>
               <consoleOutput>true</consoleOutput>
             </configuration>

@@ -1,19 +1,22 @@
 plugins {
-    id "net.ltgt.errorprone" version "4.3.0"
-    id 'com.diffplug.spotless' version '7.2.1'
+    id 'com.diffplug.spotless' version '8.10.0'
     id 'groovy'
     id 'java'
     id 'java-gradle-plugin'
     id 'jvm-test-suite'
     id 'maven-publish'
+    id 'net.ltgt.errorprone' version '5.1.0'
 }
 
 java {
+    // JDK 21 toolchain to run Error Prone 2.50+; bytecode/API stay at Java 17 via options.release
     toolchain {
-      languageVersion.set(JavaLanguageVersion.of(17))
+      languageVersion.set(JavaLanguageVersion.of(21))
     }
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
 }
 
 group = 'se.kth.castor'
@@ -26,15 +29,13 @@ repositories {
 
 ext {
     depcleanVersion = '2.2.0-SNAPSHOT'
-    errorProneCoreVersion = '2.41.0'
-    errorProneJavacVersion = '9+181-r4173-1'
-    jspecifyVersion = '1.0.0'
-    junitVersion = '5.13.3'
-    lombokVersion = '1.18.38'
-    nullawayVersion = '0.12.8'
-    slf4jVersion = '2.0.17'
-    spockVersion = '2.3-groovy-3.0'
-    spotbugsAnnotationsVersion = '4.9.4'
+    errorProneCoreVersion = '2.50.0'
+    jspecifyVersion = '1.0.1'
+    lombokVersion = '1.18.46'
+    nullawayVersion = '0.14.0'
+    slf4jVersion = '2.0.18'
+    spockVersion = '2.4-groovy-4.0'
+    spotbugsAnnotationsVersion = '4.10.4'
 }
 
 dependencies {
@@ -42,18 +43,17 @@ dependencies {
     implementation(gradleTestKit())
     implementation("se.kth.castor:depclean-core:${depcleanVersion}")
     implementation("se.kth.castor:depclean-maven-plugin:${depcleanVersion}")
-    implementation("org.slf4j:slf4j-log4j12:${slf4jVersion}")
+    implementation("org.slf4j:slf4j-reload4j:${slf4jVersion}")
     compileOnly("org.jspecify:jspecify:${jspecifyVersion}")
 
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
     implementation("com.github.spotbugs:spotbugs-annotations:${spotbugsAnnotationsVersion}")
-    
+
     testImplementation("org.spockframework:spock-core:${spockVersion}")
 
     errorprone("com.google.errorprone:error_prone_core:${errorProneCoreVersion}")
     compileOnly("com.google.errorprone:error_prone_annotations:${errorProneCoreVersion}")
-    errorproneJavac("com.google.errorprone:javac:${errorProneJavacVersion}")
     annotationProcessor("com.uber.nullaway:nullaway:${nullawayVersion}")
 }
 
@@ -89,4 +89,10 @@ tasks.withType(JavaCompile).configureEach {
         check("NullAway", CheckSeverity.ERROR)
         option("NullAway:AnnotatedPackages", "se.kth.depclean")
     }
+}
+
+// Reproducible archives
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }
