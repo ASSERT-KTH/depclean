@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
     implementation 'com.jcabi:jcabi-manifests:2.2.0'
-    implementation 'commons-io:commons-io:2.14.0'
+    implementation 'commons-io:commons-io:2.22.0'
     implementation 'commons-codec:commons-codec:1.22.1'
 }
 
