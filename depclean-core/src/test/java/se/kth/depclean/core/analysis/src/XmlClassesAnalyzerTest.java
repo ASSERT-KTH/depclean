@@ -113,8 +113,7 @@ class XmlClassesAnalyzerTest {
     write("a/b/c/deep.xml", "<conf><handler>org.example.deep.DeepHandler</handler></conf>");
     write("top.xml", "<conf handler=\"org.example.top.TopHandler\"/>");
 
-    assertThat(collect())
-        .contains("org.example.deep.DeepHandler", "org.example.top.TopHandler");
+    assertThat(collect()).contains("org.example.deep.DeepHandler", "org.example.top.TopHandler");
   }
 
   @Test

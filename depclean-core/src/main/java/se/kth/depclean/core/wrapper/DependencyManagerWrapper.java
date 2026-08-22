@@ -101,8 +101,8 @@ public interface DependencyManagerWrapper {
   Set<Path> getResourcesDirectories();
 
   /**
-   * Directories containing the project's test resource files, e.g. {@code src/test/resources}.
-   * The returned directories may not exist.
+   * Directories containing the project's test resource files, e.g. {@code src/test/resources}. The
+   * returned directories may not exist.
    *
    * @return the test resource directories
    */

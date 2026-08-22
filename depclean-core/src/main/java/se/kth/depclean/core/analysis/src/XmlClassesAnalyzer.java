@@ -29,20 +29,24 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Collects fully qualified class names referenced in XML resource files, such as Spring XML
- * configurations ({@code <bean class="..."/>}), web deployment descriptors ({@code
- * <filter-class>}, {@code <servlet-class>}, {@code <listener-class>}), persistence configurations,
- * logging configurations, etc.
+ * configurations ({@code <bean class="..."/>}), web deployment descriptors ({@code <filter-class>},
+ * {@code <servlet-class>}, {@code <listener-class>}), persistence configurations, logging
+ * configurations, etc.
  *
  * <p>Rather than understanding each XML dialect, this analyzer harvests every attribute value and
- * element text node that looks like a fully qualified class name. False positives are harmless:
- * the analysis only considers harvested names that actually resolve to a class of a known
- * dependency.
- *
- * @param directoryPath a directory with XML resource files
+ * element text node that looks like a fully qualified class name. False positives are harmless: the
+ * analysis only considers harvested names that actually resolve to a class of a known dependency.
  */
-public record XmlClassesAnalyzer(Path directoryPath) {
+public final class XmlClassesAnalyzer {
 
   private static final Logger log = LoggerFactory.getLogger(XmlClassesAnalyzer.class);
+
+  /** A directory with XML resource files. */
+  private final Path directoryPath;
+
+  public XmlClassesAnalyzer(Path directoryPath) {
+    this.directoryPath = directoryPath;
+  }
 
   /**
    * A dotted identifier with at least two segments (e.g. {@code org.example.Foo}). Possessive
@@ -99,8 +103,7 @@ public record XmlClassesAnalyzer(Path directoryPath) {
    * never resolved. DOCTYPE declarations themselves remain allowed since legacy descriptors (e.g.
    * Servlet 2.3 web.xml or old Spring beans files) legitimately declare them.
    */
-  private static SAXParser newSecureSaxParser()
-      throws ParserConfigurationException, SAXException {
+  private static SAXParser newSecureSaxParser() throws ParserConfigurationException, SAXException {
     SAXParserFactory factory = SAXParserFactory.newInstance();
     factory.setNamespaceAware(true);
     factory.setXIncludeAware(false);

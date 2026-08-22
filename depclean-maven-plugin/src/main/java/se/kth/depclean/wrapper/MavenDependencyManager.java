@@ -225,8 +225,8 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   /**
-   * The webapp source directory (containing web.xml), honoring a custom {@code
-   * warSourceDirectory} configured on the maven-war-plugin.
+   * The webapp source directory (containing web.xml), honoring a custom {@code warSourceDirectory}
+   * configured on the maven-war-plugin.
    */
   private Path getWebappDirectory() {
     String warSourceDirectory =
