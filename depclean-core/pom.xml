@@ -27,7 +27,6 @@
     <jgrapht.version>1.5.3</jgrapht.version>
     <plexus-component-annotations.version>2.2.0</plexus-component-annotations.version>
     <plexus-utils.version>4.1.0</plexus-utils.version>
-    <plexus-xml.version>4.2.0</plexus-xml.version>
     <qdox.version>2.2.0</qdox.version>
 
     <!-- Build settings -->
@@ -61,12 +60,6 @@
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <version>${plexus-utils.version}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-xml</artifactId>
-      <version>${plexus-xml.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

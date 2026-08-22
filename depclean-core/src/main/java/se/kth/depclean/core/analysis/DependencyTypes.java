@@ -6,7 +6,7 @@ import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.model.ClassName;
 
 /** POJO containing the types in a dependency. */
-public class DependencyTypes {
+public final class DependencyTypes {
 
   /** An iterable to store the types. */
   private Set<ClassName> allTypes;
@@ -32,10 +32,9 @@ public class DependencyTypes {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof DependencyTypes that)) {
       return false;
     }
-    DependencyTypes that = (DependencyTypes) o;
     return Objects.equals(allTypes, that.allTypes) && Objects.equals(usedTypes, that.usedTypes);
   }
 

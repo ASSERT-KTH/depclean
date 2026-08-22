@@ -1,20 +1,24 @@
 package se.kth.depclean.core.analysis.model;
 
 import java.util.Objects;
-import java.util.TreeSet;
+import java.util.SortedSet;
 import org.jspecify.annotations.Nullable;
 
 /** The result of a dependency analysis. */
-public class DependencyAnalysisInfo {
+public final class DependencyAnalysisInfo {
   private final String status;
   private final String type;
   private final Long size;
-  private final TreeSet<String> allTypes;
-  private final TreeSet<String> usedTypes;
+  private final SortedSet<String> allTypes;
+  private final SortedSet<String> usedTypes;
 
   /** Creates a dependency analysis info. */
   public DependencyAnalysisInfo(
-      String status, String type, Long size, TreeSet<String> allTypes, TreeSet<String> usedTypes) {
+      String status,
+      String type,
+      Long size,
+      SortedSet<String> allTypes,
+      SortedSet<String> usedTypes) {
     this.status = status;
     this.type = type;
     this.size = size;
@@ -34,11 +38,11 @@ public class DependencyAnalysisInfo {
     return size;
   }
 
-  public TreeSet<String> getAllTypes() {
+  public SortedSet<String> getAllTypes() {
     return allTypes;
   }
 
-  public TreeSet<String> getUsedTypes() {
+  public SortedSet<String> getUsedTypes() {
     return usedTypes;
   }
 
@@ -47,10 +51,9 @@ public class DependencyAnalysisInfo {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof DependencyAnalysisInfo that)) {
       return false;
     }
-    DependencyAnalysisInfo that = (DependencyAnalysisInfo) o;
     return Objects.equals(status, that.status)
         && Objects.equals(type, that.type)
         && Objects.equals(size, that.size)
