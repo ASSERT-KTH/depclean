@@ -29,7 +29,7 @@ allprojects {
     }
 
     dependencies {
-        implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.2'
+        implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.9'
     }
 
     tasks.withType(JavaCompile).configureEach {
