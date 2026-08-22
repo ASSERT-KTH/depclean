@@ -34,7 +34,8 @@
 
     <!-- Build settings -->
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
-    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.coverage.jacoco.xmlReportPaths>
+      target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <!-- Build options -->
@@ -153,12 +154,40 @@
           <includes>
             <include>**/*IT.java</include>
           </includes>
+          <!-- Instrument the Maven processes forked by the ITs with the JaCoCo agent -->
+          <environmentVariables>
+            <MAVEN_OPTS>${itCoverageAgent}</MAVEN_OPTS>
+          </environmentVariables>
         </configuration>
         <executions>
           <execution>
             <goals>
               <goal>integration-test</goal>
               <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Collect coverage from the Maven processes forked by the integration tests -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>prepare-agent-integration</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+            <configuration>
+              <propertyName>itCoverageAgent</propertyName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>report-integration</id>
+            <goals>
+              <goal>report-integration</goal>
             </goals>
           </execution>
         </executions>
