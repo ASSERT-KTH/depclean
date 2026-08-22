@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Model;
@@ -26,6 +28,8 @@ import se.kth.depclean.core.model.Dependency;
 public class MavenDependencyGraph implements DependencyGraph {
 
   private static final Logger log = LoggerFactory.getLogger(MavenDependencyGraph.class);
+
+  private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{([^}]+)}");
 
   private final Set<Dependency> allDependencies;
   private final MavenProject project;
@@ -197,15 +201,19 @@ public class MavenDependencyGraph implements DependencyGraph {
         artifact.getFile());
   }
 
-  private Dependency toDepCleanDependency(org.apache.maven.model.Dependency dependency) {
+  private Optional<Dependency> findDepCleanDependency(
+      org.apache.maven.model.Dependency dependency) {
     for (Dependency artifact : allDependencies) {
       if (matches(artifact, dependency)) {
-        return Optional.of(artifact).get();
+        return Optional.of(artifact);
       }
     }
-    // This should never happen.
-    throw new IllegalStateException(
-        "Could not find dependency: " + dependency.getGroupId() + ":" + dependency.getArtifactId());
+    log.warn(
+        "DepClean could not match the declared dependency {}:{} with any resolved artifact; "
+            + "it will be excluded from the direct dependencies analysis.",
+        dependency.getGroupId(),
+        dependency.getArtifactId());
+    return Optional.empty();
   }
 
   private boolean matches(
@@ -213,11 +221,40 @@ public class MavenDependencyGraph implements DependencyGraph {
     return dependencyCoordinate
             .getGroupId()
             .toLowerCase(Locale.ROOT)
-            .equals(dependency.getGroupId().toLowerCase(Locale.ROOT))
+            .equals(interpolate(dependency.getGroupId()).toLowerCase(Locale.ROOT))
         && dependencyCoordinate
             .getDependencyId()
             .toLowerCase(Locale.ROOT)
-            .equals(dependency.getArtifactId().toLowerCase(Locale.ROOT));
+            .equals(interpolate(dependency.getArtifactId()).toLowerCase(Locale.ROOT));
+  }
+
+  /**
+   * Resolves {@code ${...}} placeholders in raw pom coordinates (e.g. {@code
+   * <groupId>${slf4j.groupId}</groupId>}) since the model is read from the pom file without
+   * interpolation. See https://github.com/ASSERT-KTH/depclean/issues/399.
+   */
+  private String interpolate(String value) {
+    if (value == null || !value.contains("${")) {
+      return value == null ? "" : value;
+    }
+    Matcher matcher = PROPERTY_PATTERN.matcher(value);
+    StringBuilder result = new StringBuilder();
+    while (matcher.find()) {
+      String resolved = resolveProperty(matcher.group(1));
+      matcher.appendReplacement(
+          result, Matcher.quoteReplacement(resolved == null ? matcher.group(0) : resolved));
+    }
+    matcher.appendTail(result);
+    return result.toString();
+  }
+
+  private String resolveProperty(String key) {
+    return switch (key) {
+      case "project.groupId", "pom.groupId" -> project.getGroupId();
+      case "project.artifactId", "pom.artifactId" -> project.getArtifactId();
+      case "project.version", "pom.version" -> project.getVersion();
+      default -> project.getProperties().getProperty(key);
+    };
   }
 
   private ImmutableSet<Dependency> getAllDependencies(MavenProject project) {
@@ -228,7 +265,8 @@ public class MavenDependencyGraph implements DependencyGraph {
 
   private ImmutableSet<Dependency> getDirectDependencies(Model model) {
     return model.getDependencies().stream()
-        .map(this::toDepCleanDependency)
+        .map(this::findDepCleanDependency)
+        .flatMap(Optional::stream)
         .collect(toImmutableSet());
   }
 }

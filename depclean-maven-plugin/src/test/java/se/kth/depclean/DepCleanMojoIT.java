@@ -60,6 +60,25 @@ public class DepCleanMojoIT {
   }
 
   @MavenTest
+  void property_in_dependency_coordinates(MavenExecutionResult result) {
+    log.trace(
+        "Test that DepClean does not crash when dependency coordinates use property placeholders"
+            + " (issue #399)");
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
+            "-------------------------------------------------------",
+            " D E P C L E A N   A N A L Y S I S   R E S U L T S",
+            "-------------------------------------------------------",
+            "USED DIRECT DEPENDENCIES [1]: ",
+            "	commons-io:commons-io:2.11.0:compile (319 KB)",
+            "USED TRANSITIVE DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ");
+  }
+
+  @MavenTest
   void all_dependencies_unused(MavenExecutionResult result) {
     log.trace("Test that DepClean identifies all dependencies as unused");
     assertThat(result)
