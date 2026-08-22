@@ -10,6 +10,11 @@
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true
+    },
+    {
+      "description": "Gradle 9 embeds Groovy 4; keep Spock on the -groovy-4.0 variant",
+      "matchPackageNames": ["org.spockframework:spock-core"],
+      "allowedVersions": "/-groovy-4\\.0$/"
     }
   ],
   "platformAutomerge": true,
