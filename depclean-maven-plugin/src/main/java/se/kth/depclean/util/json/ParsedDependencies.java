@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import lombok.AllArgsConstructor;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /**
@@ -21,13 +20,24 @@ import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
  * This file represent the structure of the dependency tree enriched with metadata of the usage or
  * not of each dependency.
  */
-@AllArgsConstructor
 public class ParsedDependencies {
 
   private final File treeFile;
   private final ProjectDependencyAnalysis analysis;
   private final File classUsageFile;
   private final boolean createCallgraphCsv;
+
+  /** Creates the parsed dependencies. */
+  public ParsedDependencies(
+      File treeFile,
+      ProjectDependencyAnalysis analysis,
+      File classUsageFile,
+      boolean createCallgraphCsv) {
+    this.treeFile = treeFile;
+    this.analysis = analysis;
+    this.classUsageFile = classUsageFile;
+    this.createCallgraphCsv = createCallgraphCsv;
+  }
 
   /**
    * Creates string with the JSON representation of the enriched dependency tree of the Maven

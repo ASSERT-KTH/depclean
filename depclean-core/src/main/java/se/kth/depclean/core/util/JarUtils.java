@@ -26,12 +26,14 @@ import java.util.Enumeration;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Utility class to handle JAR files. */
-@Slf4j
 public final class JarUtils {
+
+  private static final Logger log = LoggerFactory.getLogger(JarUtils.class);
 
   /** Size of the buffer to read/write data. */
   private static final int BUFFER_SIZE = 16384;

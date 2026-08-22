@@ -30,12 +30,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import lombok.extern.slf4j.Slf4j;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Utility to visit classes in a library given either as a jar file or an exploded directory. */
-@Slf4j
 public final class ClassFileVisitorUtils {
+
+  private static final Logger log = LoggerFactory.getLogger(ClassFileVisitorUtils.class);
 
   private static final String[] CLASS_INCLUDES = {"**/*.class"};
   public static final String CLASS = ".class";

@@ -1,6 +1,7 @@
 package se.kth.depclean.wrapper;
 
 import com.google.common.collect.ImmutableSet;
+import fr.dutra.tools.maven.deptree.core.ParseException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,8 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -24,6 +23,7 @@ import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import se.kth.depclean.core.AbstractDebloater;
@@ -38,7 +38,6 @@ import se.kth.depclean.util.MavenInvoker;
 import se.kth.depclean.util.json.ParsedDependencies;
 
 /** Maven's implementation of the dependency manager wrapper. */
-@AllArgsConstructor
 public class MavenDependencyManager implements DependencyManagerWrapper {
 
   private static final String DIRECTORY_TO_COPY_DEPENDENCIES = "dependency";
@@ -48,6 +47,20 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   private final MavenSession session;
   private final DependencyGraphBuilder dependencyGraphBuilder;
   private final Model model;
+
+  /** Creates the manager with an already-built model. */
+  public MavenDependencyManager(
+      Log logger,
+      MavenProject project,
+      MavenSession session,
+      DependencyGraphBuilder dependencyGraphBuilder,
+      Model model) {
+    this.logger = logger;
+    this.project = project;
+    this.session = session;
+    this.dependencyGraphBuilder = dependencyGraphBuilder;
+    this.model = model;
+  }
 
   /**
    * Creates the manager.
@@ -100,13 +113,16 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  @SneakyThrows
   public DependencyGraph dependencyGraph() {
     ProjectBuildingRequest buildingRequest =
         new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
     buildingRequest.setProject(project);
-    DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
-    return new MavenDependencyGraph(project, model, rootNode);
+    try {
+      DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
+      return new MavenDependencyGraph(project, model, rootNode);
+    } catch (DependencyGraphBuilderException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -216,14 +232,17 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
         List.of("mvn", "dependency:tree", "-DoutputFile=" + treeFile, "-Dverbose=true"), null);
   }
 
-  @SneakyThrows
   @Override
   public String getTreeAsJson(
       File treeFile,
       ProjectDependencyAnalysis analysis,
       File classUsageFile,
       boolean createCallGraphCsv) {
-    return new ParsedDependencies(treeFile, analysis, classUsageFile, createCallGraphCsv)
-        .parseTreeToJson();
+    try {
+      return new ParsedDependencies(treeFile, analysis, classUsageFile, createCallGraphCsv)
+          .parseTreeToJson();
+    } catch (ParseException | IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

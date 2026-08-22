@@ -1,1 +1,28 @@
-*.java diff=java
+# Normalize line endings: LF in the repository, native on checkout
+* text=auto
+
+# Source and config files
+*.java text diff=java
+*.groovy text
+*.gradle text
+*.xml text
+*.yml text
+*.yaml text
+*.json text
+*.md text diff=markdown
+*.properties text
+*.cff text
+
+# Scripts: shell always LF, Windows scripts always CRLF
+*.sh text eol=lf
+mvnw text eol=lf
+gradlew text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files
+*.jar binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.svg binary

@@ -10,18 +10,18 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 
 /** Identifies a dependency to analyse. */
-@Slf4j
-@Getter
 public class Dependency {
+
+  private static final Logger log = LoggerFactory.getLogger(Dependency.class);
 
   @NonNull private final String groupId;
   @NonNull private final String dependencyId;
@@ -80,6 +80,41 @@ public class Dependency {
         dependency.getVersion(),
         dependency.getScope(),
         dependency.getFile());
+  }
+
+  @NonNull
+  public String getGroupId() {
+    return groupId;
+  }
+
+  @NonNull
+  public String getDependencyId() {
+    return dependencyId;
+  }
+
+  @NonNull
+  public String getVersion() {
+    return version;
+  }
+
+  @Nullable
+  public String getScope() {
+    return scope;
+  }
+
+  @Nullable
+  public File getFile() {
+    return file;
+  }
+
+  @NonNull
+  public Long getSize() {
+    return size;
+  }
+
+  @NonNull
+  public Iterable<ClassName> getRelatedClasses() {
+    return relatedClasses;
   }
 
   @Override

@@ -1,12 +1,10 @@
 package se.kth.depclean.core.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import java.util.Objects;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /** Represents a class to be analysed. */
-@Getter
-@EqualsAndHashCode
 public class ClassName implements Comparable<ClassName> {
   private final String value;
 
@@ -21,6 +19,27 @@ public class ClassName implements Comparable<ClassName> {
       className = className.substring(0, className.length() - ".class".length());
     }
     this.value = className;
+  }
+
+  public String getValue() {
+    return value;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ClassName className = (ClassName) o;
+    return Objects.equals(value, className.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(value);
   }
 
   @Override

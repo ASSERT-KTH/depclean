@@ -32,12 +32,14 @@ import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Utility class to execute Maven tasks from the command line. */
-@Slf4j
 public final class MavenInvoker {
+
+  private static final Logger log = LoggerFactory.getLogger(MavenInvoker.class);
 
   /** Number of lines of each stream that are quoted in the exception of a failed command. */
   private static final int MAX_REPORTED_LINES = 200;

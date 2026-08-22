@@ -17,12 +17,12 @@ jobs:
       packages: write
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # Needed for tags
 
       - name: Install Java and Maven
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: "temurin"
           java-version: 21
@@ -52,19 +52,11 @@ jobs:
 
       - name: Create Release on GitHub
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: ${{ github.event.inputs.newVersion }}
-          release_name: Release v${{ github.event.inputs.newVersion }}
-          body: |
-            Release version ${{ github.event.inputs.newVersion }}
-
-            Changes:
-            - Added Java 21 support
-            - Updated dependencies
-            - Improved bytecode analysis
+          name: Release v${{ github.event.inputs.newVersion }}
+          generate_release_notes: true
           draft: true
           prerelease: false
 

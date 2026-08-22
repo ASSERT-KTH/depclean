@@ -8,10 +8,11 @@ import com.soebes.itf.jupiter.maven.MavenExecutionResult;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.util.OsUtils;
 
 /**
@@ -25,8 +26,9 @@ import se.kth.depclean.util.OsUtils;
  *     https://khmarbaise.github.io/maven-it-extension/itf-documentation/background/background.html#_assertions_in_maven_tests</a>
  */
 @MavenJupiterExtension
-@Slf4j
 public class DepCleanMojoIT {
+
+  private static final Logger log = LoggerFactory.getLogger(DepCleanMojoIT.class);
 
   @MavenTest
   void empty_project(MavenExecutionResult result) {
@@ -73,17 +75,17 @@ public class DepCleanMojoIT {
             "USED INHERITED DIRECT DEPENDENCIES [0]: ",
             "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [3]: ",
-            "	com.google.guava:guava:31.0.1-jre:compile (2 MB)",
+            "	com.google.guava:guava:33.4.8-jre:compile (2 MB)",
             "	com.fasterxml.jackson.core:jackson-databind:2.12.2:compile (1 MB)",
             "	commons-io:commons-io:2.11.0:compile (319 KB)",
-            "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [8]: ",
+            "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [7]: ",
             "	com.fasterxml.jackson.core:jackson-core:2.12.2:compile (356 KB)",
-            "	org.checkerframework:checker-qual:3.12.0:compile (203 KB)",
             "	com.fasterxml.jackson.core:jackson-annotations:2.12.2:compile (73 KB)",
-            "	com.google.code.findbugs:jsr305:3.0.2:compile (19 KB)",
-            "	com.google.errorprone:error_prone_annotations:2.7.1:compile (14 KB)",
-            "	com.google.j2objc:j2objc-annotations:1.3:compile (8 KB)",
-            "	com.google.guava:failureaccess:1.0.1:compile (4 KB)",
+            "	com.google.errorprone:error_prone_annotations:2.36.0:compile (18 KB)",
+            "	com.google.j2objc:j2objc-annotations:3.0.0:compile (12 KB)",
+            "	com.google.guava:failureaccess:1.0.3:compile (10 KB)",
+            "	org.jspecify:jspecify:1.0.0:compile (3 KB)",
+            "	com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava:compile (2 KB)",
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
   }
@@ -100,7 +102,7 @@ public class DepCleanMojoIT {
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [5]: ",
-            "	org.projectlombok:lombok:1.18.24:compile (1 MB)",
+            "	org.projectlombok:lombok:1.18.46:compile (1 MB)",
             "	org.apache.commons:commons-lang3:3.12.0:compile (573 KB)",
             "	commons-codec:commons-codec:1.15:compile (345 KB)",
             "	commons-io:commons-io:2.11.0:compile (319 KB)",

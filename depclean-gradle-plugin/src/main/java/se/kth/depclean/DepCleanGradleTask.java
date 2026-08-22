@@ -5,8 +5,11 @@ import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 /** Task that configures out the bloated dependencies. */
+@DisableCachingByDefault(
+    because = "Analysis inspects the live dependency graph and reports to the console")
 public abstract class DepCleanGradleTask extends DefaultTask {
 
   /** The project instance injected during configuration to avoid Task.project deprecation. */
