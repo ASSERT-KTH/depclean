@@ -196,13 +196,20 @@ public class DepCleanMojoIT {
           new File("src/test/resources/DepCleanMojoResources/depclean-results.json");
       String expectedJsonContent =
           FileUtils.readFileToString(expectedJsonFile, StandardCharsets.UTF_8);
-      assertThat(result)
-          .isSuccessful()
-          .project()
-          .hasTarget()
-          .withFile("depclean-results.json")
-          .hasContent(expectedJsonContent);
+      File actualJsonFile =
+          new File(
+              "target/maven-it/se/kth/depclean/DepCleanMojoIT/json_should_be_correct"
+                  + "/project/target/depclean-results.json");
+      assertThat(result).isSuccessful();
+      String actualJsonContent =
+          FileUtils.readFileToString(actualJsonFile, StandardCharsets.UTF_8);
+      // Jar sizes vary with the JDK that built them, so compare with sizes masked
+      Assertions.assertEquals(maskSizes(expectedJsonContent), maskSizes(actualJsonContent));
     }
+  }
+
+  private static String maskSizes(String json) {
+    return json.replaceAll("\"size\": \\d+", "\"size\": 0");
   }
 
   @MavenTest
