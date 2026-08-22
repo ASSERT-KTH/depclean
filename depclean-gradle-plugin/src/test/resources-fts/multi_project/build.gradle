@@ -1,0 +1,38 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        // The plugin itself comes from mavenLocal, but its transitive dependencies are not all
+        // guaranteed to be there: the CI maven build skips the tests, so it never downloads
+        // maven-core's runtime-scoped plain guice jar that this multi-project build resolves.
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'se.kth.castor:depclean-gradle-plugin:2.2.0-SNAPSHOT'
+    }
+}
+
+group = 'org.foo.bar'
+version = '1.0.0-SNAPSHOT'
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'se.kth.castor.depclean-gradle-plugin'
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.2'
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+}

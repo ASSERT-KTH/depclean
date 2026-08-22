@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -226,10 +227,9 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  @SuppressWarnings("NullAway") // directory parameter can be null per MavenInvoker.runCommand API
   public void generateDependencyTree(File treeFile) throws IOException, InterruptedException {
     MavenInvoker.runCommand(
-        "mvn dependency:tree -DoutputFile=" + treeFile + " -Dverbose=true", null);
+        List.of("mvn", "dependency:tree", "-DoutputFile=" + treeFile, "-Dverbose=true"), null);
   }
 
   @Override

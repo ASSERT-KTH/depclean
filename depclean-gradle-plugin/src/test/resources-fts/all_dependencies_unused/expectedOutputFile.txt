@@ -9,10 +9,10 @@ USED DIRECT DEPENDENCIES [0]:
 USED INHERITED DEPENDENCIES [0]: 
 USED TRANSITIVE DEPENDENCIES [0]: 
 POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: 
-	com.fasterxml.jackson.core:jackson-databind:2.12.2:compile (1 MB)
+	com.fasterxml.jackson.core:jackson-databind:2.22.2:compile (1 MB)
 POTENTIALLY UNUSED INHERITED DEPENDENCIES [0]: 
 POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [2]: 
-	com.fasterxml.jackson.core:jackson-core:2.12.2:compile (356 KB)
-	com.fasterxml.jackson.core:jackson-annotations:2.12.2:compile (73 KB)
+	com.fasterxml.jackson.core:jackson-core:2.22.2:compile (580 KB)
+	com.fasterxml.jackson.core:jackson-annotations:2.22:compile (82 KB)
 -------------------------------------------------------
 

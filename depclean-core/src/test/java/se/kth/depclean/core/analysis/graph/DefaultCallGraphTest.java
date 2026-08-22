@@ -3,6 +3,8 @@ package se.kth.depclean.core.analysis.graph;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.jgrapht.graph.AbstractBaseGraph;
+import org.jgrapht.graph.DefaultEdge;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +42,18 @@ class DefaultCallGraphTest {
     usagesExpected.put("F", Set.of("G", "H"));
     usagesExpected.put("I", Set.of("J"));
     Assertions.assertEquals(usagesExpected, usagesPerClass);
+  }
+
+  @Test
+  void clearShouldResetDirectedGraphState() {
+    AbstractBaseGraph<String, DefaultEdge> directedGraph = DefaultCallGraph.getDirectedGraph();
+    Assertions.assertFalse(directedGraph.vertexSet().isEmpty());
+    Assertions.assertFalse(directedGraph.edgeSet().isEmpty());
+
+    DefaultCallGraph.clear();
+
+    Assertions.assertTrue(directedGraph.vertexSet().isEmpty());
+    Assertions.assertTrue(directedGraph.edgeSet().isEmpty());
   }
 
   @AfterEach

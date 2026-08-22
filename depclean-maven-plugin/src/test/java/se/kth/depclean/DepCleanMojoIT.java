@@ -48,7 +48,7 @@ public class DepCleanMojoIT {
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [1]: ",
-            "	commons-io:commons-io:2.20.0:compile (550 KB)",
+            "	commons-io:commons-io:2.22.0:compile (594 KB)",
             "USED TRANSITIVE DEPENDENCIES [0]: ",
             "USED INHERITED DIRECT DEPENDENCIES [0]: ",
             "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
@@ -75,9 +75,28 @@ public class DepCleanMojoIT {
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [1]: ",
-            "	commons-io:commons-io:2.20.0:compile (550 KB)",
+            "	commons-io:commons-io:2.22.0:compile (594 KB)",
             "USED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ");
+  }
+
+  @MavenTest
+  void reactor_state_does_not_leak(MavenExecutionResult result) {
+    log.trace(
+        "Test that the analysis of one module of a reactor build does not leak into the analysis"
+            + " of the next one");
+    // The first module uses commons-io, the second one only declares it. Without resetting the
+    // shared call graph between the analyses, the classes used by the first module are still
+    // reachable when the second module is analyzed, so commons-io would be wrongly reported as
+    // used there, and the first two lines asserted below would not be printed at all.
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
+            "USED DIRECT DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: ",
+            "\tcommons-io:commons-io:2.20.0:compile (550 KB)");
   }
 
   @MavenTest
@@ -96,16 +115,16 @@ public class DepCleanMojoIT {
             "USED INHERITED DIRECT DEPENDENCIES [0]: ",
             "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [3]: ",
-            "	com.google.guava:guava:33.4.8-jre:compile (2 MB)",
-            "	com.fasterxml.jackson.core:jackson-databind:2.18.9:compile (1 MB)",
-            "	commons-io:commons-io:2.20.0:compile (550 KB)",
+            "	com.google.guava:guava:33.7.1-jre:compile (2 MB)",
+            "	com.fasterxml.jackson.core:jackson-databind:2.22.2:compile (1 MB)",
+            "	commons-io:commons-io:2.22.0:compile (594 KB)",
             "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [7]: ",
-            "	com.fasterxml.jackson.core:jackson-core:2.18.9:compile (574 KB)",
-            "	com.fasterxml.jackson.core:jackson-annotations:2.18.9:compile (76 KB)",
-            "	com.google.errorprone:error_prone_annotations:2.36.0:compile (18 KB)",
-            "	com.google.j2objc:j2objc-annotations:3.0.0:compile (12 KB)",
+            "	com.fasterxml.jackson.core:jackson-core:2.22.2:compile (580 KB)",
+            "	com.fasterxml.jackson.core:jackson-annotations:2.22:compile (82 KB)",
+            "	com.google.errorprone:error_prone_annotations:2.50.0:compile (19 KB)",
+            "	com.google.j2objc:j2objc-annotations:3.1:compile (16 KB)",
             "	com.google.guava:failureaccess:1.0.3:compile (10 KB)",
-            "	org.jspecify:jspecify:1.0.0:compile (3 KB)",
+            "	org.jspecify:jspecify:1.0.1:compile (2 KB)",
             "	com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava:compile (2 KB)",
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
@@ -124,10 +143,10 @@ public class DepCleanMojoIT {
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [5]: ",
             "	org.projectlombok:lombok:1.18.46:compile (1 MB)",
-            "	org.apache.commons:commons-lang3:3.18.0:compile (686 KB)",
-            "	commons-io:commons-io:2.20.0:compile (550 KB)",
-            "	commons-codec:commons-codec:1.15:compile (345 KB)",
-            "	org.kohsuke.metainf-services:metainf-services:1.8:compile (7 KB)",
+            "	org.apache.commons:commons-lang3:3.20.0:compile (697 KB)",
+            "	commons-io:commons-io:2.22.0:compile (594 KB)",
+            "	commons-codec:commons-codec:1.22.1:compile (412 KB)",
+            "	org.kohsuke.metainf-services:metainf-services:1.11:compile (7 KB)",
             "USED TRANSITIVE DEPENDENCIES [0]: ",
             "USED INHERITED DIRECT DEPENDENCIES [0]: ",
             "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
@@ -150,7 +169,7 @@ public class DepCleanMojoIT {
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [2]: ",
             "	org.apache.commons:commons-compress:1.28.0:compile (1 MB)",
-            "	org.tukaani:xz:1.9:compile (113 KB)",
+            "	org.tukaani:xz:1.12:compile (164 KB)",
             "USED TRANSITIVE DEPENDENCIES [1]: ",
             "	commons-io:commons-io:2.20.0:compile (550 KB)",
             "USED INHERITED DIRECT DEPENDENCIES [0]: ",
@@ -175,15 +194,15 @@ public class DepCleanMojoIT {
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [1]: ",
-            "	org.mapstruct:mapstruct-processor:1.4.2.Final:provided (1 MB)",
+            "	org.mapstruct:mapstruct-processor:1.6.3:provided (2 MB)",
             "USED TRANSITIVE DEPENDENCIES [1]: ",
-            "	com.fasterxml.jackson.core:jackson-core:2.18.9:compile (574 KB)",
+            "	com.fasterxml.jackson.core:jackson-core:2.22.2:compile (580 KB)",
             "USED INHERITED DIRECT DEPENDENCIES [0]: ",
             "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: ",
-            "	com.fasterxml.jackson.core:jackson-databind:2.18.9:compile (1 MB)",
+            "	com.fasterxml.jackson.core:jackson-databind:2.22.2:compile (1 MB)",
             "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [1]: ",
-            "	com.fasterxml.jackson.core:jackson-annotations:2.18.9:compile (76 KB)",
+            "	com.fasterxml.jackson.core:jackson-annotations:2.22:compile (82 KB)",
             "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
   }
@@ -227,10 +246,10 @@ public class DepCleanMojoIT {
             "[INFO] Adding 1 used transitive dependency as direct dependency.",
             "[INFO] Removing 1 unused direct dependency.",
             "[INFO] Excluding 1 unused transitive dependency one-by-one.",
-            "[INFO] Adding com.fasterxml.jackson.core:jackson-core:2.18.9:compile",
-            "[INFO] Adding org.mapstruct:mapstruct-processor:1.4.2.Final:provided",
-            "[INFO] Adding com.fasterxml.jackson.core:jackson-databind:2.18.9:compile",
-            "[INFO] Excluding com.fasterxml.jackson.core:jackson-annotations from com.fasterxml.jackson.core:jackson-databind:2.18.9",
+            "[INFO] Adding com.fasterxml.jackson.core:jackson-core:2.22.2:compile",
+            "[INFO] Adding org.mapstruct:mapstruct-processor:1.6.3:provided",
+            "[INFO] Adding com.fasterxml.jackson.core:jackson-databind:2.22.2:compile",
+            "[INFO] Excluding com.fasterxml.jackson.core:jackson-annotations from com.fasterxml.jackson.core:jackson-databind:2.22.2",
             "[INFO] POM debloated successfully",
             "[INFO] pom-debloated.xml file created in: "
                 + generated_pom_debloated.getAbsolutePath());

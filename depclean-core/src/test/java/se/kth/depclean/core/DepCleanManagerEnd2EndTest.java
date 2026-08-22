@@ -35,7 +35,7 @@ class DepCleanManagerEnd2EndTest {
   private static final Logger logger = Logger.getRootLogger();
 
   @BeforeAll
-  static void setup(){
+  static void setup() {
     logger.addAppender(appender);
   }
 
@@ -127,6 +127,40 @@ class DepCleanManagerEnd2EndTest {
     assertThat(analysis.getUnusedInheritedDirectDependencies()).isNotNull().hasSize(1);
     assertThat(analysis.getUnusedInheritedTransitiveDependencies()).isNotNull().hasSize(1);
     assertThat(analysis.getUnusedTransitiveDependencies()).isNotNull().hasSize(1);
+  }
+
+  @Test
+  @SuppressWarnings("NullAway")
+  void shouldNotLeakStateBetweenConsecutiveExecutions()
+      throws AnalysisFailureException, IOException {
+    // Simulates a Maven reactor build: several modules are analyzed one after the other in the
+    // same JVM, without any manual cleanup in between. The state of the first analysis must not
+    // influence the second one.
+    final ProjectDependencyAnalysis firstAnalysis =
+        new DepCleanManagerBuilder()
+            .withDependencyManager(AllDependenciesUsedDependencyManager.class)
+            .build()
+            .execute();
+
+    assertThat(firstAnalysis).isNotNull();
+    assertThat(firstAnalysis.getUsedDirectDependencies()).isNotNull().hasSize(1);
+
+    final ProjectDependencyAnalysis secondAnalysis =
+        new DepCleanManagerBuilder()
+            .withDependencyManager(NoDependencyUsedDependencyManager.class)
+            .build()
+            .execute();
+
+    // Without resetting the shared call graph, classes referenced by the first analysis are still
+    // reachable, so these dependencies would be wrongly reported as used.
+    assertThat(secondAnalysis).isNotNull();
+    assertThat(secondAnalysis.getUsedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(secondAnalysis.getUsedInheritedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(secondAnalysis.getUsedTransitiveDependencies()).isNotNull().isEmpty();
+    assertThat(secondAnalysis.getUnusedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(secondAnalysis.getUnusedInheritedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(secondAnalysis.getUnusedInheritedTransitiveDependencies()).isNotNull().hasSize(1);
+    assertThat(secondAnalysis.getUnusedTransitiveDependencies()).isNotNull().hasSize(1);
   }
 
   @Test

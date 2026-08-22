@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         mavenLocal()
+        mavenCentral()
     }
     dependencies {
         classpath 'se.kth.castor:depclean-gradle-plugin:2.2.0-SNAPSHOT'
@@ -28,8 +29,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.2'
-    compileOnly 'org.mapstruct:mapstruct-processor:1.4.2.Final'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.2'
+    compileOnly 'org.mapstruct:mapstruct-processor:1.6.3'
 }
 
 tasks.withType(JavaCompile).configureEach {
