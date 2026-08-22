@@ -27,7 +27,7 @@
     <jspecify.version>1.0.0</jspecify.version>
     <maven-core.version>3.9.11</maven-core.version>
     <plexus-component-annotations.version>2.2.0</plexus-component-annotations.version>
-    <plexus-utils.version>4.0.2</plexus-utils.version>
+    <plexus-utils.version>4.0.3</plexus-utils.version>
     <plexus-xml.version>4.1.0</plexus-xml.version>
     <qdox.version>2.2.0</qdox.version>
 
