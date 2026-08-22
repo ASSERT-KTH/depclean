@@ -39,7 +39,8 @@ Importantly, **DepClean does *not* modify your source code or original `pom.xml`
 ### Main Features
 
 * Automatically detects and removes unused dependencies from the `pom.xml`, including those inherited from parent projects.
-* Fully supports Java 21 bytecode analysis, ensuring compatibility with modern Java features.
+* Analyzes bytecode of any Java version, up to the latest release, ensuring compatibility with modern Java features.
+* Runs on Java 8 and above: the plugin ships Java 8 bytecode, so it works on legacy toolchains while still analyzing modern bytecode.
 * Generates a clean and minimal `pom.xml`, free from unused dependencies.
 * Produces detailed, per-dependency usage reports.
 * Offers fine-grained configuration options to tailor the analysis and cleaning process.
@@ -55,6 +56,8 @@ For a visual overview of how DepClean works and what it can do for your project,
 ["A Comprehensive Study of Bloated Dependencies in the Maven Ecosystem"](http://arxiv.org/pdf/2001.07808) ([DOI: 10.1007/s10664-020-09914-8](https://doi.org/10.1007/s10664-020-09914-8))
 
 ## Usage
+
+DepClean requires Maven 3.9+ and runs on any JVM from Java 8 upwards, regardless of the Java version your project targets.
 
 Configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
 
@@ -155,7 +158,7 @@ A prototype Gradle plugin providing a `debloat` task for Gradle-based Java proje
 
 Prerequisites:
 
-- [Java OpenJDK 21](https://openjdk.java.net) or above (the build targets Java 17 bytecode)
+- [Java OpenJDK 21](https://openjdk.java.net) or above to build (the Maven plugin itself targets Java 8 bytecode and runs on Java 8+)
 - No Maven installation needed — the Maven wrapper is included
 
 In a terminal clone the repository and switch to the cloned folder:

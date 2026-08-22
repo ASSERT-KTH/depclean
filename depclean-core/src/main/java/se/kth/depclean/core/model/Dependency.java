@@ -204,9 +204,10 @@ public class Dependency {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof Dependency that)) {
+    if (!(o instanceof Dependency)) {
       return false;
     }
+    Dependency that = (Dependency) o;
     return Objects.equals(groupId, that.groupId)
         && Objects.equals(dependencyId, that.dependencyId)
         && Objects.equals(version, that.version)

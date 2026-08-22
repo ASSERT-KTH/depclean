@@ -268,8 +268,7 @@ public class DepCleanMojoIT {
               "target/maven-it/se/kth/depclean/DepCleanMojoIT/json_should_be_correct"
                   + "/project/target/depclean-results.json");
       assertThat(result).isSuccessful();
-      String actualJsonContent =
-          FileUtils.readFileToString(actualJsonFile, StandardCharsets.UTF_8);
+      String actualJsonContent = FileUtils.readFileToString(actualJsonFile, StandardCharsets.UTF_8);
       // Jar sizes vary with the JDK that built them, so compare with sizes masked
       Assertions.assertEquals(maskSizes(expectedJsonContent), maskSizes(actualJsonContent));
     }

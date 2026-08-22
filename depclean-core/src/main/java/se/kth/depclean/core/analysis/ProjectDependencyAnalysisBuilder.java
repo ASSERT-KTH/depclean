@@ -20,8 +20,7 @@ import se.kth.depclean.core.model.Scope;
 /** Builds the analysis given the declared dependencies and the one actually used. */
 public class ProjectDependencyAnalysisBuilder {
 
-  private static final Logger log =
-      LoggerFactory.getLogger(ProjectDependencyAnalysisBuilder.class);
+  private static final Logger log = LoggerFactory.getLogger(ProjectDependencyAnalysisBuilder.class);
 
   private final ProjectContext context;
   private final ActualUsedClasses actualUsedClasses;

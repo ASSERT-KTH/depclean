@@ -106,8 +106,8 @@ public class DefaultClassVisitor extends ClassVisitor {
     } else {
       addTypeSignature(signature);
     }
-    if (value instanceof Type type) {
-      resultCollector.addType(type);
+    if (value instanceof Type) {
+      resultCollector.addType((Type) value);
     }
     return fieldVisitor;
   }

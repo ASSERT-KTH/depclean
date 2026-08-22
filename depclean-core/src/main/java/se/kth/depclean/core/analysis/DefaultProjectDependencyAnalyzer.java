@@ -33,8 +33,7 @@ import se.kth.depclean.core.model.ProjectContext;
 /** This is principal class that perform the dependency analysis in a Maven project. */
 public class DefaultProjectDependencyAnalyzer {
 
-  private static final Logger log =
-      LoggerFactory.getLogger(DefaultProjectDependencyAnalyzer.class);
+  private static final Logger log = LoggerFactory.getLogger(DefaultProjectDependencyAnalyzer.class);
 
   private final DependencyAnalyzer dependencyAnalyzer = new AsmDependencyAnalyzer();
 

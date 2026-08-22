@@ -17,15 +17,13 @@
 
 package se.kth.depclean.core.analysis.graph;
 
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import org.jgrapht.graph.AbstractBaseGraph;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.traverse.DepthFirstIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +35,7 @@ public class DefaultCallGraph {
 
   private static final Logger log = LoggerFactory.getLogger(DefaultCallGraph.class);
 
-  private static final AbstractBaseGraph<String, DefaultEdge> directedGraph =
-      new DefaultDirectedGraph<>(DefaultEdge.class);
+  private static final Map<String, Set<String>> adjacencyList = new HashMap<>();
   private static final Set<String> projectVertices = new HashSet<>();
   private static final Map<String, Set<String>> usagesPerClass = new HashMap<>();
 
@@ -49,12 +46,10 @@ public class DefaultCallGraph {
    * @param referencedClassMembers The target.
    */
   public static void addEdge(String clazz, Set<String> referencedClassMembers) {
-    directedGraph.addVertex(clazz);
+    Set<String> neighbors = adjacencyList.computeIfAbsent(clazz, k -> new HashSet<>());
     for (String referencedClassMember : referencedClassMembers) {
-      if (!directedGraph.containsVertex(referencedClassMember)) {
-        directedGraph.addVertex(referencedClassMember);
-      }
-      directedGraph.addEdge(clazz, referencedClassMember);
+      adjacencyList.computeIfAbsent(referencedClassMember, k -> new HashSet<>());
+      neighbors.add(referencedClassMember);
       projectVertices.add(clazz);
 
       // Save the pair [class -> referencedClassMember] for further analysis
@@ -86,12 +81,20 @@ public class DefaultCallGraph {
    * @return The set of all visited vertices.
    */
   private static Set<String> traverse(String start) {
-    Set<String> referencedClassMembers = new HashSet<>();
-    Iterator<String> iterator = new DepthFirstIterator<>(directedGraph, start);
-    while (iterator.hasNext()) {
-      referencedClassMembers.add(iterator.next());
+    Set<String> visited = new HashSet<>();
+    Deque<String> stack = new ArrayDeque<>();
+    stack.push(start);
+    while (!stack.isEmpty()) {
+      String current = stack.pop();
+      if (visited.add(current)) {
+        for (String neighbor : adjacencyList.getOrDefault(current, Collections.emptySet())) {
+          if (!visited.contains(neighbor)) {
+            stack.push(neighbor);
+          }
+        }
+      }
     }
-    return referencedClassMembers;
+    return visited;
   }
 
   private static void addReferencedClassMember(String clazz, String referencedClassMember) {
@@ -99,8 +102,12 @@ public class DefaultCallGraph {
     s.add(referencedClassMember);
   }
 
-  public static AbstractBaseGraph<String, DefaultEdge> getDirectedGraph() {
-    return directedGraph;
+  public static boolean containsVertex(String vertex) {
+    return adjacencyList.containsKey(vertex);
+  }
+
+  public static boolean containsEdge(String from, String to) {
+    return adjacencyList.getOrDefault(from, Collections.emptySet()).contains(to);
   }
 
   public static Set<String> getProjectVertices() {
@@ -109,8 +116,7 @@ public class DefaultCallGraph {
 
   /** Clears all shared static state so that consecutive analyses start from a clean graph. */
   public static void clear() {
-    // The vertex set is copied because removeAllVertices cannot iterate the set it is mutating.
-    directedGraph.removeAllVertices(new HashSet<>(directedGraph.vertexSet()));
+    adjacencyList.clear();
     projectVertices.clear();
     usagesPerClass.clear();
   }

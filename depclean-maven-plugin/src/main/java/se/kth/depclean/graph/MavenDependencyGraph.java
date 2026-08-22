@@ -238,7 +238,8 @@ public class MavenDependencyGraph implements DependencyGraph {
       return value == null ? "" : value;
     }
     Matcher matcher = PROPERTY_PATTERN.matcher(value);
-    StringBuilder result = new StringBuilder();
+    // StringBuffer overload: Matcher.appendReplacement(StringBuilder, ...) is Java 9+
+    StringBuffer result = new StringBuffer();
     while (matcher.find()) {
       String resolved = resolveProperty(matcher.group(1));
       matcher.appendReplacement(
@@ -249,12 +250,19 @@ public class MavenDependencyGraph implements DependencyGraph {
   }
 
   private String resolveProperty(String key) {
-    return switch (key) {
-      case "project.groupId", "pom.groupId" -> project.getGroupId();
-      case "project.artifactId", "pom.artifactId" -> project.getArtifactId();
-      case "project.version", "pom.version" -> project.getVersion();
-      default -> project.getProperties().getProperty(key);
-    };
+    switch (key) {
+      case "project.groupId":
+      case "pom.groupId":
+        return project.getGroupId();
+      case "project.artifactId":
+      case "pom.artifactId":
+        return project.getArtifactId();
+      case "project.version":
+      case "pom.version":
+        return project.getVersion();
+      default:
+        return project.getProperties().getProperty(key);
+    }
   }
 
   private ImmutableSet<Dependency> getAllDependencies(MavenProject project) {
@@ -266,7 +274,8 @@ public class MavenDependencyGraph implements DependencyGraph {
   private ImmutableSet<Dependency> getDirectDependencies(Model model) {
     return model.getDependencies().stream()
         .map(this::findDepCleanDependency)
-        .flatMap(Optional::stream)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .collect(toImmutableSet());
   }
 }

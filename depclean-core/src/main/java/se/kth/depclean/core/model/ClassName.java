@@ -30,9 +30,10 @@ public final class ClassName implements Comparable<ClassName> {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ClassName className)) {
+    if (!(o instanceof ClassName)) {
       return false;
     }
+    ClassName className = (ClassName) o;
     return Objects.equals(value, className.value);
   }
 

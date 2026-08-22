@@ -3,8 +3,6 @@ package se.kth.depclean.core.analysis.graphTest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import org.jgrapht.graph.AbstractBaseGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,15 +25,14 @@ class DependencyClassFileVisitorTest {
 
     ResultCollector resultCollector = new ResultCollector();
     FileInputStream fileInputStream = new FileInputStream(classFile);
-    AbstractBaseGraph<String, DefaultEdge> directedGraph = DefaultCallGraph.getDirectedGraph();
 
     DependencyClassFileVisitor visitor = new DependencyClassFileVisitor();
     visitor.visitClass(className, fileInputStream);
 
     // Checking for the expected results.
-    Assertions.assertTrue(directedGraph.containsVertex(className));
+    Assertions.assertTrue(DefaultCallGraph.containsVertex(className));
     for (String referencedClassMember : resultCollector.getDependencies()) {
-      Assertions.assertTrue(directedGraph.containsEdge(className, referencedClassMember));
+      Assertions.assertTrue(DefaultCallGraph.containsEdge(className, referencedClassMember));
     }
 
     // Confirming the successful termination of DependencyClassFileVisitor object.

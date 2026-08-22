@@ -4,7 +4,7 @@ Thanks for your interest in contributing! Bug reports, feature suggestions, docu
 
 ## Prerequisites
 
-- Java (Open)JDK 21 or above — the build targets Java 17 bytecode, but CI builds with JDK 21
+- Java (Open)JDK 21 or above — the Maven plugin's main sources target Java 8 bytecode (tests target Java 17), but building requires a modern JDK; CI builds with JDK 25
 - No Maven or Gradle installation needed — both wrappers (`mvnw`, `gradlew`) are included
 
 ## Building the project
