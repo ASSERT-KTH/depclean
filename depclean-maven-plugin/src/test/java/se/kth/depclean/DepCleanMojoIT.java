@@ -96,7 +96,7 @@ public class DepCleanMojoIT {
         .contains(
             "USED DIRECT DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: ",
-            "\tcommons-io:commons-io:2.20.0:compile (550 KB)");
+            "\tcommons-io:commons-io:2.22.0:compile (594 KB)");
   }
 
   @MavenTest
