@@ -32,9 +32,10 @@ public final class DependencyTypes {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof DependencyTypes that)) {
+    if (!(o instanceof DependencyTypes)) {
       return false;
     }
+    DependencyTypes that = (DependencyTypes) o;
     return Objects.equals(allTypes, that.allTypes) && Objects.equals(usedTypes, that.usedTypes);
   }
 

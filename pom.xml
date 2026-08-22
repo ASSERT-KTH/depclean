@@ -41,6 +41,7 @@
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
     <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
+    <extra-enforcer-rules.version>1.10.0</extra-enforcer-rules.version>
     <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
     <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
     <maven-project-info-reports-plugin.version>3.9.0</maven-project-info-reports-plugin.version>
@@ -53,7 +54,10 @@
     <spotless-maven-plugin.version>3.10.0</spotless-maven-plugin.version>
 
     <!-- Build settings -->
-    <java.version>17</java.version>
+    <!-- Main sources target Java 8 bytecode so the plugin runs on Maven with JDK 8+;
+         tests compile and run on the modern build JDK. -->
+    <java.version>8</java.version>
+    <java.test.version>17</java.test.version>
     <linkXRef>false</linkXRef>
     <project.build.outputTimestamp>2026-08-22T00:00:00Z</project.build.outputTimestamp>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -130,12 +134,26 @@
                 <requireJavaVersion>
                   <version>[17,)</version>
                 </requireJavaVersion>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>1.8</maxJdkVersion>
+                  <ignoredScopes>
+                    <ignoredScope>test</ignoredScope>
+                    <ignoredScope>provided</ignoredScope>
+                  </ignoredScopes>
+                </enforceBytecodeVersion>
                 <banDuplicatePomDependencyVersions></banDuplicatePomDependencyVersions>
                 <reactorModuleConvergence></reactorModuleConvergence>
               </rules>
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>extra-enforcer-rules</artifactId>
+            <version>${extra-enforcer-rules.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <!-- Maven compiler plugin -->
@@ -145,6 +163,7 @@
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
           <release>${java.version}</release>
+          <testRelease>${java.test.version}</testRelease>
           <fork>true</fork>
           <executable>${JAVA_HOME}/bin/javac</executable>
           <compilerArgs>
@@ -159,6 +178,8 @@
             <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
             <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
             <arg>-parameters</arg>
+            <!-- Targeting Java 8 is obsolete on modern JDKs; silence the warning -->
+            <arg>-Xlint:-options</arg>
             <arg>--should-stop=ifError=FLOW</arg>
             <arg>-XDcompilePolicy=simple</arg>
             <!-- Required by Error Prone 2.50+ on JDK 21 -->

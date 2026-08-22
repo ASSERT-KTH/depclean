@@ -75,9 +75,10 @@ public final class ImportsAnalyzer {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ImportsAnalyzer that)) {
+    if (!(o instanceof ImportsAnalyzer)) {
       return false;
     }
+    ImportsAnalyzer that = (ImportsAnalyzer) o;
     return Objects.equals(directoryPath, that.directoryPath);
   }
 

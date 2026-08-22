@@ -323,9 +323,10 @@ public final class ProjectDependencyAnalysis {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ProjectDependencyAnalysis that)) {
+    if (!(o instanceof ProjectDependencyAnalysis)) {
       return false;
     }
+    ProjectDependencyAnalysis that = (ProjectDependencyAnalysis) o;
     return Objects.equals(usedDirectDependencies, that.usedDirectDependencies)
         && Objects.equals(usedTransitiveDependencies, that.usedTransitiveDependencies)
         && Objects.equals(usedInheritedDirectDependencies, that.usedInheritedDirectDependencies)
@@ -333,8 +334,7 @@ public final class ProjectDependencyAnalysis {
             usedInheritedTransitiveDependencies, that.usedInheritedTransitiveDependencies)
         && Objects.equals(unusedDirectDependencies, that.unusedDirectDependencies)
         && Objects.equals(unusedTransitiveDependencies, that.unusedTransitiveDependencies)
-        && Objects.equals(
-            unusedInheritedDirectDependencies, that.unusedInheritedDirectDependencies)
+        && Objects.equals(unusedInheritedDirectDependencies, that.unusedInheritedDirectDependencies)
         && Objects.equals(
             unusedInheritedTransitiveDependencies, that.unusedInheritedTransitiveDependencies)
         && Objects.equals(ignoredDependencies, that.ignoredDependencies)

@@ -24,7 +24,6 @@
     <!-- Dependencies -->
     <asm.version>9.10.1</asm.version>
     <guava.version>33.7.1-jre</guava.version>
-    <jgrapht.version>1.5.3</jgrapht.version>
     <plexus-component-annotations.version>2.2.0</plexus-component-annotations.version>
     <plexus-utils.version>4.1.0</plexus-utils.version>
     <qdox.version>2.2.0</qdox.version>
@@ -67,13 +66,6 @@
       <artifactId>maven-core</artifactId>
       <version>${maven-core.version}</version>
       <scope>compile</scope>
-    </dependency>
-
-    <!-- Graph construction and analysis -->
-    <dependency>
-      <groupId>org.jgrapht</groupId>
-      <artifactId>jgrapht-core</artifactId>
-      <version>${jgrapht.version}</version>
     </dependency>
 
     <!-- Utils -->

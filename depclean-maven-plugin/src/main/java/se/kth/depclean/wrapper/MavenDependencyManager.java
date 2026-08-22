@@ -3,13 +3,16 @@ package se.kth.depclean.wrapper;
 import com.google.common.collect.ImmutableSet;
 import fr.dutra.tools.maven.deptree.core.ParseException;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -127,12 +130,12 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
 
   @Override
   public Set<Path> getOutputDirectories() {
-    return Set.of(Paths.get(project.getBuild().getOutputDirectory()));
+    return Collections.singleton(Paths.get(project.getBuild().getOutputDirectory()));
   }
 
   @Override
   public Set<Path> getTestOutputDirectories() {
-    return Set.of(Paths.get(project.getBuild().getTestOutputDirectory()));
+    return Collections.singleton(Paths.get(project.getBuild().getTestOutputDirectory()));
   }
 
   private Model buildModel(MavenProject project) {
@@ -140,10 +143,10 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
 
     /* Build Maven model to manipulate the pom */
     final Model model;
-    FileReader reader;
+    Reader reader;
     MavenXpp3Reader mavenReader = new MavenXpp3Reader();
     try {
-      reader = new FileReader(pomFile, StandardCharsets.UTF_8);
+      reader = new InputStreamReader(new FileInputStream(pomFile), StandardCharsets.UTF_8);
       model = mavenReader.read(reader);
       model.setPomFile(pomFile);
     } catch (Exception ex) {

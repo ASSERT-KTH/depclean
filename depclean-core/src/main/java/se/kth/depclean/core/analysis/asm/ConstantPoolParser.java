@@ -103,39 +103,49 @@ public class ConstantPoolParser {
     for (int ix = 1, num = buf.getChar(); ix < num; ix++) {
       byte tag = buf.get();
       switch (tag) {
-        case CONSTANT_UTF8 -> {
+        case CONSTANT_UTF8:
           stringConstants.put(ix, decodeString(buf));
           continue;
-        }
-        case CONSTANT_CLASS, CONSTANT_STRING, CONSTANT_METHOD_TYPE ->
-            classes.add((int) buf.getChar());
-        case CONSTANT_FIELDREF,
-            CONSTANT_METHODREF,
-            CONSTANT_INTERFACEMETHODREF,
-            CONSTANT_NAME_AND_TYPE -> {
+        case CONSTANT_CLASS:
+        case CONSTANT_STRING:
+        case CONSTANT_METHOD_TYPE:
+          classes.add((int) buf.getChar());
+          break;
+        case CONSTANT_FIELDREF:
+        case CONSTANT_METHODREF:
+        case CONSTANT_INTERFACEMETHODREF:
+        case CONSTANT_NAME_AND_TYPE:
           buf.getChar();
           buf.getChar();
-        }
-        case CONSTANT_INTEGER -> buf.getInt();
-        case CONSTANT_FLOAT -> buf.getFloat();
-        case CONSTANT_DOUBLE -> {
+          break;
+        case CONSTANT_INTEGER:
+          buf.getInt();
+          break;
+        case CONSTANT_FLOAT:
+          buf.getFloat();
+          break;
+        case CONSTANT_DOUBLE:
           buf.getDouble();
           ix++;
-        }
-        case CONSTANT_LONG -> {
+          break;
+        case CONSTANT_LONG:
           buf.getLong();
           ix++;
-        }
-        case CONSTANT_METHODHANDLE -> {
+          break;
+        case CONSTANT_METHODHANDLE:
           buf.get();
           buf.getChar();
-        }
-        case CONSTANT_INVOKE_DYNAMIC -> {
+          break;
+        case CONSTANT_INVOKE_DYNAMIC:
           buf.getChar();
           buf.getChar();
-        }
-        case CONSTANT_MODULE, CONSTANT_PACKAGE -> buf.getChar();
-        default -> throw new RuntimeException("Unknown constant pool type '" + tag + "'");
+          break;
+        case CONSTANT_MODULE:
+        case CONSTANT_PACKAGE:
+          buf.getChar();
+          break;
+        default:
+          throw new RuntimeException("Unknown constant pool type '" + tag + "'");
       }
     }
     Set<String> result = new HashSet<>();
