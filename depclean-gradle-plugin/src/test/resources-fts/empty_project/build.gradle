@@ -29,9 +29,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.jcabi:jcabi-manifests:1.1'
-    implementation 'commons-io:commons-io:2.8.0'
-    implementation 'commons-codec:commons-codec:1.15'
+    implementation 'com.jcabi:jcabi-manifests:1.2.1'
+    implementation 'commons-io:commons-io:2.14.0'
+    implementation 'commons-codec:commons-codec:1.22.1'
 }
 
 tasks.withType(JavaCompile).configureEach {

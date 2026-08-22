@@ -18,7 +18,7 @@
          integration-test framework filters this pom with the outer build's properties. -->
     <it.commons-io.groupId>commons-io</it.commons-io.groupId>
     <it.commons-io.artifactId>commons-io</it.commons-io.artifactId>
-    <it.commons-io.version>2.20.0</it.commons-io.version>
+    <it.commons-io.version>2.22.0</it.commons-io.version>
   </properties>
 
   <dependencies>
