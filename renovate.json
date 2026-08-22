@@ -17,16 +17,20 @@
       "description": "Gradle 9 embeds Groovy 4; keep Spock on the -groovy-4.0 variant",
       "matchPackageNames": ["org.spockframework:spock-core"],
       "allowedVersions": "/-groovy-4\\.0$/"
+    },
+    {
+      "description": "Security fix PRs get top priority",
+      "matchJsonata": ["isVulnerabilityAlert"],
+      "prPriority": 10
     }
   ],
   "vulnerabilityAlerts": {
     "description": "Security fixes skip the cooldown and get merged immediately",
-    "minimumReleaseAge": null,
-    "prPriority": 10
+    "minimumReleaseAge": null
   },
   "osvVulnerabilityAlerts": true,
   "platformAutomerge": true,
-  "includeForks": true,
+  "forkProcessing": "enabled",
   "dependencyDashboard": true,
   "prConcurrentLimit": 5
 }
