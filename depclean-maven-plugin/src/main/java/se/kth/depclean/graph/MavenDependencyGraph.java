@@ -12,18 +12,20 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.model.Dependency;
 
 /** A dependency graph for maven reactor. */
-@Slf4j
 public class MavenDependencyGraph implements DependencyGraph {
+
+  private static final Logger log = LoggerFactory.getLogger(MavenDependencyGraph.class);
 
   private final Set<Dependency> allDependencies;
   private final MavenProject project;

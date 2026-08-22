@@ -14,13 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
@@ -31,8 +31,10 @@ import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.utils.DependencyUtils;
 
 /** This is principal class that perform the dependency analysis in a Gradle project. */
-@Slf4j
 public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDependencyAnalyzer {
+
+  private static final Logger log =
+      LoggerFactory.getLogger(DefaultGradleProjectDependencyAnalyzer.class);
 
   private final ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
 
@@ -60,69 +62,72 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    *     unusedDeclaredArtifacts.
    * @see <code>ProjectDependencyAnalyzer#analyze(org.apache.invoke.project.MavenProject)</code>
    */
-  @SneakyThrows
   @Override
   public GradleProjectDependencyAnalysis analyze(final Project project) {
-    // Use the filtered resolvable configurations instead of all configurations
-    DependencyUtils utils = new DependencyUtils();
-    Set<Configuration> configurations = utils.getResolvableConfigurations(project);
+    try {
+      // Use the filtered resolvable configurations instead of all configurations
+      DependencyUtils utils = new DependencyUtils();
+      Set<Configuration> configurations = utils.getResolvableConfigurations(project);
 
-    // all resolved dependencies including transitive ones of the project.
-    Set<ResolvedDependency> allDependencies = utils.getAllDependencies(configurations);
+      // all resolved dependencies including transitive ones of the project.
+      Set<ResolvedDependency> allDependencies = utils.getAllDependencies(configurations);
 
-    // all resolved artifacts of this project
-    Set<ResolvedArtifact> allArtifacts = new HashSet<>();
-    for (ResolvedDependency dependency : allDependencies) {
-      allArtifacts.addAll(dependency.getModuleArtifacts());
+      // all resolved artifacts of this project
+      Set<ResolvedArtifact> allArtifacts = new HashSet<>();
+      for (ResolvedDependency dependency : allDependencies) {
+        allArtifacts.addAll(dependency.getModuleArtifacts());
+      }
+
+      // a map of [dependency] -> [classes]
+      artifactClassesMap = buildArtifactClassMap(allArtifacts);
+
+      // direct dependencies of the project
+      Set<ResolvedDependency> declaredDependencies = utils.getDeclaredDependencies(configurations);
+
+      // direct artifacts of the project
+      Set<ResolvedArtifact> declaredArtifacts = utils.getDeclaredArtifacts(declaredDependencies);
+
+      /* ******************** bytecode analysis ********************* */
+
+      // The call graph is kept in static fields, and in a multi-project build the same task
+      // action analyzes every project, so the graph of a previously analyzed project must be
+      // discarded before building the graph of this one.
+      DefaultCallGraph.clear();
+
+      // execute the analysis (note that the order of these operations matters!)
+      buildProjectDependencyClasses(project);
+      Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
+      buildDependenciesDependencyClasses(project);
+
+      /* ******************** usage analysis ********************* */
+
+      // search for the dependencies used by the project
+      Set<ResolvedArtifact> usedArtifacts =
+          collectUsedArtifacts(
+              artifactClassesMap, DefaultCallGraph.referencedClassMembers(projectClasses));
+
+      /*
+       * ******************** results as statically used at the bytecode
+       * ***********************
+       */
+
+      // for the used dependencies, get the ones that are declared
+      Set<ResolvedArtifact> usedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
+      usedDeclaredArtifacts.retainAll(usedArtifacts);
+
+      // for the used dependencies, remove the ones that are declared
+      Set<ResolvedArtifact> usedUndeclaredArtifacts = new LinkedHashSet<>(usedArtifacts);
+      usedUndeclaredArtifacts = removeAll(usedUndeclaredArtifacts, declaredArtifacts);
+
+      // for the declared dependencies, get the ones that are not used
+      Set<ResolvedArtifact> unusedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
+      unusedDeclaredArtifacts = removeAll(unusedDeclaredArtifacts, usedArtifacts);
+
+      return new GradleProjectDependencyAnalysis(
+          usedDeclaredArtifacts, usedUndeclaredArtifacts, unusedDeclaredArtifacts);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-
-    // a map of [dependency] -> [classes]
-    artifactClassesMap = buildArtifactClassMap(allArtifacts);
-
-    // direct dependencies of the project
-    Set<ResolvedDependency> declaredDependencies = utils.getDeclaredDependencies(configurations);
-
-    // direct artifacts of the project
-    Set<ResolvedArtifact> declaredArtifacts = utils.getDeclaredArtifacts(declaredDependencies);
-
-    /* ******************** bytecode analysis ********************* */
-
-    // The call graph is kept in static fields, and in a multi-project build the same task action
-    // analyzes every project, so the graph of a previously analyzed project must be discarded
-    // before building the graph of this one.
-    DefaultCallGraph.clear();
-
-    // execute the analysis (note that the order of these operations matters!)
-    buildProjectDependencyClasses(project);
-    Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
-    buildDependenciesDependencyClasses(project);
-
-    /* ******************** usage analysis ********************* */
-
-    // search for the dependencies used by the project
-    Set<ResolvedArtifact> usedArtifacts =
-        collectUsedArtifacts(
-            artifactClassesMap, DefaultCallGraph.referencedClassMembers(projectClasses));
-
-    /*
-     * ******************** results as statically used at the bytecode
-     * ***********************
-     */
-
-    // for the used dependencies, get the ones that are declared
-    Set<ResolvedArtifact> usedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
-    usedDeclaredArtifacts.retainAll(usedArtifacts);
-
-    // for the used dependencies, remove the ones that are declared
-    Set<ResolvedArtifact> usedUndeclaredArtifacts = new LinkedHashSet<>(usedArtifacts);
-    usedUndeclaredArtifacts = removeAll(usedUndeclaredArtifacts, declaredArtifacts);
-
-    // for the declared dependencies, get the ones that are not used
-    Set<ResolvedArtifact> unusedDeclaredArtifacts = new LinkedHashSet<>(declaredArtifacts);
-    unusedDeclaredArtifacts = removeAll(unusedDeclaredArtifacts, usedArtifacts);
-
-    return new GradleProjectDependencyAnalysis(
-        usedDeclaredArtifacts, usedUndeclaredArtifacts, unusedDeclaredArtifacts);
   }
 
   /**

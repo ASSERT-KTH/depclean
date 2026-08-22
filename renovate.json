@@ -1,19 +1,24 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    "group:allNonMajor"
   ],
+  "semanticCommits": "enabled",
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true
     },
     {
-      "matchDepTypes": ["devDependencies"],
-      "automerge": true
+      "description": "Gradle 9 embeds Groovy 4; keep Spock on the -groovy-4.0 variant",
+      "matchPackageNames": ["org.spockframework:spock-core"],
+      "allowedVersions": "/-groovy-4\\.0$/"
     }
   ],
   "platformAutomerge": true,
   "includeForks": true,
-  "dependencyDashboard": true
+  "dependencyDashboard": true,
+  "prConcurrentLimit": 5
 }

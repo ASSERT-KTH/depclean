@@ -22,11 +22,13 @@ package se.kth.depclean.core.analysis;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** The default class analyzer. */
-@Slf4j
 public class DefaultClassAnalyzer implements ClassAnalyzer {
+
+  private static final Logger log = LoggerFactory.getLogger(DefaultClassAnalyzer.class);
 
   /**
    * Analyze the class members.

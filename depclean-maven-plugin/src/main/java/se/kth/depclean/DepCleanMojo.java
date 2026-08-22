@@ -17,9 +17,8 @@
 
 package se.kth.depclean;
 
+import java.io.IOException;
 import java.util.Set;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -52,7 +51,6 @@ import se.kth.depclean.wrapper.MavenDependencyManager;
     requiresDependencyCollection = ResolutionScope.TEST,
     requiresDependencyResolution = ResolutionScope.TEST,
     threadSafe = true)
-@Slf4j
 public class DepCleanMojo extends AbstractMojo {
 
   /** The Maven project to analyze. */
@@ -147,9 +145,8 @@ public class DepCleanMojo extends AbstractMojo {
   @SuppressWarnings("NullAway") // Injected by Maven
   private DependencyGraphBuilder dependencyGraphBuilder;
 
-  @SneakyThrows
   @Override
-  public final void execute() {
+  public final void execute() throws MojoExecutionException {
     try {
       new DepCleanManager(
               new MavenDependencyManager(getLog(), project, session, dependencyGraphBuilder),
@@ -165,7 +162,7 @@ public class DepCleanMojo extends AbstractMojo {
               createResultJson,
               createCallGraphCsv)
           .execute();
-    } catch (AnalysisFailureException e) {
+    } catch (AnalysisFailureException | IOException e) {
       throw new MojoExecutionException(e.getMessage(), e);
     }
   }

@@ -5,11 +5,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
@@ -48,7 +48,7 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
-  void shouldBeSkipped() throws AnalysisFailureException {
+  void shouldBeSkipped() throws AnalysisFailureException, IOException {
     final DepCleanManager depCleanManager = new DepCleanManagerBuilder().skipDepClean().build();
 
     depCleanManager.execute();
@@ -58,7 +58,7 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
-  void shouldBeSkippedBecauseOfType() throws AnalysisFailureException {
+  void shouldBeSkippedBecauseOfType() throws AnalysisFailureException, IOException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(new FakeDependencyManagerWithMavenPomType())
@@ -71,7 +71,7 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
-  void shouldPassForEmptyProject() throws AnalysisFailureException {
+  void shouldPassForEmptyProject() throws AnalysisFailureException, IOException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(EmptyProjectDependencyManager.class)
@@ -91,7 +91,7 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
-  void shouldReportAllDependencyUsed() throws AnalysisFailureException {
+  void shouldReportAllDependencyUsed() throws AnalysisFailureException, IOException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(AllDependenciesUsedDependencyManager.class)
@@ -111,7 +111,7 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
-  void shouldReportNoDependencyUsed() throws AnalysisFailureException {
+  void shouldReportNoDependencyUsed() throws AnalysisFailureException, IOException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(NoDependencyUsedDependencyManager.class)
@@ -131,7 +131,8 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
-  void shouldNotLeakStateBetweenConsecutiveExecutions() throws AnalysisFailureException {
+  void shouldNotLeakStateBetweenConsecutiveExecutions()
+      throws AnalysisFailureException, IOException {
     // Simulates a Maven reactor build: several modules are analyzed one after the other in the
     // same JVM, without any manual cleanup in between. The state of the first analysis must not
     // influence the second one.
@@ -164,7 +165,8 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
-  void shouldReportOnlyDirectAndInheritedDependenciesUsed() throws AnalysisFailureException {
+  void shouldReportOnlyDirectAndInheritedDependenciesUsed()
+      throws AnalysisFailureException, IOException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(OnlyDirectAndInheritedUsedDependencyManager.class)
@@ -185,7 +187,7 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
-  void shouldReportOnlyDirectDependencyUsed() throws AnalysisFailureException {
+  void shouldReportOnlyDirectDependencyUsed() throws AnalysisFailureException, IOException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(OnlyDirectUsedDependencyManager.class)
@@ -251,7 +253,7 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
-  void shouldIgnoreDependencies() throws AnalysisFailureException {
+  void shouldIgnoreDependencies() throws AnalysisFailureException, IOException {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
             .withDependencyManager(OnlyDirectAndInheritedUsedDependencyManager.class)
@@ -355,10 +357,13 @@ class DepCleanManagerEnd2EndTest {
       return this;
     }
 
-    @SneakyThrows
     public <T extends FakeDependencyManager> DepCleanManagerBuilder withDependencyManager(
         Class<T> clazz) {
-      this.dependencyManager = clazz.getDeclaredConstructor(Logger.class).newInstance(logger);
+      try {
+        this.dependencyManager = clazz.getDeclaredConstructor(Logger.class).newInstance(logger);
+      } catch (ReflectiveOperationException e) {
+        throw new RuntimeException(e);
+      }
       return this;
     }
 

@@ -153,8 +153,6 @@ class DepCleanGradleFT extends Specification {
         FileUtils.forceDelete(new File(projectPath5 + "/unused-subproject/build"))
         FileUtils.forceDelete(new File(projectPath5 + "/.gradle"))
         FileUtils.forceDelete(new File(projectPath5 + "/userHome"))
-        FileUtils.forceDelete(new File(projectPath5 + "/.gradle"))
-        FileUtils.forceDelete(new File(projectPath5 + "/userHome"))
     }
 
     private static BuildResult createRunner(File project, String argument) {

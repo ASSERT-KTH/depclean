@@ -8,9 +8,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
@@ -26,8 +23,6 @@ import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.core.wrapper.LogWrapper;
 
 /** Runs the depclean process, regardless of a specific dependency manager. */
-@AllArgsConstructor
-@Slf4j
 public class DepCleanManager {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
@@ -46,10 +41,37 @@ public class DepCleanManager {
   private final boolean createResultJson;
   private final boolean createCallGraphCsv;
 
+  /** Creates the DepClean manager. */
+  public DepCleanManager(
+      DependencyManagerWrapper dependencyManager,
+      boolean skipDepClean,
+      boolean ignoreTests,
+      Set<String> ignoreScopes,
+      Set<String> ignoreDependencies,
+      boolean failIfUnusedDirect,
+      boolean failIfUnusedTransitive,
+      boolean failIfUnusedInheritedDirect,
+      boolean failIfUnusedInheritedTransitive,
+      boolean createPomDebloated,
+      boolean createResultJson,
+      boolean createCallGraphCsv) {
+    this.dependencyManager = dependencyManager;
+    this.skipDepClean = skipDepClean;
+    this.ignoreTests = ignoreTests;
+    this.ignoreScopes = ignoreScopes;
+    this.ignoreDependencies = ignoreDependencies;
+    this.failIfUnusedDirect = failIfUnusedDirect;
+    this.failIfUnusedTransitive = failIfUnusedTransitive;
+    this.failIfUnusedInheritedDirect = failIfUnusedInheritedDirect;
+    this.failIfUnusedInheritedTransitive = failIfUnusedInheritedTransitive;
+    this.createPomDebloated = createPomDebloated;
+    this.createResultJson = createResultJson;
+    this.createCallGraphCsv = createCallGraphCsv;
+  }
+
   /** Execute the depClean manager. */
-  @SneakyThrows
   @Nullable
-  public ProjectDependencyAnalysis execute() throws AnalysisFailureException {
+  public ProjectDependencyAnalysis execute() throws AnalysisFailureException, IOException {
     resetSharedAnalysisState();
     final long startTime = System.currentTimeMillis();
 
@@ -113,8 +135,7 @@ public class DepCleanManager {
     return analysis;
   }
 
-  @SneakyThrows
-  private void extractClassesFromDependencies() {
+  private void extractClassesFromDependencies() throws IOException {
     File dependencyDirectory =
         dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES).toFile();
     FileUtils.deleteDirectory(dependencyDirectory);
@@ -147,9 +168,12 @@ public class DepCleanManager {
     }
   }
 
-  @SneakyThrows
   private void copyDependencies(File jarFile, File destFolder) {
-    FileUtils.copyFileToDirectory(jarFile, destFolder);
+    try {
+      FileUtils.copyFileToDirectory(jarFile, destFolder);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void createResultJson(ProjectDependencyAnalysis analysis) {

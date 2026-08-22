@@ -20,10 +20,8 @@ package se.kth.depclean.util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import lombok.extern.slf4j.Slf4j;
 
 /** Utility class to handle files and directories. */
-@Slf4j
 public final class FileUtils {
 
   private FileUtils() {}

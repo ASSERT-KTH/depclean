@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
@@ -17,8 +18,10 @@ import se.kth.depclean.core.model.ProjectContext;
 import se.kth.depclean.core.model.Scope;
 
 /** Builds the analysis given the declared dependencies and the one actually used. */
-@Slf4j
 public class ProjectDependencyAnalysisBuilder {
+
+  private static final Logger log =
+      LoggerFactory.getLogger(ProjectDependencyAnalysisBuilder.class);
 
   private final ProjectContext context;
   private final ActualUsedClasses actualUsedClasses;

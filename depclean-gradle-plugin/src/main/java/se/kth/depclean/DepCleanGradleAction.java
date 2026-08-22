@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -64,7 +63,6 @@ public class DepCleanGradleAction implements Action<Project> {
   private Set<String> ignoreConfiguration = new HashSet<>();
   private Set<String> ignoreDependencies = new HashSet<>();
 
-  @SneakyThrows
   @Override
   public void execute(@NonNull Project project) {
 
@@ -336,7 +334,7 @@ public class DepCleanGradleAction implements Action<Project> {
         logger.lifecycle("Adding " + usedDirectArtifacts.size() + " used direct dependencies");
         dependenciesToAdd.addAll(usedDirectArtifacts);
       } catch (Exception e) {
-        throw new GradleException(e.getMessage(), e);
+        throw new GradleException("Failed to add used direct dependencies", e);
       }
 
       /* Add used transitive as direct dependencies */
@@ -349,7 +347,7 @@ public class DepCleanGradleAction implements Action<Project> {
           dependenciesToAdd.addAll(usedTransitiveArtifacts);
         }
       } catch (Exception e) {
-        throw new GradleException(e.getMessage(), e);
+        throw new GradleException("Failed to add used transitive dependencies", e);
       }
 
       /* Exclude unused transitive dependencies */
@@ -387,7 +385,7 @@ public class DepCleanGradleAction implements Action<Project> {
           }
         }
       } catch (Exception e) {
-        throw new GradleException(e.getMessage(), e);
+        throw new GradleException("Failed to exclude unused transitive dependencies", e);
       }
 
       /* Write the debloated-dependencies.gradle file */
@@ -408,7 +406,7 @@ public class DepCleanGradleAction implements Action<Project> {
         GradleWritingUtils.writeGradle(
             debloatedDependencies, dependenciesToAdd, excludedTransitiveArtifactsMap);
       } catch (IOException e) {
-        throw new GradleException(e.getMessage(), e);
+        throw new GradleException("Failed to write debloated-dependencies.gradle", e);
       }
       logger.lifecycle("Dependencies debloated successfully");
       logger.lifecycle(
@@ -653,9 +651,9 @@ public class DepCleanGradleAction implements Action<Project> {
     return switch (configuration) {
       case "runtimeElements", "runtimeClasspath", "apiElements", "compileClasspath" -> "compile";
       case "testRuntimeElements",
-              "testRuntimeClasspath",
-              "testApiElements",
-              "testCompileClasspath" ->
+          "testRuntimeClasspath",
+          "testApiElements",
+          "testCompileClasspath" ->
           "testCompile";
       default -> configuration; // keep original for other cases
     };

@@ -1,17 +1,18 @@
 package se.kth.depclean.core.analysis;
 
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@Slf4j
 class CollectorClassFileVisitorTest {
+
+  private static final Logger log = LoggerFactory.getLogger(CollectorClassFileVisitorTest.class);
 
   private static final File classFile = new File("src/test/resources/analysisResources/test.class");
   private static final String className = "test";

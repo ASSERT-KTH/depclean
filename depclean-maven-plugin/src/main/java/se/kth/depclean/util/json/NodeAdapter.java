@@ -9,19 +9,25 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
-import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.DependencyAnalysisInfo;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /** Custom Gson type adapter to write a JSON file with information of the dependencies. */
-@AllArgsConstructor
 public class NodeAdapter extends TypeAdapter<Node> {
 
   private final ProjectDependencyAnalysis analysis;
   private final File callGraphFile;
   private final boolean createCallGraphCsv;
+
+  /** Creates the adapter. */
+  public NodeAdapter(
+      ProjectDependencyAnalysis analysis, File callGraphFile, boolean createCallGraphCsv) {
+    this.analysis = analysis;
+    this.callGraphFile = callGraphFile;
+    this.createCallGraphCsv = createCallGraphCsv;
+  }
 
   @Override
   public void write(JsonWriter jsonWriter, Node node) throws IOException {

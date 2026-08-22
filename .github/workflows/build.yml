@@ -6,6 +6,11 @@ on:
   pull_request:
     branches:
       - master
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   # For maven project
   build:
@@ -15,97 +20,61 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         java: [21]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     name: Maven Build with Java ${{ matrix.java }} on ${{ matrix.os }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Java ${{ matrix.java }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           java-version: ${{ matrix.java }}
           distribution: "temurin"
+          cache: "maven"
 
-      - name: "Cache Local Maven Repository"
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
-      - name: "CheckStyle"
-        run: mvn -ntp validate --errors
-
-      - name: "Compile and Install"
-        run: mvn -ntp clean install -DskipTests --errors
-
-      - name: "Unit Tests"
-        run: mvn -ntp test --errors --fail-at-end
-
-      - name: "Integration Tests"
-        run: mvn -ntp failsafe:integration-test --errors --fail-at-end
+      - name: "Build and Verify"
+        run: mvn -ntp clean verify --errors
 
         # The following is only executed on Ubuntu on Java 21
-      - name: "JaCoCo Coverage Report"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        run: mvn -ntp jacoco:report
-
       - name: "Codecov"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        uses: codecov/codecov-action@v3
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'ASSERT-KTH/depclean'
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./depclean-maven-plugin/target/site/jacoco/jacoco.xml,./depclean-core/target/site/jacoco/jacoco.xml
           flags: unittests
 
-      - name: "Cache SonarCloud"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
-      - name: "SonarCloud"
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        run: mvn -ntp sonar:sonar -Dsonar.projectKey=castor-software_depclean -Dsonar.organization=castor-software -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.java.source=21 -Dsonar.java.target=21
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # SonarCloud analysis runs via the SonarCloud GitHub app (Automatic Analysis),
+      # so no CI-based sonar:sonar step is needed here.
 
   # --------------------------------------------------------------------------------------------------------------------
   # For Gradle module
   gradle:
     name: Gradle build with Java 21 on ubuntu-latest
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.3.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           java-version: 21
           distribution: "temurin"
+          cache: "maven"
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v3.4.3
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ~/.m2
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          validate-wrappers: true
 
       - name: Build with maven (Building missing/local dependencies)
-        run: mvn clean install -DskipTests -q
+        run: mvn -ntp clean install -DskipTests -q
 
       - name: Build with Gradle
         working-directory: ./depclean-gradle-plugin
-        run: |
-          git update-index --chmod=+x gradlew
-          ./gradlew clean publishToMavenLocal build
+        run: ./gradlew clean publishToMavenLocal build

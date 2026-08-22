@@ -7,7 +7,6 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Set;
-import lombok.AllArgsConstructor;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
@@ -92,7 +91,6 @@ public interface ProjectContextCreator {
     return new Dependency("se.kth.depclean.core.analysis", name, "1.0.0", "test", jarFile);
   }
 
-  @AllArgsConstructor
   class TestDependencyGraph implements DependencyGraph {
 
     private final Dependency projectCoordinates;
@@ -100,6 +98,19 @@ public interface ProjectContextCreator {
     private final Set<Dependency> inheritedDirectDependencies;
     private final Set<Dependency> inheritedTransitiveDependencies;
     private final Set<Dependency> transitiveDependencies;
+
+    public TestDependencyGraph(
+        Dependency projectCoordinates,
+        Set<Dependency> directDependencies,
+        Set<Dependency> inheritedDirectDependencies,
+        Set<Dependency> inheritedTransitiveDependencies,
+        Set<Dependency> transitiveDependencies) {
+      this.projectCoordinates = projectCoordinates;
+      this.directDependencies = directDependencies;
+      this.inheritedDirectDependencies = inheritedDirectDependencies;
+      this.inheritedTransitiveDependencies = inheritedTransitiveDependencies;
+      this.transitiveDependencies = transitiveDependencies;
+    }
 
     @Override
     public Dependency projectCoordinates() {

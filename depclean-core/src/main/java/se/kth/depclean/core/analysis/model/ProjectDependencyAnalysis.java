@@ -26,22 +26,17 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
 
 /** Project dependencies analysis result. */
-@Getter
-@EqualsAndHashCode
-@Slf4j
 public class ProjectDependencyAnalysis {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
@@ -83,6 +78,50 @@ public class ProjectDependencyAnalysis {
     this.ignoredDependencies = ImmutableSet.copyOf(ignoredDependencies);
     this.dependencyClassesMap = dependencyClassesMap;
     this.dependencyGraph = dependencyGraph;
+  }
+
+  public Set<Dependency> getUsedDirectDependencies() {
+    return usedDirectDependencies;
+  }
+
+  public Set<Dependency> getUsedTransitiveDependencies() {
+    return usedTransitiveDependencies;
+  }
+
+  public Set<Dependency> getUsedInheritedDirectDependencies() {
+    return usedInheritedDirectDependencies;
+  }
+
+  public Set<Dependency> getUsedInheritedTransitiveDependencies() {
+    return usedInheritedTransitiveDependencies;
+  }
+
+  public Set<Dependency> getUnusedDirectDependencies() {
+    return unusedDirectDependencies;
+  }
+
+  public Set<Dependency> getUnusedTransitiveDependencies() {
+    return unusedTransitiveDependencies;
+  }
+
+  public Set<Dependency> getUnusedInheritedDirectDependencies() {
+    return unusedInheritedDirectDependencies;
+  }
+
+  public Set<Dependency> getUnusedInheritedTransitiveDependencies() {
+    return unusedInheritedTransitiveDependencies;
+  }
+
+  public Set<Dependency> getIgnoredDependencies() {
+    return ignoredDependencies;
+  }
+
+  public Map<Dependency, DependencyTypes> getDependencyClassesMap() {
+    return dependencyClassesMap;
+  }
+
+  public DependencyGraph getDependencyGraph() {
+    return dependencyGraph;
   }
 
   public boolean hasUsedTransitiveDependencies() {
@@ -276,5 +315,46 @@ public class ProjectDependencyAnalysis {
             .filter(dep -> getUnusedTransitiveDependencies().contains(dep))
             .collect(Collectors.toSet());
     return new DebloatedDependency(dependency, ImmutableSet.copyOf(dependenciesToExclude));
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ProjectDependencyAnalysis that = (ProjectDependencyAnalysis) o;
+    return Objects.equals(usedDirectDependencies, that.usedDirectDependencies)
+        && Objects.equals(usedTransitiveDependencies, that.usedTransitiveDependencies)
+        && Objects.equals(usedInheritedDirectDependencies, that.usedInheritedDirectDependencies)
+        && Objects.equals(
+            usedInheritedTransitiveDependencies, that.usedInheritedTransitiveDependencies)
+        && Objects.equals(unusedDirectDependencies, that.unusedDirectDependencies)
+        && Objects.equals(unusedTransitiveDependencies, that.unusedTransitiveDependencies)
+        && Objects.equals(
+            unusedInheritedDirectDependencies, that.unusedInheritedDirectDependencies)
+        && Objects.equals(
+            unusedInheritedTransitiveDependencies, that.unusedInheritedTransitiveDependencies)
+        && Objects.equals(ignoredDependencies, that.ignoredDependencies)
+        && Objects.equals(dependencyClassesMap, that.dependencyClassesMap)
+        && Objects.equals(dependencyGraph, that.dependencyGraph);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        usedDirectDependencies,
+        usedTransitiveDependencies,
+        usedInheritedDirectDependencies,
+        usedInheritedTransitiveDependencies,
+        unusedDirectDependencies,
+        unusedTransitiveDependencies,
+        unusedInheritedDirectDependencies,
+        unusedInheritedTransitiveDependencies,
+        ignoredDependencies,
+        dependencyClassesMap,
+        dependencyGraph);
   }
 }
