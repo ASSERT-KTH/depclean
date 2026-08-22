@@ -18,18 +18,18 @@ jobs:
     name: Maven Build with Java ${{ matrix.java }} on ${{ matrix.os }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Java ${{ matrix.java }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           java-version: ${{ matrix.java }}
           distribution: "temurin"
 
       - name: "Cache Local Maven Repository"
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -54,7 +54,7 @@ jobs:
 
       - name: "Codecov"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./depclean-maven-plugin/target/site/jacoco/jacoco.xml,./depclean-core/target/site/jacoco/jacoco.xml
@@ -62,7 +62,7 @@ jobs:
 
       - name: "Cache SonarCloud"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'castor-software/depclean'
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -82,16 +82,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.3.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           java-version: 21
           distribution: "temurin"
 
       - name: Cache Gradle packages
-        uses: actions/cache@v3.4.3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ~/.gradle/caches
