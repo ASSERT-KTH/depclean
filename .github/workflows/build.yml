@@ -39,13 +39,21 @@ jobs:
         run: mvn -ntp clean verify --errors
 
         # The following is only executed on Ubuntu on Java 21
-      - name: "Codecov"
+      - name: "Codecov (unit tests)"
         if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'ASSERT-KTH/depclean'
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./depclean-maven-plugin/target/site/jacoco/jacoco.xml,./depclean-maven-plugin/target/site/jacoco-it/jacoco.xml,./depclean-core/target/site/jacoco/jacoco.xml
+          files: ./depclean-maven-plugin/target/site/jacoco/jacoco.xml,./depclean-core/target/site/jacoco/jacoco.xml
           flags: unittests
+
+      - name: "Codecov (integration tests)"
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 21 && github.repository == 'ASSERT-KTH/depclean'
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./depclean-maven-plugin/target/site/jacoco-it/jacoco.xml
+          flags: integration
 
       # SonarCloud analysis runs via the SonarCloud GitHub app (Automatic Analysis),
       # so no CI-based sonar:sonar step is needed here.
