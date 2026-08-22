@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.jcabi:jcabi-manifests:1.1'
+    implementation 'com.jcabi:jcabi-manifests:2.2.0'
     implementation 'commons-io:commons-io:2.8.0'
     implementation 'commons-codec:commons-codec:1.15'
 }
