@@ -6,7 +6,7 @@ Starting DepClean dependency analysis
 -------------------------------------------------------
 -------------------------------------------------------
 USED DIRECT DEPENDENCIES [1]: 
-	commons-io:commons-io:2.20.0:runtime (550 KB)
+	commons-io:commons-io:2.22.0:runtime (594 KB)
 USED INHERITED DEPENDENCIES [0]: 
 USED TRANSITIVE DEPENDENCIES [0]: 
 POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: 

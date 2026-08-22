@@ -30,7 +30,7 @@
             <plugin>
                 <groupId>com.soebes.itf.jupiter.extension</groupId>
                 <artifactId>itf-failure-plugin</artifactId>
-                <version>0.9.0</version>
+                <version>0.13.1</version>
                 <executions>
                     <execution>
                         <id>first_very_simple</id>
@@ -44,7 +44,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.1</version>
             </plugin>
             <plugin>
                 <groupId>se.kth.castor</groupId>
