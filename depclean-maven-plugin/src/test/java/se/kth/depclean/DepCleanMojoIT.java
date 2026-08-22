@@ -75,7 +75,7 @@ public class DepCleanMojoIT {
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [1]: ",
-            "	commons-io:commons-io:2.11.0:compile (319 KB)",
+            "	commons-io:commons-io:2.20.0:compile (550 KB)",
             "USED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ");
   }
