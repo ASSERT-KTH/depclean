@@ -39,7 +39,7 @@ Importantly, **DepClean does *not* modify your source code or original `pom.xml`
 ### Main Features
 
 * Automatically detects and removes unused dependencies from the `pom.xml`, including those inherited from parent projects.
-* Fully supports Java 21 bytecode analysis, ensuring compatibility with modern Java features.
+* Analyzes bytecode of any Java version, up to the latest release, ensuring compatibility with modern Java features.
 * Runs on Java 8 and above: the plugin ships Java 8 bytecode, so it works on legacy toolchains while still analyzing modern bytecode.
 * Generates a clean and minimal `pom.xml`, free from unused dependencies.
 * Produces detailed, per-dependency usage reports.
