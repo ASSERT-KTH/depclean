@@ -12,7 +12,6 @@ import org.apache.commons.io.FileUtils;
 import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
-import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
@@ -72,7 +71,6 @@ public class DepCleanManager {
   /** Execute the depClean manager. */
   @Nullable
   public ProjectDependencyAnalysis execute() throws AnalysisFailureException, IOException {
-    resetSharedAnalysisState();
     final long startTime = System.currentTimeMillis();
 
     if (skipDepClean) {
@@ -278,16 +276,6 @@ public class DepCleanManager {
     long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
     long seconds = (TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
     return String.format("%smin %ss", minutes, seconds);
-  }
-
-  /**
-   * Resets the call graph state shared through the static fields of {@link DefaultCallGraph}. In a
-   * Maven reactor build all modules are analyzed by the same plugin classloader, so the graph built
-   * for a previously analyzed module would otherwise still be present, and its classes would still
-   * be reachable, when the next module is analyzed.
-   */
-  private static void resetSharedAnalysisState() {
-    DefaultCallGraph.clear();
   }
 
   private void printString(final String string) {
