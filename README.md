@@ -190,7 +190,7 @@ If you use DepClean in academic work, please cite the original paper (see also [
 
 ## Contributing
 
-Contributions are welcome! Feel free to open an [issue](https://github.com/ASSERT-KTH/depclean/issues) for bug reports or feature suggestions, or submit a pull request. The [Gradle plugin](depclean-gradle-plugin/README.md) in particular is actively looking for contributors.
+Contributions are welcome! See the [contributing guidelines](CONTRIBUTING.md) for how to build the project and submit a pull request. Feel free to open an [issue](https://github.com/ASSERT-KTH/depclean/issues) for bug reports or feature suggestions — for security vulnerabilities, please follow the [security policy](SECURITY.md) instead. The [Gradle plugin](depclean-gradle-plugin/README.md) in particular is actively looking for contributors.
 
 ## License
 
