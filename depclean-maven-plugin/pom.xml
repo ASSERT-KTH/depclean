@@ -34,7 +34,7 @@
     <!-- Plugins -->
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
-    <maven-plugin-plugin.version>3.15.1</maven-plugin-plugin.version>
+    <maven-plugin-plugin.version>3.15.2</maven-plugin-plugin.version>
 
     <!-- Sonar, Checkstyle, etc. -->
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
