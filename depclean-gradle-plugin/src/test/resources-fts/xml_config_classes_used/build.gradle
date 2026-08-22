@@ -29,7 +29,7 @@ repositories {
 
 dependencies {
     // Only referenced from the Spring XML configuration in src/main/resources (issue #78)
-    implementation 'commons-io:commons-io:2.20.0'
+    implementation 'commons-io:commons-io:2.22.0'
 }
 
 tasks.withType(JavaCompile).configureEach {
