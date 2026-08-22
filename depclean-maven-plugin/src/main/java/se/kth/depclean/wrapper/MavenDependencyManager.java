@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -268,7 +267,8 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   @Override
   public void generateDependencyTree(File treeFile) throws IOException, InterruptedException {
     MavenInvoker.runCommand(
-        List.of("mvn", "dependency:tree", "-DoutputFile=" + treeFile, "-Dverbose=true"), null);
+        Arrays.asList("mvn", "dependency:tree", "-DoutputFile=" + treeFile, "-Dverbose=true"),
+        null);
   }
 
   @Override

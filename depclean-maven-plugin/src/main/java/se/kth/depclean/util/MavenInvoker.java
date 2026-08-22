@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -68,9 +69,9 @@ public final class MavenInvoker {
    * @throws InterruptedException If the current thread is interrupted while waiting for the
    *     command.
    * @deprecated use {@link #runCommand(List, File)} instead, which supports arguments containing
-   *     spaces.
+   *     spaces. Deprecated since 2.2.0.
    */
-  @Deprecated(since = "2.2.0")
+  @Deprecated
   public static String[] runCommand(String cmd, @Nullable File directory)
       throws IOException, InterruptedException {
     // The same tokenization Runtime.exec(String) used to apply to this command.
@@ -181,7 +182,7 @@ public final class MavenInvoker {
     }
     // On Windows `mvn` is a batch script, which cannot be started by CreateProcess directly, so it
     // has to be launched through the command interpreter, as it was before as well.
-    List<String> windowsCommand = new ArrayList<>(List.of("cmd", "/c"));
+    List<String> windowsCommand = new ArrayList<>(Arrays.asList("cmd", "/c"));
     windowsCommand.addAll(command);
     return windowsCommand;
   }
@@ -251,25 +252,20 @@ public final class MavenInvoker {
       if (!process.isAlive()) {
         return;
       }
-      // Snapshot the descendants now: once the process is destroyed they can no longer be listed
-      // through it, but the handles keep working.
-      List<ProcessHandle> tree = new ArrayList<>(process.descendants().toList());
-      tree.add(process.toHandle());
-
-      tree.forEach(ProcessHandle::destroy);
-      if (awaitProcesses(tree, deadlineNanos)) {
+      // Java 8 has no ProcessHandle, so only the process itself can be terminated: its
+      // descendants cannot be enumerated. Child processes are expected to end with their parent.
+      process.destroy();
+      if (awaitProcess(process, deadlineNanos)) {
         return;
       }
-      // The graceful termination did not work in time. Kill the whole tree, and always allow a
+      // The graceful termination did not work in time. Kill the process, and always allow a
       // short extra window for the operating system to reap it, even if the budget is spent.
-      tree.forEach(ProcessHandle::destroyForcibly);
+      process.destroyForcibly();
       long killDeadlineNanos =
           Math.max(deadlineNanos, System.nanoTime())
               + TimeUnit.MILLISECONDS.toNanos(FORCIBLE_KILL_GRACE_MILLIS);
-      if (!awaitProcesses(tree, killDeadlineNanos)) {
-        log.warn(
-            "The process of the command, or one of its child processes, did not end and had to "
-                + "be abandoned");
+      if (!awaitProcess(process, killDeadlineNanos)) {
+        log.warn("The process of the command did not end and had to be abandoned");
       }
     }
 
@@ -285,26 +281,15 @@ public final class MavenInvoker {
       awaitThread(reader);
     }
 
-    /** Waits until all the process handles have ended or the deadline is reached. */
-    private boolean awaitProcesses(List<ProcessHandle> handles, long untilNanos) {
-      boolean allDead = true;
-      for (ProcessHandle handle : handles) {
-        allDead &= awaitProcess(handle, untilNanos);
-      }
-      return allDead;
-    }
-
     /** Waits for the process, and reports whether it ended. */
-    private boolean awaitProcess(ProcessHandle handle, long untilNanos) {
-      while (handle.isAlive()) {
+    private boolean awaitProcess(Process process, long untilNanos) {
+      while (process.isAlive()) {
         long remainingMillis = TimeUnit.NANOSECONDS.toMillis(untilNanos - System.nanoTime());
         if (remainingMillis <= 0) {
-          return !handle.isAlive();
+          return !process.isAlive();
         }
         try {
-          // ProcessHandle has no timed wait, so poll it until the deadline, briefly enough to not
-          // overshoot it.
-          Thread.sleep(Math.min(remainingMillis, 50));
+          process.waitFor(remainingMillis, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
           interrupted = true;
         }
