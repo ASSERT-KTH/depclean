@@ -28,6 +28,7 @@ import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.asm.AsmDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.model.ClassName;
+import se.kth.depclean.utils.ClassesDirectoryFinder;
 import se.kth.depclean.utils.DependencyUtils;
 
 /** This is principal class that perform the dependency analysis in a Gradle project. */
@@ -190,24 +191,9 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
    * @throws IOException In case of IO issues.
    */
   private void buildProjectDependencyClasses(final Project project) throws IOException {
-    Path classesDir = Paths.get(project.getProjectDir().getAbsolutePath(), "build", "classes");
-
-    // Analyze src classes in the project
-    File outputJavaDir = classesDir.resolve("java").resolve("main").toFile();
-    File outputGroovyDir = classesDir.resolve("groovy").resolve("main").toFile();
-    File outputKotlinDir = classesDir.resolve("kotlin").resolve("main").toFile();
-    checkThenCollectDependencyClasses(outputJavaDir);
-    checkThenCollectDependencyClasses(outputGroovyDir);
-    checkThenCollectDependencyClasses(outputKotlinDir);
-
-    // Analyze test classes in the project
-    if (!isIgnoredTest) {
-      File testOutputJavaDir = classesDir.resolve("java").resolve("test").toFile();
-      File testOutputGroovyDir = classesDir.resolve("groovy").resolve("test").toFile();
-      File testOutputKotlinDir = classesDir.resolve("kotlin").resolve("test").toFile();
-      checkThenCollectDependencyClasses(testOutputJavaDir);
-      checkThenCollectDependencyClasses(testOutputGroovyDir);
-      checkThenCollectDependencyClasses(testOutputKotlinDir);
+    // Analyze classes from all source sets and layouts (JVM, custom, Android variants)
+    for (File classesDir : ClassesDirectoryFinder.findClassesDirectories(project, isIgnoredTest)) {
+      checkThenCollectDependencyClasses(classesDir);
     }
   }
 
