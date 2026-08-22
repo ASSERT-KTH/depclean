@@ -140,7 +140,7 @@ public class DepCleanMojoIT {
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [1]: ",
-            "	org.springframework:spring-web:6.2.19:compile (1 MB)",
+            "	org.springframework:spring-web:7.0.9:compile (2 MB)",
             "USED TRANSITIVE DEPENDENCIES [0]: ",
             "USED INHERITED DIRECT DEPENDENCIES [0]: ",
             "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
