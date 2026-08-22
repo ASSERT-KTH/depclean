@@ -8,18 +8,36 @@ on:
       newVersion:
         description: "New version"
         required: true
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
       contents: write
-      packages: write
     steps:
       - name: Check out Git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # Needed for tags
+
+      - name: Validate release inputs
+        env:
+          NEW_VERSION: ${{ github.event.inputs.newVersion }}
+        run: |
+          if ! echo "$NEW_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::newVersion '$NEW_VERSION' is not a valid version (expected X.Y.Z)"
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/$NEW_VERSION" >/dev/null; then
+            echo "::error::Tag '$NEW_VERSION' already exists"
+            exit 1
+          fi
 
       - name: Install Java and Maven
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
@@ -33,25 +51,33 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - name: Release Maven package
+      - name: Verify project version matches release version
+        env:
+          NEW_VERSION: ${{ github.event.inputs.newVersion }}
         run: |
-          mvn --batch-mode clean deploy -P deploy -Djacoco.skip=true -DskipTests
+          POM_VERSION=$(./mvnw -ntp -q help:evaluate -Dexpression=project.version -DforceStdout)
+          if [ "$POM_VERSION" != "$NEW_VERSION" ]; then
+            echo "::error::pom.xml version '$POM_VERSION' does not match newVersion '$NEW_VERSION'. Bump the project version before releasing."
+            exit 1
+          fi
+
+      - name: Release Maven package
+        run: ./mvnw -ntp --batch-mode clean deploy -P deploy -Djacoco.skip=true -DskipTests
         env:
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Create and push tag
-        run: |
-          git config --global user.email "cesarsotovalero@gmail.com"
-          git config --global user.name "$GITHUB_ACTOR"
-          git tag -a $TAG -m "Release v$TAG"
-          git push origin $TAG
         env:
           TAG: ${{ github.event.inputs.newVersion }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release v$TAG"
+          git push origin "$TAG"
 
       - name: Create Release on GitHub
-        id: create_release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: ${{ github.event.inputs.newVersion }}
@@ -61,10 +87,15 @@ jobs:
           prerelease: false
 
       - name: Update README
+        env:
+          PREVIOUS_VERSION: ${{ github.event.inputs.previousVersion }}
+          NEW_VERSION: ${{ github.event.inputs.newVersion }}
         run: |
-          sed -i "s/version>${{ github.event.inputs.previousVersion }}<\/version/version>${{ github.event.inputs.newVersion }}<\/version/g" README.md
-          git config --global user.email "cesarsotovalero@gmail.com"
-          git config --global user.name "$GITHUB_ACTOR"
+          sed -i "s/version>$PREVIOUS_VERSION<\/version/version>$NEW_VERSION<\/version/g" README.md
           git add README.md
-          git commit -m "docs: update version to ${{ github.event.inputs.newVersion }} in README"
-          git push origin HEAD:master
+          if git diff --cached --quiet; then
+            echo "README already up to date, nothing to commit"
+          else
+            git commit -m "docs: update version to $NEW_VERSION in README"
+            git push origin HEAD:master
+          fi
