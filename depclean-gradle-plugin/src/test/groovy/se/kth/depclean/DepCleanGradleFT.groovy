@@ -140,7 +140,7 @@ class DepCleanGradleFT extends Specification {
         String output = debloatResult.getOutput()
         String subprojectReport = output.substring(output.indexOf("Analyzing subproject:"))
         assert subprojectReport.contains("POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]")
-        assert subprojectReport.contains("com.fasterxml.jackson.core:jackson-databind:2.12.2")
+        assert subprojectReport.contains("com.fasterxml.jackson.core:jackson-databind:2.18.9")
 
         cleanup:
         FileUtils.forceDelete(new File(projectPath5 + "/build"))
