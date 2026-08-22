@@ -20,21 +20,21 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.18.9</version>
+      <version>2.22.2</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>33.4.8-jre</version>
+      <version>33.7.1-jre</version>
     </dependency>
 
     <!-- Commons IO should be always considered as used because the "test" scope is ignored -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.20.0</version>
+      <version>2.22.0</version>
       <scope>test</scope>
     </dependency>
 
@@ -44,7 +44,7 @@
       <plugin>
         <groupId>com.soebes.itf.jupiter.extension</groupId>
         <artifactId>itf-failure-plugin</artifactId>
-        <version>0.9.0</version>
+        <version>0.13.1</version>
         <executions>
           <execution>
             <id>first_very_simple</id>
