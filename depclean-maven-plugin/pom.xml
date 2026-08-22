@@ -261,4 +261,21 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!-- When JaCoCo is skipped, prepare-agent-integration never sets itCoverageAgent;
+         define it as empty here so failsafe does not pass the literal expression as MAVEN_OPTS -->
+    <profile>
+      <id>jacoco-skipped</id>
+      <activation>
+        <property>
+          <name>jacoco.skip</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <itCoverageAgent />
+      </properties>
+    </profile>
+  </profiles>
 </project>
