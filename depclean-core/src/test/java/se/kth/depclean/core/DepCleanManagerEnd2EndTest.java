@@ -26,6 +26,7 @@ import se.kth.depclean.core.fake.depmanager.FakeDependencyManager;
 import se.kth.depclean.core.fake.depmanager.NoDependencyUsedDependencyManager;
 import se.kth.depclean.core.fake.depmanager.OnlyDirectAndInheritedUsedDependencyManager;
 import se.kth.depclean.core.fake.depmanager.OnlyDirectUsedDependencyManager;
+import se.kth.depclean.core.fake.depmanager.XmlResourcesDependencyManager;
 import se.kth.depclean.core.model.Dependency;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 
@@ -208,6 +209,48 @@ class DepCleanManagerEnd2EndTest {
 
   @Test
   @SuppressWarnings("NullAway")
+  void shouldReportDependenciesUsedOnlyInXmlResources()
+      throws AnalysisFailureException, IOException {
+    final DepCleanManager depCleanManager =
+        new DepCleanManagerBuilder()
+            .withDependencyManager(XmlResourcesDependencyManager.class)
+            .build();
+
+    final ProjectDependencyAnalysis analysis = depCleanManager.execute();
+
+    assertThat(analysis).isNotNull();
+    // commons-io is only referenced from a Spring XML in main resources (issue #78)
+    assertThat(analysis.getUsedDirectDependencies()).isNotNull().hasSize(1);
+    // commons-lang3 is only referenced from an XML in test resources
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isNotNull().hasSize(1);
+    assertThat(analysis.getUsedTransitiveDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedTransitiveDependencies()).isNotNull().hasSize(1);
+  }
+
+  @Test
+  @SuppressWarnings("NullAway")
+  void shouldSkipTestXmlResourcesWhenTestsAreIgnored()
+      throws AnalysisFailureException, IOException {
+    final DepCleanManager depCleanManager =
+        new DepCleanManagerBuilder()
+            .withDependencyManager(XmlResourcesDependencyManager.class)
+            .withIgnoreTests()
+            .build();
+
+    final ProjectDependencyAnalysis analysis = depCleanManager.execute();
+
+    assertThat(analysis).isNotNull();
+    // main resources still count
+    assertThat(analysis.getUsedDirectDependencies()).isNotNull().hasSize(1);
+    // the commons-lang3 reference lives in test resources, so it is not used anymore
+    assertThat(analysis.getUsedInheritedDirectDependencies()).isNotNull().isEmpty();
+    assertThat(analysis.getUnusedInheritedDirectDependencies()).isNotNull().hasSize(1);
+  }
+
+  @Test
+  @SuppressWarnings("NullAway")
   void shouldFailForUnusedDirectDependency() {
     final DepCleanManager depCleanManager =
         new DepCleanManagerBuilder()
@@ -384,6 +427,11 @@ class DepCleanManagerEnd2EndTest {
 
     public DepCleanManagerBuilder withIgnoreDependencies(Set<String> ignoreDependencies) {
       this.ignoreDependencies = ignoreDependencies;
+      return this;
+    }
+
+    public DepCleanManagerBuilder withIgnoreTests() {
+      this.ignoreTests = true;
       return this;
     }
   }

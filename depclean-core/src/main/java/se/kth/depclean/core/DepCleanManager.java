@@ -3,6 +3,7 @@ package se.kth.depclean.core;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.core.analysis.src.XmlClassesAnalyzer;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
 import se.kth.depclean.core.model.ProjectContext;
@@ -57,7 +59,8 @@ public class DepCleanManager {
     this.dependencyManager = dependencyManager;
     this.skipDepClean = skipDepClean;
     this.ignoreTests = ignoreTests;
-    this.ignoreScopes = ignoreScopes;
+    // Defensive copy: buildProjectContext() adds the "test" scope when tests are ignored
+    this.ignoreScopes = new HashSet<>(ignoreScopes);
     this.ignoreDependencies = ignoreDependencies;
     this.failIfUnusedDirect = failIfUnusedDirect;
     this.failIfUnusedTransitive = failIfUnusedTransitive;
@@ -244,6 +247,10 @@ public class DepCleanManager {
     allUsedClasses.addAll(usedClassesFromProcessors);
     allUsedClasses.addAll(usedClassesFromSource);
 
+    // Consider as used all the classes referenced in XML resource files
+    // (e.g. Spring XML configurations, web.xml, persistence.xml)
+    allUsedClasses.addAll(collectUsedClassesFromXmlResources());
+
     return new ProjectContext(
         dependencyManager.dependencyGraph(),
         dependencyManager.getOutputDirectories(),
@@ -259,6 +266,27 @@ public class DepCleanManager {
             .flatMap(Set::stream)
             .collect(Collectors.toSet()),
         allUsedClasses);
+  }
+
+  /**
+   * Collects the classes referenced in XML resource files (Spring XML configurations, web.xml,
+   * etc.), so that dependencies only referenced from XML are considered used. Test resources are
+   * skipped when tests are ignored.
+   *
+   * @return the classes referenced in XML resources
+   */
+  private Set<ClassName> collectUsedClassesFromXmlResources() {
+    final Set<Path> resourcesDirectories =
+        new HashSet<>(dependencyManager.getResourcesDirectories());
+    if (!ignoreTests) {
+      resourcesDirectories.addAll(dependencyManager.getTestResourcesDirectories());
+    }
+    return resourcesDirectories.stream()
+        .map(XmlClassesAnalyzer::new)
+        .map(XmlClassesAnalyzer::collectReferencedClassesFromXml)
+        .flatMap(Set::stream)
+        .map(ClassName::new)
+        .collect(Collectors.toSet());
   }
 
   /**

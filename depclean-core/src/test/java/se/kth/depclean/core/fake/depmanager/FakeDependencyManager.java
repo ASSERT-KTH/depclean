@@ -103,6 +103,16 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
+  public Set<Path> getResourcesDirectories() {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<Path> getTestResourcesDirectories() {
+    return ImmutableSet.of();
+  }
+
+  @Override
   @SuppressWarnings("NullAway")
   public AbstractDebloater<? extends Serializable> getDebloater(
       ProjectDependencyAnalysis analysis) {

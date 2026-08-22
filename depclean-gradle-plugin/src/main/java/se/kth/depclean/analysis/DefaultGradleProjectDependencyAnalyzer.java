@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -18,6 +19,8 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +30,7 @@ import se.kth.depclean.core.analysis.DependencyAnalyzer;
 import se.kth.depclean.core.analysis.DependencyTypes;
 import se.kth.depclean.core.analysis.asm.AsmDependencyAnalyzer;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
+import se.kth.depclean.core.analysis.src.XmlClassesAnalyzer;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.utils.ClassesDirectoryFinder;
 import se.kth.depclean.utils.DependencyUtils;
@@ -102,10 +106,15 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
 
       /* ******************** usage analysis ********************* */
 
+      // classes referenced in the bytecode, plus classes referenced in XML resources
+      // (e.g. Spring XML configurations, web.xml), see issues #78 and #81
+      Set<String> referencedClasses =
+          new HashSet<>(DefaultCallGraph.referencedClassMembers(projectClasses));
+      referencedClasses.addAll(collectClassesFromXmlResources(project));
+
       // search for the dependencies used by the project
       Set<ResolvedArtifact> usedArtifacts =
-          collectUsedArtifacts(
-              artifactClassesMap, DefaultCallGraph.referencedClassMembers(projectClasses));
+          collectUsedArtifacts(artifactClassesMap, referencedClasses);
 
       /*
        * ******************** results as statically used at the bytecode
@@ -236,6 +245,38 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
   private Set<String> collectDependencyClasses(final File outputDirectory) throws IOException {
     URL url = outputDirectory.toURI().toURL();
     return dependencyAnalyzer.analyze(url);
+  }
+
+  /**
+   * Collects the classes referenced in the project's XML resource files (e.g. Spring XML
+   * configurations, web.xml), so that dependencies only referenced from XML are considered used.
+   *
+   * @param project The gradle project.
+   * @return The class names referenced in XML resources.
+   */
+  private Set<String> collectClassesFromXmlResources(final Project project) {
+    Set<File> resourceDirectories = new LinkedHashSet<>();
+    SourceSetContainer sourceSets = project.getExtensions().findByType(SourceSetContainer.class);
+    if (sourceSets != null) {
+      for (SourceSet sourceSet : sourceSets) {
+        if (isIgnoredTest
+            && sourceSet
+                .getName()
+                .toLowerCase(Locale.ROOT)
+                .contains(SourceSet.TEST_SOURCE_SET_NAME)) {
+          continue;
+        }
+        resourceDirectories.addAll(sourceSet.getResources().getSrcDirs());
+      }
+    }
+    resourceDirectories.add(
+        new File(
+            project.getProjectDir(), "src" + File.separator + "main" + File.separator + "webapp"));
+    Set<String> classes = new HashSet<>();
+    for (File directory : resourceDirectories) {
+      classes.addAll(new XmlClassesAnalyzer(directory.toPath()).collectReferencedClassesFromXml());
+    }
+    return classes;
   }
 
   /**

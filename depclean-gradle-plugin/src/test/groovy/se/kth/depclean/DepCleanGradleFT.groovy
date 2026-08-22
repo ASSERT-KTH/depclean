@@ -149,6 +149,29 @@ class DepCleanGradleFT extends Specification {
         FileUtils.forceDelete(new File(projectPath5 + "/userHome"))
     }
 
+    String projectPath6 = "src/test/resources-fts/xml_config_classes_used"
+    File xmlConfigClassesUsed = new File(projectPath6)
+    File originalOutputFile6 = new File(projectPath6 + "/originalOutputFile.txt")
+    File expectedOutputFile6 = new File(projectPath6 + "/expectedOutputFile.txt")
+
+    def "Test that a dependency only referenced in a Spring XML configuration is considered used"() {
+        given:
+        def project = ProjectBuilder.builder().withProjectDir(xmlConfigClassesUsed).build()
+
+        when:
+        project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+        BuildResult buildResult = createRunner(xmlConfigClassesUsed, "build")
+        BuildResult debloatResult = createRunner(xmlConfigClassesUsed, "debloat")
+
+        then:
+        assert checkTaskOutcome(buildResult.task(":build").getOutcome())
+        assert checkTaskOutcome(debloatResult.task(":debloat").getOutcome())
+
+        originalOutputFile6.write(debloatResult.getOutput())
+        assert compareOutputs(expectedOutputFile6, originalOutputFile6)
+        FileUtils.forceDelete(new File(projectPath6 + "/build"))
+    }
+
     private static BuildResult createRunner(File project, String argument) {
         BuildResult result = GradleRunner.create()
                 .withProjectDir(project)

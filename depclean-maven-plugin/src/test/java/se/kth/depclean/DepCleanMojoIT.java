@@ -100,6 +100,54 @@ public class DepCleanMojoIT {
   }
 
   @MavenTest
+  void spring_xml_bean_used(MavenExecutionResult result) {
+    log.trace(
+        "Test that a dependency only referenced in a Spring XML configuration is considered used"
+            + " (issue #78)");
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
+            "-------------------------------------------------------",
+            " D E P C L E A N   A N A L Y S I S   R E S U L T S",
+            "-------------------------------------------------------",
+            "USED DIRECT DEPENDENCIES [1]: ",
+            "	commons-io:commons-io:2.20.0:compile (550 KB)",
+            "USED TRANSITIVE DEPENDENCIES [0]: ",
+            "USED INHERITED DIRECT DEPENDENCIES [0]: ",
+            "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: ",
+            "	com.fasterxml.jackson.core:jackson-databind:2.18.9:compile (1 MB)",
+            "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [2]: ",
+            "	com.fasterxml.jackson.core:jackson-core:2.18.9:compile (574 KB)",
+            "	com.fasterxml.jackson.core:jackson-annotations:2.18.9:compile (76 KB)",
+            "POTENTIALLY UNUSED INHERITED DIRECT DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED INHERITED TRANSITIVE DEPENDENCIES [0]: ");
+  }
+
+  @MavenTest
+  void web_xml_classes_used(MavenExecutionResult result) {
+    log.trace(
+        "Test that a dependency only referenced in WEB-INF/web.xml is considered used"
+            + " (issue #81)");
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
+            "-------------------------------------------------------",
+            " D E P C L E A N   A N A L Y S I S   R E S U L T S",
+            "-------------------------------------------------------",
+            "USED DIRECT DEPENDENCIES [1]: ",
+            "	org.springframework:spring-web:6.2.10:compile (1 MB)",
+            "USED TRANSITIVE DEPENDENCIES [0]: ",
+            "USED INHERITED DIRECT DEPENDENCIES [0]: ",
+            "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ");
+  }
+
+  @MavenTest
   void all_dependencies_unused(MavenExecutionResult result) {
     log.trace("Test that DepClean identifies all dependencies as unused");
     assertThat(result)

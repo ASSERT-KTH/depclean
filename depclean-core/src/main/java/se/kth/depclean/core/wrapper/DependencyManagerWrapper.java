@@ -92,6 +92,23 @@ public interface DependencyManagerWrapper {
   Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testDirectory);
 
   /**
+   * Directories containing the project's main resource files, e.g. {@code src/main/resources} and
+   * {@code src/main/webapp}. Classes referenced in XML resources (Spring XML configurations,
+   * web.xml, etc.) are considered used. The returned directories may not exist.
+   *
+   * @return the main resource directories
+   */
+  Set<Path> getResourcesDirectories();
+
+  /**
+   * Directories containing the project's test resource files, e.g. {@code src/test/resources}.
+   * The returned directories may not exist.
+   *
+   * @return the test resource directories
+   */
+  Set<Path> getTestResourcesDirectories();
+
+  /**
    * The instance that will debloat the config file.
    *
    * @param analysis the depclean analysis
