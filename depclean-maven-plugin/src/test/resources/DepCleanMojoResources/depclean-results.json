@@ -6,7 +6,7 @@
   "version": "1.0.0-SNAPSHOT",
   "packaging": "jar",
   "omitted": false,
-  "size": 2788,
+  "size": 2792,
   "type": "unknown",
   "status": "unknown",
   "parent": "unknown",
@@ -15,37 +15,37 @@
   "usageRatio": 0.0,
   "children": [
     {
-      "id": "com.jcabi:jcabi-manifests:jar:1.1:compile",
-      "coordinates": "com.jcabi:jcabi-manifests:1.1",
+      "id": "com.jcabi:jcabi-manifests:jar:2.2.0:compile",
+      "coordinates": "com.jcabi:jcabi-manifests:2.2.0",
       "groupId": "com.jcabi",
       "artifactId": "jcabi-manifests",
-      "version": "1.1",
+      "version": "2.2.0",
       "scope": "compile",
       "packaging": "jar",
       "omitted": false,
-      "size": 11747,
+      "size": 13042,
       "type": "direct",
       "status": "used",
       "parent": "org.foo.bar:foobar:jar:1.0.0-SNAPSHOT",
       "allTypes": [
         "com.jcabi.manifests.ClasspathMfs",
         "com.jcabi.manifests.FilesMfs",
+        "com.jcabi.manifests.JakartaServletMfs",
         "com.jcabi.manifests.Manifests",
         "com.jcabi.manifests.MfMap",
         "com.jcabi.manifests.Mfs",
         "com.jcabi.manifests.ServletMfs",
-        "com.jcabi.manifests.StreamsMfs"
+        "com.jcabi.manifests.StreamsMfs",
+        "com.jcabi.manifests.StringMfs",
+        "com.jcabi.manifests.package-info"
       ],
       "usedTypes": [
         "com.jcabi.manifests.ClasspathMfs",
-        "com.jcabi.manifests.FilesMfs",
         "com.jcabi.manifests.Manifests",
         "com.jcabi.manifests.MfMap",
-        "com.jcabi.manifests.Mfs",
-        "com.jcabi.manifests.ServletMfs",
-        "com.jcabi.manifests.StreamsMfs"
+        "com.jcabi.manifests.Mfs"
       ],
-      "usageRatio": 1.0,
+      "usageRatio": 0.4,
       "children": []
     },
     {
