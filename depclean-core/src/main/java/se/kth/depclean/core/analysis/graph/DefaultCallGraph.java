@@ -116,8 +116,7 @@ public class DefaultCallGraph {
 
   /** Clears all shared static state so that consecutive analyses start from a clean graph. */
   public static void clear() {
-    // The vertex set is copied because removeAllVertices cannot iterate the set it is mutating.
-    directedGraph.removeAllVertices(new HashSet<>(directedGraph.vertexSet()));
+    adjacencyList.clear();
     projectVertices.clear();
     usagesPerClass.clear();
   }
