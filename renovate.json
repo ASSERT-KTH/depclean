@@ -5,20 +5,38 @@
     "helpers:pinGitHubActionDigests",
     "group:allNonMajor"
   ],
+  "ignorePaths": ["**/node_modules/**", "**/target/**", "**/build/**"],
   "semanticCommits": "enabled",
   "packageRules": [
     {
+      "description": "Automerge non-major updates after a 3-day cooldown (supply-chain safety)",
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "minimumReleaseAge": "3 days",
       "automerge": true
     },
     {
       "description": "Gradle 9 embeds Groovy 4; keep Spock on the -groovy-4.0 variant",
       "matchPackageNames": ["org.spockframework:spock-core"],
       "allowedVersions": "/-groovy-4\\.0$/"
+    },
+    {
+      "description": "Test fixtures reference DepClean's own SNAPSHOT artifacts from mavenLocal; never touch them",
+      "matchPackageNames": ["se.kth.castor:**"],
+      "enabled": false
+    },
+    {
+      "description": "Security fix PRs get top priority",
+      "matchJsonata": ["isVulnerabilityAlert"],
+      "prPriority": 10
     }
   ],
+  "vulnerabilityAlerts": {
+    "description": "Security fixes skip the cooldown and get merged immediately",
+    "minimumReleaseAge": null
+  },
+  "osvVulnerabilityAlerts": true,
   "platformAutomerge": true,
-  "includeForks": true,
+  "forkProcessing": "enabled",
   "dependencyDashboard": true,
   "prConcurrentLimit": 5
 }

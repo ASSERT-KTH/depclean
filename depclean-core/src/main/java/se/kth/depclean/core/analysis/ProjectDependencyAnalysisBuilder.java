@@ -219,7 +219,7 @@ public class ProjectDependencyAnalysisBuilder {
     for (Iterator<Dependency> i = unusedDependencies.iterator(); i.hasNext(); ) {
       Dependency unusedDependency = i.next();
       List<String> scopesToIgnore =
-          ignoredScopes.stream().map(Scope::getValue).collect(Collectors.toList());
+          ignoredScopes.stream().map(Scope::value).collect(Collectors.toList());
       log.debug("Scopes to ignore: {}", scopesToIgnore);
       log.debug("Unused dependency scope: {}", unusedDependency.getScope());
       if (scopesToIgnore.contains(unusedDependency.getScope())) {

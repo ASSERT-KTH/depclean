@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -37,7 +38,8 @@ import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
 
 /** Project dependencies analysis result. */
-public class ProjectDependencyAnalysis {
+@SuppressWarnings("java:S6206") // record conversion would rename 100+ accessor call sites
+public final class ProjectDependencyAnalysis {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
   private final Set<Dependency> usedDirectDependencies;
@@ -241,8 +243,7 @@ public class ProjectDependencyAnalysis {
             () -> new RuntimeException("Unable to find " + coordinate + " in dependencies"));
   }
 
-  @SuppressWarnings("NonApiType") // TreeSet required by DependencyAnalysisInfo constructor
-  private TreeSet<String> toValue(Set<ClassName> types) {
+  private SortedSet<String> toValue(Set<ClassName> types) {
     return types.stream().map(ClassName::getValue).collect(toCollection(TreeSet::new));
   }
 
@@ -322,10 +323,9 @@ public class ProjectDependencyAnalysis {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof ProjectDependencyAnalysis that)) {
       return false;
     }
-    ProjectDependencyAnalysis that = (ProjectDependencyAnalysis) o;
     return Objects.equals(usedDirectDependencies, that.usedDirectDependencies)
         && Objects.equals(usedTransitiveDependencies, that.usedTransitiveDependencies)
         && Objects.equals(usedInheritedDirectDependencies, that.usedInheritedDirectDependencies)

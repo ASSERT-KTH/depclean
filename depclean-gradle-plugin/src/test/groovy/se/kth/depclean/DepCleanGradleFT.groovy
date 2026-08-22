@@ -1,6 +1,5 @@
 package se.kth.depclean
 
-import org.apache.maven.BuildFailureException
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -21,17 +20,12 @@ class DepCleanGradleFT extends Specification {
 
         when:
         project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+        // No compiled classes exist: debloat must succeed gracefully instead of
+        // crashing with "build/classes does not exist" (issue #218)
+        BuildResult debloatResult = createRunner(emptyProjectFile, "debloat")
 
         then:
-        try {
-            BuildResult result = GradleRunner.create()
-                    .withProjectDir(emptyProjectFile)
-                    .withArguments("debloat")
-                    .withDebug(true)
-                    .buildAndFail()
-        } catch (Exception e) {
-            assert e.class == BuildFailureException
-        }
+        assert checkTaskOutcome(debloatResult.task(":debloat").getOutcome())
     }
 
     String projectPath1 = "src/test/resources-fts/all_dependencies_unused"

@@ -38,6 +38,10 @@ public class DepCleanGradlePlugin implements Plugin<Project> {
     task.setGroup("dependency management");
     task.setDescription(
         "Analyze the project byte-code and configure out the debloated dependencies.");
+    // The analysis needs the live Project (dependency graph, subprojects), which the
+    // configuration cache cannot serialize; degrade gracefully instead of failing.
+    task.notCompatibleWithConfigurationCache(
+        "DepClean analyzes the live project model at execution time");
 
     // Inject the project to avoid Task.project deprecation
     task.getTargetProject().set(project);

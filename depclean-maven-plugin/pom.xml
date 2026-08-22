@@ -27,6 +27,7 @@
     <maven-dependency-tree-parser.version>1.0.6</maven-dependency-tree-parser.version>
     <maven-dependency-tree.version>3.3.0</maven-dependency-tree.version>
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
+    <plexus-xml.version>4.2.0</plexus-xml.version>
 
     <!-- Plugins -->
     <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
@@ -34,7 +35,8 @@
 
     <!-- Build settings -->
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
-    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.coverage.jacoco.xmlReportPaths>
+      target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <!-- Build options -->
@@ -69,6 +71,13 @@
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-tree</artifactId>
       <version>${maven-dependency-tree.version}</version>
+    </dependency>
+    <!-- Xpp3Dom is exported by the Maven core class realm at runtime -->
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-xml</artifactId>
+      <version>${plexus-xml.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Utils -->
@@ -153,11 +162,40 @@
           <includes>
             <include>**/*IT.java</include>
           </includes>
+          <!-- Instrument the Maven processes forked by the ITs with the JaCoCo agent -->
+          <environmentVariables>
+            <MAVEN_OPTS>${itCoverageAgent}</MAVEN_OPTS>
+          </environmentVariables>
         </configuration>
         <executions>
           <execution>
             <goals>
               <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Collect coverage from the Maven processes forked by the integration tests -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>prepare-agent-integration</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+            <configuration>
+              <propertyName>itCoverageAgent</propertyName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>report-integration</id>
+            <goals>
+              <goal>report-integration</goal>
             </goals>
           </execution>
         </executions>
@@ -231,4 +269,21 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!-- When JaCoCo is skipped, prepare-agent-integration never sets itCoverageAgent;
+         define it as empty here so failsafe does not pass the literal expression as MAVEN_OPTS -->
+    <profile>
+      <id>jacoco-skipped</id>
+      <activation>
+        <property>
+          <name>jacoco.skip</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <itCoverageAgent />
+      </properties>
+    </profile>
+  </profiles>
 </project>

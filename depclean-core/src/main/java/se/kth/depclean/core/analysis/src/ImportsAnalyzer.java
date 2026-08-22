@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** All the classes imported in the source code of the project. */
-public class ImportsAnalyzer {
+public final class ImportsAnalyzer {
 
   private static final Logger log = LoggerFactory.getLogger(ImportsAnalyzer.class);
 
@@ -75,10 +75,9 @@ public class ImportsAnalyzer {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof ImportsAnalyzer that)) {
       return false;
     }
-    ImportsAnalyzer that = (ImportsAnalyzer) o;
     return Objects.equals(directoryPath, that.directoryPath);
   }
 

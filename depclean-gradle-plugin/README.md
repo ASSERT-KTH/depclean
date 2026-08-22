@@ -2,7 +2,7 @@
 
 The DepClean Gradle plugin is designed to automatically detect and remove unused dependencies in Gradle-based Java projects.
 It uses `depclean-core` for the heavy bytecode analysis tasks, and provides a Gradle task to remove unused dependencies from the project's `build.gradle` file.
-Ad with the DepClean Maven plugin, this is a powerful tool to keep your project lean, avoid unnecessary compilation and potential conflicts or security vulnerabilities due to bloated dependencies.
+As with the DepClean Maven plugin, this is a powerful tool to keep your project lean, avoid unnecessary compilation and potential conflicts or security vulnerabilities due to bloated dependencies.
 
 ### Prototype Stage
 
@@ -12,13 +12,24 @@ While it has shown promising results, the tool is not yet mature for production 
 
 ### Usage
 
-Once you have the plugin installed in your local Maven repository, you can use it in your Gradle projects.
+Once you have the plugin installed in your local Maven repository (see [Installing and Building From Source](#installing-and-building-from-source) below), you can use it in your Gradle projects.
 
-First, you need to add the plugin to your `build.gradle` file:
+Because the plugin is resolved from your local Maven repository, add `mavenLocal()` to the plugin repositories in your `settings.gradle`:
+
+```groovy
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+    }
+}
+```
+
+Then add the plugin to your `build.gradle` file:
 
 ```groovy
 plugins {
-    id 'se.kth.depclean' version '2.2.0-SNAPSHOT'
+    id 'se.kth.castor.depclean-gradle-plugin' version '2.2.0-SNAPSHOT'
 }
 ```
 Then, you can run the `debloat` task to analyze your project and remove unused dependencies:
@@ -57,17 +68,25 @@ We are actively seeking contributions to help move this project forward. If you'
 
 Prerequisites:
 
-- Java OpenJDK 11 or above
-- Gradle 6.8.3 or above
+- Java OpenJDK 21 or above (the plugin targets Java 17 bytecode)
+- No Gradle installation needed — the Gradle wrapper is included
 
 In a terminal clone the repository and switch to the cloned folder:
 
 ```bash
 git clone https://github.com/ASSERT-KTH/depclean.git
-cd depclean-gradle-plugin
+cd depclean
 ```
-Then run the following Maven command to build the application and install the plugin locally:
+
+First build and install the DepClean core modules into your local Maven repository:
 
 ```bash
-./gradlew install
+./mvnw clean install -DskipTests
+```
+
+Then build the Gradle plugin and publish it to your local Maven repository:
+
+```bash
+cd depclean-gradle-plugin
+./gradlew publishToMavenLocal
 ```

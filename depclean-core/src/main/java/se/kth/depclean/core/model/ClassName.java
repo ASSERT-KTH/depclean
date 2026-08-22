@@ -5,7 +5,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /** Represents a class to be analysed. */
-public class ClassName implements Comparable<ClassName> {
+public final class ClassName implements Comparable<ClassName> {
   private final String value;
 
   /**
@@ -30,10 +30,9 @@ public class ClassName implements Comparable<ClassName> {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof ClassName className)) {
       return false;
     }
-    ClassName className = (ClassName) o;
     return Objects.equals(value, className.value);
   }
 

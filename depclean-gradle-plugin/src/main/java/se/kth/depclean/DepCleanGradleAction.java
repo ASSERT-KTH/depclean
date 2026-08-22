@@ -34,6 +34,7 @@ import org.jspecify.annotations.Nullable;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
 import se.kth.depclean.core.util.JarUtils;
+import se.kth.depclean.utils.ClassesDirectoryFinder;
 import se.kth.depclean.utils.DependencyUtils;
 import se.kth.depclean.utils.GradleWritingUtils;
 import se.kth.depclean.utils.json.JsonResultWriter;
@@ -92,9 +93,6 @@ public class DepCleanGradleAction implements Action<Project> {
     // Path to the libs directory.
     final Path libsDirPath = projectDirPath.resolve(Paths.get("build", "libs"));
 
-    // Path to the build classes directory.
-    final Path classesDirPath = projectDirPath.resolve(Paths.get("build", "classes"));
-
     DependencyUtils utils = new DependencyUtils();
 
     // Project's configurations - only get resolvable ones to avoid deprecated API
@@ -138,10 +136,13 @@ public class DepCleanGradleAction implements Action<Project> {
       }
     }
 
-    // First, add the size of the project, as the sum of all the files in
-    // target/classes
+    // First, add the size of the project, as the sum of all the compiled class directories
+    // (source sets and Android variants included).
     String projectJar = project.getName() + "-" + project.getVersion() + ".jar";
-    long projectSize = FileUtils.sizeOf(classesDirPath.toFile());
+    long projectSize = 0;
+    for (File classesDir : ClassesDirectoryFinder.findClassesDirectories(project, isIgnoreTest)) {
+      projectSize += FileUtils.sizeOf(classesDir);
+    }
     SizeOfDependencies.put(projectJar, projectSize);
 
     /*

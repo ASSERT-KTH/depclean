@@ -66,11 +66,11 @@ public class NodeAdapter extends TypeAdapter<Node> {
               .name("classifier")
               .value(node.getClassifier())
               .name("size")
-              .value(dependencyInfo.getSize())
+              .value(dependencyInfo.size())
               .name("type")
-              .value(dependencyInfo.getType())
+              .value(dependencyInfo.type())
               .name("status")
-              .value(dependencyInfo.getStatus())
+              .value(dependencyInfo.status())
               .name("parent")
               .value(getParent(node));
 
@@ -94,9 +94,9 @@ public class NodeAdapter extends TypeAdapter<Node> {
     localWriter
         .name("usageRatio")
         .value(
-            info.getAllTypes().isEmpty()
+            info.allTypes().isEmpty()
                 ? 0
-                : ((double) info.getUsedTypes().size() / info.getAllTypes().size()))
+                : ((double) info.usedTypes().size() / info.allTypes().size()))
         .name("children")
         .beginArray();
   }
@@ -104,7 +104,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
   private void writeUsedTypes(DependencyAnalysisInfo info, JsonWriter localWriter)
       throws IOException {
     JsonWriter usedTypes = localWriter.name("usedTypes").beginArray();
-    for (String usedType : info.getUsedTypes()) {
+    for (String usedType : info.usedTypes()) {
       usedTypes.value(usedType);
     }
     usedTypes.endArray();
@@ -113,7 +113,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
   private void writeAllTypes(DependencyAnalysisInfo info, JsonWriter localWriter)
       throws IOException {
     JsonWriter allTypes = localWriter.name("allTypes").beginArray();
-    for (String allType : info.getAllTypes()) {
+    for (String allType : info.allTypes()) {
       allTypes.value(allType);
     }
     allTypes.endArray();

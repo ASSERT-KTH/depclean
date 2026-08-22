@@ -3,7 +3,7 @@ package se.kth.depclean.core.model;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -22,8 +22,10 @@ public final class ProjectContext {
 
   private static final Logger log = LoggerFactory.getLogger(ProjectContext.class);
 
-  private final Multimap<Dependency, ClassName> classesPerDependency = ArrayListMultimap.create();
-  private final Multimap<ClassName, Dependency> dependenciesPerClass = ArrayListMultimap.create();
+  private final ListMultimap<Dependency, ClassName> classesPerDependency =
+      ArrayListMultimap.create();
+  private final ListMultimap<ClassName, Dependency> dependenciesPerClass =
+      ArrayListMultimap.create();
 
   private final Set<Path> outputFolders;
   private final Set<Path> testOutputFolders;
@@ -166,7 +168,7 @@ public final class ProjectContext {
     if (declaredScope == null) {
       return true; // Don't exclude if scope is null
     }
-    return ignoredScopes.stream().map(Scope::getValue).noneMatch(declaredScope::equalsIgnoreCase);
+    return ignoredScopes.stream().map(Scope::value).noneMatch(declaredScope::equalsIgnoreCase);
   }
 
   @Override
