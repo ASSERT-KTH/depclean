@@ -27,7 +27,7 @@ jobs:
           distribution: "temurin"
           java-version: 21
           cache: "maven"
-          server-id: ossrh
+          server-id: central
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -37,8 +37,8 @@ jobs:
         run: |
           mvn --batch-mode clean deploy -P deploy -Djacoco.skip=true -DskipTests
         env:
-          MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Create and push tag
@@ -52,19 +52,11 @@ jobs:
 
       - name: Create Release on GitHub
         id: create_release
-        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # v1.1.4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: ${{ github.event.inputs.newVersion }}
-          release_name: Release v${{ github.event.inputs.newVersion }}
-          body: |
-            Release version ${{ github.event.inputs.newVersion }}
-
-            Changes:
-            - Added Java 21 support
-            - Updated dependencies
-            - Improved bytecode analysis
+          name: Release v${{ github.event.inputs.newVersion }}
+          generate_release_notes: true
           draft: true
           prerelease: false
 

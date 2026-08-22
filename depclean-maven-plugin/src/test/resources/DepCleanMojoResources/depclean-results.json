@@ -370,7 +370,9 @@
         "org.apache.commons.codec.net.URLCodec",
         "org.apache.commons.codec.net.Utils"
       ],
-      "usedTypes": ["org.apache.commons.codec.Charsets"],
+      "usedTypes": [
+        "org.apache.commons.codec.Charsets"
+      ],
       "usageRatio": 0.009433962264150943,
       "children": []
     }
