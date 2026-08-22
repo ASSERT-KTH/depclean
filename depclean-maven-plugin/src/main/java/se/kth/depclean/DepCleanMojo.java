@@ -38,12 +38,11 @@ import se.kth.depclean.wrapper.MavenDependencyManager;
  * maven-dependency-analyzer component. It produces a clean copy of the project's pom file, without
  * bloated dependencies.
  *
- * @see <a
- *     href="https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin">Stack
- *     Overflow: Access to Maven's dependency hierarchy within a plugin</a>
- * @see <a
- *     href="http://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html">Maven
- *     Guide: Optional and Excludes Dependencies</a>
+ * <p>For reference, see <a
+ * href="https://stackoverflow.com/questions/1492000/how-to-get-access-to-mavens-dependency-hierarchy-within-a-plugin">Stack
+ * Overflow: Access to Maven's dependency hierarchy within a plugin</a> and <a
+ * href="https://maven.apache.org/guides/introduction/introduction-to-optional-and-excludes-dependencies.html">Maven
+ * Guide: Optional and Excludes Dependencies</a>.
  */
 @Mojo(
     name = "depclean",

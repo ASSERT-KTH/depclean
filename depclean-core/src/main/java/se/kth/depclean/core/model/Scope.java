@@ -4,7 +4,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 /** Represents a dependency scope. */
-public class Scope {
+public final class Scope {
   private final String value;
 
   public Scope(String value) {
@@ -20,10 +20,9 @@ public class Scope {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof Scope scope)) {
       return false;
     }
-    Scope scope = (Scope) o;
     return Objects.equals(value, scope.value);
   }
 
