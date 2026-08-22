@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Parent pom -->
@@ -12,32 +14,24 @@
   <!-- Coordinates -->
   <artifactId>depclean-core</artifactId>
   <version>2.2.0-SNAPSHOT</version>
+
   <packaging>jar</packaging>
+
   <name>depclean-core</name>
   <description>Core library of DepClean</description>
 
   <properties>
     <!-- Dependencies -->
-    <asm.version>9.8</asm.version>
-    <assertj.version>3.27.3</assertj.version>
-    <checkstyle.version>10.26.1</checkstyle.version>
-    <commons-io.version>2.20.0</commons-io.version>
-    <guava.version>33.4.8-jre</guava.version>
-    <jgrapht.version>1.5.2</jgrapht.version>
-    <jspecify.version>1.0.0</jspecify.version>
-    <maven-core.version>3.9.11</maven-core.version>
+    <asm.version>9.10.1</asm.version>
+    <guava.version>33.7.1-jre</guava.version>
+    <jgrapht.version>1.5.3</jgrapht.version>
     <plexus-component-annotations.version>2.2.0</plexus-component-annotations.version>
-    <plexus-utils.version>4.0.2</plexus-utils.version>
-    <plexus-xml.version>4.1.0</plexus-xml.version>
+    <plexus-utils.version>4.1.0</plexus-utils.version>
+    <plexus-xml.version>4.2.0</plexus-xml.version>
     <qdox.version>2.2.0</qdox.version>
 
-    <!-- Plugins -->
-    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
-
-    <!-- Sonar, Checkstyle, etc. -->
+    <!-- Build settings -->
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
@@ -133,7 +127,8 @@
               <!-- Change to warning to enforce strong style rules -->
               <violationSeverity>error</violationSeverity>
               <failsOnError>true</failsOnError>
-              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <!--  Google style is adopted,
+              https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
               <configLocation>${checkstyle.config.location}</configLocation>
               <consoleOutput>true</consoleOutput>
             </configuration>
@@ -147,7 +142,8 @@
             <phase>verify</phase>
             <configuration>
               <failsOnError>true</failsOnError>
-              <!--  Google style is adopted, https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
+              <!--  Google style is adopted,
+              https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml -->
               <configLocation>${checkstyle.config.location}</configLocation>
               <consoleOutput>true</consoleOutput>
             </configuration>

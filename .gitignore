@@ -1,14 +1,43 @@
-*.bak
-*.gem
-*.gradle
-*.idea
-*.iml
-*.versionsBackup
-*.vscode
-*.xml.bak
-
-build/
+# Build output
 target/
-userHome/
+build/
+out/
 
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+
+# Maven
+*.versionsBackup
+*.xml.bak
+dependency-reduced-pom.xml
+release.properties
+
+# Java
+*.class
+hs_err_pid*
+replay_pid*
+
+# Logs and temp files
+*.log
+*.bak
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+userHome/
 originalOutputFile.txt
