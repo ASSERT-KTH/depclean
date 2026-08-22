@@ -32,7 +32,7 @@
     <!-- Plugins -->
     <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
     <error_prone_core.version>2.41.0</error_prone_core.version>
-    <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
     <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
     <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
