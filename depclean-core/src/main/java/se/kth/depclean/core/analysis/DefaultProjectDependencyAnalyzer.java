@@ -51,6 +51,12 @@ public class DefaultProjectDependencyAnalyzer {
 
     /* ******************** bytecode analysis ********************* */
 
+    // The call graph is kept in static fields, and in a Maven reactor build every module is
+    // analyzed by the same plugin classloader, so the graph of a previously analyzed module must
+    // be discarded before building the graph of this one. It cannot be cleared after the analysis
+    // instead, because the JSON writers read the graph once the analysis is done.
+    DefaultCallGraph.clear();
+
     // analyze project's class files
     projectContext
         .getOutputFolders()

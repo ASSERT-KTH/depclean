@@ -62,6 +62,16 @@ testing {
     }
 }
 
+tasks.withType(Test).configureEach {
+    // Show full exception detail on CI, where the HTML report is not accessible
+    testLogging {
+        exceptionFormat 'full'
+        showExceptions true
+        showCauses true
+        showStackTraces true
+    }
+}
+
 spotless {
   java {
     googleJavaFormat()

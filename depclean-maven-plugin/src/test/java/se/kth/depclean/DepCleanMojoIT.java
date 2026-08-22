@@ -81,6 +81,25 @@ public class DepCleanMojoIT {
   }
 
   @MavenTest
+  void reactor_state_does_not_leak(MavenExecutionResult result) {
+    log.trace(
+        "Test that the analysis of one module of a reactor build does not leak into the analysis"
+            + " of the next one");
+    // The first module uses commons-io, the second one only declares it. Without resetting the
+    // shared call graph between the analyses, the classes used by the first module are still
+    // reachable when the second module is analyzed, so commons-io would be wrongly reported as
+    // used there, and the first two lines asserted below would not be printed at all.
+    assertThat(result)
+        .isSuccessful()
+        .out()
+        .plain()
+        .contains(
+            "USED DIRECT DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: ",
+            "\tcommons-io:commons-io:2.20.0:compile (550 KB)");
+  }
+
+  @MavenTest
   void all_dependencies_unused(MavenExecutionResult result) {
     log.trace("Test that DepClean identifies all dependencies as unused");
     assertThat(result)
