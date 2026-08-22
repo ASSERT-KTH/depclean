@@ -184,8 +184,11 @@ public class DepCleanManager {
         new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-callgraph.csv");
     try {
       dependencyManager.generateDependencyTree(treeFile);
-    } catch (IOException | InterruptedException e) {
-      getLog().error("Unable to generate dependency tree.");
+    } catch (IOException e) {
+      getLog().error("Unable to generate the dependency tree: " + e.getMessage());
+      return;
+    } catch (InterruptedException e) {
+      getLog().error("Interrupted while generating the dependency tree.");
       // Restore interrupted state...
       Thread.currentThread().interrupt();
       return;
