@@ -30,7 +30,7 @@ ext {
     errorProneJavacVersion = '9+181-r4173-1'
     jspecifyVersion = '1.0.0'
     junitVersion = '5.13.3'
-    lombokVersion = '1.18.38'
+    lombokVersion = '1.18.46'
     nullawayVersion = '0.12.8'
     slf4jVersion = '2.0.17'
     spockVersion = '2.3-groovy-3.0'
