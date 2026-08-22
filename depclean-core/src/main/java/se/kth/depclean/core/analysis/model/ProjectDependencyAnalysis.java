@@ -38,6 +38,7 @@ import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
 
 /** Project dependencies analysis result. */
+@SuppressWarnings("java:S6206") // record conversion would rename 100+ accessor call sites
 public final class ProjectDependencyAnalysis {
 
   private static final String SEPARATOR = "-------------------------------------------------------";

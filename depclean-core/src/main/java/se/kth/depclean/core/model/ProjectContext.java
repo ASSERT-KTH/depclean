@@ -168,7 +168,7 @@ public final class ProjectContext {
     if (declaredScope == null) {
       return true; // Don't exclude if scope is null
     }
-    return ignoredScopes.stream().map(Scope::getValue).noneMatch(declaredScope::equalsIgnoreCase);
+    return ignoredScopes.stream().map(Scope::value).noneMatch(declaredScope::equalsIgnoreCase);
   }
 
   @Override
