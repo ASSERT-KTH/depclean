@@ -7,6 +7,37 @@ coverage:
   range: "70...100"
   status:
     patch: off
+    project:
+      default:
+        # The repo total mixes modules with very different coverage levels
+        # (the gradle plugin starts low), so gate on "no regression" instead
+        # of an absolute target.
+        target: auto
+        threshold: 1%
+
+# Uploads come from three CI jobs; carryforward keeps a flag's last known
+# coverage when a job does not re-upload, so one job can never "erase"
+# another module's data from the merged report.
+flag_management:
+  default_rules:
+    carryforward: true
+
+# Per-module breakdown, so maven and gradle coverage are visible side by
+# side instead of a single diluted repo total.
+component_management:
+  individual_components:
+    - component_id: core
+      name: depclean-core
+      paths:
+        - depclean-core/**
+    - component_id: maven-plugin
+      name: depclean-maven-plugin
+      paths:
+        - depclean-maven-plugin/**
+    - component_id: gradle-plugin
+      name: depclean-gradle-plugin
+      paths:
+        - depclean-gradle-plugin/**
 
 parsers:
   gcov:
@@ -17,7 +48,7 @@ parsers:
       macro: no
 
 comment:
-  layout: "reach,diff,footer"
+  layout: "reach,diff,flags,components,footer"
   behavior: default
   require_changes: true  # Only post the comment if coverage changes
   require_base: yes        # Must have a base report to post
