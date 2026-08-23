@@ -78,7 +78,6 @@ public final class JarUtils {
       // Protection against ZIP bomb attacks
       int maxEntries = 10_000; // Maximum number of entries to process
       long maxTotalSize = 1_000_000_000L; // 1 GB maximum total uncompressed size
-      double maxCompressionRatio = 100.0; // Maximum compression ratio
 
       int entryCount = 0;
       long totalSizeUncompressed = 0;
@@ -104,39 +103,8 @@ public final class JarUtils {
         // create the parent directory structure if needed
         destinationParent.mkdirs();
         if (!entry.isDirectory() && !destFile.isDirectory()) {
-          try (BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
-              FileOutputStream fos = new FileOutputStream(destFile);
-              BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER_SIZE)) {
-
-            int currentByte;
-            // establish buffer for writing file
-            byte[] data = new byte[BUFFER_SIZE];
-            long entrySizeUncompressed = 0;
-
-            // read and write until last byte is encountered
-            while ((currentByte = is.read(data, 0, BUFFER_SIZE)) != -1) {
-              dest.write(data, 0, currentByte);
-              entrySizeUncompressed += currentByte;
-              totalSizeUncompressed += currentByte;
-
-              // Check compression ratio for this entry
-              if (entry.getCompressedSize() > 0) {
-                double compressionRatio =
-                    (double) entrySizeUncompressed / entry.getCompressedSize();
-                if (compressionRatio > maxCompressionRatio) {
-                  throw new IOException(
-                      "ZIP bomb detected: compression ratio too high for entry " + currentEntry);
-                }
-              }
-
-              // Check total uncompressed size
-              if (totalSizeUncompressed > maxTotalSize) {
-                throw new IOException("ZIP bomb detected: total uncompressed size exceeds limit");
-              }
-            }
-            dest.flush();
-            is.close();
-          }
+          totalSizeUncompressed +=
+              extractEntry(zip, entry, destFile, totalSizeUncompressed, maxTotalSize);
         }
         if (currentEntry.endsWith(".jar")
             || currentEntry.endsWith(".war")
@@ -152,6 +120,43 @@ public final class JarUtils {
         throw new IOException(
             "ZIP bomb detected: too many entries in archive (" + entryCount + ")");
       }
+    }
+  }
+
+  /** Extracts a single entry, enforcing ZIP bomb limits; returns its uncompressed size. */
+  private static long extractEntry(
+      ZipFile zip, ZipEntry entry, File destFile, long totalSizeUncompressed, long maxTotalSize)
+      throws IOException {
+    long entrySizeUncompressed = 0;
+    try (BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
+        BufferedOutputStream dest =
+            new BufferedOutputStream(new FileOutputStream(destFile), BUFFER_SIZE)) {
+
+      int currentByte;
+      // establish buffer for writing file
+      byte[] data = new byte[BUFFER_SIZE];
+
+      // read and write until last byte is encountered
+      while ((currentByte = is.read(data, 0, BUFFER_SIZE)) != -1) {
+        dest.write(data, 0, currentByte);
+        entrySizeUncompressed += currentByte;
+        checkCompressionRatio(entry, entrySizeUncompressed);
+        if (totalSizeUncompressed + entrySizeUncompressed > maxTotalSize) {
+          throw new IOException("ZIP bomb detected: total uncompressed size exceeds limit");
+        }
+      }
+      dest.flush();
+    }
+    return entrySizeUncompressed;
+  }
+
+  private static void checkCompressionRatio(ZipEntry entry, long entrySizeUncompressed)
+      throws IOException {
+    double maxCompressionRatio = 100.0; // Maximum compression ratio
+    if (entry.getCompressedSize() > 0
+        && (double) entrySizeUncompressed / entry.getCompressedSize() > maxCompressionRatio) {
+      throw new IOException(
+          "ZIP bomb detected: compression ratio too high for entry " + entry.getName());
     }
   }
 }

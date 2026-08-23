@@ -13,9 +13,9 @@ import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 class DependencyClassFileVisitorTest {
 
   // Resource class for testing.
-  private static final File classFile =
+  private static final File CLASS_FILE =
       new File("src/test/resources/asmAndGraphResources/ExampleClass.class");
-  private static final String className = "ExampleClass";
+  private static final String CLASS_NAME = "ExampleClass";
 
   @Test
   @DisplayName(
@@ -24,15 +24,15 @@ class DependencyClassFileVisitorTest {
   void test_that_graph_is_collecting_edges_from_asm_correctly() throws IOException {
 
     ResultCollector resultCollector = new ResultCollector();
-    FileInputStream fileInputStream = new FileInputStream(classFile);
+    FileInputStream fileInputStream = new FileInputStream(CLASS_FILE);
 
     DependencyClassFileVisitor visitor = new DependencyClassFileVisitor();
-    visitor.visitClass(className, fileInputStream);
+    visitor.visitClass(CLASS_NAME, fileInputStream);
 
     // Checking for the expected results.
-    Assertions.assertTrue(DefaultCallGraph.containsVertex(className));
+    Assertions.assertTrue(DefaultCallGraph.containsVertex(CLASS_NAME));
     for (String referencedClassMember : resultCollector.getDependencies()) {
-      Assertions.assertTrue(DefaultCallGraph.containsEdge(className, referencedClassMember));
+      Assertions.assertTrue(DefaultCallGraph.containsEdge(CLASS_NAME, referencedClassMember));
     }
 
     // Confirming the successful termination of DependencyClassFileVisitor object.

@@ -123,7 +123,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
       DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
       return new MavenDependencyGraph(project, model, rootNode);
     } catch (DependencyGraphBuilderException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -141,18 +141,18 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
     File pomFile = new File(project.getBasedir().getAbsolutePath() + File.separator + "pom.xml");
 
     /* Build Maven model to manipulate the pom */
-    final Model model;
+    final Model builtModel;
     Reader reader;
     MavenXpp3Reader mavenReader = new MavenXpp3Reader();
     try {
       reader = new InputStreamReader(new FileInputStream(pomFile), StandardCharsets.UTF_8);
-      model = mavenReader.read(reader);
-      model.setPomFile(pomFile);
+      builtModel = mavenReader.read(reader);
+      builtModel.setPomFile(pomFile);
     } catch (Exception ex) {
       getLog().error("Unable to build the maven project.");
-      throw new RuntimeException(ex);
+      throw new IllegalStateException(ex);
     }
-    return model;
+    return builtModel;
   }
 
   /**
@@ -281,7 +281,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
       return new ParsedDependencies(treeFile, analysis, classUsageFile, createCallGraphCsv)
           .parseTreeToJson();
     } catch (ParseException | IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 }

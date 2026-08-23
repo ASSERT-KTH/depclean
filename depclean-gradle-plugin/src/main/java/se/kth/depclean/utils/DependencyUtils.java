@@ -11,11 +11,12 @@ import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.UnresolvedDependency;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DependencyUtils {
 
-  /** Ctor. */
-  public DependencyUtils() {}
+  private static final Logger log = LoggerFactory.getLogger(DependencyUtils.class);
 
   /** A map [artifact] -> [configuration]. */
   private static final Map<ResolvedArtifact, String> ArtifactConfigurationMap = new HashMap<>();
@@ -51,51 +52,54 @@ public class DependencyUtils {
    */
   public Set<Configuration> getResolvableConfigurations(Project project) {
     ConfigurationContainer configurationContainer = project.getConfigurations();
-    Set<Configuration> resolvableConfigurations = new HashSet<>();
 
     // Use a very conservative approach - only include configurations we know work
-    String[] safeConfigurationNames = {
-      "compileClasspath", "runtimeClasspath", "testCompileClasspath", "testRuntimeClasspath"
-    };
-
-    for (String configName : safeConfigurationNames) {
-      Configuration config = configurationContainer.findByName(configName);
-      if (config != null && config.isCanBeResolved()) {
-        try {
-          // Double-check by trying to access basic metadata
-          config.getState();
-          resolvableConfigurations.add(config);
-          project.getLogger().debug("Including safe configuration: {}", configName);
-        } catch (Exception e) {
-          project
-              .getLogger()
-              .debug("Skipping problematic safe configuration {}: {}", configName, e.getMessage());
-        }
-      }
-    }
+    Set<Configuration> resolvableConfigurations =
+        collectResolvableConfigurations(
+            project,
+            configurationContainer,
+            new String[] {
+              "compileClasspath", "runtimeClasspath", "testCompileClasspath", "testRuntimeClasspath"
+            },
+            "safe");
 
     // If no safe configurations found, try legacy configurations
     if (resolvableConfigurations.isEmpty()) {
-      String[] legacyConfigurationNames = {"compile", "runtime", "testCompile", "testRuntime"};
-      for (String configName : legacyConfigurationNames) {
-        Configuration config = configurationContainer.findByName(configName);
-        if (config != null && config.isCanBeResolved()) {
-          try {
-            config.getState();
-            resolvableConfigurations.add(config);
-            project.getLogger().debug("Including legacy configuration: {}", configName);
-          } catch (Exception e) {
-            project
-                .getLogger()
-                .debug(
-                    "Skipping problematic legacy configuration {}: {}", configName, e.getMessage());
-          }
-        }
-      }
+      resolvableConfigurations =
+          collectResolvableConfigurations(
+              project,
+              configurationContainer,
+              new String[] {"compile", "runtime", "testCompile", "testRuntime"},
+              "legacy");
     }
 
     project.getLogger().info("Found {} resolvable configurations", resolvableConfigurations.size());
     return resolvableConfigurations;
+  }
+
+  private Set<Configuration> collectResolvableConfigurations(
+      Project project, ConfigurationContainer container, String[] configNames, String label) {
+    Set<Configuration> result = new HashSet<>();
+    for (String configName : configNames) {
+      Configuration config = container.findByName(configName);
+      if (config != null && config.isCanBeResolved()) {
+        try {
+          // Double-check by trying to access basic metadata
+          config.getState();
+          result.add(config);
+          project.getLogger().debug("Including {} configuration: {}", label, configName);
+        } catch (Exception e) {
+          project
+              .getLogger()
+              .debug(
+                  "Skipping problematic {} configuration {}: {}",
+                  label,
+                  configName,
+                  e.getMessage());
+        }
+      }
+    }
+    return result;
   }
 
   /**
@@ -142,17 +146,8 @@ public class DependencyUtils {
   public Set<ResolvedDependency> getAllDependencies(final Set<Configuration> configurations) {
     Set<ResolvedDependency> allDependencies = new HashSet<>();
     for (Configuration configuration : configurations) {
-      String configName = configuration.getName();
-
-      // Skip configurations that are not resolvable
-      if (!configuration.isCanBeResolved()) {
-        System.out.println("Skipping non-resolvable configuration: " + configName);
-        continue;
-      }
-
-      // Skip configurations that are known to be problematic
-      if (isExcludedConfiguration(configName)) {
-        System.out.println("Skipping excluded configuration: " + configName);
+      // Skip configurations that are not resolvable or known to be problematic
+      if (shouldSkipConfiguration(configuration, "")) {
         continue;
       }
 
@@ -164,14 +159,27 @@ public class DependencyUtils {
                 .getAllModuleDependencies());
       } catch (Exception e) {
         // Log the error but continue with other configurations
-        System.out.println(
-            "Warning: Could not resolve dependencies for configuration '"
-                + configName
-                + "': "
-                + e.getMessage());
+        log.warn(
+            "Warning: Could not resolve dependencies for configuration '{}': {}",
+            configuration.getName(),
+            e.getMessage());
       }
     }
     return allDependencies;
+  }
+
+  /** Logs and returns true when a configuration must be skipped during analysis. */
+  private boolean shouldSkipConfiguration(Configuration configuration, String context) {
+    String configName = configuration.getName();
+    if (!configuration.isCanBeResolved()) {
+      log.info("Skipping non-resolvable configuration{}: {}", context, configName);
+      return true;
+    }
+    if (isExcludedConfiguration(configName)) {
+      log.info("Skipping excluded configuration{}: {}", context, configName);
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -211,11 +219,10 @@ public class DependencyUtils {
                 .getUnresolvedModuleDependencies());
       } catch (Exception e) {
         // Log the error but continue with other configurations
-        System.out.println(
-            "Warning: Could not get unresolved dependencies for configuration '"
-                + configuration.getName()
-                + "': "
-                + e.getMessage());
+        log.warn(
+            "Warning: Could not get unresolved dependencies for configuration '{}': {}",
+            configuration.getName(),
+            e.getMessage());
       }
     }
     return allUnresolvedDependencies;
@@ -231,19 +238,8 @@ public class DependencyUtils {
   public Set<ResolvedDependency> getDeclaredDependencies(final Set<Configuration> configurations) {
     Set<ResolvedDependency> declaredDependency = new HashSet<>();
     for (Configuration configuration : configurations) {
-      String configName = configuration.getName();
-
-      // Skip configurations that are not resolvable
-      if (!configuration.isCanBeResolved()) {
-        System.out.println(
-            "Skipping non-resolvable configuration in getDeclaredDependencies: " + configName);
-        continue;
-      }
-
-      // Skip configurations that are known to be problematic
-      if (isExcludedConfiguration(configName)) {
-        System.out.println(
-            "Skipping excluded configuration in getDeclaredDependencies: " + configName);
+      // Skip configurations that are not resolvable or known to be problematic
+      if (shouldSkipConfiguration(configuration, " in getDeclaredDependencies")) {
         continue;
       }
 
@@ -255,11 +251,10 @@ public class DependencyUtils {
                 .getFirstLevelModuleDependencies());
       } catch (Exception e) {
         // Log the error but continue with other configurations
-        System.out.println(
-            "Warning: Could not get declared dependencies for configuration '"
-                + configName
-                + "': "
-                + e.getMessage());
+        log.warn(
+            "Warning: Could not get declared dependencies for configuration '{}': {}",
+            configuration.getName(),
+            e.getMessage());
       }
     }
     return declaredDependency;

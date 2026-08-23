@@ -130,49 +130,12 @@ public class Dependency {
 
   @NonNull
   private Iterable<ClassName> findRelatedClasses() {
-    final Set<ClassName> relatedClasses = new HashSet<>();
+    final Set<ClassName> classes = new HashSet<>();
     if (file != null && file.getName().endsWith(".jar")) {
       // optimized solution for the jar case
-      try (JarFile jarFile = new JarFile(file)) {
-        Enumeration<JarEntry> jarEntries = jarFile.entries();
-
-        // Protection against ZIP bomb attacks
-        int maxEntries = 100_000; // Maximum number of entries to process
-        int entryCount = 0;
-
-        while (jarEntries.hasMoreElements() && entryCount < maxEntries) {
-          JarEntry jarEntry = jarEntries.nextElement();
-          String entry = jarEntry.getName();
-          entryCount++;
-
-          // Additional protection: skip entries with suspicious characteristics
-          if (entry.length() > 1000) { // Skip entries with very long names
-            continue;
-          }
-
-          if (entry.endsWith(".class")) {
-            relatedClasses.add(new ClassName(entry));
-          }
-        }
-
-        if (entryCount >= maxEntries) {
-          log.warn(
-              "JAR file {} has too many entries ({}), processing truncated",
-              file.getName(),
-              entryCount);
-        }
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
+      addClassesFromJar(file, classes);
     } else if (file != null && file.isDirectory()) {
-      try {
-        URL url = file.toURI().toURL();
-        ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
-        Set<String> classes = classAnalyzer.analyze(url);
-        classes.forEach(c -> relatedClasses.add(new ClassName(c)));
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
+      addClassesFromDirectory(file, classes);
     }
     log.trace(
         "Finding related classes for Dependency: "
@@ -185,8 +148,53 @@ public class Dependency {
             + scope
             + ":"
             + file);
-    log.trace("Related classes: " + relatedClasses);
-    return ImmutableSet.copyOf(relatedClasses);
+    log.trace("Related classes: " + classes);
+    return ImmutableSet.copyOf(classes);
+  }
+
+  private void addClassesFromJar(File jar, Set<ClassName> classes) {
+    try (JarFile jarFile = new JarFile(jar)) {
+      Enumeration<JarEntry> jarEntries = jarFile.entries();
+
+      // Protection against ZIP bomb attacks
+      int maxEntries = 100_000; // Maximum number of entries to process
+      int entryCount = 0;
+
+      while (jarEntries.hasMoreElements() && entryCount < maxEntries) {
+        JarEntry jarEntry = jarEntries.nextElement();
+        String entry = jarEntry.getName();
+        entryCount++;
+
+        // Additional protection: skip entries with suspicious characteristics
+        if (entry.length() > 1000) { // Skip entries with very long names
+          continue;
+        }
+
+        if (entry.endsWith(".class")) {
+          classes.add(new ClassName(entry));
+        }
+      }
+
+      if (entryCount >= maxEntries) {
+        log.warn(
+            "JAR file {} has too many entries ({}), processing truncated",
+            jar.getName(),
+            entryCount);
+      }
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    }
+  }
+
+  private void addClassesFromDirectory(File directory, Set<ClassName> classes) {
+    try {
+      URL url = directory.toURI().toURL();
+      ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
+      Set<String> analyzedClasses = classAnalyzer.analyze(url);
+      analyzedClasses.forEach(c -> classes.add(new ClassName(c)));
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    }
   }
 
   @NonNull

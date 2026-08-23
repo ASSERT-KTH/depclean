@@ -39,6 +39,8 @@ public class DefaultCallGraph {
   private static final Set<String> projectVertices = new HashSet<>();
   private static final Map<String, Set<String>> usagesPerClass = new HashMap<>();
 
+  private DefaultCallGraph() {}
+
   /**
    * Add an edge to the call graph of classes.
    *

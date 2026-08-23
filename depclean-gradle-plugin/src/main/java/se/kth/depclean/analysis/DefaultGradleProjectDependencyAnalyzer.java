@@ -155,40 +155,7 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
       File file = artifact.getFile();
       if (file.getName().endsWith(".jar")) {
         // optimized solution for the jar case
-        try (JarFile jarFile = new JarFile(file)) {
-          Enumeration<JarEntry> jarEntries = jarFile.entries();
-          Set<String> classes = new HashSet<>();
-
-          // Protection against ZIP bomb attacks
-          int maxEntries = 100_000; // Maximum number of entries to process
-          int entryCount = 0;
-
-          while (jarEntries.hasMoreElements() && entryCount < maxEntries) {
-            JarEntry jarEntry = jarEntries.nextElement();
-            String entry = jarEntry.getName();
-            entryCount++;
-
-            // Additional protection: skip entries with suspicious characteristics
-            if (entry.length() > 1000) { // Skip entries with very long names
-              continue;
-            }
-
-            if (entry.endsWith(".class")) {
-              String className = entry.replace('/', '.');
-              className = className.substring(0, className.length() - ".class".length());
-              classes.add(className);
-            }
-          }
-
-          if (entryCount >= maxEntries) {
-            log.warn(
-                "JAR file {} has too many entries ({}), processing truncated",
-                file.getName(),
-                entryCount);
-          }
-
-          artifactClassMap.put(artifact, classes);
-        }
+        artifactClassMap.put(artifact, classesFromJar(file));
       } else if (file.isDirectory()) {
         URL url = file.toURI().toURL();
         Set<String> classes = classAnalyzer.analyze(url);
@@ -196,6 +163,44 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
       }
     }
     return artifactClassMap;
+  }
+
+  /** Collects the class names contained in a jar file, enforcing ZIP bomb limits. */
+  private Set<String> classesFromJar(File file) throws IOException {
+    try (JarFile jarFile = new JarFile(file)) {
+      Enumeration<JarEntry> jarEntries = jarFile.entries();
+      Set<String> classes = new HashSet<>();
+
+      // Protection against ZIP bomb attacks
+      int maxEntries = 100_000; // Maximum number of entries to process
+      int entryCount = 0;
+
+      while (jarEntries.hasMoreElements() && entryCount < maxEntries) {
+        JarEntry jarEntry = jarEntries.nextElement();
+        String entry = jarEntry.getName();
+        entryCount++;
+
+        // Additional protection: skip entries with suspicious characteristics
+        if (entry.length() > 1000) { // Skip entries with very long names
+          continue;
+        }
+
+        if (entry.endsWith(".class")) {
+          String className = entry.replace('/', '.');
+          className = className.substring(0, className.length() - ".class".length());
+          classes.add(className);
+        }
+      }
+
+      if (entryCount >= maxEntries) {
+        log.warn(
+            "JAR file {} has too many entries ({}), processing truncated",
+            file.getName(),
+            entryCount);
+      }
+
+      return classes;
+    }
   }
 
   /**

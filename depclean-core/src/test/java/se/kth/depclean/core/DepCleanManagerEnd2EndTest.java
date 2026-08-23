@@ -352,7 +352,9 @@ class DepCleanManagerEnd2EndTest {
     }
 
     @Override
-    public void close() {}
+    public void close() {
+      // nothing to release
+    }
 
     public List<LoggingEvent> getLog() {
       return new ArrayList<>(log);

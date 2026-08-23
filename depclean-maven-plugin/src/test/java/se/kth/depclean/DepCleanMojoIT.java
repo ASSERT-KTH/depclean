@@ -283,7 +283,7 @@ public class DepCleanMojoIT {
     log.trace("Test that DepClean creates a proper pom-debloated.xml file");
     String path =
         "target/maven-it/se/kth/depclean/DepCleanMojoIT/debloated_pom_is_correct/project/pom-debloated.xml";
-    File generated_pom_debloated = new File(path);
+    File generatedPomDebloated = new File(path);
     assertThat(result)
         .isSuccessful()
         .out()
@@ -299,9 +299,9 @@ public class DepCleanMojoIT {
             "[INFO] Excluding com.fasterxml.jackson.core:jackson-annotations from com.fasterxml.jackson.core:jackson-databind:2.22.2",
             "[INFO] POM debloated successfully",
             "[INFO] pom-debloated.xml file created in: "
-                + generated_pom_debloated.getAbsolutePath());
-    Assertions.assertTrue(generated_pom_debloated.exists());
-    assertThat(generated_pom_debloated)
+                + generatedPomDebloated.getAbsolutePath());
+    Assertions.assertTrue(generatedPomDebloated.exists());
+    assertThat(generatedPomDebloated)
         .hasSameTextualContentAs(
             new File("src/test/resources/DepCleanMojoResources/pom-debloated.xml"));
   }

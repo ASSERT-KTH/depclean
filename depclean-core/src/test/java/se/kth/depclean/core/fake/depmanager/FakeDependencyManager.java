@@ -17,8 +17,8 @@ import se.kth.depclean.core.wrapper.LogWrapper;
 
 public class FakeDependencyManager implements DependencyManagerWrapper {
 
-  protected Path RESOURCES_PATH = Paths.get("src/test/resources");
-  protected Path END_2_END_PATH = RESOURCES_PATH.resolve("end2end");
+  protected static final Path RESOURCES_PATH = Paths.get("src/test/resources");
+  protected static final Path END_2_END_PATH = RESOURCES_PATH.resolve("end2end");
 
   private final Logger log;
   private final FakeDependencyGraph dependencyGraph;
@@ -125,7 +125,9 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public void generateDependencyTree(File treeFile) {}
+  public void generateDependencyTree(File treeFile) {
+    // not needed by the fake
+  }
 
   @Override
   @SuppressWarnings("NullAway")
