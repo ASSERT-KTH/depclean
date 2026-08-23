@@ -162,6 +162,17 @@
           <includes>
             <include>**/*IT.java</include>
           </includes>
+          <!-- Each IT forks an isolated mvn build (own project dir, own local repo, own
+               target), so they are safe to run concurrently; threads mostly wait on the
+               forked process, hence a parallelism above the core count. -->
+          <properties>
+            <configurationParameters>
+              junit.jupiter.execution.parallel.enabled = true
+              junit.jupiter.execution.parallel.mode.default = concurrent
+              junit.jupiter.execution.parallel.config.strategy = fixed
+              junit.jupiter.execution.parallel.config.fixed.parallelism = 6
+            </configurationParameters>
+          </properties>
           <!-- Instrument the Maven processes forked by the ITs with the JaCoCo agent -->
           <environmentVariables>
             <MAVEN_OPTS>${itCoverageAgent}</MAVEN_OPTS>
