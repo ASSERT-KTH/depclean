@@ -2,6 +2,7 @@
 target/
 build/
 out/
+bin/
 
 # Gradle
 .gradle/
