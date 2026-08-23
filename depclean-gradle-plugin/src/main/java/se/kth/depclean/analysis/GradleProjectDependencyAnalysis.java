@@ -103,14 +103,14 @@ public class GradleProjectDependencyAnalysis {
     }
 
     if (!getUsedUndeclaredArtifacts().isEmpty()) {
-      if (buffer.length() > 0) {
+      if (!buffer.isEmpty()) {
         buffer.append(",");
       }
       buffer.append("usedUndeclaredArtifacts=").append(getUsedUndeclaredArtifacts());
     }
 
     if (!getUnusedDeclaredArtifacts().isEmpty()) {
-      if (buffer.length() > 0) {
+      if (!buffer.isEmpty()) {
         buffer.append(",");
       }
       buffer.append("unusedDeclaredArtifacts=").append(getUnusedDeclaredArtifacts());

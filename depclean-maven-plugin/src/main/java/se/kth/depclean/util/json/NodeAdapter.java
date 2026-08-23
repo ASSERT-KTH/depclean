@@ -120,9 +120,8 @@ public class NodeAdapter extends TypeAdapter<Node> {
   }
 
   private void writeCallGraphCsv(String canonical) throws IOException {
-    DefaultCallGraph defaultCallGraph = new DefaultCallGraph();
     for (Map.Entry<String, Set<String>> usagePerClassMap :
-        defaultCallGraph.getUsagesPerClass().entrySet()) {
+        DefaultCallGraph.getUsagesPerClass().entrySet()) {
       String key = usagePerClassMap.getKey();
       Set<String> value = usagePerClassMap.getValue();
       for (String s : value) {

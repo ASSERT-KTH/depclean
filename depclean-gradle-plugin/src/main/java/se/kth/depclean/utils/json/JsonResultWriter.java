@@ -241,7 +241,6 @@ public class JsonResultWriter {
     if (dependencyAnalyzer.getDependenciesClassesMap().containsKey(dependencyId)) {
       for (ClassName usedType :
           dependencyAnalyzer.getDependenciesClassesMap().get(dependencyId).getUsedTypes()) {
-        System.out.println("Used type: " + usedType.toString());
         usedTypes.value(usedType.getValue());
       }
     }
@@ -260,9 +259,8 @@ public class JsonResultWriter {
   }
 
   private void writeClassUsageCsv(String dependencyId) throws IOException {
-    DefaultCallGraph defaultCallGraph = new DefaultCallGraph();
     for (Map.Entry<String, Set<String>> usagePerClassMap :
-        defaultCallGraph.getUsagesPerClass().entrySet()) {
+        DefaultCallGraph.getUsagesPerClass().entrySet()) {
       String key = usagePerClassMap.getKey();
       Set<String> value = usagePerClassMap.getValue();
       for (String s : value) {

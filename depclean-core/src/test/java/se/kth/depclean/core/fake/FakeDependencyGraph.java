@@ -8,9 +8,9 @@ import se.kth.depclean.core.model.Dependency;
 
 public class FakeDependencyGraph implements DependencyGraph {
 
-  Dependency COMMONS_IO_DEPENDENCY = createDependency("commons-io");
-  Dependency COMMONS_LANG_DEPENDENCY = createDependency("commons-lang3");
-  Dependency COMMONS_LOGGING_DEPENDENCY = createDependency("commons-logging-api");
+  static final Dependency COMMONS_IO_DEPENDENCY = createDependency("commons-io");
+  static final Dependency COMMONS_LANG_DEPENDENCY = createDependency("commons-lang3");
+  static final Dependency COMMONS_LOGGING_DEPENDENCY = createDependency("commons-logging-api");
 
   @Override
   public Dependency projectCoordinates() {

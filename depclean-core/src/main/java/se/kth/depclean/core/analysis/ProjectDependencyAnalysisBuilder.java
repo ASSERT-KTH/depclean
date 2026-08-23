@@ -124,31 +124,30 @@ public class ProjectDependencyAnalysisBuilder {
   }
 
   private Set<Dependency> getUsedInheritedDirectDependencies() {
-    return usedDependencies.stream()
-        .filter(a -> context.getDependencyGraph().inheritedDirectDependencies().contains(a))
-        .peek(dependency -> log.trace("## Used Inherited Direct dependency {}", dependency))
-        .collect(Collectors.toSet());
+    return filterUsedDependencies(
+        context.getDependencyGraph().inheritedDirectDependencies(), "Inherited Direct");
   }
 
   private Set<Dependency> getUsedDirectDependencies() {
-    return usedDependencies.stream()
-        .filter(a -> context.getDependencyGraph().directDependencies().contains(a))
-        .peek(dependency -> log.trace("## Used Direct dependency {}", dependency))
-        .collect(Collectors.toSet());
+    return filterUsedDependencies(context.getDependencyGraph().directDependencies(), "Direct");
   }
 
   private Set<Dependency> getUsedTransitiveDependencies() {
-    return usedDependencies.stream()
-        .filter(a -> context.getDependencyGraph().transitiveDependencies().contains(a))
-        .peek(dependency -> log.trace("## Used Transitive dependency {}", dependency))
-        .collect(Collectors.toSet());
+    return filterUsedDependencies(
+        context.getDependencyGraph().transitiveDependencies(), "Transitive");
   }
 
   private Set<Dependency> getUsedInheritedTransitiveDependencies() {
-    return usedDependencies.stream()
-        .filter(a -> context.getDependencyGraph().inheritedTransitiveDependencies().contains(a))
-        .peek(dependency -> log.trace("## Used Transitive dependency {}", dependency))
-        .collect(Collectors.toSet());
+    return filterUsedDependencies(
+        context.getDependencyGraph().inheritedTransitiveDependencies(), "Inherited Transitive");
+  }
+
+  private Set<Dependency> filterUsedDependencies(
+      Collection<Dependency> candidates, String label) {
+    final Set<Dependency> result =
+        usedDependencies.stream().filter(candidates::contains).collect(Collectors.toSet());
+    result.forEach(dependency -> log.trace("## Used {} dependency {}", label, dependency));
+    return result;
   }
 
   private Set<Dependency> getUnusedDirectDependencies(Set<Dependency> usedDirectDependencies) {

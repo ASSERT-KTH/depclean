@@ -100,12 +100,16 @@ public class ConstantPoolParser {
     buf.getChar(); // minor + ver
     Set<Integer> classes = new HashSet<>();
     Map<Integer, String> stringConstants = new HashMap<>();
-    for (int ix = 1, num = buf.getChar(); ix < num; ix++) {
+    final int num = buf.getChar();
+    int ix = 1;
+    while (ix < num) {
       byte tag = buf.get();
+      // 8-byte constants (long/double) occupy two constant pool slots
+      int slots = 1;
       switch (tag) {
         case CONSTANT_UTF8:
           stringConstants.put(ix, decodeString(buf));
-          continue;
+          break;
         case CONSTANT_CLASS:
         case CONSTANT_STRING:
         case CONSTANT_METHOD_TYPE:
@@ -115,6 +119,7 @@ public class ConstantPoolParser {
         case CONSTANT_METHODREF:
         case CONSTANT_INTERFACEMETHODREF:
         case CONSTANT_NAME_AND_TYPE:
+        case CONSTANT_INVOKE_DYNAMIC:
           buf.getChar();
           buf.getChar();
           break;
@@ -126,18 +131,14 @@ public class ConstantPoolParser {
           break;
         case CONSTANT_DOUBLE:
           buf.getDouble();
-          ix++;
+          slots = 2;
           break;
         case CONSTANT_LONG:
           buf.getLong();
-          ix++;
+          slots = 2;
           break;
         case CONSTANT_METHODHANDLE:
           buf.get();
-          buf.getChar();
-          break;
-        case CONSTANT_INVOKE_DYNAMIC:
-          buf.getChar();
           buf.getChar();
           break;
         case CONSTANT_MODULE:
@@ -145,8 +146,9 @@ public class ConstantPoolParser {
           buf.getChar();
           break;
         default:
-          throw new RuntimeException("Unknown constant pool type '" + tag + "'");
+          throw new IllegalStateException("Unknown constant pool type '" + tag + "'");
       }
+      ix += slots;
     }
     Set<String> result = new HashSet<>();
     for (Integer clazz : classes) {

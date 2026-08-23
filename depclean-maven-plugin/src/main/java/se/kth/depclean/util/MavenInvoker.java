@@ -28,7 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -398,7 +397,7 @@ public final class MavenInvoker {
     /** The handles of the descendants of the process and of the process itself. */
     private static List<Object> treeOf(Process process) {
       if (TO_HANDLE == null || DESCENDANTS == null) {
-        return Collections.emptyList();
+        return new ArrayList<>();
       }
       try {
         Object handle = TO_HANDLE.invoke(process);
@@ -408,7 +407,7 @@ public final class MavenInvoker {
         return tree;
       } catch (ReflectiveOperationException | RuntimeException e) {
         log.debug("Unable to list the process tree: {}", e.getMessage());
-        return Collections.emptyList();
+        return new ArrayList<>();
       }
     }
 

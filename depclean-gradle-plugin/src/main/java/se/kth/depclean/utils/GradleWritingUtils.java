@@ -19,6 +19,8 @@ import se.kth.depclean.DepCleanGradleAction;
 
 public class GradleWritingUtils {
 
+  private GradleWritingUtils() {}
+
   /**
    * Writes the debloated-dependencies.gradle.
    *

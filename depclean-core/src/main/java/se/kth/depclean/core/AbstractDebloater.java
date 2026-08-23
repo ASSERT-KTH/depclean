@@ -15,7 +15,7 @@ public abstract class AbstractDebloater<T> {
 
   protected final ProjectDependencyAnalysis analysis;
 
-  public AbstractDebloater(ProjectDependencyAnalysis analysis) {
+  protected AbstractDebloater(ProjectDependencyAnalysis analysis) {
     this.analysis = analysis;
   }
 
