@@ -209,6 +209,10 @@
         <configuration>
           <goalPrefix>depclean</goalPrefix>
           <skipErrorNoDescriptorsFound>false</skipErrorNoDescriptorsFound>
+          <!-- The runtime floor is Java 8 (main sources emit Java 8 bytecode);
+               without this, the plugin-plugin derives 17 from the enforcer's
+               requireJavaVersion, which is only the BUILD requirement. -->
+          <requiredJavaVersion>${java.version}</requiredJavaVersion>
         </configuration>
         <executions>
           <execution>

@@ -1,6 +1,7 @@
 plugins {
     id 'com.diffplug.spotless' version '8.10.0'
     id 'groovy'
+    id 'jacoco'
     id 'java'
     id 'java-gradle-plugin'
     id 'jvm-test-suite'
@@ -17,6 +18,12 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     options.release = 17
+}
+
+// Groovy (Spock) test classes must also run on the Java 17 test launcher
+tasks.withType(GroovyCompile).configureEach {
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
 }
 
 group = 'se.kth.castor'
@@ -63,12 +70,29 @@ testing {
 }
 
 tasks.withType(Test).configureEach {
+    // The functional tests run the plugin in-process, so the test JVM is the JVM
+    // the plugin is verified on. -PtestJavaVersion=17|21|25 selects it (CI matrix).
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of((findProperty('testJavaVersion') ?: '21') as int)
+    }
     // Show full exception detail on CI, where the HTML report is not accessible
     testLogging {
         exceptionFormat 'full'
         showExceptions true
         showCauses true
         showStackTraces true
+    }
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+jacoco {
+    toolVersion = '0.8.15'
+}
+
+tasks.named('jacocoTestReport', JacocoReport) {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
     }
 }
 

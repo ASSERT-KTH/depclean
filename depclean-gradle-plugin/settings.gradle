@@ -1,2 +1,7 @@
+plugins {
+    // Auto-provisions toolchain JDKs that are not preinstalled on the machine
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 rootProject.name = 'depclean-gradle-plugin'
 

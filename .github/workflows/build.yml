@@ -19,6 +19,13 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         java: [25]
+        include:
+          # The plugin must work on every JDK a user's Maven may run on (17+ to build;
+          # the ITs fork real mvn processes with the matrix JDK).
+          - os: ubuntu-latest
+            java: 17
+          - os: ubuntu-latest
+            java: 21
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     name: Maven Build with Java ${{ matrix.java }} on ${{ matrix.os }}
@@ -62,9 +69,62 @@ jobs:
       # so no CI-based sonar:sonar step is needed here.
 
   # --------------------------------------------------------------------------------------------------------------------
+  # The maven-plugin main sources target Java 8 bytecode (statically enforced by
+  # enforceBytecodeVersion). This job proves it at runtime: build on JDK 25, then
+  # run the depclean goal on a Java 8 fixture with Maven running on JDK 8.
+  java8-smoke:
+    name: Maven plugin smoke test on Java 8
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 8
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version: 8
+          distribution: "temurin"
+
+      - name: Set up Java 25 (default)
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version: 25
+          distribution: "temurin"
+          cache: "maven"
+
+      - name: "Build and install plugin (JDK 25)"
+        run: ./mvnw -ntp clean install -DskipTests -q
+
+      - name: "Resolve project version"
+        id: version
+        run: echo "version=$(./mvnw -ntp -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_OUTPUT"
+
+      - name: "Run DepClean on the fixture with Maven on JDK 8"
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_8_X64 }}
+        run: |
+          ./mvnw -version | grep -i 'java version: 1.8'
+          ./mvnw -ntp -f .github/smoke/java8/pom.xml \
+            package se.kth.castor:depclean-maven-plugin:${{ steps.version.outputs.version }}:depclean \
+            | tee /tmp/depclean-smoke.log
+          grep 'D E P C L E A N   A N A L Y S I S   R E S U L T S' /tmp/depclean-smoke.log
+          grep 'commons-io:commons-io' /tmp/depclean-smoke.log
+          grep 'org.apache.commons:commons-lang3' /tmp/depclean-smoke.log
+
+  # --------------------------------------------------------------------------------------------------------------------
   # For Gradle module
   gradle:
-    name: Gradle build with Java 25 on ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # JVM the plugin is verified on: the functional tests run the plugin
+        # in-process, so the test JVM is what the plugin actually executes on.
+        # The plugin targets Java 17 bytecode, hence 17 is the floor.
+        test-java: [17, 21, 25]
+    name: Gradle build with tests on Java ${{ matrix.test-java }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -90,4 +150,12 @@ jobs:
 
       - name: Build with Gradle
         working-directory: ./depclean-gradle-plugin
-        run: ./gradlew clean publishToMavenLocal build
+        run: ./gradlew clean publishToMavenLocal build -PtestJavaVersion=${{ matrix.test-java }}
+
+      - name: "Codecov (gradle plugin)"
+        if: matrix.test-java == 25 && github.repository == 'ASSERT-KTH/depclean'
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./depclean-gradle-plugin/build/reports/jacoco/test/jacocoTestReport.xml
+          flags: gradleplugin
