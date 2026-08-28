@@ -6,7 +6,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'jvm-test-suite'
     id 'maven-publish'
-    id 'net.ltgt.errorprone' version '5.1.0'
+    id 'net.ltgt.errorprone' version '5.1.1'
 }
 
 java {
