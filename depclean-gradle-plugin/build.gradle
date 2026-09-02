@@ -38,7 +38,7 @@ ext {
     depcleanVersion = '2.2.0-SNAPSHOT'
     errorProneCoreVersion = '2.50.0'
     jspecifyVersion = '1.0.1'
-    nullawayVersion = '0.14.0'
+    nullawayVersion = '0.14.1'
     slf4jVersion = '2.0.18'
     spockVersion = '2.4-groovy-4.0'
     spotbugsAnnotationsVersion = '4.10.4'

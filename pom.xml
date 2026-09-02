@@ -32,7 +32,7 @@
     <jspecify.version>1.0.1</jspecify.version>
     <junit-jupiter.version>6.1.3</junit-jupiter.version>
     <maven-core.version>3.9.16</maven-core.version>
-    <nullaway.version>0.14.0</nullaway.version>
+    <nullaway.version>0.14.1</nullaway.version>
     <slf4j-reload4j.version>2.0.18</slf4j-reload4j.version>
     <spotbugs-annotations.version>4.10.4</spotbugs-annotations.version>
 
