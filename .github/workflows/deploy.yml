@@ -18,6 +18,9 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # Approval in this environment is restricted to maintainers, so a release cannot start
+    # until one of them signs it off.
+    environment: release
     permissions:
       contents: write
     steps:
@@ -45,7 +48,7 @@ jobs:
           distribution: "temurin"
           java-version: 25
           cache: "maven"
-          server-id: ossrh
+          server-id: central
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -64,8 +67,8 @@ jobs:
       - name: Release Maven package
         run: ./mvnw -ntp --batch-mode clean deploy -P deploy -Djacoco.skip=true -DskipTests
         env:
-          MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          MAVEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Create and push tag

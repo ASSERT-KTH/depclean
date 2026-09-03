@@ -37,6 +37,7 @@
     <spotbugs-annotations.version>4.10.4</spotbugs-annotations.version>
 
     <!-- Plugins -->
+    <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
@@ -49,7 +50,6 @@
     <maven-site-plugin.version>3.22.0</maven-site-plugin.version>
     <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
     <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
-    <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
     <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
     <spotless-maven-plugin.version>3.10.1</spotless-maven-plugin.version>
 
@@ -325,14 +325,12 @@
     <url>https://github.com/castor-software/depclean/issues</url>
   </issueManagement>
 
+  <!-- Releases are published to Maven Central through the Central Publisher Portal, which the
+       central-publishing-maven-plugin below drives via its API rather than a deploy repository. -->
   <distributionManagement>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
     <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <id>central</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 
@@ -374,21 +372,22 @@
             </executions>
           </plugin>
 
-          <!-- Nexus Staging Maven plugin for deployment to Sonatype-->
+          <!-- Central Publishing Maven plugin to publish to Maven Central via the Portal -->
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>${nexus-staging-maven-plugin.version}</version>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>${central-publishing-maven-plugin.version}</version>
             <extensions>true</extensions>
             <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+              <waitUntil>published</waitUntil>
+              <deploymentName>depclean ${project.version}</deploymentName>
             </configuration>
           </plugin>
 
           <!-- Performing a release deployment with the Maven Release Plugin -->
-          <!-- see https://central.sonatype.org/pages/apache-maven.html -->
+          <!-- see https://central.sonatype.org/publish/publish-portal-maven/ -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-release-plugin</artifactId>
