@@ -47,7 +47,7 @@
       <plugin>
         <groupId>se.kth.castor</groupId>
         <artifactId>depclean-maven-plugin</artifactId>
-        <version>2.2.0-SNAPSHOT</version>
+        <version>${project.version}</version>
         <executions>
           <execution>
             <goals>
