@@ -65,7 +65,7 @@ Configure the `pom.xml` file of your Maven project to use DepClean as part of th
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0</version>
   <executions>
     <execution>
       <goals>
@@ -115,7 +115,7 @@ For example, if you want to fail the build in the presence of unused direct depe
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0</version>
   <executions>
     <execution>
       <goals>
