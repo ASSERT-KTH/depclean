@@ -18,8 +18,8 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    # Approval in this environment is restricted to maintainers, so a release cannot start
-    # until one of them signs it off.
+    # Run in the `release` environment. Configure that environment with required reviewers (maintainers)
+    # so a manual `workflow_dispatch` release pauses for approval before publishing.
     environment: release
     permissions:
       contents: write
