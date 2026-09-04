@@ -51,6 +51,25 @@ Please follow the checklist in the [pull request template](.github/PULL_REQUEST_
 3. Reference the related issue in the PR title and description, and summarize your changes in bullet points.
 4. Be ready to discuss your changes during code review.
 
+## Releasing (maintainers only)
+
+Releases are published to Maven Central through the [Central Publisher Portal](https://central.sonatype.com) (see the [Sonatype Maven guide](https://central.sonatype.org/publish/publish-portal-maven/)) by the [Deploy workflow](.github/workflows/deploy.yml).
+
+1. Bump the version in `pom.xml` to the release version and merge it to `master`.
+2. Run the **Deploy** workflow manually (Actions → Deploy → Run workflow), passing the previous and new versions.
+3. The run pauses until a maintainer approves it in the `release` environment, then it signs the artifacts, publishes them, tags the commit, and opens a draft GitHub release.
+
+The workflow needs these repository secrets:
+
+| Secret | Purpose |
+| --- | --- |
+| `CENTRAL_TOKEN_USERNAME` | Username part of the Central Portal [user token](https://central.sonatype.org/publish/generate-portal-token/) |
+| `CENTRAL_TOKEN_PASSWORD` | Password part of the Central Portal user token |
+| `GPG_PRIVATE_KEY` | Private key used to sign the artifacts |
+| `GPG_PASSPHRASE` | Passphrase of that key |
+
+Central no longer accepts a Sonatype account password for publishing, so the token has to be regenerated from the Portal when it is rotated or revoked.
+
 ## Reporting bugs and requesting features
 
 Use the [issue tracker](https://github.com/ASSERT-KTH/depclean/issues) with the provided templates. For security vulnerabilities, please follow the [security policy](SECURITY.md) instead of opening a public issue.
