@@ -53,7 +53,7 @@ Please follow the checklist in the [pull request template](.github/PULL_REQUEST_
 
 ## Releasing (maintainers only)
 
-Releases are published to Maven Central through the [Central Publisher Portal](https://central.sonatype.org/publish/publish-portal-maven/) by the [Deploy workflow](.github/workflows/deploy.yml).
+Releases are published to Maven Central through the [Central Publisher Portal](https://central.sonatype.com) (see the [Sonatype Maven guide](https://central.sonatype.org/publish/publish-portal-maven/)) by the [Deploy workflow](.github/workflows/deploy.yml).
 
 1. Bump the version in `pom.xml` to the release version and merge it to `master`.
 2. Run the **Deploy** workflow manually (Actions → Deploy → Run workflow), passing the previous and new versions.
