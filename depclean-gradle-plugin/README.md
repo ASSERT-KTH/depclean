@@ -29,7 +29,7 @@ Then add the plugin to your `build.gradle` file:
 
 ```groovy
 plugins {
-    id 'se.kth.castor.depclean-gradle-plugin' version '2.2.0-SNAPSHOT'
+    id 'se.kth.castor.depclean-gradle-plugin' version '2.2.0'
 }
 ```
 Then, you can run the `debloat` task to analyze your project and remove unused dependencies:

@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'se.kth.castor:depclean-gradle-plugin:2.2.0-SNAPSHOT'
+        classpath 'se.kth.castor:depclean-gradle-plugin:2.2.0'
     }
 }
 
