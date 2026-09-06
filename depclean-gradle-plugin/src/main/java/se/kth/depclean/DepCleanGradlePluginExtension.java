@@ -40,31 +40,36 @@ public class DepCleanGradlePluginExtension {
   public boolean failIfUnusedInherited = false;
 
   /**
-   * If this is true, DepClean creates a debloated version of the build.gradle without unused
-   * dependencies, called "debloated-build.gradle", in root of the project.
+   * If this is true, DepClean writes a debloated {@code dependencies} block without unused
+   * dependencies to "debloated-dependencies.gradle", in root of the project.
    */
   public boolean createBuildDebloated = false;
 
   /**
    * If this is true, DepClean creates a JSON file with the result of the analysis. The file is
-   * called "debloat-result.json" and it is located in /build.
+   * called "depclean-results.json" and it is located in /build.
    */
   public boolean createResultJson = false;
 
   /**
    * If this is true, DepClean creates a CSV file with the result of the analysis with the columns:
    * OriginClass,TargetClass,Dependency. The file is called "class-usage.csv" and it is located in
-   * /target.
+   * /build. It is only written together with the JSON result, i.e. when {@code createResultJson} is
+   * also true.
    */
   public boolean createClassUsageCsv;
 
-  /** Ignore dependencies with specific configurations from the DepClean analysis. */
+  /**
+   * Ignore dependencies with specific configurations (as printed in the analysis results, e.g.
+   * "compile", "testCompile") from the DepClean analysis.
+   */
   @Nullable public Set<String> ignoreConfiguration;
 
   /**
    * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during
    * the analysis and considered as used dependencies. Useful to override incomplete result caused
-   * by bytecode-level analysis Dependency format is <code>groupId:artifactId:version</code>.
+   * by bytecode-level analysis. Each entry must match a coordinate exactly as printed in the
+   * analysis results, i.e. <code>group:name:version:configuration</code>.
    */
   @Nullable public Set<String> ignoreDependency;
 

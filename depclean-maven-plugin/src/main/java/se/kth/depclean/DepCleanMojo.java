@@ -64,14 +64,14 @@ public class DepCleanMojo extends AbstractMojo {
 
   /**
    * If this is true, DepClean creates a debloated version of the pom without unused dependencies,
-   * called "debloated-pom.xml", in root of the project.
+   * called "pom-debloated.xml", in root of the project.
    */
   @Parameter(property = "createPomDebloated", defaultValue = "false")
   private boolean createPomDebloated;
 
   /**
    * If this is true, DepClean creates a JSON file with the result of the analysis. The file is
-   * called "debloat-result.json" and it is located in /target.
+   * called "depclean-results.json" and it is located in /target.
    */
   @Parameter(property = "createResultJson", defaultValue = "false")
   private boolean createResultJson;
@@ -79,15 +79,17 @@ public class DepCleanMojo extends AbstractMojo {
   /**
    * If this is true, DepClean creates a CSV file with the result of the analysis with the columns:
    * OriginClass,TargetClass,OriginDependency,TargetDependency. The file is called
-   * "depclean-callgraph.csv" and it is located in /target.
+   * "depclean-callgraph.csv" and it is located in /target. It is only written together with the
+   * JSON result, i.e. when {@code createResultJson} is also true.
    */
   @Parameter(property = "createCallGraphCsv", defaultValue = "false")
   private boolean createCallGraphCsv;
 
   /**
-   * Add a list of dependencies, identified by their coordinates, to be ignored by DepClean during
-   * the analysis and considered as used dependencies. Useful to override incomplete result caused
-   * by bytecode-level analysis Dependency format is <code>groupId:artifactId:version</code>.
+   * Add a list of regular expressions matching dependencies to be ignored by DepClean during the
+   * analysis and considered as used dependencies. Useful to override incomplete result caused by
+   * bytecode-level analysis. Each pattern is matched (case-insensitively) against the whole <code>
+   * groupId:artifactId:version:scope</code> coordinate, e.g. <code>com.google.guava.*</code>.
    */
   @Parameter(property = "ignoreDependencies")
   @SuppressWarnings("NullAway") // Injected by Maven
@@ -122,15 +124,17 @@ public class DepCleanMojo extends AbstractMojo {
   private boolean failIfUnusedTransitive;
 
   /**
-   * If this is true, and DepClean reported any unused inherited dependency in the dependency tree,
-   * then the project's build fails immediately after running DepClean.
+   * If this is true, and DepClean reported any unused inherited direct dependency (declared in a
+   * parent POM) in the dependency tree, then the project's build fails immediately after running
+   * DepClean.
    */
   @Parameter(property = "failIfUnusedInheritedDirect", defaultValue = "false")
   private boolean failIfUnusedInheritedDirect;
 
   /**
-   * If this is true, and DepClean reported any unused inherited dependency in the dependency tree,
-   * then the project's build fails immediately after running DepClean.
+   * If this is true, and DepClean reported any unused inherited transitive dependency (pulled in
+   * through a parent POM's dependencies) in the dependency tree, then the project's build fails
+   * immediately after running DepClean.
    */
   @Parameter(property = "failIfUnusedInheritedTransitive", defaultValue = "false")
   private boolean failIfUnusedInheritedTransitive;

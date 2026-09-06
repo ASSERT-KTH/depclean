@@ -65,7 +65,7 @@ Configure the `pom.xml` file of your Maven project to use DepClean as part of th
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.2.1-SNAPSHOT</version>
+  <version>2.2.0</version>
   <executions>
     <execution>
       <goals>
@@ -101,10 +101,11 @@ The Maven plugin can be configured with the following additional parameters.
 | `<ignoreTests>`            |   `boolean`   | If this is true, DepClean will not analyze the test classes in the project, and, therefore, the dependencies that are only used for testing will be considered unused. This parameter is useful to detect dependencies that have `compile` scope but are only used for testing. **Default value is:** `false`.                                                                                                              |
 | `<createPomDebloated>`     |   `boolean`   | If this is true, DepClean creates a debloated version of the pom without unused dependencies called `pom-debloated.xml`, in the root of the project. **Default value is:** `false`.                                                                                                                                                                                                                                         |
 | `<createResultJson>`       |   `boolean`   | If this is true, DepClean creates a JSON file of the dependency tree along with metadata of each dependency. The file is called `depclean-results.json`, and is located in the `target` directory of the project. **Default value is:** `false`.                                                                                                                                                                            |
-| `<createCallGraphCsv>`     |   `boolean`   | If this is true, DepClean creates a CSV file with the static call graph of the API members used in the project. The file is called `depclean-callgraph.csv`, and is located in the `target` directory of the project. **Default value is:** `false`.                                                                                                                                                                        |
+| `<createCallGraphCsv>`     |   `boolean`   | If this is true, DepClean creates a CSV file with the static call graph of the API members used in the project. The file is called `depclean-callgraph.csv`, and is located in the `target` directory of the project. It is only written together with the JSON report, so `createResultJson` must be true as well. **Default value is:** `false`.                                                                                       |
 | `<failIfUnusedDirect>`     |   `boolean`   | If this is true, and DepClean reported any unused direct dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                                                              |
 | `<failIfUnusedTransitive>` |   `boolean`   | If this is true, and DepClean reported any unused transitive dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                                                          |
-| `<failIfUnusedInherited>`  |   `boolean`   | If this is true, and DepClean reported any unused inherited dependency in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                                                           |
+| `<failIfUnusedInheritedDirect>` | `boolean` | If this is true, and DepClean reported any unused inherited direct dependency (declared in a parent POM) in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                                                    |
+| `<failIfUnusedInheritedTransitive>` | `boolean` | If this is true, and DepClean reported any unused inherited transitive dependency (pulled in through a parent POM's dependencies) in the dependency tree, the build fails immediately after running DepClean. **Default value is:** `false`.                                                                                                                                                                       |
 | `<skipDepClean>`           |   `boolean`   | Skip plugin execution completely. **Default value is:** `false`.                                                                                                                                                                                                                                                                                                                                                            |
 
 You can integrate DepClean in your CI/CD pipeline.
@@ -115,7 +116,7 @@ For example, if you want to fail the build in the presence of unused direct depe
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.2.1-SNAPSHOT</version>
+  <version>2.2.0</version>
   <executions>
     <execution>
       <goals>
@@ -138,7 +139,7 @@ mvn se.kth.castor:depclean-maven-plugin:2.2.0:depclean -DfailIfUnusedDirect=true
 
 ## How does DepClean work?
 
-DepClean runs before executing the `package` phase of the Maven build lifecycle. It statically collects all the types
+By default, DepClean binds to the `package` phase of the Maven build lifecycle. It statically collects all the types
 referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the
 project actually uses in the bytecode with respect to the class members belonging to its dependencies.
 

@@ -1,4 +1,23 @@
 cff-version: 1.2.0
+message: "If you use DepClean in academic work, please cite the paper below (preferred-citation)."
+type: software
+title: "DepClean"
+abstract: "DepClean automatically detects and removes unused dependencies in Maven (and Gradle) projects."
+repository-code: "https://github.com/ASSERT-KTH/depclean"
+license: MIT
+authors:
+  - family-names: Soto-Valero
+    given-names: César
+    orcid: "https://orcid.org/0000-0003-0541-6411"
+  - family-names: Harrand
+    given-names: Nicolas
+    orcid: "https://orcid.org/0000-0002-2491-2771"
+  - family-names: Monperrus
+    given-names: Martin
+    orcid: "https://orcid.org/0000-0003-3505-3383"
+  - family-names: Baudry
+    given-names: Benoit
+    orcid: "https://orcid.org/0000-0002-4015-4640"
 preferred-citation:
   type: article
   title: "A Comprehensive Study of Bloated Dependencies in the Maven Ecosystem"
@@ -8,14 +27,14 @@ preferred-citation:
   volume: 26
   issue: 3
   start: 1
-  end: 44  
+  end: 44
   authors:
     - family-names: Soto-Valero
       given-names: César
       orcid: "https://orcid.org/0000-0003-0541-6411"
     - family-names: Harrand
       given-names: Nicolas
-      orcid: "https://orcid.org/ 0000-0002-2491-2771"
+      orcid: "https://orcid.org/0000-0002-2491-2771"
     - family-names: Monperrus
       given-names: Martin
       orcid: "https://orcid.org/0000-0003-3505-3383"

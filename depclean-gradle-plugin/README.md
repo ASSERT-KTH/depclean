@@ -1,7 +1,7 @@
 ## DepClean Gradle Plugin
 
 The DepClean Gradle plugin is designed to automatically detect and remove unused dependencies in Gradle-based Java projects.
-It uses `depclean-core` for the heavy bytecode analysis tasks, and provides a Gradle task to remove unused dependencies from the project's `build.gradle` file.
+It uses `depclean-core` for the heavy bytecode analysis tasks, and provides a Gradle task that reports the unused dependencies of the project and can write a debloated `dependencies { }` block to replace the one in your `build.gradle` file. It never modifies your `build.gradle` itself.
 As with the DepClean Maven plugin, this is a powerful tool to keep your project lean, avoid unnecessary compilation and potential conflicts or security vulnerabilities due to bloated dependencies.
 
 ### Prototype Stage
@@ -40,19 +40,29 @@ Then, you can run the `debloat` task to analyze your project and remove unused d
 
 ### Optional Parameters
 
-The class [DepCleanGradlePluginExtension.java](https://github.com/ASSERT-KTH/depclean/blob/master/depclean-gradle-plugin/src/main/java/se/kth/depclean/DepCleanGradlePluginExtension.java) contains the following parameters currently accepted by DepClean Gradle plugin:
- 
-- `project`: This refers to the Gradle project that will be analyzed by the plugin.
+The plugin is configured through the `depclean { }` extension in `build.gradle`, for example:
+
+```groovy
+depclean {
+    createBuildDebloated = true
+    createResultJson = true
+    ignoreConfiguration = ['testCompile']
+}
+```
+
+The class [DepCleanGradlePluginExtension.java](https://github.com/ASSERT-KTH/depclean/blob/master/depclean-gradle-plugin/src/main/java/se/kth/depclean/DepCleanGradlePluginExtension.java) contains the following parameters currently accepted by DepClean Gradle plugin (all `false`/unset by default):
+
+- `project`: The Gradle project to analyze. It defaults to the project the plugin is applied to and normally does not need to be set.
 - `skipDepClean`: If this is set to true, the execution of the DepClean plugin will be completely skipped.
 - `ignoreTest`: When this parameter is set to true, DepClean will not analyze the test sources in the project. Dependencies only used for testing will be considered unused.
 - `failIfUnusedDirect`: If set to true, and if DepClean identifies any unused direct dependency, the project's build will fail immediately.
 - `failIfUnusedTransitive`: Similar to `failIfUnusedDirect`, but in this case, the build will fail if any unused transitive dependencies are identified.
 - `failIfUnusedInherited`: If true and DepClean finds any unused inherited dependency, the build fails immediately.
-- `createBuildDebloated`: If set to `true`, it will generate a debloated version of the `build.gradle` file without the unused dependencies, and name it `debloated-build.gradle`.
-- `createResultJson`: When this is `true`, DepClean generates a JSON file with the results of the analysis, named `debloat-result.json`.
-- `createClassUsageCsv`: If this is set to `true`, it generates a CSV file with the result of the analysis, including the columns: `OriginClass`, `TargetClass`, and `Dependency`. The file is named `class-usage.csv.
-- `ignoreConfiguration`: This parameter allows you to ignore dependencies with specific configurations from the DepClean analysis.
-- `ignoreDependency`: This parameter accepts a set of dependencies (identified by their coordinates) that should be ignored by the plugin during the analysis and considered as used dependencies.
+- `createBuildDebloated`: If set to `true`, it will generate a `debloated-dependencies.gradle` file in the project directory containing a `dependencies { }` block without the unused dependencies (used transitive dependencies are added as direct ones, unused transitive dependencies are excluded).
+- `createResultJson`: When this is `true`, DepClean generates a JSON file with the results of the analysis, named `depclean-results.json`, in the `build` directory.
+- `createClassUsageCsv`: If this is set to `true`, it generates a CSV file with the result of the analysis, including the columns: `OriginClass`, `TargetClass`, and `Dependency`. The file is named `class-usage.csv` and is located in the `build` directory. It is only written together with the JSON report, so `createResultJson` must be `true` as well.
+- `ignoreConfiguration`: A set of configuration names (as printed in the analysis results, e.g. `compile`, `testCompile`) whose dependencies are excluded from the DepClean results.
+- `ignoreDependency`: A set of dependencies that should be ignored by the plugin during the analysis and considered as used dependencies. Each entry must match a coordinate exactly as printed in the analysis results, i.e. `group:name:version:configuration`.
 
 ### Looking for Contributors
 

@@ -6,8 +6,8 @@ Only the latest release of DepClean is supported with security updates.
 
 | Version | Supported |
 | ------- | --------- |
-| 2.1.x   | ✅        |
-| < 2.1   | ❌        |
+| 2.2.x   | ✅        |
+| < 2.2   | ❌        |
 
 ## Reporting a Vulnerability
 
@@ -21,4 +21,4 @@ Instead, report it privately via [GitHub private vulnerability reporting](https:
 
 You will receive a response as soon as possible. Once the issue is confirmed and a fix is available, a security advisory will be published and the fix released.
 
-Note that DepClean is a build-time analysis tool: it does not run in production environments, and it does not modify your source code or original `pom.xml`. Vulnerabilities in DepClean's own dependencies are tracked continuously via Dependabot and SonarCloud.
+Note that DepClean is a build-time analysis tool: it does not run in production environments, and it does not modify your source code or original `pom.xml`. Vulnerabilities in DepClean's own dependencies are tracked continuously via Renovate (including GitHub and OSV vulnerability alerts) and SonarCloud.

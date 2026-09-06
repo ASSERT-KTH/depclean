@@ -34,7 +34,7 @@ cd depclean-gradle-plugin
 ## Code style
 
 - Java code follows a [Google Java Style](https://google.github.io/styleguide/javaguide.html)-based configuration enforced by Checkstyle ([checkstyle.xml](checkstyle.xml)). Checkstyle runs as part of the Maven build.
-- The Gradle plugin module uses [Spotless](https://github.com/diffplug/spotless); run `./gradlew spotlessApply` to format.
+- Formatting is done with [Spotless](https://github.com/diffplug/spotless) (google-java-format): run `./mvnw spotless:apply` for the Maven modules and `./gradlew spotlessApply` in `depclean-gradle-plugin`.
 
 ## Tests
 
@@ -55,7 +55,7 @@ Please follow the checklist in the [pull request template](.github/PULL_REQUEST_
 
 Releases are published to Maven Central through the [Central Publisher Portal](https://central.sonatype.com) (see the [Sonatype Maven guide](https://central.sonatype.org/publish/publish-portal-maven/)) by the [Deploy workflow](.github/workflows/deploy.yml).
 
-The version is carried not only by the Maven POMs but also by the Gradle plugin, its test fixtures and the READMEs. `scripts/set-version.sh <version>` updates all of them at once, and CI fails if any of them drifts from `pom.xml` (`scripts/set-version.sh --check`). Never bump versions by hand.
+The version is carried not only by the Maven POMs but also by the Gradle plugin, its test fixtures and the READMEs. `scripts/set-version.sh <version>` updates all of them at once, and CI fails if any of them drifts from `pom.xml` (`scripts/set-version.sh --check`). Never bump versions by hand. The one exception is the root `README.md`: it documents the plugin as consumed from Maven Central, so it always shows the latest *release* and is not touched by `-SNAPSHOT` bumps (the Gradle plugin README does follow the snapshot, because that plugin is only available from a local build).
 
 `scripts/release.sh` drives the release from a clean, up-to-date `master` checkout (needs an authenticated `gh`):
 
