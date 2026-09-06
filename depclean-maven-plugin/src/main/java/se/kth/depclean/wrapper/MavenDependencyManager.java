@@ -5,10 +5,8 @@ import fr.dutra.tools.maven.deptree.core.ParseException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.InputStream;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -142,11 +140,11 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
 
     /* Build Maven model to manipulate the pom */
     final Model builtModel;
-    Reader reader;
     MavenXpp3Reader mavenReader = new MavenXpp3Reader();
-    try {
-      reader = new InputStreamReader(new FileInputStream(pomFile), StandardCharsets.UTF_8);
-      builtModel = mavenReader.read(reader);
+    // Hand the raw stream to the parser: given a Reader, Maven 4's StAX-based reader records the
+    // Java charset name ("UTF8") as the model encoding, which then ends up in the debloated pom.
+    try (InputStream in = new FileInputStream(pomFile)) {
+      builtModel = mavenReader.read(in);
       builtModel.setPomFile(pomFile);
     } catch (Exception ex) {
       getLog().error("Unable to build the maven project.");

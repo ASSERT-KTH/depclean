@@ -2,9 +2,12 @@ package se.kth.depclean.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.apache.maven.artifact.Artifact;
@@ -39,7 +42,8 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
     super(analysis);
     this.project = project;
     this.model = model;
-    this.initialDependencies = model.getDependencies();
+    // Snapshot: on Maven 4 the model hands out a live view that follows setDependencies().
+    this.initialDependencies = new ArrayList<>(model.getDependencies());
   }
 
   @Override
@@ -128,7 +132,9 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
    */
   private void writePom(final Path pomFile) throws IOException {
     MavenXpp3Writer writer = new MavenXpp3Writer();
-    writer.write(Files.newBufferedWriter(pomFile), model);
+    try (Writer out = Files.newBufferedWriter(pomFile, StandardCharsets.UTF_8)) {
+      writer.write(out, model);
+    }
   }
 
   private Artifact findArtifact(se.kth.depclean.core.model.Dependency dependency) {

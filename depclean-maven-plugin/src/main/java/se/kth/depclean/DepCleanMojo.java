@@ -19,10 +19,10 @@ package se.kth.depclean;
 
 import java.io.IOException;
 import java.util.Set;
+import javax.inject.Inject;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -144,7 +144,7 @@ public class DepCleanMojo extends AbstractMojo {
   private boolean skipDepClean;
 
   /** To build the dependency graph. */
-  @Component(hint = "default")
+  @Inject
   @SuppressWarnings("NullAway") // Injected by Maven
   private DependencyGraphBuilder dependencyGraphBuilder;
 

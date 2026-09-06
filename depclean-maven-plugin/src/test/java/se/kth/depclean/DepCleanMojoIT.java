@@ -7,8 +7,19 @@ import com.soebes.itf.jupiter.extension.MavenTest;
 import com.soebes.itf.jupiter.maven.MavenExecutionResult;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.assertj.core.api.ListAssert;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
@@ -30,6 +41,33 @@ public class DepCleanMojoIT {
 
   private static final Logger log = LoggerFactory.getLogger(DepCleanMojoIT.class);
 
+  /**
+   * Maven 4 routes everything a plugin writes to standard output through its logger, so each line
+   * of the DepClean report arrives as {@code [INFO] [stdout] <line>} there, whereas Maven 3 passes
+   * it through verbatim.
+   */
+  private static final String MAVEN_4_STDOUT_PREFIX = "[INFO] [stdout] ";
+
+  /** Asserts that the build succeeded and returns its standard output, normalized across Maven versions. */
+  private static ListAssert<String> assertThatStdout(MavenExecutionResult result) {
+    assertThat(result).isSuccessful();
+    try {
+      List<String> lines =
+          Files.readAllLines(result.getMavenLog().getStdout(), StandardCharsets.UTF_8).stream()
+              .map(DepCleanMojoIT::withoutStdoutPrefix)
+              .collect(Collectors.toList());
+      return assertThat(lines);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private static String withoutStdoutPrefix(String line) {
+    return line.startsWith(MAVEN_4_STDOUT_PREFIX)
+        ? line.substring(MAVEN_4_STDOUT_PREFIX.length())
+        : line;
+  }
+
   @MavenTest
   void empty_project(MavenExecutionResult result) {
     log.trace("Test that DepClean runs in an empty Maven project");
@@ -39,10 +77,7 @@ public class DepCleanMojoIT {
   @MavenTest
   void used_java_record(MavenExecutionResult result) {
     log.trace("Test that DepClean identifies dependency used in Java record");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
@@ -66,10 +101,7 @@ public class DepCleanMojoIT {
     log.trace(
         "Test that DepClean does not crash when dependency coordinates use property placeholders"
             + " (issue #399)");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
@@ -89,10 +121,7 @@ public class DepCleanMojoIT {
     // shared call graph between the analyses, the classes used by the first module are still
     // reachable when the second module is analyzed, so commons-io would be wrongly reported as
     // used there, and the first two lines asserted below would not be printed at all.
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "USED DIRECT DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: ",
@@ -104,10 +133,7 @@ public class DepCleanMojoIT {
     log.trace(
         "Test that a dependency only referenced in a Spring XML configuration is considered used"
             + " (issue #78)");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
@@ -131,10 +157,7 @@ public class DepCleanMojoIT {
     log.trace(
         "Test that a dependency only referenced in WEB-INF/web.xml is considered used"
             + " (issue #81)");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
@@ -150,10 +173,7 @@ public class DepCleanMojoIT {
   @MavenTest
   void all_dependencies_unused(MavenExecutionResult result) {
     log.trace("Test that DepClean identifies all dependencies as unused");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
@@ -181,10 +201,7 @@ public class DepCleanMojoIT {
   @MavenTest
   void all_dependencies_used(MavenExecutionResult result) {
     log.trace("Test that DepClean identifies all dependencies as used");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
@@ -207,10 +224,7 @@ public class DepCleanMojoIT {
   @MavenTest
   void used_indirectly(MavenExecutionResult result) {
     log.trace("Test that dependencies used indirectly (org.tukaani:xz is used indirectly)");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
@@ -233,10 +247,7 @@ public class DepCleanMojoIT {
   @MavenTest
   void processor_used(MavenExecutionResult result) {
     log.trace("Test that DepClean runs in a Maven project with processors");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
@@ -279,15 +290,13 @@ public class DepCleanMojoIT {
   }
 
   @MavenTest
-  void debloated_pom_is_correct(MavenExecutionResult result) {
+  void debloated_pom_is_correct(MavenExecutionResult result)
+      throws IOException, XmlPullParserException {
     log.trace("Test that DepClean creates a proper pom-debloated.xml file");
     String path =
         "target/maven-it/se/kth/depclean/DepCleanMojoIT/debloated_pom_is_correct/project/pom-debloated.xml";
     File generatedPomDebloated = new File(path);
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "[INFO] Starting debloating POM file...",
             "[INFO] Adding 1 used transitive dependency as direct dependency.",
@@ -301,9 +310,23 @@ public class DepCleanMojoIT {
             "[INFO] pom-debloated.xml file created in: "
                 + generatedPomDebloated.getAbsolutePath());
     Assertions.assertTrue(generatedPomDebloated.exists());
-    assertThat(generatedPomDebloated)
-        .hasSameTextualContentAs(
-            new File("src/test/resources/DepCleanMojoResources/pom-debloated.xml"));
+    assertThat(normalizedPom(generatedPomDebloated))
+        .isEqualTo(
+            normalizedPom(new File("src/test/resources/DepCleanMojoResources/pom-debloated.xml")));
+  }
+
+  /**
+   * Re-serializes a pom with the model writer on the test classpath. Maven 3 and Maven 4 format
+   * the written pom differently (attribute order, property order), so the raw text cannot be
+   * compared across the Maven versions the ITs run on, whereas the model content can.
+   */
+  private static String normalizedPom(File pom) throws IOException, XmlPullParserException {
+    try (InputStream in = Files.newInputStream(pom.toPath())) {
+      Model model = new MavenXpp3Reader().read(in);
+      StringWriter out = new StringWriter();
+      new MavenXpp3Writer().write(out, model);
+      return out.toString();
+    }
   }
 
   @MavenTest
@@ -311,10 +334,7 @@ public class DepCleanMojoIT {
   void unused_inherited_exists(MavenExecutionResult result) {
     log.trace(
         "Test that DepClean detects unused inherited dependencies in a Maven project with a parent");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
@@ -348,10 +368,7 @@ public class DepCleanMojoIT {
   void ignored_scopes(MavenExecutionResult result) {
     log.trace(
         "Test that DepClean ignores dependencies (considers them as used) with the ignored scopes");
-    assertThat(result)
-        .isSuccessful()
-        .out()
-        .plain()
+    assertThatStdout(result)
         .contains(
             "-------------------------------------------------------",
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
