@@ -81,7 +81,7 @@ Or you can run DepClean directly from the command line (the project needs to be 
 ```bash
 cd {PATH_TO_MAVEN_PROJECT}
 mvn test-compile
-mvn se.kth.castor:depclean-maven-plugin:2.1.0:depclean
+mvn se.kth.castor:depclean-maven-plugin:2.2.0:depclean
 ```
 
 The examples above use the latest release published to [Maven Central](https://central.sonatype.com/artifact/se.kth.castor/depclean-maven-plugin). To try the latest snapshot instead, [build from source](#installing-and-building-from-source).
@@ -133,7 +133,7 @@ For example, if you want to fail the build in the presence of unused direct depe
 Of course, it is also possible to execute DepClean with parameters directly from the command line. The previous example can be executed directly as follows:
 
 ```bash
-mvn se.kth.castor:depclean-maven-plugin:2.1.0:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
+mvn se.kth.castor:depclean-maven-plugin:2.2.0:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
 
 ## How does DepClean work?
