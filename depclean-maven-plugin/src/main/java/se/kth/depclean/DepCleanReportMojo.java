@@ -38,6 +38,7 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import se.kth.depclean.core.DepCleanManager;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.report.AnalysisInputs;
 import se.kth.depclean.report.AnalysisSnapshot;
 import se.kth.depclean.report.AnalysisSnapshotFile;
 import se.kth.depclean.report.DepCleanReportRenderer;
@@ -127,14 +128,15 @@ public class DepCleanReportMojo extends AbstractMavenReport {
     AnalysisSnapshotFile snapshotFile =
         new AnalysisSnapshotFile(Paths.get(project.getBuild().getDirectory()));
     try {
-      Optional<AnalysisSnapshot> stored =
-          snapshotFile.readIfFresh(settings, project.getFile().toPath(), classDirectories());
+      String inputsFingerprint =
+          AnalysisInputs.fingerprint(project.getFile().toPath(), classDirectories());
+      Optional<AnalysisSnapshot> stored = snapshotFile.readIfFresh(settings, inputsFingerprint);
       AnalysisSnapshot snapshot;
       if (stored.isPresent()) {
         getLog().info("Reusing the DepClean analysis from " + snapshotFile.getPath());
         snapshot = stored.get();
       } else {
-        snapshot = analyze(settings);
+        snapshot = analyze(settings, inputsFingerprint);
         snapshotFile.write(snapshot);
       }
       new DepCleanReportRenderer(getSink(), snapshot, project.getName(), stored.isPresent())
@@ -144,7 +146,7 @@ public class DepCleanReportMojo extends AbstractMavenReport {
     }
   }
 
-  private AnalysisSnapshot analyze(AnalysisSnapshot.Settings settings)
+  private AnalysisSnapshot analyze(AnalysisSnapshot.Settings settings, String inputsFingerprint)
       throws AnalysisFailureException, IOException, MavenReportException {
     ProjectDependencyAnalysis analysis =
         new DepCleanManager(
@@ -164,7 +166,7 @@ public class DepCleanReportMojo extends AbstractMavenReport {
     if (analysis == null) {
       throw new MavenReportException("DepClean did not analyse the project");
     }
-    return AnalysisSnapshot.from(analysis, settings);
+    return AnalysisSnapshot.from(analysis, settings, inputsFingerprint);
   }
 
   private List<Path> classDirectories() {
