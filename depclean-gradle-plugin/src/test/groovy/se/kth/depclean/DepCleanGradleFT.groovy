@@ -98,6 +98,7 @@ class DepCleanGradleFT extends Specification {
     String projectPath4 = "src/test/resources-fts/json_should_be_correct"
     File json_should_be_correct = new File(projectPath4)
     File generatedResultDotJson = new File(projectPath4 + "/build/depclean-results.json");
+    File generatedClassUsageCsv = new File(projectPath4 + "/build/class-usage.csv");
 
     def "Test that the depclean creates a proper results.json file"() {
         given:
@@ -113,6 +114,19 @@ class DepCleanGradleFT extends Specification {
         assert checkTaskOutcome(debloatResult.task(":debloat").getOutcome())
 
         assert generatedResultDotJson.exists()
+
+        and: "the class-usage CSV lists each edge once, under the dependency owning its target"
+        List<String> lines = generatedClassUsageCsv.readLines()
+        assert lines[0] == "OriginClass,TargetClass,Dependency"
+        List<String> edges = lines.drop(1)
+        assert !edges.isEmpty()
+        assert edges.every { it.split(",").length == 3 }
+        assert edges.size() == edges.toSet().size()
+        // JDK classes belong to no dependency, so they never appear as targets
+        assert edges.every { !it.split(",")[1].startsWith("java.") }
+        // the project's own class references commons-codec, which must be attributed to it
+        // (the origin may or may not carry its package prefix, see ClassFileVisitorUtils.getChild)
+        assert edges.any { it ==~ /(org\.)?UseCommonsCodec,org\.apache\.commons\.codec\.Charsets,commons-codec:commons-codec:1\.22\.1/ }
     }
 
     String projectPath5 = "src/test/resources-fts/multi_project"

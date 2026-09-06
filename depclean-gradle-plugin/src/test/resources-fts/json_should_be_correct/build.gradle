@@ -40,4 +40,5 @@ tasks.withType(JavaCompile).configureEach {
 
 depclean {
     createResultJson = true
+    createClassUsageCsv = true
 }
