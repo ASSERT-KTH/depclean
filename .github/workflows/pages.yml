@@ -32,10 +32,12 @@ jobs:
         run: |
           mkdir -p _pages
           cp docs/_config.yml _pages/
-          cp -r .img _pages/
+          # Pages does not serve dot-directories, so .img/ ships as img/
+          cp -r .img _pages/img
           { printf -- '---\nlayout: default\n---\n\n'; cat README.md; } > _pages/index.md
+          sed -i 's#\.img/#img/#g' _pages/index.md
           # Relative links to repository files (LICENSE.md, CONTRIBUTING.md, ...) only resolve on GitHub
-          perl -pi -e 's{\]\((?!https?://|#|\.img/|mailto:)([^)\s]+)\)}{]($ENV{BLOB_URL}/$1)}g' _pages/index.md
+          perl -pi -e 's{\]\((?!https?://|#|img/|mailto:)([^)\s]+)\)}{]($ENV{BLOB_URL}/$1)}g' _pages/index.md
 
       - name: Configure Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

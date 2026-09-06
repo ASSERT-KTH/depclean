@@ -4,6 +4,3 @@ title: DepClean
 description: Automatically detects and removes unused dependencies in Maven and Gradle projects
 theme: jekyll-theme-cayman
 show_downloads: false
-# Jekyll skips dot-directories by default; the README images live in .img/
-include:
-  - .img
