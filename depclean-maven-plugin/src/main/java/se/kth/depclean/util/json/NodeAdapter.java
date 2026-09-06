@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonWriter;
 import fr.dutra.tools.maven.deptree.core.Node;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +23,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
   private final ProjectDependencyAnalysis analysis;
   @Nullable private final Writer callGraphWriter;
   private final Set<String> callGraphDependenciesWritten = new HashSet<>();
+  @Nullable private Map<String, Set<String>> originsByTarget;
 
   /**
    * Creates the adapter.
@@ -128,18 +130,35 @@ public class NodeAdapter extends TypeAdapter<Node> {
    * Writes one {@code caller,callee,dependency} line per call-graph edge whose target class belongs
    * to the given dependency, sorted by caller then callee.
    */
-  private static void writeCallGraphCsv(
+  private void writeCallGraphCsv(
       Writer writer, String canonical, DependencyAnalysisInfo dependencyInfo) throws IOException {
-    final Set<String> dependencyTypes = dependencyInfo.allTypes();
-    final Map<String, Set<String>> usagesPerClass =
-        new TreeMap<>(DefaultCallGraph.getUsagesPerClass());
-    for (Map.Entry<String, Set<String>> usages : usagesPerClass.entrySet()) {
-      for (String referenced : new TreeSet<>(usages.getValue())) {
-        if (dependencyTypes.contains(referenced)) {
-          writer.write(usages.getKey() + "," + referenced + "," + canonical + "\n");
-        }
+    final Map<String, Set<String>> originsByTarget = originsByTarget();
+    final Map<String, Set<String>> targetsByOrigin = new TreeMap<>();
+    for (String target : dependencyInfo.allTypes()) {
+      for (String origin : originsByTarget.getOrDefault(target, new HashSet<>())) {
+        targetsByOrigin.computeIfAbsent(origin, k -> new TreeSet<>()).add(target);
       }
     }
+    for (Map.Entry<String, Set<String>> edges : targetsByOrigin.entrySet()) {
+      for (String target : edges.getValue()) {
+        writer.write(edges.getKey() + "," + target + "," + canonical + "\n");
+      }
+    }
+  }
+
+  /** The call graph inverted (target class to its callers), built once per JSON write. */
+  private Map<String, Set<String>> originsByTarget() {
+    if (originsByTarget == null) {
+      Map<String, Set<String>> inverted = new HashMap<>();
+      for (Map.Entry<String, Set<String>> usages :
+          DefaultCallGraph.getUsagesPerClass().entrySet()) {
+        for (String target : usages.getValue()) {
+          inverted.computeIfAbsent(target, k -> new HashSet<>()).add(usages.getKey());
+        }
+      }
+      originsByTarget = inverted;
+    }
+    return originsByTarget;
   }
 
   @Override
