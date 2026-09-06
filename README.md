@@ -20,6 +20,7 @@
 - [What is DepClean?](#what-is-depclean)
 - [Usage](#usage)
 - [Optional Parameters](#optional-parameters)
+- [Maven Site report](#maven-site-report)
 - [How does DepClean work?](#how-does-depclean-work)
 - [Gradle Plugin](#gradle-plugin)
 - [Installing and building from source](#installing-and-building-from-source)
@@ -92,7 +93,7 @@ Let's see an example of running DepClean in the project [Apache Commons Numbers]
 
 ## Optional Parameters
 
-The Maven plugin can be configured with the following additional parameters.
+The Maven plugin can be configured with the following additional parameters. `ignoreDependencies`, `ignoreScopes`, `ignoreTests` and `skipDepClean` also apply to the [`report` goal](#maven-site-report).
 
 | Name                       |     Type      | Description                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | :------------------------- | :-----------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -136,6 +137,41 @@ Of course, it is also possible to execute DepClean with parameters directly from
 ```bash
 mvn se.kth.castor:depclean-maven-plugin:2.2.0:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
+
+Every `depclean` run also leaves a machine-readable summary of the analysis in `target/depclean-analysis.json`; the `report` goal reuses it to avoid analysing the project twice.
+
+## Maven Site report
+
+The `report` goal renders the analysis as a page of the Maven site (`target/site/depclean.html`), listed in the "Project Reports" section. It shows a summary per category (used and potentially unused × direct, transitive, inherited direct, inherited transitive, plus the dependencies ignored by configuration), a table per category with coordinates, scope and size, and the classes the project uses from each used dependency. The report is read-only: it never writes `pom-debloated.xml` or fails the build.
+
+```xml
+<reporting>
+  <plugins>
+    <plugin>
+      <groupId>se.kth.castor</groupId>
+      <artifactId>depclean-maven-plugin</artifactId>
+      <version>2.2.0</version>
+      <reportSets>
+        <reportSet>
+          <reports>
+            <report>report</report>
+          </reports>
+        </reportSet>
+      </reportSets>
+    </plugin>
+  </plugins>
+</reporting>
+```
+
+Then run `mvn site`. The goal forks `test-compile`, so the project does not need to be built first. If `depclean:depclean` already ran in the same build (for example `mvn verify site`) and neither the POM nor the compiled classes changed since, its result is reused instead of running the analysis again.
+
+The report can also be generated on its own, in which case it is written to `target/reports/depclean.html`:
+
+```bash
+mvn se.kth.castor:depclean-maven-plugin:2.2.0:report
+```
+
+The report is built on Doxia 2 and therefore needs `maven-site-plugin` 3.20.0 or newer. Maven 3.9 still defaults to 3.12.1, so pin a recent version in `<build><pluginManagement>`; Maven 4 defaults to a compatible version.
 
 ## How does DepClean work?
 
