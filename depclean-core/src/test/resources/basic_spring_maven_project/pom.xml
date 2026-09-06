@@ -42,7 +42,7 @@
       </plugin>
 
       <plugin>
-        <!-- see https://github.com/castor-software/depclean -->
+        <!-- see https://github.com/ASSERT-KTH/depclean -->
         <groupId>se.kth.castor</groupId>
         <artifactId>depclean-maven-plugin</artifactId>
         <version>2.2.0</version>

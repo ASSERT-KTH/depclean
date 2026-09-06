@@ -290,7 +290,7 @@
     </plugins>
   </build>
 
-  <url>https://github.com/castor-software/depclean</url>
+  <url>https://github.com/ASSERT-KTH/depclean</url>
 
   <!-- License statement -->
   <licenses>
@@ -314,15 +314,15 @@
 
   <!-- SCM -->
   <scm>
-    <connection>scm:git:git:github.com/castor-software/depclean.git</connection>
-    <developerConnection>scm:git:git@github.com:castor-software/depclean.git</developerConnection>
-    <url>https://github.com/castor-software/depclean/</url>
+    <connection>scm:git:git:github.com/ASSERT-KTH/depclean.git</connection>
+    <developerConnection>scm:git:git@github.com:ASSERT-KTH/depclean.git</developerConnection>
+    <url>https://github.com/ASSERT-KTH/depclean/</url>
   </scm>
 
   <!-- Issues are managed on GitHub -->
   <issueManagement>
     <system>GitHub Issues</system>
-    <url>https://github.com/castor-software/depclean/issues</url>
+    <url>https://github.com/ASSERT-KTH/depclean/issues</url>
   </issueManagement>
 
   <!-- Releases are published to Maven Central through the Central Publisher Portal, which the

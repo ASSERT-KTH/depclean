@@ -1,0 +1,9 @@
+# Jekyll configuration for the GitHub Pages site (https://assert-kth.github.io/depclean/).
+# The page content is README.md, staged as index.md by .github/workflows/pages.yml.
+title: DepClean
+description: Automatically detects and removes unused dependencies in Maven and Gradle projects
+theme: jekyll-theme-cayman
+show_downloads: false
+# Jekyll skips dot-directories by default; the README images live in .img/
+include:
+  - .img
