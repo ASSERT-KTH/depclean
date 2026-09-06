@@ -200,9 +200,7 @@ public class DepCleanManager {
       printString("Creating " + csvFile.getName() + ", please wait...");
       try {
         FileUtils.write(
-            csvFile,
-            "OriginClass,TargetClass,OriginDependency,TargetDependency\n",
-            StandardCharsets.UTF_8);
+            csvFile, "OriginClass,TargetClass,TargetDependency\n", StandardCharsets.UTF_8);
       } catch (IOException e) {
         getLog().error("Error writing the CSV header.");
       }

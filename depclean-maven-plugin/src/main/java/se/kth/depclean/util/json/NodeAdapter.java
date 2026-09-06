@@ -4,12 +4,14 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import fr.dutra.tools.maven.deptree.core.Node;
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.Writer;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.io.FileUtils;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.DependencyAnalysisInfo;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
@@ -18,15 +20,18 @@ import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 public class NodeAdapter extends TypeAdapter<Node> {
 
   private final ProjectDependencyAnalysis analysis;
-  private final File callGraphFile;
-  private final boolean createCallGraphCsv;
+  @Nullable private final Writer callGraphWriter;
+  private final Set<String> callGraphDependenciesWritten = new HashSet<>();
 
-  /** Creates the adapter. */
-  public NodeAdapter(
-      ProjectDependencyAnalysis analysis, File callGraphFile, boolean createCallGraphCsv) {
+  /**
+   * Creates the adapter.
+   *
+   * @param analysis the analysis results
+   * @param callGraphWriter where to write the call graph CSV, or {@code null} to not write it
+   */
+  public NodeAdapter(ProjectDependencyAnalysis analysis, @Nullable Writer callGraphWriter) {
     this.analysis = analysis;
-    this.callGraphFile = callGraphFile;
-    this.createCallGraphCsv = createCallGraphCsv;
+    this.callGraphWriter = callGraphWriter;
   }
 
   @Override
@@ -36,13 +41,13 @@ public class NodeAdapter extends TypeAdapter<Node> {
     String vs = node.getVersion() + ":" + node.getScope();
     String canonical = ga + ":" + node.getPackaging() + ":" + vs;
 
-    if (createCallGraphCsv) {
-      writeCallGraphCsv(canonical);
-    }
-
     final DependencyAnalysisInfo dependencyInfo = analysis.getDependencyInfo(gav);
 
     if (dependencyInfo != null) {
+
+      if (callGraphWriter != null && callGraphDependenciesWritten.add(canonical)) {
+        writeCallGraphCsv(callGraphWriter, canonical, dependencyInfo);
+      }
 
       JsonWriter localWriter =
           jsonWriter
@@ -119,14 +124,20 @@ public class NodeAdapter extends TypeAdapter<Node> {
     allTypes.endArray();
   }
 
-  private void writeCallGraphCsv(String canonical) throws IOException {
-    for (Map.Entry<String, Set<String>> usagePerClassMap :
-        DefaultCallGraph.getUsagesPerClass().entrySet()) {
-      String key = usagePerClassMap.getKey();
-      Set<String> value = usagePerClassMap.getValue();
-      for (String s : value) {
-        String triplet = key + "," + s + "," + canonical + "\n";
-        FileUtils.write(callGraphFile, triplet, StandardCharsets.UTF_8, true);
+  /**
+   * Writes one {@code caller,callee,dependency} line per call-graph edge whose target class belongs
+   * to the given dependency, sorted by caller then callee.
+   */
+  private static void writeCallGraphCsv(
+      Writer writer, String canonical, DependencyAnalysisInfo dependencyInfo) throws IOException {
+    final Set<String> dependencyTypes = dependencyInfo.allTypes();
+    final Map<String, Set<String>> usagesPerClass =
+        new TreeMap<>(DefaultCallGraph.getUsagesPerClass());
+    for (Map.Entry<String, Set<String>> usages : usagesPerClass.entrySet()) {
+      for (String referenced : new TreeSet<>(usages.getValue())) {
+        if (dependencyTypes.contains(referenced)) {
+          writer.write(usages.getKey() + "," + referenced + "," + canonical + "\n");
+        }
       }
     }
   }

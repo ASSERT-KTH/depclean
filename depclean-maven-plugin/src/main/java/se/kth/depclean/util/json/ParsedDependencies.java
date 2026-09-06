@@ -12,7 +12,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /**
@@ -50,15 +53,27 @@ public class ParsedDependencies {
    */
   public String parseTreeToJson() throws ParseException, IOException {
     InputType type = InputType.TEXT;
-    Reader r =
+    Node tree;
+    try (Reader r =
         new BufferedReader(
-            new InputStreamReader(new FileInputStream(treeFile), StandardCharsets.UTF_8));
-    Parser parser = type.newParser();
-    Node tree = parser.parse(r);
-    NodeAdapter nodeAdapter = new NodeAdapter(analysis, classUsageFile, createCallgraphCsv);
-    GsonBuilder gsonBuilder =
-        new GsonBuilder().setPrettyPrinting().registerTypeAdapter(Node.class, nodeAdapter);
-    Gson gson = gsonBuilder.create();
-    return gson.toJson(tree);
+            new InputStreamReader(new FileInputStream(treeFile), StandardCharsets.UTF_8))) {
+      Parser parser = type.newParser();
+      tree = parser.parse(r);
+    }
+    // Appends below the header that DepCleanManager writes when it (re)creates the file.
+    try (Writer callGraphWriter =
+        createCallgraphCsv
+            ? Files.newBufferedWriter(
+                classUsageFile.toPath(),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND)
+            : null) {
+      NodeAdapter nodeAdapter = new NodeAdapter(analysis, callGraphWriter);
+      GsonBuilder gsonBuilder =
+          new GsonBuilder().setPrettyPrinting().registerTypeAdapter(Node.class, nodeAdapter);
+      Gson gson = gsonBuilder.create();
+      return gson.toJson(tree);
+    }
   }
 }

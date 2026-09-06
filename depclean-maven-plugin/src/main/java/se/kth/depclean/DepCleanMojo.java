@@ -77,10 +77,11 @@ public class DepCleanMojo extends AbstractMojo {
   private boolean createResultJson;
 
   /**
-   * If this is true, DepClean creates a CSV file with the result of the analysis with the columns:
-   * OriginClass,TargetClass,OriginDependency,TargetDependency. The file is called
-   * "depclean-callgraph.csv" and it is located in /target. It is only written together with the
-   * JSON result, i.e. when {@code createResultJson} is also true.
+   * If this is true, DepClean creates a CSV file with the static call graph between classes, one
+   * line per edge with the columns: OriginClass,TargetClass,TargetDependency (the dependency the
+   * target class belongs to). The file is called "depclean-callgraph.csv" and it is located in
+   * /target. It is only written together with the JSON result, i.e. when {@code createResultJson}
+   * is also true.
    */
   @Parameter(property = "createCallGraphCsv", defaultValue = "false")
   private boolean createCallGraphCsv;
