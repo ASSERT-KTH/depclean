@@ -67,25 +67,22 @@ public class DefaultCallGraph {
    * @return All the referenced classes.
    */
   public static Set<String> referencedClassMembers(Set<String> projectClasses) {
-    log.debug("Project classes: " + projectClasses);
-    Set<String> allReferencedClassMembers = new HashSet<>();
-    for (String projectClass : projectClasses) {
-      allReferencedClassMembers.addAll(traverse(projectClass));
-    }
-    log.debug("All referenced class members: " + allReferencedClassMembers);
+    log.debug("Project classes: {}", projectClasses);
+    // One multi-source traversal: the union of per-class reachability with a shared visited set.
+    Set<String> allReferencedClassMembers = traverse(projectClasses);
+    log.debug("All referenced class members: {}", allReferencedClassMembers);
     return allReferencedClassMembers;
   }
 
   /**
-   * Traverse the graph using DFS.
+   * Traverse the graph using DFS from several starting vertices.
    *
-   * @param start The starting vertex.
+   * @param starts The starting vertices.
    * @return The set of all visited vertices.
    */
-  private static Set<String> traverse(String start) {
+  private static Set<String> traverse(Set<String> starts) {
     Set<String> visited = new HashSet<>();
-    Deque<String> stack = new ArrayDeque<>();
-    stack.push(start);
+    Deque<String> stack = new ArrayDeque<>(starts);
     while (!stack.isEmpty()) {
       String current = stack.pop();
       if (visited.add(current)) {

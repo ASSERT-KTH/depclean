@@ -63,10 +63,10 @@ public class MavenDependencyGraph implements DependencyGraph {
         inheritedTransitiveDependencies(inheritedDirectDependencies, new HashSet<>());
     this.transitiveDependencies = transitiveDependencies(allDependencies);
 
-    log.debug("Direct dependencies" + directDependencies);
-    log.debug("Inherited direct dependencies" + inheritedDirectDependencies);
-    log.debug("Inherited transitive dependencies" + inheritedTransitiveDependencies);
-    log.debug("Transitive dependencies" + transitiveDependencies);
+    log.debug("Direct dependencies {}", directDependencies);
+    log.debug("Inherited direct dependencies {}", inheritedDirectDependencies);
+    log.debug("Inherited transitive dependencies {}", inheritedTransitiveDependencies);
+    log.debug("Transitive dependencies {}", transitiveDependencies);
 
     // Logs
     if (log.isDebugEnabled()) {

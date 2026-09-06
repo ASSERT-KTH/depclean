@@ -71,7 +71,8 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
           new DefaultClassVisitor(
               signatureVisitor, annotationVisitor, fieldVisitor, methodVisitor, resultCollector);
 
-      reader.accept(defaultClassVisitor, 0);
+      // Stack map frames are never visited (no visitFrame override), so skip decoding them.
+      reader.accept(defaultClassVisitor, ClassReader.SKIP_FRAMES);
 
       // inset edge in the graph based on the bytecode analysis
       DefaultCallGraph.addEdge(className, resultCollector.getDependencies());

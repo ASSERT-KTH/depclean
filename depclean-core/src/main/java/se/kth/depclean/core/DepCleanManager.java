@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -88,12 +89,17 @@ public class DepCleanManager {
       return null;
     }
 
+    long phaseStart = System.currentTimeMillis();
     extractClassesFromDependencies();
+    phaseStart = logPhase("Extracting dependency classes", phaseStart);
+
+    final ProjectContext projectContext = buildProjectContext();
+    phaseStart = logPhase("Building project context", phaseStart);
 
     final DefaultProjectDependencyAnalyzer projectDependencyAnalyzer =
         new DefaultProjectDependencyAnalyzer();
-    final ProjectDependencyAnalysis analysis =
-        projectDependencyAnalyzer.analyze(buildProjectContext());
+    final ProjectDependencyAnalysis analysis = projectDependencyAnalyzer.analyze(projectContext);
+    phaseStart = logPhase("Analyzing bytecode", phaseStart);
     analysis.print();
 
     /* Fail the build if there are unused direct dependencies */
@@ -122,12 +128,16 @@ public class DepCleanManager {
 
     /* Writing the debloated version of the pom */
     if (createPomDebloated) {
+      phaseStart = System.currentTimeMillis();
       dependencyManager.getDebloater(analysis).write();
+      logPhase("Writing debloated pom", phaseStart);
     }
 
     /* Writing the JSON file with the depclean results */
     if (createResultJson) {
+      phaseStart = System.currentTimeMillis();
       createResultJson(analysis);
+      logPhase("Writing result files", phaseStart);
     }
 
     final long stopTime = System.currentTimeMillis();
@@ -307,6 +317,13 @@ public class DepCleanManager {
     long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
     long seconds = (TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
     return String.format("%smin %ss", minutes, seconds);
+  }
+
+  /** Logs the duration of a phase that started at {@code start} and returns the current time. */
+  private long logPhase(String phase, long start) {
+    final long now = System.currentTimeMillis();
+    getLog().info(String.format(Locale.ROOT, "%s took %.1fs", phase, (now - start) / 1000.0));
+    return now;
   }
 
   private void printString(final String string) {

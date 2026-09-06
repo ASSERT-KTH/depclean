@@ -22,8 +22,11 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.commons.io.FileUtils;
@@ -72,7 +75,12 @@ public final class JarUtils {
     File file = new File(zipFile);
     try (ZipFile zip = new ZipFile(file)) {
       String newPath = zipFile.substring(0, zipFile.length() - 4);
-      new File(newPath).mkdir();
+      File targetDirectory = new File(newPath);
+      targetDirectory.mkdir();
+      // Canonicalize once: the directory was just created, so every entry path below it is only
+      // subject to "../" traversal, which normalize() resolves without hitting the file system.
+      Path canonicalTarget = targetDirectory.getCanonicalFile().toPath();
+      Set<File> createdDirectories = new HashSet<>();
       Enumeration<? extends ZipEntry> zipFileEntries = zip.entries();
 
       // Protection against ZIP bomb attacks
@@ -94,14 +102,16 @@ public final class JarUtils {
           continue;
         }
 
-        File destFile = new File(newPath, currentEntry);
+        File destFile = new File(canonicalTarget.toFile(), currentEntry);
         // Sonar javasecurity:S6096
-        if (!destFile.getCanonicalPath().startsWith(new File(newPath).getCanonicalPath())) {
+        if (!destFile.toPath().normalize().startsWith(canonicalTarget)) {
           throw new IOException("Entry is outside of the target directory");
         }
         File destinationParent = destFile.getParentFile();
         // create the parent directory structure if needed
-        destinationParent.mkdirs();
+        if (createdDirectories.add(destinationParent)) {
+          destinationParent.mkdirs();
+        }
         if (!entry.isDirectory() && !destFile.isDirectory()) {
           totalSizeUncompressed +=
               extractEntry(zip, entry, destFile, totalSizeUncompressed, maxTotalSize);
