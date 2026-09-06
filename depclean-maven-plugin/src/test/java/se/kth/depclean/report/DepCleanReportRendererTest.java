@@ -58,6 +58,7 @@ class DepCleanReportRendererTest {
     AnalysisSnapshot empty =
         new AnalysisSnapshot(
             new AnalysisSnapshot.Settings(false, Collections.emptySet(), Collections.emptySet()),
+            "fingerprint",
             Collections.emptyList(),
             Collections.emptyList(),
             Collections.emptyList(),

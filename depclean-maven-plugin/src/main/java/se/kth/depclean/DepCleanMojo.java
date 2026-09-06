@@ -19,6 +19,7 @@ package se.kth.depclean;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Set;
 import javax.inject.Inject;
 import org.apache.maven.execution.MavenSession;
@@ -33,6 +34,7 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import se.kth.depclean.core.DepCleanManager;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.report.AnalysisInputs;
 import se.kth.depclean.report.AnalysisSnapshot;
 import se.kth.depclean.report.AnalysisSnapshotFile;
 import se.kth.depclean.wrapper.MavenDependencyManager;
@@ -183,9 +185,17 @@ public class DepCleanMojo extends AbstractMojo {
   private void writeSnapshot(ProjectDependencyAnalysis analysis) throws IOException {
     AnalysisSnapshotFile snapshotFile =
         new AnalysisSnapshotFile(Paths.get(project.getBuild().getDirectory()));
+    String inputsFingerprint =
+        AnalysisInputs.fingerprint(
+            project.getFile().toPath(),
+            Arrays.asList(
+                Paths.get(project.getBuild().getOutputDirectory()),
+                Paths.get(project.getBuild().getTestOutputDirectory())));
     snapshotFile.write(
         AnalysisSnapshot.from(
-            analysis, new AnalysisSnapshot.Settings(ignoreTests, ignoreScopes, ignoreDependencies)));
+            analysis,
+            new AnalysisSnapshot.Settings(ignoreTests, ignoreScopes, ignoreDependencies),
+            inputsFingerprint));
     getLog().info("Analysis snapshot written to " + snapshotFile.getPath());
   }
 }

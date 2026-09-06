@@ -40,6 +40,7 @@ import se.kth.depclean.core.model.Dependency;
 public final class AnalysisSnapshot {
 
   private final Settings settings;
+  private final String inputsFingerprint;
   private final List<Entry> usedDirect;
   private final List<Entry> usedTransitive;
   private final List<Entry> usedInheritedDirect;
@@ -50,9 +51,14 @@ public final class AnalysisSnapshot {
   private final List<Entry> unusedInheritedTransitive;
   private final List<Entry> ignored;
 
-  /** Creates a snapshot from already categorized entries. */
+  /**
+   * Creates a snapshot from already categorized entries.
+   *
+   * @param inputsFingerprint the {@link AnalysisInputs#fingerprint} of what was analysed
+   */
   public AnalysisSnapshot(
       Settings settings,
+      String inputsFingerprint,
       List<Entry> usedDirect,
       List<Entry> usedTransitive,
       List<Entry> usedInheritedDirect,
@@ -63,6 +69,7 @@ public final class AnalysisSnapshot {
       List<Entry> unusedInheritedTransitive,
       List<Entry> ignored) {
     this.settings = settings;
+    this.inputsFingerprint = inputsFingerprint;
     this.usedDirect = sorted(usedDirect);
     this.usedTransitive = sorted(usedTransitive);
     this.usedInheritedDirect = sorted(usedInheritedDirect);
@@ -74,10 +81,15 @@ public final class AnalysisSnapshot {
     this.ignored = sorted(ignored);
   }
 
-  /** Captures the result of an analysis together with the settings that produced it. */
-  public static AnalysisSnapshot from(ProjectDependencyAnalysis analysis, Settings settings) {
+  /**
+   * Captures the result of an analysis together with the settings and the fingerprint of the inputs
+   * that produced it.
+   */
+  public static AnalysisSnapshot from(
+      ProjectDependencyAnalysis analysis, Settings settings, String inputsFingerprint) {
     return new AnalysisSnapshot(
         settings,
+        inputsFingerprint,
         entries(analysis, analysis.getUsedDirectDependencies()),
         entries(analysis, analysis.getUsedTransitiveDependencies()),
         entries(analysis, analysis.getUsedInheritedDirectDependencies()),
@@ -92,7 +104,9 @@ public final class AnalysisSnapshot {
   private static List<Entry> entries(
       ProjectDependencyAnalysis analysis, Collection<Dependency> dependencies) {
     return dependencies.stream()
-        .map(dependency -> Entry.from(dependency, analysis.getDependencyClassesMap().get(dependency)))
+        .map(
+            dependency ->
+                Entry.from(dependency, analysis.getDependencyClassesMap().get(dependency)))
         .collect(Collectors.toList());
   }
 
@@ -104,6 +118,10 @@ public final class AnalysisSnapshot {
 
   public Settings getSettings() {
     return settings;
+  }
+
+  public String getInputsFingerprint() {
+    return inputsFingerprint;
   }
 
   public List<Entry> getUsedDirect() {
@@ -151,7 +169,9 @@ public final class AnalysisSnapshot {
 
     /** Creates the settings; both sets are copied into sorted sets. */
     public Settings(
-        boolean ignoreTests, Collection<String> ignoreScopes, Collection<String> ignoreDependencies) {
+        boolean ignoreTests,
+        Collection<String> ignoreScopes,
+        Collection<String> ignoreDependencies) {
       this.ignoreTests = ignoreTests;
       this.ignoreScopes = Collections.unmodifiableSet(new TreeSet<>(ignoreScopes));
       this.ignoreDependencies = Collections.unmodifiableSet(new TreeSet<>(ignoreDependencies));
