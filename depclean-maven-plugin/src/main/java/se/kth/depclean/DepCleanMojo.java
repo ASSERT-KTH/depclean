@@ -18,6 +18,7 @@
 package se.kth.depclean;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Set;
 import javax.inject.Inject;
 import org.apache.maven.execution.MavenSession;
@@ -31,6 +32,9 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import se.kth.depclean.core.DepCleanManager;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
+import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.report.AnalysisSnapshot;
+import se.kth.depclean.report.AnalysisSnapshotFile;
 import se.kth.depclean.wrapper.MavenDependencyManager;
 
 /**
@@ -152,22 +156,36 @@ public class DepCleanMojo extends AbstractMojo {
   @Override
   public final void execute() throws MojoExecutionException {
     try {
-      new DepCleanManager(
-              new MavenDependencyManager(getLog(), project, session, dependencyGraphBuilder),
-              skipDepClean,
-              ignoreTests,
-              ignoreScopes,
-              ignoreDependencies,
-              failIfUnusedDirect,
-              failIfUnusedTransitive,
-              failIfUnusedInheritedDirect,
-              failIfUnusedInheritedTransitive,
-              createPomDebloated,
-              createResultJson,
-              createCallGraphCsv)
-          .execute();
+      ProjectDependencyAnalysis analysis =
+          new DepCleanManager(
+                  new MavenDependencyManager(getLog(), project, session, dependencyGraphBuilder),
+                  skipDepClean,
+                  ignoreTests,
+                  ignoreScopes,
+                  ignoreDependencies,
+                  failIfUnusedDirect,
+                  failIfUnusedTransitive,
+                  failIfUnusedInheritedDirect,
+                  failIfUnusedInheritedTransitive,
+                  createPomDebloated,
+                  createResultJson,
+                  createCallGraphCsv)
+              .execute();
+      if (analysis != null) {
+        writeSnapshot(analysis);
+      }
     } catch (AnalysisFailureException | IOException e) {
       throw new MojoExecutionException(e.getMessage(), e);
     }
+  }
+
+  /** Persists the result so that {@code depclean:report} can reuse it instead of re-analyzing. */
+  private void writeSnapshot(ProjectDependencyAnalysis analysis) throws IOException {
+    AnalysisSnapshotFile snapshotFile =
+        new AnalysisSnapshotFile(Paths.get(project.getBuild().getDirectory()));
+    snapshotFile.write(
+        AnalysisSnapshot.from(
+            analysis, new AnalysisSnapshot.Settings(ignoreTests, ignoreScopes, ignoreDependencies)));
+    getLog().info("Analysis snapshot written to " + snapshotFile.getPath());
   }
 }
