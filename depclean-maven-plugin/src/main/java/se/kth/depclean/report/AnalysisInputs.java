@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +39,25 @@ import java.util.stream.Stream;
 public final class AnalysisInputs {
 
   private AnalysisInputs() {}
+
+  /**
+   * The class directories an analysis actually reads. Test classes are only an input when tests
+   * are analysed, so with {@code ignoreTests} they must not invalidate a stored snapshot either.
+   *
+   * @param classDirectory the compiled main class directory
+   * @param testClassDirectory the compiled test class directory
+   * @param ignoreTests whether the analysis skips the test classes
+   * @return the directories to fingerprint
+   */
+  public static List<Path> classDirectories(
+      Path classDirectory, Path testClassDirectory, boolean ignoreTests) {
+    List<Path> directories = new ArrayList<>();
+    directories.add(classDirectory);
+    if (!ignoreTests) {
+      directories.add(testClassDirectory);
+    }
+    return directories;
+  }
 
   /**
    * Computes the SHA-256 fingerprint of the POM and of every {@code .class} file under the given

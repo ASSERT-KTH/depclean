@@ -19,7 +19,6 @@ package se.kth.depclean;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Set;
 import javax.inject.Inject;
 import org.apache.maven.execution.MavenSession;
@@ -188,9 +187,10 @@ public class DepCleanMojo extends AbstractMojo {
     String inputsFingerprint =
         AnalysisInputs.fingerprint(
             project.getFile().toPath(),
-            Arrays.asList(
+            AnalysisInputs.classDirectories(
                 Paths.get(project.getBuild().getOutputDirectory()),
-                Paths.get(project.getBuild().getTestOutputDirectory())));
+                Paths.get(project.getBuild().getTestOutputDirectory()),
+                ignoreTests));
     snapshotFile.write(
         AnalysisSnapshot.from(
             analysis,

@@ -20,7 +20,6 @@ package se.kth.depclean;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -170,8 +169,9 @@ public class DepCleanReportMojo extends AbstractMavenReport {
   }
 
   private List<Path> classDirectories() {
-    return Arrays.asList(
+    return AnalysisInputs.classDirectories(
         Paths.get(project.getBuild().getOutputDirectory()),
-        Paths.get(project.getBuild().getTestOutputDirectory()));
+        Paths.get(project.getBuild().getTestOutputDirectory()),
+        ignoreTests);
   }
 }

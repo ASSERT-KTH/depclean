@@ -79,6 +79,19 @@ class AnalysisInputsTest {
   }
 
   @Test
+  void ignoresTestClassesWhenTestsAreIgnored() throws IOException {
+    List<Path> withoutTests = AnalysisInputs.classDirectories(classes, testClasses, true);
+    assertThat(withoutTests).containsExactly(classes);
+    assertThat(AnalysisInputs.classDirectories(classes, testClasses, false))
+        .containsExactly(classes, testClasses);
+
+    String before = AnalysisInputs.fingerprint(pom, withoutTests);
+    write(testClasses.resolve("FooTest.class"), "changed");
+
+    assertThat(AnalysisInputs.fingerprint(pom, withoutTests)).isEqualTo(before);
+  }
+
+  @Test
   void ignoresNonClassFilesAndMissingDirectories() throws IOException {
     String before = fingerprint();
     write(classes.resolve("application.properties"), "key=value");
