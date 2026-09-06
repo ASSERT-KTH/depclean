@@ -190,7 +190,7 @@ public class DepCleanMojoIT {
             " D E P C L E A N   A N A L Y S I S   R E S U L T S",
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [5]: ",
-            "	org.projectlombok:lombok:1.18.46:compile (1 MB)",
+            "	org.projectlombok:lombok:1.18.48:compile (1 MB)",
             "	org.apache.commons:commons-lang3:3.20.0:compile (697 KB)",
             "	commons-io:commons-io:2.22.0:compile (594 KB)",
             "	commons-codec:commons-codec:1.22.1:compile (412 KB)",
