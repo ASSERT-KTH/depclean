@@ -57,7 +57,7 @@ For a visual overview of how DepClean works and what it can do for your project,
 
 ## Usage
 
-DepClean requires Maven 3.9+ and runs on any JVM from Java 8 upwards, regardless of the Java version your project targets.
+DepClean requires Maven 3.9 or newer — including Maven 4, against which it is tested in CI (currently 4.0.0-rc-6) — and runs on any JVM from Java 8 upwards, regardless of the Java version your project targets. Note that Maven 4 itself needs Java 17 or newer.
 
 Configure the `pom.xml` file of your Maven project to use DepClean as part of the build:
 

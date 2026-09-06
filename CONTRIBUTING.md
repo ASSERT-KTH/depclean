@@ -40,6 +40,7 @@ cd depclean-gradle-plugin
 
 - Unit tests run with `./mvnw test`.
 - The Maven plugin has integration tests (`DepCleanMojoIT`) that execute real Maven builds against fixture projects under `depclean-maven-plugin/src/test/resources-its`. Their assertions compare against golden log output, which embeds exact dependency versions and jar sizes — if you change a fixture, update the expected output from the actual logs under `depclean-maven-plugin/target/maven-it/`.
+- By default the integration tests fork the same Maven that runs the build (the wrapper's 3.9.x). To run them against another Maven distribution, e.g. Maven 4, point `it.maven.home` at its installation directory: `./mvnw clean verify -Dit.maven.home=/opt/apache-maven-4.0.0-rc-6`. CI only smoke-tests the plugin on the Maven 4 version listed in [build.yml](.github/workflows/build.yml), so run this locally when touching the Maven integration.
 - Coverage is collected with JaCoCo and reported to [Codecov](https://codecov.io/gh/ASSERT-KTH/depclean).
 
 ## Submitting a pull request

@@ -43,6 +43,7 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
+      # The integration tests fork the wrapper's Maven 3.9.x (see it.maven.home in the plugin pom)
       - name: "Build and Verify"
         run: ./mvnw -ntp clean verify --errors
 
@@ -70,13 +71,20 @@ jobs:
   # The maven-plugin main sources target Java 8 bytecode (statically enforced by
   # enforceBytecodeVersion), while the BUILD needs JDK 21+. This job proves the
   # runtime promise: build once on JDK 25, then run the depclean goal on a
-  # Java 8 fixture with Maven running on each supported runtime JDK.
+  # Java 8 fixture with Maven running on each supported runtime JDK, and on
+  # Maven 4 (which itself needs Java 17+) at its JDK floor and on the latest JDK.
   runtime-smoke:
     strategy:
       fail-fast: false
       matrix:
         java-runtime: [8, 17, 21, 25]
-    name: Maven plugin runtime smoke test on Java ${{ matrix.java-runtime }}
+        maven: [wrapper]
+        include:
+          - java-runtime: 17
+            maven: 4.0.0-rc-6 # renovate: apache-maven
+          - java-runtime: 25
+            maven: 4.0.0-rc-6 # renovate: apache-maven
+    name: Maven plugin runtime smoke test on Java ${{ matrix.java-runtime }} with Maven ${{ matrix.maven }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -98,6 +106,13 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
+      - name: Set up Maven ${{ matrix.maven }} (runtime)
+        if: matrix.maven != 'wrapper'
+        id: runtime-maven
+        uses: ./.github/actions/setup-maven
+        with:
+          version: ${{ matrix.maven }}
+
       - name: "Build and install plugin (JDK 25)"
         run: ./mvnw -ntp clean install -DskipTests -q
 
@@ -105,14 +120,16 @@ jobs:
         id: version
         run: echo "version=$(./mvnw -ntp -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_OUTPUT"
 
-      - name: "Run DepClean on the fixture with Maven on JDK ${{ matrix.java-runtime }}"
+      - name: "Run DepClean on the fixture with Maven ${{ matrix.maven }} on JDK ${{ matrix.java-runtime }}"
         env:
           JAVA_HOME: ${{ env[format('JAVA_HOME_{0}_X64', matrix.java-runtime)] }}
+          MVN: ${{ matrix.maven == 'wrapper' && './mvnw' || format('{0}/bin/mvn', steps.runtime-maven.outputs.maven-home) }}
         run: |
-          ./mvnw -version
-          ./mvnw -ntp -f .github/smoke/java8/pom.xml \
+          "$MVN" -version
+          "$MVN" -ntp -f .github/smoke/java8/pom.xml \
             package se.kth.castor:depclean-maven-plugin:${{ steps.version.outputs.version }}:depclean \
             | tee /tmp/depclean-smoke.log
+          # Maven 4 prefixes the plugin's stdout with "[INFO] [stdout] ", hence substring matches
           grep 'D E P C L E A N   A N A L Y S I S   R E S U L T S' /tmp/depclean-smoke.log
           grep -A2 'USED DIRECT DEPENDENCIES \[1\]' /tmp/depclean-smoke.log | grep 'commons-io:commons-io'
           grep -A2 'POTENTIALLY UNUSED DIRECT DEPENDENCIES \[1\]' /tmp/depclean-smoke.log | grep 'org.apache.commons:commons-lang3'

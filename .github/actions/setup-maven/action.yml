@@ -1,0 +1,36 @@
+name: Set up Apache Maven
+description: >-
+  Downloads an Apache Maven binary distribution from Maven Central, verifies its
+  SHA-512 checksum and returns its installation directory. The PATH is left untouched.
+
+inputs:
+  version:
+    description: Maven version to install, e.g. 4.0.0-rc-6
+    required: true
+
+outputs:
+  maven-home:
+    description: Installation directory of the Maven distribution (contains bin/mvn)
+    value: ${{ steps.install.outputs.maven-home }}
+
+runs:
+  using: composite
+  steps:
+    - id: install
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        base="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${VERSION}"
+        archive="apache-maven-${VERSION}-bin.zip"
+        install_dir="${RUNNER_TEMP}/maven-${VERSION}"
+        mkdir -p "${install_dir}"
+        cd "${install_dir}"
+        curl -fsSL --retry 3 -o "${archive}" "${base}/${archive}"
+        curl -fsSL --retry 3 -o "${archive}.sha512" "${base}/${archive}.sha512"
+        echo "$(cat "${archive}.sha512")  ${archive}" | sha512sum -c -
+        unzip -q "${archive}"
+        maven_home="${install_dir}/apache-maven-${VERSION}"
+        "${maven_home}/bin/mvn" -version
+        echo "maven-home=${maven_home}" >> "${GITHUB_OUTPUT}"

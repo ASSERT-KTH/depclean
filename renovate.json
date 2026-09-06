@@ -42,6 +42,17 @@
     "description": "Security fixes skip the cooldown and get merged immediately",
     "minimumReleaseAge": null
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Maven 4 distribution the CI runs the plugin on (build.yml matrix entries tagged '# renovate: apache-maven')",
+      "managerFilePatterns": ["/^\\.github/workflows/build\\.yml$/"],
+      "matchStrings": ["maven: (?<currentValue>\\S+) # renovate: apache-maven"],
+      "datasourceTemplate": "maven",
+      "depNameTemplate": "org.apache.maven:apache-maven",
+      "versioningTemplate": "maven"
+    }
+  ],
   "osvVulnerabilityAlerts": true,
   "platformAutomerge": true,
   "forkProcessing": "enabled",
