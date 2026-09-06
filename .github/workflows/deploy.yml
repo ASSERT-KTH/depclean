@@ -89,12 +89,12 @@ jobs:
           draft: true
           prerelease: false
 
+      # Safety net: the release PR (scripts/release.sh prepare) already updates the README.
       - name: Update README
         env:
-          PREVIOUS_VERSION: ${{ github.event.inputs.previousVersion }}
           NEW_VERSION: ${{ github.event.inputs.newVersion }}
         run: |
-          sed -i "s/version>$PREVIOUS_VERSION<\/version/version>$NEW_VERSION<\/version/g" README.md
+          scripts/set-version.sh --readme-only "$NEW_VERSION"
           git add README.md
           if git diff --cached --quiet; then
             echo "README already up to date, nothing to commit"

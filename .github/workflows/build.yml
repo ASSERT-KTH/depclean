@@ -118,6 +118,29 @@ jobs:
           grep -A2 'POTENTIALLY UNUSED DIRECT DEPENDENCIES \[1\]' /tmp/depclean-smoke.log | grep 'org.apache.commons:commons-lang3'
 
   # --------------------------------------------------------------------------------------------------------------------
+  # The Gradle plugin, its test fixtures and the READMEs carry the version as a literal;
+  # this fails fast when any of them drifts from pom.xml (see scripts/set-version.sh).
+  version-consistency:
+    name: Version references match pom.xml
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 25
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          java-version: 25
+          distribution: "temurin"
+          cache: "maven"
+
+      - name: "Check version references"
+        run: scripts/set-version.sh --check
+
+  # --------------------------------------------------------------------------------------------------------------------
   # For Gradle module
   gradle:
     strategy:

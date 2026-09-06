@@ -55,9 +55,15 @@ Please follow the checklist in the [pull request template](.github/PULL_REQUEST_
 
 Releases are published to Maven Central through the [Central Publisher Portal](https://central.sonatype.com) (see the [Sonatype Maven guide](https://central.sonatype.org/publish/publish-portal-maven/)) by the [Deploy workflow](.github/workflows/deploy.yml).
 
-1. Bump the version in `pom.xml` to the release version and merge it to `master`.
-2. Run the **Deploy** workflow manually (Actions → Deploy → Run workflow), passing the previous and new versions.
-3. The run pauses until a maintainer approves it in the `release` environment, then it signs the artifacts, publishes them, tags the commit, and opens a draft GitHub release.
+The version is carried not only by the Maven POMs but also by the Gradle plugin, its test fixtures and the READMEs. `scripts/set-version.sh <version>` updates all of them at once, and CI fails if any of them drifts from `pom.xml` (`scripts/set-version.sh --check`). Never bump versions by hand.
+
+`scripts/release.sh` drives the release from a clean, up-to-date `master` checkout (needs an authenticated `gh`):
+
+1. `scripts/release.sh prepare X.Y.Z` — bumps every version reference, runs a sanity build and opens the release PR. Review and merge it.
+2. `scripts/release.sh publish X.Y.Z` — dispatches the **Deploy** workflow on `master` and waits for it. The run pauses until a maintainer approves it in the `release` environment, then it signs the artifacts, publishes them, tags the commit, and opens a draft GitHub release.
+3. `scripts/release.sh finish X.Y.Z` — waits for the artifacts to appear on Maven Central, publishes the draft GitHub release and opens the PR that bumps `master` to the next `-SNAPSHOT`.
+
+Every step checks its preconditions and can be re-run; add `--dry-run` to see what a step would do.
 
 The workflow needs these repository secrets:
 
