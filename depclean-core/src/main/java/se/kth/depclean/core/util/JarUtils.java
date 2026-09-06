@@ -41,6 +41,13 @@ public final class JarUtils {
   /** Size of the buffer to read/write data. */
   private static final int BUFFER_SIZE = 16384;
 
+  /**
+   * Upper bound on the entries extracted from one archive. Shaded and uber jars routinely exceed
+   * 10k entries, so this matches the limit the class listing applies (see {@code Dependency}); the
+   * actual ZIP-bomb protection is the total-size and compression-ratio check per entry.
+   */
+  public static final int MAX_ENTRIES = 100_000;
+
   private JarUtils() {}
 
   /**
@@ -84,14 +91,13 @@ public final class JarUtils {
       Enumeration<? extends ZipEntry> zipFileEntries = zip.entries();
 
       // Protection against ZIP bomb attacks
-      int maxEntries = 10_000; // Maximum number of entries to process
       long maxTotalSize = 1_000_000_000L; // 1 GB maximum total uncompressed size
 
       int entryCount = 0;
       long totalSizeUncompressed = 0;
 
       // Process each entry
-      while (zipFileEntries.hasMoreElements() && entryCount < maxEntries) {
+      while (zipFileEntries.hasMoreElements() && entryCount < MAX_ENTRIES) {
         // grab a zip file entry
         ZipEntry entry = zipFileEntries.nextElement();
         String currentEntry = entry.getName();
@@ -126,7 +132,7 @@ public final class JarUtils {
       }
 
       // Check if processing was truncated due to too many entries
-      if (entryCount >= maxEntries) {
+      if (entryCount >= MAX_ENTRIES) {
         throw new IOException(
             "ZIP bomb detected: too many entries in archive (" + entryCount + ")");
       }

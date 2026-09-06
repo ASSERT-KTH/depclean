@@ -1,16 +1,23 @@
 package se.kth.depclean.core.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,6 +129,28 @@ class JarUtilsTest {
           new File(
                   "src/test/resources/JarUtilsResources_copy/jlibrary-ear-1.2/jlibrary/WEB-INF/lib/jcr-1.0/javax/jcr/Item.class")
               .exists());
+    }
+  }
+
+  @Test
+  @DisplayName("A legitimate jar with more than 10k entries is extracted completely")
+  void whenJarHasManyEntries_thenAllEntriesAreExtracted(@TempDir Path tempDir) throws IOException {
+    // shaded jars such as testcontainers (12.5k) or hadoop-client-runtime (20k) are this size
+    int entries = 12_000;
+    Path jar = tempDir.resolve("big.jar");
+    try (ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(jar))) {
+      for (int i = 0; i < entries; i++) {
+        out.putNextEntry(new ZipEntry("pkg/sub" + (i % 100) + "/Class" + i + ".class"));
+        out.write(new byte[] {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE});
+        out.closeEntry();
+      }
+    }
+
+    JarUtils.decompress(tempDir.toString());
+
+    assertFalse(Files.exists(jar), "the jar is deleted once extracted");
+    try (Stream<Path> files = Files.walk(tempDir.resolve("big"))) {
+      assertEquals(entries, files.filter(p -> p.toString().endsWith(".class")).count());
     }
   }
 }

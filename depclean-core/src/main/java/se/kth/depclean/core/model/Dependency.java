@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.ClassAnalyzer;
 import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
+import se.kth.depclean.core.util.JarUtils;
 
 /** Identifies a dependency to analyse. */
 public class Dependency {
@@ -157,7 +158,7 @@ public class Dependency {
       Enumeration<JarEntry> jarEntries = jarFile.entries();
 
       // Protection against ZIP bomb attacks
-      int maxEntries = 100_000; // Maximum number of entries to process
+      int maxEntries = JarUtils.MAX_ENTRIES;
       int entryCount = 0;
 
       while (jarEntries.hasMoreElements() && entryCount < maxEntries) {
