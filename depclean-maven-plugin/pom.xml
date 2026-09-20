@@ -27,12 +27,12 @@
     <javax.inject.version>1</javax.inject.version>
     <maven-dependency-tree-parser.version>1.0.6</maven-dependency-tree-parser.version>
     <maven-dependency-tree.version>3.3.0</maven-dependency-tree.version>
-    <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
+    <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
     <plexus-xml.version>4.2.0</plexus-xml.version>
 
     <!-- Plugins -->
     <maven-failsafe-plugin.version>3.6.0</maven-failsafe-plugin.version>
-    <maven-plugin-plugin.version>3.15.2</maven-plugin-plugin.version>
+    <maven-plugin-plugin.version>3.16.0</maven-plugin-plugin.version>
 
     <!-- Build settings -->
     <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
