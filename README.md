@@ -138,11 +138,11 @@ Of course, it is also possible to execute DepClean with parameters directly from
 mvn se.kth.castor:depclean-maven-plugin:2.2.0:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
 
-Every `depclean` run also leaves a machine-readable summary of the analysis in `target/depclean-analysis.json`; the `report` goal reuses it to avoid analysing the project twice.
+Every `depclean` run also leaves a machine-readable summary of the analysis in `target/depclean-analysis.json`; the `report` goal reuses it to avoid analysing the project twice (and writes the file back whenever it has to analyse the project itself).
 
 ## Maven Site report
 
-The `report` goal renders the analysis as a page of the Maven site (`target/site/depclean.html`), listed in the "Project Reports" section. It shows a summary per category (used and potentially unused × direct, transitive, inherited direct, inherited transitive, plus the dependencies ignored by configuration), a table per category with coordinates, scope and size, and the classes the project uses from each used dependency. The report is read-only: it never writes `pom-debloated.xml` or fails the build.
+The `report` goal renders the analysis as a page of the Maven site (`target/site/depclean.html`), listed in the "Project Reports" section. It shows a summary per category (used and potentially unused × direct, transitive, inherited direct, inherited transitive, plus the dependencies excluded through `ignoreDependencies`), a table per category with coordinates, scope and size, and the classes the project uses from each used dependency. Note that dependencies removed through `ignoreScopes` (and the test-scope dependencies when `ignoreTests` is true) are counted as used, exactly as in the `depclean` goal. The report is read-only: it never writes `pom-debloated.xml` or fails the build.
 
 ```xml
 <reporting>
@@ -163,7 +163,7 @@ The `report` goal renders the analysis as a page of the Maven site (`target/site
 </reporting>
 ```
 
-Then run `mvn site`. The goal forks `test-compile`, so the project does not need to be built first. If `depclean:depclean` already ran in the same build (for example `mvn verify site`) and neither the POM nor the compiled classes changed since, its result is reused instead of running the analysis again.
+Then run `mvn site`. The goal forks `test-compile`, so the project does not need to be built first. If `depclean:depclean` already ran in the same build (for example `mvn verify site`) with the same settings, its result is reused instead of running the analysis again, as long as the POM, the compiled classes and the resolved dependency coordinates still match the fingerprint it stored. Recompiling identical sources does not invalidate it; neither does upgrading a dependency that is already resolved, only those whose coordinates change.
 
 The report can also be generated on its own, in which case it is written to `target/reports/depclean.html`:
 
@@ -171,7 +171,7 @@ The report can also be generated on its own, in which case it is written to `tar
 mvn se.kth.castor:depclean-maven-plugin:2.2.0:report
 ```
 
-The report is built on Doxia 2 and therefore needs `maven-site-plugin` 3.20.0 or newer. Maven 3.9 still defaults to 3.12.1, so pin a recent version in `<build><pluginManagement>`; Maven 4 defaults to a compatible version.
+The report is built on Doxia 2 and therefore needs `maven-site-plugin` 3.20.0 or newer. Maven 3.9 still defaults to 3.12.1, so pin a recent version in `<build><pluginManagement>`; Maven 4 defaults to a compatible version. With an older site plugin the DepClean page itself can still appear, but its Doxia 2 classes clash with the plugin's Doxia and break sibling reports (for example `LinkageError: void org.apache.maven.doxia.sink.Sink.verbatim()`), so the pin matters.
 
 ## How does DepClean work?
 
