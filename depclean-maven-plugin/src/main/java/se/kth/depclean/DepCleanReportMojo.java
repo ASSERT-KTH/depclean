@@ -128,7 +128,10 @@ public class DepCleanReportMojo extends AbstractMavenReport {
         new AnalysisSnapshotFile(Paths.get(project.getBuild().getDirectory()));
     try {
       String inputsFingerprint =
-          AnalysisInputs.fingerprint(project.getFile().toPath(), classDirectories());
+          AnalysisInputs.fingerprint(
+              project.getFile().toPath(),
+              classDirectories(),
+              AnalysisInputs.resolvedCoordinates(project));
       Optional<AnalysisSnapshot> stored = snapshotFile.readIfFresh(settings, inputsFingerprint);
       AnalysisSnapshot snapshot;
       if (stored.isPresent()) {

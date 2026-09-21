@@ -85,10 +85,11 @@ class AnalysisInputsTest {
     assertThat(AnalysisInputs.classDirectories(classes, testClasses, false))
         .containsExactly(classes, testClasses);
 
-    String before = AnalysisInputs.fingerprint(pom, withoutTests);
+    String before = AnalysisInputs.fingerprint(pom, withoutTests, Collections.emptyList());
     write(testClasses.resolve("FooTest.class"), "changed");
 
-    assertThat(AnalysisInputs.fingerprint(pom, withoutTests)).isEqualTo(before);
+    assertThat(AnalysisInputs.fingerprint(pom, withoutTests, Collections.emptyList()))
+        .isEqualTo(before);
   }
 
   @Test
@@ -99,13 +100,40 @@ class AnalysisInputsTest {
     assertThat(fingerprint()).isEqualTo(before);
     assertThat(
             AnalysisInputs.fingerprint(
-                pom, Arrays.asList(classes, testClasses, projectDir.resolve("does-not-exist"))))
+                pom,
+                Arrays.asList(classes, testClasses, projectDir.resolve("does-not-exist")),
+                Collections.emptyList()))
         .isEqualTo(before);
-    assertThat(AnalysisInputs.fingerprint(pom, Collections.emptyList())).isNotEqualTo(before);
+    assertThat(AnalysisInputs.fingerprint(pom, Collections.emptyList(), Collections.emptyList()))
+        .isNotEqualTo(before);
+  }
+
+  @Test
+  void changesWhenResolvedCoordinatesChange() throws IOException {
+    List<String> coordinates =
+        Arrays.asList("junit:junit:4.13.2:test", "commons-io:commons-io:2.11.0:compile");
+
+    assertThat(AnalysisInputs.fingerprint(pom, classDirectories, coordinates))
+        .isNotEqualTo(fingerprint());
+    assertThat(
+            AnalysisInputs.fingerprint(
+                pom, classDirectories, Arrays.asList("junit:junit:4.12:test")))
+        .isNotEqualTo(AnalysisInputs.fingerprint(pom, classDirectories, coordinates));
+  }
+
+  @Test
+  void ignoresCoordinateOrder() throws IOException {
+    List<String> coordinates =
+        Arrays.asList("junit:junit:4.13.2:test", "commons-io:commons-io:2.11.0:compile");
+    List<String> reversed =
+        Arrays.asList("commons-io:commons-io:2.11.0:compile", "junit:junit:4.13.2:test");
+
+    assertThat(AnalysisInputs.fingerprint(pom, classDirectories, reversed))
+        .isEqualTo(AnalysisInputs.fingerprint(pom, classDirectories, coordinates));
   }
 
   private String fingerprint() throws IOException {
-    return AnalysisInputs.fingerprint(pom, classDirectories);
+    return AnalysisInputs.fingerprint(pom, classDirectories, Collections.emptyList());
   }
 
   private static Path write(Path file, String content) throws IOException {

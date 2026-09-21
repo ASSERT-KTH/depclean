@@ -190,7 +190,8 @@ public class DepCleanMojo extends AbstractMojo {
             AnalysisInputs.classDirectories(
                 Paths.get(project.getBuild().getOutputDirectory()),
                 Paths.get(project.getBuild().getTestOutputDirectory()),
-                ignoreTests));
+                ignoreTests),
+            AnalysisInputs.resolvedCoordinates(project));
     snapshotFile.write(
         AnalysisSnapshot.from(
             analysis,

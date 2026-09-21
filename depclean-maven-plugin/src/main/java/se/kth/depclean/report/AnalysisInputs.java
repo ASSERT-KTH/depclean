@@ -29,20 +29,24 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.maven.project.MavenProject;
 
 /**
- * Fingerprints what a DepClean analysis is computed from: the POM and the compiled class files. Two
- * runs over identical inputs yield the same fingerprint, so a stored snapshot can be trusted
- * whenever the fingerprint still matches, even if the class files were recompiled in between (a
- * forked lifecycle does that on some platforms) and therefore carry newer timestamps.
+ * Fingerprints what a DepClean analysis is computed from: the POM, the compiled class files and the
+ * coordinates of the resolved dependencies. Two runs over identical inputs yield the same
+ * fingerprint, so a stored snapshot can be trusted whenever the fingerprint still matches, even if
+ * the class files were recompiled in between (a forked lifecycle does that on some platforms) and
+ * therefore carry newer timestamps. The resolved coordinates matter because dependency versions can
+ * also come from a parent POM, an activated settings profile or a command line property, none of
+ * which changes this project's POM.
  */
 public final class AnalysisInputs {
 
   private AnalysisInputs() {}
 
   /**
-   * The class directories an analysis actually reads. Test classes are only an input when tests
-   * are analysed, so with {@code ignoreTests} they must not invalidate a stored snapshot either.
+   * The class directories an analysis actually reads. Test classes are only an input when tests are
+   * analysed, so with {@code ignoreTests} they must not invalidate a stored snapshot either.
    *
    * @param classDirectory the compiled main class directory
    * @param testClassDirectory the compiled test class directory
@@ -60,14 +64,42 @@ public final class AnalysisInputs {
   }
 
   /**
-   * Computes the SHA-256 fingerprint of the POM and of every {@code .class} file under the given
-   * directories. Missing directories contribute nothing.
+   * The coordinates of the dependencies Maven resolved for the project, as {@code
+   * groupId:artifactId:version:scope}. They are what an analysis reads from the dependency tree, so
+   * they belong to its inputs: a version that comes from a parent POM, an activated settings
+   * profile or a command line property changes the analysis even though this project's POM does not
+   * change.
+   *
+   * @param project the Maven project whose resolved dependencies to describe
+   * @return one coordinate per resolved dependency, in no particular order
+   */
+  public static List<String> resolvedCoordinates(MavenProject project) {
+    return project.getArtifacts().stream()
+        .map(
+            artifact ->
+                artifact.getGroupId()
+                    + ":"
+                    + artifact.getArtifactId()
+                    + ":"
+                    + artifact.getVersion()
+                    + ":"
+                    + artifact.getScope())
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Computes the SHA-256 fingerprint of the POM, of every {@code .class} file under the given
+   * directories and of the given resolved dependency coordinates. Missing directories and an empty
+   * coordinate list contribute nothing.
    *
    * @param pom the project POM
    * @param classDirectories the compiled main and test class directories
+   * @param resolvedCoordinates the resolved dependency coordinates, in any order
    * @return a lowercase hexadecimal digest
    */
-  public static String fingerprint(Path pom, Collection<Path> classDirectories) throws IOException {
+  public static String fingerprint(
+      Path pom, Collection<Path> classDirectories, Collection<String> resolvedCoordinates)
+      throws IOException {
     MessageDigest digest = sha256();
     digest.update(Files.readAllBytes(pom));
     for (Path directory : classDirectories) {
@@ -80,6 +112,12 @@ public final class AnalysisInputs {
         digest.update((byte) 0);
         digest.update(Files.readAllBytes(file));
       }
+    }
+    // Sorted, so that a different iteration order of the dependency graph does not invalidate a
+    // snapshot that describes the very same dependencies
+    for (String coordinate : resolvedCoordinates.stream().sorted().collect(Collectors.toList())) {
+      digest.update(coordinate.getBytes(StandardCharsets.UTF_8));
+      digest.update((byte) 0);
     }
     return hex(digest.digest());
   }
