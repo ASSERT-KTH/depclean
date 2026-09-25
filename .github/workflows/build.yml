@@ -81,9 +81,9 @@ jobs:
         maven: [wrapper]
         include:
           - java-runtime: 17
-            maven: 4.0.0-rc-6 # renovate: apache-maven
+            maven: 4.0.0-rc-7 # renovate: apache-maven
           - java-runtime: 25
-            maven: 4.0.0-rc-6 # renovate: apache-maven
+            maven: 4.0.0-rc-7 # renovate: apache-maven
     name: Maven plugin runtime smoke test on Java ${{ matrix.java-runtime }} with Maven ${{ matrix.maven }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
