@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.assertj.core.api.ListAssert;
 
 /**
@@ -108,7 +107,7 @@ public class DepCleanReportMojoIT {
       List<String> lines =
           Files.readAllLines(result.getMavenLog().getStdout(), StandardCharsets.UTF_8).stream()
               .map(DepCleanReportMojoIT::withoutStdoutPrefix)
-              .collect(Collectors.toList());
+              .toList();
       return assertThat(lines);
     } catch (IOException e) {
       throw new UncheckedIOException(e);

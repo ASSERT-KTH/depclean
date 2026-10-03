@@ -101,6 +101,7 @@ public final class AnalysisSnapshot {
         entries(analysis, analysis.getIgnoredDependencies()));
   }
 
+  @SuppressWarnings("java:S6204") // Stream.toList() is Java 16+, the plugin targets Java 8
   private static List<Entry> entries(
       ProjectDependencyAnalysis analysis, Collection<Dependency> dependencies) {
     return dependencies.stream()
@@ -238,6 +239,7 @@ public final class AnalysisSnapshot {
       this.usedClasses = Collections.unmodifiableList(new ArrayList<>(new TreeSet<>(usedClasses)));
     }
 
+    @SuppressWarnings("java:S6204") // Stream.toList() is Java 16+, the plugin targets Java 8
     static Entry from(Dependency dependency, @Nullable DependencyTypes types) {
       int totalClasses = 0;
       for (ClassName ignored : dependency.getRelatedClasses()) {

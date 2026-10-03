@@ -89,7 +89,7 @@ public class DepCleanReportMojo extends AbstractMavenReport {
 
   /** To build the dependency graph. */
   @Inject
-  @SuppressWarnings("NullAway") // Injected by Maven
+  @SuppressWarnings({"NullAway", "java:S6813"}) // Injected by Maven into a field, not a constructor
   private DependencyGraphBuilder dependencyGraphBuilder;
 
   @Override

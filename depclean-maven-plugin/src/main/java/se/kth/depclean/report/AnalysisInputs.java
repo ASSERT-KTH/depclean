@@ -73,6 +73,7 @@ public final class AnalysisInputs {
    * @param project the Maven project whose resolved dependencies to describe
    * @return one coordinate per resolved dependency, in no particular order
    */
+  @SuppressWarnings("java:S6204") // Stream.toList() is Java 16+, the plugin targets Java 8
   public static List<String> resolvedCoordinates(MavenProject project) {
     return project.getArtifacts().stream()
         .map(
@@ -97,6 +98,7 @@ public final class AnalysisInputs {
    * @param resolvedCoordinates the resolved dependency coordinates, in any order
    * @return a lowercase hexadecimal digest
    */
+  @SuppressWarnings("java:S6204") // Stream.toList() is Java 16+, the plugin targets Java 8
   public static String fingerprint(
       Path pom, Collection<Path> classDirectories, Collection<String> resolvedCoordinates)
       throws IOException {
@@ -122,6 +124,7 @@ public final class AnalysisInputs {
     return hex(digest.digest());
   }
 
+  @SuppressWarnings("java:S6204") // Stream.toList() is Java 16+, the plugin targets Java 8
   private static List<Path> classFiles(Path directory) throws IOException {
     try (Stream<Path> files = Files.walk(directory)) {
       return files

@@ -44,9 +44,9 @@ class DepCleanReportRendererTest {
         .contains("<a href=\"#dep-commons-io_commons-io_2.22.0\">2 / 300</a>")
         .contains("<a id=\"dep-commons-io_commons-io_2.22.0\"></a>")
         .contains("<code>org.apache.commons.io.FileUtils</code>")
-        .contains("<code>org.apache.commons.io.IOUtils</code>");
-    // unused dependencies have no details section
-    assertThat(html).doesNotContain("dep-commons-codec");
+        .contains("<code>org.apache.commons.io.IOUtils</code>")
+        // unused dependencies have no details section
+        .doesNotContain("dep-commons-codec");
     // sections appear in the documented order
     assertThat(html.indexOf("Summary"))
         .isLessThan(html.indexOf("Used direct dependencies (1)"))
