@@ -37,6 +37,7 @@ import se.kth.depclean.core.model.Dependency;
  * hands over to {@code depclean:report} through {@code target/depclean-analysis.json}, so that the
  * report does not have to run the analysis a second time.
  */
+@SuppressWarnings("java:S6206") // records are Java 16+, the plugin is built with --release 8
 public final class AnalysisSnapshot {
 
   private final Settings settings;
@@ -56,6 +57,7 @@ public final class AnalysisSnapshot {
    *
    * @param inputsFingerprint the {@link AnalysisInputs#fingerprint} of what was analysed
    */
+  @SuppressWarnings("java:S107") // the parameters mirror the analysis categories one-to-one
   public AnalysisSnapshot(
       Settings settings,
       String inputsFingerprint,
@@ -162,6 +164,7 @@ public final class AnalysisSnapshot {
   }
 
   /** The analysis settings that influence the result; a snapshot is only reusable if they match. */
+  @SuppressWarnings("java:S6206") // records are Java 16+, the plugin is built with --release 8
   public static final class Settings {
 
     private final boolean ignoreTests;
@@ -211,6 +214,7 @@ public final class AnalysisSnapshot {
   }
 
   /** One dependency of the analysed project. */
+  @SuppressWarnings("java:S6206") // records are Java 16+, the plugin is built with --release 8
   public static final class Entry {
 
     private final String groupId;
