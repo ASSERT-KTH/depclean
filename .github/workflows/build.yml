@@ -128,11 +128,15 @@ jobs:
           "$MVN" -version
           "$MVN" -ntp -f .github/smoke/java8/pom.xml \
             package se.kth.castor:depclean-maven-plugin:${{ steps.version.outputs.version }}:depclean \
+            se.kth.castor:depclean-maven-plugin:${{ steps.version.outputs.version }}:report \
             | tee /tmp/depclean-smoke.log
           # Maven 4 prefixes the plugin's stdout with "[INFO] [stdout] ", hence substring matches
           grep 'D E P C L E A N   A N A L Y S I S   R E S U L T S' /tmp/depclean-smoke.log
           grep -A2 'USED DIRECT DEPENDENCIES \[1\]' /tmp/depclean-smoke.log | grep 'commons-io:commons-io'
           grep -A2 'POTENTIALLY UNUSED DIRECT DEPENDENCIES \[1\]' /tmp/depclean-smoke.log | grep 'org.apache.commons:commons-lang3'
+          # The site report must reuse the analysis of the depclean goal and render it (Doxia 2 stack on this JDK)
+          grep 'Reusing the DepClean analysis from' /tmp/depclean-smoke.log
+          grep -q '<td>commons-lang3</td>' .github/smoke/java8/target/reports/depclean.html
 
   # --------------------------------------------------------------------------------------------------------------------
   # The Gradle plugin, its test fixtures and the READMEs carry the version as a literal;

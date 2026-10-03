@@ -50,13 +50,13 @@ apply() {
 }
 
 # The README carries the version both in <plugin> snippets and in
-# `mvn se.kth.castor:depclean-maven-plugin:<version>:depclean` command lines.
+# `mvn se.kth.castor:depclean-maven-plugin:<version>:<goal>` command lines.
 set_readme() {
   local v=$1
   apply "$README" '<artifactId>depclean-maven-plugin</artifactId>' \
     "/<artifactId>depclean-maven-plugin<\/artifactId>/{n;s|<version>[^<]*</version>|<version>$v</version>|}"
-  apply "$README" 'se\.kth\.castor:depclean-maven-plugin:[^:]+:depclean' \
-    "s|(se\.kth\.castor:depclean-maven-plugin:)[^:]+(:depclean)|\1$v\2|g"
+  apply "$README" 'se\.kth\.castor:depclean-maven-plugin:[^:]+:(depclean|report)' \
+    "s#(se\.kth\.castor:depclean-maven-plugin:)[^:]+(:(depclean|report))#\1$v\2#g"
 }
 
 # Version the README currently documents (first <plugin> snippet).
