@@ -81,9 +81,9 @@ jobs:
         maven: [wrapper]
         include:
           - java-runtime: 17
-            maven: 4.0.0-rc-6 # renovate: apache-maven
+            maven: 4.0.0-rc-7 # renovate: apache-maven
           - java-runtime: 25
-            maven: 4.0.0-rc-6 # renovate: apache-maven
+            maven: 4.0.0-rc-7 # renovate: apache-maven
     name: Maven plugin runtime smoke test on Java ${{ matrix.java-runtime }} with Maven ${{ matrix.maven }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -188,7 +188,7 @@ jobs:
           cache: "maven"
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
           validate-wrappers: true
 
