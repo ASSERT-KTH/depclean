@@ -80,7 +80,7 @@ public class DependencyClassFileVisitor implements ClassFileVisitor {
     } catch (IndexOutOfBoundsException | IOException e) {
       // some bug inside ASM causes an IOB exception. Log it and move on?
       // this happens when the class isn't valid.
-      log.warn("Unable to process: " + className);
+      log.warn("Unable to process: {}", className);
     }
     resultCollector.clearClasses();
   }

@@ -4,6 +4,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 /** Represents a dependency scope. */
+@SuppressWarnings("java:S6206") // records are Java 16+, this module is built with --release 8
 public final class Scope {
 
   private final String value;

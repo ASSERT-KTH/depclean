@@ -186,6 +186,29 @@ class DepCleanGradleFT extends Specification {
         FileUtils.forceDelete(new File(projectPath6 + "/build"))
     }
 
+    String projectPath7 = "src/test/resources-fts/ignored_dependency_excludes_transitives"
+    File ignoredDependencyExcludesTransitives = new File(projectPath7)
+    File originalOutputFile7 = new File(projectPath7 + "/originalOutputFile.txt")
+    File expectedOutputFile7 = new File(projectPath7 + "/expectedOutputFile.txt")
+
+    def "Test that ignoring a direct dependency also ignores the dependencies it induces"() {
+        given:
+        def project = ProjectBuilder.builder().withProjectDir(ignoredDependencyExcludesTransitives).build()
+
+        when:
+        project.plugins.apply("se.kth.castor.depclean-gradle-plugin")
+        BuildResult buildResult = createRunner(ignoredDependencyExcludesTransitives, "build")
+        BuildResult debloatResult = createRunner(ignoredDependencyExcludesTransitives, "debloat")
+
+        then:
+        assert checkTaskOutcome(buildResult.task(":build").getOutcome())
+        assert checkTaskOutcome(debloatResult.task(":debloat").getOutcome())
+
+        originalOutputFile7.write(debloatResult.getOutput())
+        assert compareOutputs(expectedOutputFile7, originalOutputFile7)
+        FileUtils.forceDelete(new File(projectPath7 + "/build"))
+    }
+
     private static BuildResult createRunner(File project, String argument) {
         BuildResult result = GradleRunner.create()
                 .withProjectDir(project)

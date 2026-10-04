@@ -39,6 +39,9 @@ public class DefaultAnnotationVisitor extends AnnotationVisitor {
   }
 
   @Override
+  @SuppressWarnings(
+      "java:S6201") // pattern matching for instanceof is Java 16+, this module is built with
+  // --release 8
   public void visit(@Nullable final String name, @Nullable final Object value) {
     if (value instanceof Type) {
       resultCollector.addType((Type) value);

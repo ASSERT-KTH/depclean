@@ -229,6 +229,37 @@ public class DependencyUtils {
   }
 
   /**
+   * Returns the modules that the build declares itself, as {@code group:name} pairs.
+   *
+   * <p>Gradle's resolution model does not record who added a dependency, so this is the closest
+   * available signal: anything that ends up as a first-level dependency without appearing here was
+   * contributed by an applied plugin or a convention, and is therefore treated as inherited. A
+   * plugin that declares its dependencies inside a {@code dependencies { }} block is
+   * indistinguishable from a hand-written declaration and counts as declared.
+   *
+   * <p>Only declarable configurations are inspected: a resolvable classpath such as {@code
+   * compileClasspath} is a bucket that never carries declarations itself.
+   *
+   * @param configurations All the configurations of the project.
+   * @return A set of {@code group:name} identifiers.
+   */
+  @NonNull
+  public Set<String> getSelfDeclaredModules(final Set<Configuration> configurations) {
+    Set<String> selfDeclaredModules = new HashSet<>();
+    for (Configuration configuration : configurations) {
+      if (!configuration.isCanBeDeclared()) {
+        continue;
+      }
+      for (org.gradle.api.artifacts.Dependency dependency : configuration.getDependencies()) {
+        if (dependency.getGroup() != null && dependency.getName() != null) {
+          selfDeclaredModules.add(dependency.getGroup() + ":" + dependency.getName());
+        }
+      }
+    }
+    return selfDeclaredModules;
+  }
+
+  /**
    * Returns all the dependencies of the project.
    *
    * @param configurations All the configuration used in the project.

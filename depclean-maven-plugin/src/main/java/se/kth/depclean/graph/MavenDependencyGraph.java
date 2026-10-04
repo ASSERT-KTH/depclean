@@ -209,8 +209,7 @@ public class MavenDependencyGraph implements DependencyGraph {
       }
     }
     log.warn(
-        "DepClean could not match the declared dependency {}:{} with any resolved artifact; "
-            + "it will be excluded from the direct dependencies analysis.",
+        "DepClean could not match the declared dependency {}:{} with any resolved artifact; it will be excluded from the direct dependencies analysis.",
         dependency.getGroupId(),
         dependency.getArtifactId());
     return Optional.empty();
@@ -249,6 +248,9 @@ public class MavenDependencyGraph implements DependencyGraph {
     return result.toString();
   }
 
+  @SuppressWarnings(
+      "java:S6208") // comma-separated case labels are Java 14+, this module is built with --release
+  // 8
   private String resolveProperty(String key) {
     switch (key) {
       case "project.groupId":

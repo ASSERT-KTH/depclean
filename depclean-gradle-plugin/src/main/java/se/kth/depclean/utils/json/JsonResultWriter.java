@@ -50,6 +50,8 @@ public class JsonResultWriter {
   @Nullable private Map<String, Set<String>> originsByTarget;
 
   /** Ctor. */
+  @SuppressWarnings(
+      "java:S107") // the parameters mirror the reported analysis dimensions one-to-one
   public JsonResultWriter(
       Project project,
       File classUsageFile,
@@ -207,43 +209,46 @@ public class JsonResultWriter {
 
   @NonNull
   private String getStatus(String coordinates) {
-    return (usedDirectArtifactsCoordinates.contains(coordinates)
-            || usedInheritedArtifactsCoordinates.contains(coordinates)
-            || usedTransitiveArtifactsCoordinates.contains(coordinates))
-        ? "used"
-        : (unusedDirectArtifactsCoordinates.contains(coordinates)
-                || unusedInheritedArtifactsCoordinates.contains(coordinates)
-                || unusedTransitiveArtifactsCoordinates.contains(coordinates))
-            ? "bloated"
-            : "unknown";
+    if (usedDirectArtifactsCoordinates.contains(coordinates)
+        || usedInheritedArtifactsCoordinates.contains(coordinates)
+        || usedTransitiveArtifactsCoordinates.contains(coordinates)) {
+      return "used";
+    }
+    if (unusedDirectArtifactsCoordinates.contains(coordinates)
+        || unusedInheritedArtifactsCoordinates.contains(coordinates)
+        || unusedTransitiveArtifactsCoordinates.contains(coordinates)) {
+      return "bloated";
+    }
+    return "unknown";
   }
 
   @NonNull
   private String getType(String coordinates) {
-    return (usedDirectArtifactsCoordinates.contains(coordinates)
-            || unusedDirectArtifactsCoordinates.contains(coordinates))
-        ? "direct"
-        : (usedInheritedArtifactsCoordinates.contains(coordinates)
-                || unusedInheritedArtifactsCoordinates.contains(coordinates))
-            ? "inherited"
-            : (usedTransitiveArtifactsCoordinates.contains(coordinates)
-                    || unusedTransitiveArtifactsCoordinates.contains(coordinates))
-                ? "transitive"
-                : "unknown";
+    if (usedDirectArtifactsCoordinates.contains(coordinates)
+        || unusedDirectArtifactsCoordinates.contains(coordinates)) {
+      return "direct";
+    }
+    if (usedInheritedArtifactsCoordinates.contains(coordinates)
+        || unusedInheritedArtifactsCoordinates.contains(coordinates)) {
+      return "inherited";
+    }
+    if (usedTransitiveArtifactsCoordinates.contains(coordinates)
+        || unusedTransitiveArtifactsCoordinates.contains(coordinates)) {
+      return "transitive";
+    }
+    return "unknown";
   }
 
   private void writeUsageRatio(String dependencyId, JsonWriter localWriter) throws IOException {
     DependencyTypes types = dependenciesClassesMap.get(dependencyId);
-    localWriter
-        .name("usageRatio")
-        .value(
-            types == null
-                ? -1
-                : types.getAllTypes().isEmpty()
-                    ? 0 // handle division by zero
-                    : ((double) types.getUsedTypes().size() / types.getAllTypes().size()))
-        .name("children(s)")
-        .beginArray();
+    double ratio = -1;
+    if (types != null) {
+      ratio =
+          types.getAllTypes().isEmpty()
+              ? 0 // handle division by zero
+              : (double) types.getUsedTypes().size() / types.getAllTypes().size();
+    }
+    localWriter.name("usageRatio").value(ratio).name("children(s)").beginArray();
   }
 
   private void writeUsedTypes(String dependencyId, JsonWriter localWriter) throws IOException {
@@ -280,10 +285,10 @@ public class JsonResultWriter {
         || !classUsageDependenciesWritten.add(dependencyId)) {
       return;
     }
-    Map<String, Set<String>> originsByTarget = originsByTarget();
+    Map<String, Set<String>> origins = originsByTarget();
     Map<String, Set<String>> targetsByOrigin = new TreeMap<>();
     for (ClassName type : types.getAllTypes()) {
-      for (String origin : originsByTarget.getOrDefault(type.getValue(), new HashSet<>())) {
+      for (String origin : origins.getOrDefault(type.getValue(), new HashSet<>())) {
         targetsByOrigin.computeIfAbsent(origin, k -> new TreeSet<>()).add(type.getValue());
       }
     }

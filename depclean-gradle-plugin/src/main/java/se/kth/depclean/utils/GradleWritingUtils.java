@@ -2,6 +2,7 @@ package se.kth.depclean.utils;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import java.io.BufferedWriter;
@@ -14,6 +15,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import se.kth.depclean.DepCleanGradleAction;
 
@@ -72,14 +74,50 @@ public class GradleWritingUtils {
     writer.close();
   }
 
-  // TODO: To modify later.
+  /** The configuration a production dependency is written back into. */
+  private static final String IMPLEMENTATION = "implementation";
+
   /**
-   * There are some dependencies configurations that are removed by Gradle above 7.0.0, like runtime
-   * converted to implementation. To know more visit <a href =
-   * "https://docs.gradle.org/current/userguide/upgrading_version_6.html">here.</a>, but still
-   * $dependencies.getConfiguration() still returns those deprecated scopes. <br>
-   * So, currently we just divide dependencies into two parts i.e. implementation &
-   * testImplementation.
+   * Mapping from the deprecated configurations that Gradle removed in 7.0.0 to their modern
+   * equivalents. To know more visit <a href =
+   * "https://docs.gradle.org/current/userguide/upgrading_version_6.html">here.</a>
+   */
+  private static final ImmutableMap<String, String> LEGACY_CONFIGURATION_MAPPING =
+      ImmutableMap.<String, String>builder()
+          .put("compile", IMPLEMENTATION)
+          .put("default", IMPLEMENTATION)
+          .put("runtime", "runtimeOnly")
+          .put("testCompile", "testImplementation")
+          .put("testRuntime", "testRuntimeOnly")
+          .build();
+
+  /**
+   * Translates a configuration reported for a resolved artifact into the configuration that should
+   * be written back into the debloated build file.
+   *
+   * @param legacyConfiguration Configuration of the artifact, possibly a deprecated one.
+   * @return The configuration to write, for example {@code implementation} or {@code
+   *     testImplementation}.
+   */
+  private static String toModernConfiguration(@Nullable final String legacyConfiguration) {
+    if (legacyConfiguration == null) {
+      return IMPLEMENTATION;
+    }
+    String mapped = LEGACY_CONFIGURATION_MAPPING.get(legacyConfiguration);
+    if (mapped != null) {
+      return mapped;
+    }
+    /*
+     * Everything else is either already modern (implementation, runtimeOnly, api, ...) or one of
+     * Gradle's internal variant names such as apiElements/runtimeElements. Those variants only
+     * belong to the test source set when they carry the test prefix, so the trailing "Elements"
+     * must not be read as "test".
+     */
+    return legacyConfiguration.startsWith("test") ? "testImplementation" : IMPLEMENTATION;
+  }
+
+  /**
+   * Splits the dependencies to add over the configurations they should be declared in.
    *
    * @param dependenciesToAdd All dependencies to be added.
    * @return A multi-map with value as a dependency and key as it's configuration.
@@ -91,12 +129,7 @@ public class GradleWritingUtils {
       String artifactName = DepCleanGradleAction.getName(artifact);
       String dependency = DepCleanGradleAction.getArtifactGroupArtifactId(artifactName);
       String oldConfiguration = Iterables.get(Splitter.on(':').split(artifactName), 3);
-      String configuration =
-          oldConfiguration != null
-                  && (oldConfiguration.startsWith("test") || oldConfiguration.endsWith("Elements"))
-              ? "testImplementation"
-              : "implementation";
-      configurationDependencyMap.put(configuration, dependency);
+      configurationDependencyMap.put(toModernConfiguration(oldConfiguration), dependency);
     }
     return configurationDependencyMap;
   }

@@ -73,6 +73,7 @@ public final class MavenInvoker {
    * @deprecated use {@link #runCommand(List, File)} instead, which supports arguments containing
    *     spaces. Deprecated since 2.2.0.
    */
+  @SuppressWarnings("java:S6355") // @Deprecated(since=) is Java 9+; the javadoc states the version
   @Deprecated
   public static String[] runCommand(String cmd, @Nullable File directory)
       throws IOException, InterruptedException {
@@ -172,7 +173,7 @@ public final class MavenInvoker {
               + stderrLines.report("standard error")
               + BoundedLines.tailOf(stdoutLines, MAX_REPORTED_LINES).report("standard output"));
     }
-    if (!stderrLines.isEmpty()) {
+    if (!stderrLines.isEmpty() && log.isDebugEnabled()) {
       log.debug("Standard error of '{}':{}", displayCommand, stderrLines.reportWithoutHeader());
     }
     return stdoutLines.toArray(new String[0]);
@@ -273,8 +274,7 @@ public final class MavenInvoker {
               + TimeUnit.MILLISECONDS.toNanos(FORCIBLE_KILL_GRACE_MILLIS);
       if (!(awaitProcess(process, killDeadlineNanos) && awaitHandles(tree, killDeadlineNanos))) {
         log.warn(
-            "The process of the command, or one of its child processes, did not end and had to "
-                + "be abandoned");
+            "The process of the command, or one of its child processes, did not end and had to be abandoned");
       }
     }
 

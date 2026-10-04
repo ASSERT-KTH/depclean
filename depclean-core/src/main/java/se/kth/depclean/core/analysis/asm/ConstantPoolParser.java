@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -92,6 +93,9 @@ public class ConstantPoolParser {
     return parseConstantPoolClassReferences(ByteBuffer.wrap(b));
   }
 
+  @SuppressWarnings(
+      "java:S6208") // comma-separated case labels are Java 14+, this module is built with --release
+  // 8
   static Set<String> parseConstantPoolClassReferences(ByteBuffer buf) {
     if (buf.order(ByteOrder.BIG_ENDIAN).getInt() != HEAD) {
       return Collections.emptySet();
@@ -150,11 +154,7 @@ public class ConstantPoolParser {
       }
       ix += slots;
     }
-    Set<String> result = new HashSet<>();
-    for (Integer clazz : classes) {
-      result.add(stringConstants.get(clazz));
-    }
-    return result;
+    return classes.stream().map(stringConstants::get).collect(Collectors.toSet());
   }
 
   @NonNull

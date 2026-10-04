@@ -151,7 +151,10 @@ public class DepCleanMojo extends AbstractMojo {
 
   /** To build the dependency graph. */
   @Inject
-  @SuppressWarnings("NullAway") // Injected by Maven
+  @SuppressWarnings({
+    "NullAway",
+    "java:S6813"
+  }) // injected by Maven into a field, not through a constructor
   private DependencyGraphBuilder dependencyGraphBuilder;
 
   @Override

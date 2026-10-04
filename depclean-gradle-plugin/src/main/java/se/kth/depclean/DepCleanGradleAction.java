@@ -10,7 +10,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -117,16 +122,29 @@ public class DepCleanGradleAction implements Action<Project> {
     // All declared dependencies of the project.
     Set<ResolvedDependency> declaredDependencies = utils.getDeclaredDependencies(configurations);
 
-    // All declared artifacts of the project.
-    Set<ResolvedArtifact> declaredArtifacts = utils.getDeclaredArtifacts(declaredDependencies);
-
     setArtifactConfigurationMap(utils.getArtifactConfigurationMap());
 
-    // Adding coordinates of the declared artifacts.
-    Set<String> declaredArtifactsGroupArtifactIds = new HashSet<>();
-    for (ResolvedArtifact artifact : declaredArtifacts) {
-      String name = getName(artifact);
-      declaredArtifactsGroupArtifactIds.add(name);
+    /*
+     * Both directions of the relation between a first-level dependency and what it induces
+     * transitively. Needed so that ignoring a direct dependency also drops everything that dependency
+     * pulls in, and so that transitives can be attributed to inherited parents.
+     */
+    DependencyGraph dependencyGraph = buildDependencyGraph(declaredDependencies, allArtifacts);
+
+    /*
+     * A first-level dependency that the build does not declare itself was contributed by an applied
+     * plugin or a convention, so it is reported as inherited rather than as direct.
+     */
+    Set<String> selfDeclaredModules =
+        utils.getSelfDeclaredModules(new HashSet<>(project.getConfigurations()));
+    Set<String> inheritedCoordinates = new HashSet<>();
+    for (ResolvedDependency declared : declaredDependencies) {
+      String module = declared.getModuleGroup() + ":" + declared.getModuleName();
+      if (!selfDeclaredModules.contains(module)) {
+        for (ResolvedArtifact artifact : declared.getModuleArtifacts()) {
+          inheritedCoordinates.add(getName(artifact));
+        }
+      }
     }
 
     prepareDependencyDirectory(project, dependencyDirPath, libsDirPath, allArtifacts, logger);
@@ -155,7 +173,8 @@ public class DepCleanGradleAction implements Action<Project> {
             usedTransitiveArtifacts,
             unusedDirectArtifacts,
             unusedTransitiveArtifacts,
-            declaredArtifactsGroupArtifactIds);
+            dependencyGraph,
+            inheritedCoordinates);
 
     /* Printing the results to the terminal */
     printAnalysisResults(coordinates, allUnresolvedDependencies);
@@ -234,22 +253,30 @@ public class DepCleanGradleAction implements Action<Project> {
       Set<ResolvedArtifact> usedTransitiveArtifacts,
       Set<ResolvedArtifact> unusedDirectArtifacts,
       Set<ResolvedArtifact> unusedTransitiveArtifacts,
-      Set<String> declaredArtifactsGroupArtifactIds) {
+      DependencyGraph dependencyGraph,
+      Set<String> inheritedCoordinates) {
     // --- used dependencies
     Set<String> usedDirectArtifactsCoordinates = new HashSet<>();
     Set<String> usedInheritedArtifactsCoordinates = new HashSet<>();
     Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
 
-    partitionByDeclared(
+    partitionByInherited(
         usedDirectArtifacts,
-        declaredArtifactsGroupArtifactIds,
+        inheritedCoordinates,
         usedDirectArtifactsCoordinates,
         usedInheritedArtifactsCoordinates);
 
-    // TODO Fix: The used transitive dependencies induced by inherited
-    // dependencies should be considered as used inherited.
+    /*
+     * A used dependency that the build does not declare is reported as inherited when every
+     * first-level dependency pulling it in was itself inherited, and as transitive otherwise.
+     */
     for (ResolvedArtifact artifact : usedTransitiveArtifacts) {
-      usedTransitiveArtifactsCoordinates.add(getName(artifact));
+      String coordinates = getName(artifact);
+      if (isInducedByInheritedOnly(coordinates, dependencyGraph, inheritedCoordinates)) {
+        usedInheritedArtifactsCoordinates.add(coordinates);
+      } else {
+        usedTransitiveArtifactsCoordinates.add(coordinates);
+      }
     }
 
     // --- unused dependencies
@@ -257,14 +284,20 @@ public class DepCleanGradleAction implements Action<Project> {
     Set<String> unusedInheritedArtifactsCoordinates = new HashSet<>();
     Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
 
-    partitionByDeclared(
+    partitionByInherited(
         unusedDirectArtifacts,
-        declaredArtifactsGroupArtifactIds,
+        inheritedCoordinates,
         unusedDirectArtifactsCoordinates,
         unusedInheritedArtifactsCoordinates);
 
+    // Same attribution as for the used dependencies above.
     for (ResolvedArtifact artifact : unusedTransitiveArtifacts) {
-      unusedTransitiveArtifactsCoordinates.add(getName(artifact));
+      String coordinates = getName(artifact);
+      if (isInducedByInheritedOnly(coordinates, dependencyGraph, inheritedCoordinates)) {
+        unusedInheritedArtifactsCoordinates.add(coordinates);
+      } else {
+        unusedTransitiveArtifactsCoordinates.add(coordinates);
+      }
     }
 
     // Filtering with name(String) because removeAll function didn't work on
@@ -288,9 +321,16 @@ public class DepCleanGradleAction implements Action<Project> {
     }
 
     // Excluding dependencies ignored by the user from post analysis result.
-    // TODO : If a direct dependency is ignored by the user then it' corresponding
-    // transitive and inherited dependencies should also be ignore.
     if (ignoreDependencies != null) {
+      /*
+       * Ignoring a direct dependency also ignores everything it induces: a transitive dependency
+       * cannot be removed on its own, so leaving it in the analysis would report it as unused even
+       * though the user explicitly asked DepClean to leave that subtree alone.
+       */
+      for (String ignored : new ArrayList<>(ignoreDependencies)) {
+        ignoreDependencies.addAll(
+            dependencyGraph.inducedBy().getOrDefault(ignored, Collections.emptySet()));
+      }
       usedDirectArtifactsCoordinates = excludeDependencies(usedDirectArtifactsCoordinates);
       usedTransitiveArtifactsCoordinates = excludeDependencies(usedTransitiveArtifactsCoordinates);
       usedInheritedArtifactsCoordinates = excludeDependencies(usedInheritedArtifactsCoordinates);
@@ -310,22 +350,138 @@ public class DepCleanGradleAction implements Action<Project> {
         unusedTransitiveArtifactsCoordinates);
   }
 
-  /** Adds each artifact's coordinates to the declared or inherited output set. */
-  private static void partitionByDeclared(
+  /**
+   * Adds each first-level artifact's coordinates to the declared or inherited output set. An
+   * artifact is inherited when it was contributed by a plugin or a convention rather than declared
+   * by the build itself.
+   */
+  private static void partitionByInherited(
       Set<ResolvedArtifact> artifacts,
-      Set<String> declaredArtifactsGroupArtifactIds,
+      Set<String> inheritedCoordinates,
       Set<String> declaredOut,
       Set<String> inheritedOut) {
     for (ResolvedArtifact artifact : artifacts) {
       String artifactGroupArtifactIds = getName(artifact);
-      if (declaredArtifactsGroupArtifactIds.contains(artifactGroupArtifactIds)) {
-        // the artifact is declared in the build file
-        declaredOut.add(artifactGroupArtifactIds);
-      } else {
-        // the artifact is inherited
+      if (inheritedCoordinates.contains(artifactGroupArtifactIds)) {
         inheritedOut.add(artifactGroupArtifactIds);
+      } else {
+        declaredOut.add(artifactGroupArtifactIds);
       }
     }
+  }
+
+  /**
+   * Both directions of the relation between a first-level dependency and what it induces.
+   *
+   * @param inducedBy First-level coordinates -> the coordinates they induce.
+   * @param inducedRoots Coordinates -> the first-level coordinates that pull them in.
+   */
+  private record DependencyGraph(
+      Map<String, Set<String>> inducedBy, Map<String, Set<String>> inducedRoots) {}
+
+  /**
+   * Walks the resolved dependency graph and records, for every first-level dependency, the
+   * coordinates it induces transitively, as well as the reverse relation.
+   *
+   * <p>The same artifact can be resolved under several configurations, so the coordinates are
+   * indexed by group, artifact and version first and expanded back to full coordinates afterwards.
+   *
+   * @param declaredDependencies First-level dependencies declared by the project.
+   * @param allArtifacts Every resolved artifact of the project.
+   * @return The dependency graph in both directions.
+   */
+  private static DependencyGraph buildDependencyGraph(
+      final Set<ResolvedDependency> declaredDependencies,
+      final Set<ResolvedArtifact> allArtifacts) {
+
+    Map<String, Set<String>> coordinatesByGroupArtifactVersion =
+        indexCoordinatesByGroupArtifactVersion(allArtifacts);
+
+    Map<String, Set<String>> inducedBy = new HashMap<>();
+    Map<String, Set<String>> inducedRoots = new HashMap<>();
+    for (ResolvedDependency declared : declaredDependencies) {
+      Set<String> induced = collectInducedCoordinates(declared, coordinatesByGroupArtifactVersion);
+      for (String root : namesOf(declared)) {
+        inducedBy.put(root, induced);
+        recordInducedRoots(inducedRoots, root, induced);
+      }
+    }
+    return new DependencyGraph(inducedBy, inducedRoots);
+  }
+
+  /**
+   * Indexes every resolved coordinate by its group, artifact and version part, so that a module
+   * found while walking the graph can be expanded back to every coordinate it resolves under.
+   */
+  private static Map<String, Set<String>> indexCoordinatesByGroupArtifactVersion(
+      final Set<ResolvedArtifact> allArtifacts) {
+    Map<String, Set<String>> coordinatesByGroupArtifactVersion = new HashMap<>();
+    for (ResolvedArtifact artifact : allArtifacts) {
+      String coordinates = getName(artifact);
+      coordinatesByGroupArtifactVersion
+          .computeIfAbsent(groupArtifactVersion(coordinates), key -> new HashSet<>())
+          .add(coordinates);
+    }
+    return coordinatesByGroupArtifactVersion;
+  }
+
+  /** Returns the coordinates of every artifact a first-level dependency itself resolves to. */
+  private static Set<String> namesOf(final ResolvedDependency dependency) {
+    return dependency.getModuleArtifacts().stream()
+        .map(DepCleanGradleAction::getName)
+        .collect(Collectors.toSet());
+  }
+
+  /** Walks the children of a first-level dependency and collects the coordinates they induce. */
+  private static Set<String> collectInducedCoordinates(
+      final ResolvedDependency declared,
+      final Map<String, Set<String>> coordinatesByGroupArtifactVersion) {
+    Set<String> induced = new HashSet<>();
+    Deque<ResolvedDependency> pending = new ArrayDeque<>(declared.getChildren());
+    Set<ResolvedDependency> visited = new HashSet<>();
+    while (!pending.isEmpty()) {
+      ResolvedDependency dependency = pending.poll();
+      // The same module can be reached through several paths, so it has to be visited once.
+      if (!visited.add(dependency)) {
+        continue;
+      }
+      for (ResolvedArtifact artifact : dependency.getModuleArtifacts()) {
+        String coordinates = getName(artifact);
+        induced.addAll(
+            coordinatesByGroupArtifactVersion.getOrDefault(
+                groupArtifactVersion(coordinates), Collections.emptySet()));
+      }
+      pending.addAll(dependency.getChildren());
+    }
+    return induced;
+  }
+
+  /** Records, for one first-level coordinate, which coordinates it pulls in. */
+  private static void recordInducedRoots(
+      final Map<String, Set<String>> inducedRoots, final String root, final Set<String> induced) {
+    for (String coordinate : induced) {
+      inducedRoots.computeIfAbsent(coordinate, key -> new HashSet<>()).add(root);
+    }
+  }
+
+  /**
+   * Returns the group, artifact and version part of a {@code group:artifact:version:conf}
+   * coordinate.
+   */
+  private static String groupArtifactVersion(final String coordinates) {
+    return coordinates.substring(0, coordinates.lastIndexOf(':'));
+  }
+
+  /**
+   * Tells whether a transitively induced dependency should be reported as inherited, which is the
+   * case when every first-level dependency that pulls it in was itself inherited.
+   */
+  private static boolean isInducedByInheritedOnly(
+      final String coordinates,
+      final DependencyGraph graph,
+      final Set<String> inheritedCoordinates) {
+    Set<String> roots = graph.inducedRoots().get(coordinates);
+    return roots != null && !roots.isEmpty() && inheritedCoordinates.containsAll(roots);
   }
 
   /** Prints the analysis results to the terminal. */

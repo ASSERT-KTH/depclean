@@ -92,7 +92,7 @@ public final class ClassFileVisitorUtils {
         }
       }
     } catch (IOException e) {
-      log.error("Error analyzing JAR: " + url);
+      log.error("Error analyzing JAR: {}", url);
     }
   }
 
@@ -116,7 +116,7 @@ public final class ClassFileVisitorUtils {
       try (FileInputStream in = new FileInputStream(file)) {
         visitClass(path, in, visitor);
       } catch (IOException e) {
-        log.error("Error analyzing directory: " + directory.getAbsolutePath());
+        log.error("Error analyzing directory: {}", directory.getAbsolutePath());
       }
     }
   }

@@ -121,7 +121,7 @@ public class Dependency {
   @Override
   @NonNull
   public String toString() {
-    return String.format("%s:%s:%s:%s", groupId, dependencyId, version, scope);
+    return groupId + ":" + dependencyId + ":" + version + ":" + scope;
   }
 
   @NonNull
@@ -139,17 +139,13 @@ public class Dependency {
       addClassesFromDirectory(file, classes);
     }
     log.trace(
-        "Finding related classes for Dependency: "
-            + groupId
-            + ":"
-            + dependencyId
-            + ":"
-            + version
-            + ":"
-            + scope
-            + ":"
-            + file);
-    log.trace("Related classes: " + classes);
+        "Finding related classes for Dependency: {}:{}:{}:{}:{}",
+        groupId,
+        dependencyId,
+        version,
+        scope,
+        file);
+    log.trace("Related classes: {}", classes);
     return ImmutableSet.copyOf(classes);
   }
 
