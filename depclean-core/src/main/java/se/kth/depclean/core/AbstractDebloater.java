@@ -9,7 +9,7 @@ import se.kth.depclean.core.analysis.model.DebloatedDependency;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /** Analyses the analysis result and writes the debloated config file. */
-public abstract class AbstractDebloater<T> {
+public abstract class AbstractDebloater<T> implements Debloater {
 
   private static final Logger log = LoggerFactory.getLogger(AbstractDebloater.class);
 
@@ -20,6 +20,9 @@ public abstract class AbstractDebloater<T> {
   }
 
   /** Writes the debloated config file down. */
+  @Override
+  @SuppressWarnings(
+      "java:S6204") // Stream.toList() is Java 16+, this module is built with --release 8
   public void write() throws IOException {
     log.info("Starting debloating POM file...");
     logChanges();
@@ -47,7 +50,7 @@ public abstract class AbstractDebloater<T> {
   protected abstract void postProcessDependencies();
 
   private void logChanges() {
-    if (analysis.hasUsedTransitiveDependencies()) {
+    if (log.isInfoEnabled() && analysis.hasUsedTransitiveDependencies()) {
       final int nbUsedTransitiveDeps = analysis.getUsedTransitiveDependencies().size();
       log.info(
           "Adding {} used transitive {} as direct {}.",
@@ -55,14 +58,14 @@ public abstract class AbstractDebloater<T> {
           getDependencyWording(nbUsedTransitiveDeps),
           getDependencyWording(nbUsedTransitiveDeps));
     }
-    if (analysis.hasUnusedDirectDependencies()) {
+    if (log.isInfoEnabled() && analysis.hasUnusedDirectDependencies()) {
       final int nbUnusedDirectDeps = analysis.getUnusedDirectDependencies().size();
       log.info(
           "Removing {} unused direct {}.",
           nbUnusedDirectDeps,
           getDependencyWording(nbUnusedDirectDeps));
     }
-    if (analysis.hasUnusedTransitiveDependencies()) {
+    if (log.isInfoEnabled() && analysis.hasUnusedTransitiveDependencies()) {
       final int nbUnusedTransitiveDeps = analysis.getUnusedTransitiveDependencies().size();
       log.info(
           "Excluding {} unused transitive {} one-by-one.",

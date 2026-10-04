@@ -99,6 +99,9 @@ public class DefaultMethodVisitor extends MethodVisitor {
   }
 
   @Override
+  @SuppressWarnings(
+      "java:S6201") // pattern matching for instanceof is Java 16+, this module is built with
+  // --release 8
   public void visitLdcInsn(final Object cst) {
     if (cst instanceof Type) {
       resultCollector.addType((Type) cst);

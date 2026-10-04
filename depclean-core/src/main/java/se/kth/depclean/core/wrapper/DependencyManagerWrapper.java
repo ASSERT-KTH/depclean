@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
-import se.kth.depclean.core.AbstractDebloater;
+import se.kth.depclean.core.Debloater;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
@@ -114,7 +114,7 @@ public interface DependencyManagerWrapper {
    * @param analysis the depclean analysis
    * @return the debloater
    */
-  AbstractDebloater<?> getDebloater(ProjectDependencyAnalysis analysis);
+  Debloater getDebloater(ProjectDependencyAnalysis analysis);
 
   /**
    * The build directory path.

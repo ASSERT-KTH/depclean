@@ -132,10 +132,10 @@ public class NodeAdapter extends TypeAdapter<Node> {
    */
   private void writeCallGraphCsv(
       Writer writer, String canonical, DependencyAnalysisInfo dependencyInfo) throws IOException {
-    final Map<String, Set<String>> originsByTarget = originsByTarget();
+    final Map<String, Set<String>> origins = originsByTarget();
     final Map<String, Set<String>> targetsByOrigin = new TreeMap<>();
     for (String target : dependencyInfo.allTypes()) {
-      for (String origin : originsByTarget.getOrDefault(target, new HashSet<>())) {
+      for (String origin : origins.getOrDefault(target, new HashSet<>())) {
         targetsByOrigin.computeIfAbsent(origin, k -> new TreeSet<>()).add(target);
       }
     }

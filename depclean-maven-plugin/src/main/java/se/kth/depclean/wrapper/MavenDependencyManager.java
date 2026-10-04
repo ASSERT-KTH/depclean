@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -26,7 +25,7 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-import se.kth.depclean.core.AbstractDebloater;
+import se.kth.depclean.core.Debloater;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.src.ImportsAnalyzer;
@@ -242,8 +241,7 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public AbstractDebloater<? extends Serializable> getDebloater(
-      ProjectDependencyAnalysis analysis) {
+  public Debloater getDebloater(ProjectDependencyAnalysis analysis) {
     return new MavenDebloater(analysis, project, model);
   }
 

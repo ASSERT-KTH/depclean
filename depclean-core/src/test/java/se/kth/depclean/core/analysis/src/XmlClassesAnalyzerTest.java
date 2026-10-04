@@ -102,9 +102,10 @@ class XmlClassesAnalyzerTest {
 
     Set<String> classes = collect();
 
-    assertThat(classes).doesNotContain("top-secret");
-    // The file must not break the analysis of its own well-formed parts or other files
-    assertThat(classes).isNotNull();
+    // The file must not break the analysis of its own well-formed parts or other files. The
+    // well-formed part contributes org.example.Safe, so asserting non-emptiness first shows the
+    // doesNotContain below is not vacuously true.
+    assertThat(classes).isNotEmpty().contains("org.example.Safe").doesNotContain("top-secret");
   }
 
   @Test

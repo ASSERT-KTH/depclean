@@ -5,6 +5,7 @@ import java.util.SortedSet;
 import org.jspecify.annotations.Nullable;
 
 /** The result of a dependency analysis. */
+@SuppressWarnings("java:S6206") // records are Java 16+, this module is built with --release 8
 public final class DependencyAnalysisInfo {
 
   private final String status;

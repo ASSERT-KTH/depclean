@@ -1,0 +1,44 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'se.kth.castor:depclean-gradle-plugin:2.2.1-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'java'
+}
+
+apply plugin: 'se.kth.castor.depclean-gradle-plugin'
+
+group = 'org.foo.bar'
+version = '1.0.0-SNAPSHOT'
+description = 'foobar'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.3'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// jackson-databind is ignored, so the dependencies it induces transitively have to be
+// ignored as well. Without that, jackson-core and jackson-annotations are reported as
+// unused transitive dependencies that the user cannot remove on their own.
+depclean {
+    ignoreDependency = ['com.fasterxml.jackson.core:jackson-databind:2.22.3:compile']
+}

@@ -13,7 +13,6 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -48,14 +47,17 @@ public class DepCleanMojoIT {
    */
   private static final String MAVEN_4_STDOUT_PREFIX = "[INFO] [stdout] ";
 
-  /** Asserts that the build succeeded and returns its standard output, normalized across Maven versions. */
+  /**
+   * Asserts that the build succeeded and returns its standard output, normalized across Maven
+   * versions.
+   */
   private static ListAssert<String> assertThatStdout(MavenExecutionResult result) {
     assertThat(result).isSuccessful();
     try {
       List<String> lines =
           Files.readAllLines(result.getMavenLog().getStdout(), StandardCharsets.UTF_8).stream()
               .map(DepCleanMojoIT::withoutStdoutPrefix)
-              .collect(Collectors.toList());
+              .toList();
       return assertThat(lines);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
@@ -307,8 +309,7 @@ public class DepCleanMojoIT {
             "[INFO] Adding com.fasterxml.jackson.core:jackson-databind:2.22.3:compile",
             "[INFO] Excluding com.fasterxml.jackson.core:jackson-annotations from com.fasterxml.jackson.core:jackson-databind:2.22.3",
             "[INFO] POM debloated successfully",
-            "[INFO] pom-debloated.xml file created in: "
-                + generatedPomDebloated.getAbsolutePath());
+            "[INFO] pom-debloated.xml file created in: " + generatedPomDebloated.getAbsolutePath());
     Assertions.assertTrue(generatedPomDebloated.exists());
     assertThat(normalizedPom(generatedPomDebloated))
         .isEqualTo(
@@ -316,9 +317,9 @@ public class DepCleanMojoIT {
   }
 
   /**
-   * Re-serializes a pom with the model writer on the test classpath. Maven 3 and Maven 4 format
-   * the written pom differently (attribute order, property order), so the raw text cannot be
-   * compared across the Maven versions the ITs run on, whereas the model content can.
+   * Re-serializes a pom with the model writer on the test classpath. Maven 3 and Maven 4 format the
+   * written pom differently (attribute order, property order), so the raw text cannot be compared
+   * across the Maven versions the ITs run on, whereas the model content can.
    */
   private static String normalizedPom(File pom) throws IOException, XmlPullParserException {
     try (InputStream in = Files.newInputStream(pom.toPath())) {
@@ -330,7 +331,8 @@ public class DepCleanMojoIT {
   }
 
   @MavenTest
-  @Disabled
+  @Disabled(
+      "the fixture inherits commons-math-parent, whose apache-rat check rejects its unlicensed sources")
   void unused_inherited_exists(MavenExecutionResult result) {
     log.trace(
         "Test that DepClean detects unused inherited dependencies in a Maven project with a parent");
@@ -364,7 +366,8 @@ public class DepCleanMojoIT {
   }
 
   @MavenTest
-  @Disabled
+  @Disabled(
+      "the fixture inherits commons-math-parent, whose apache-rat check rejects its unlicensed sources")
   void ignored_scopes(MavenExecutionResult result) {
     log.trace(
         "Test that DepClean ignores dependencies (considers them as used) with the ignored scopes");

@@ -51,6 +51,8 @@ public final class ProjectContext {
    * @param ignoredDependencies the dependencies to ignore (i.e. considered as 'used')
    * @param extraClasses some classes we want to tell the analyser to consider used
    */
+  @SuppressWarnings(
+      "java:S107") // the parameters mirror the reported analysis dimensions one-to-one
   public ProjectContext(
       DependencyGraph dependencyGraph,
       Set<Path> outputFolders,
@@ -163,8 +165,8 @@ public final class ProjectContext {
    */
   private boolean excludeDependenciesBasedOnIgnoredScopes(Dependency dc) {
     final String declaredScope = dc.getScope();
-    log.debug("ignoreScopes: " + ignoredScopes);
-    log.debug("dc = " + dc + " declaredScope = " + declaredScope);
+    log.debug("ignoreScopes: {}", ignoredScopes);
+    log.debug("dc = {} declaredScope = {}", dc, declaredScope);
     if (declaredScope == null) {
       return true; // Don't exclude if scope is null
     }

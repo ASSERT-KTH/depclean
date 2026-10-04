@@ -55,6 +55,8 @@ public final class ProjectDependencyAnalysis {
   private final DependencyGraph dependencyGraph;
 
   /** Creates a project dependency analysis result. */
+  @SuppressWarnings(
+      "java:S107") // the parameters mirror the reported analysis dimensions one-to-one
   public ProjectDependencyAnalysis(
       Set<Dependency> usedDirectDependencies,
       Set<Dependency> usedTransitiveDependencies,

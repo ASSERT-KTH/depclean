@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
@@ -363,15 +364,13 @@ public class DefaultGradleProjectDependencyAnalyzer implements GradleProjectDepe
     for (Map.Entry<ResolvedArtifact, Set<String>> entry : artifactClassesMap.entrySet()) {
       ResolvedArtifact resolvedArtifact = entry.getKey();
       // all the types in all artifacts
-      Set<ClassName> allClassNameSet = new HashSet<>();
-      for (String type : entry.getValue()) {
-        allClassNameSet.add(new ClassName(type));
-      }
+      Set<ClassName> allClassNameSet =
+          entry.getValue().stream().map(ClassName::new).collect(Collectors.toSet());
       // all the types in used artifacts
-      Set<ClassName> usedClassNameSet = new HashSet<>();
-      for (String type : artifactUsedClassesMap.getOrDefault(resolvedArtifact, new HashSet<>())) {
-        usedClassNameSet.add(new ClassName(type));
-      }
+      Set<ClassName> usedClassNameSet =
+          artifactUsedClassesMap.getOrDefault(resolvedArtifact, new HashSet<>()).stream()
+              .map(ClassName::new)
+              .collect(Collectors.toSet());
       dependenciesClassMap.put(
           resolvedArtifact.getModuleVersion().toString(),
           new DependencyTypes(allClassNameSet, usedClassNameSet));

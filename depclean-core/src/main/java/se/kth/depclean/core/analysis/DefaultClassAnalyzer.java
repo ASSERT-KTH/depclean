@@ -43,7 +43,7 @@ public class DefaultClassAnalyzer implements ClassAnalyzer {
     try {
       ClassFileVisitorUtils.accept(url, visitor);
     } catch (Exception e) {
-      log.error("Error analyzing class file: " + url);
+      log.error("Error analyzing class file: {}", url);
     }
     return visitor.getClasses();
   }

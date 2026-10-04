@@ -14,7 +14,8 @@ class CollectorClassFileVisitorTest {
 
   private static final Logger log = LoggerFactory.getLogger(CollectorClassFileVisitorTest.class);
 
-  private static final File CLASS_FILE = new File("src/test/resources/analysisResources/test.class");
+  private static final File CLASS_FILE =
+      new File("src/test/resources/analysisResources/test.class");
   private static final String CLASS_NAME = "test";
   private static final CollectorClassFileVisitor collector = new CollectorClassFileVisitor();
 
@@ -25,7 +26,7 @@ class CollectorClassFileVisitorTest {
     try {
       collector.visitClass(CLASS_NAME, fileInputStream);
     } catch (IllegalArgumentException e) {
-      log.error("Failed to visit the class at: " + CLASS_FILE.getAbsolutePath());
+      log.error("Failed to visit the class at: {}", CLASS_FILE.getAbsolutePath());
     }
     assertThat(collector.getClasses()).isNotEmpty();
   }

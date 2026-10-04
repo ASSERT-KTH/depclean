@@ -44,6 +44,8 @@ public class DepCleanManager {
   private final boolean createCallGraphCsv;
 
   /** Creates the DepClean manager. */
+  @SuppressWarnings(
+      "java:S107") // the parameters mirror the reported analysis dimensions one-to-one
   public DepCleanManager(
       DependencyManagerWrapper dependencyManager,
       boolean skipDepClean,
@@ -314,7 +316,7 @@ public class DepCleanManager {
   private String getTime(long millis) {
     long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
     long seconds = (TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
-    return String.format("%smin %ss", minutes, seconds);
+    return minutes + "min " + seconds + "s";
   }
 
   /** Logs the duration of a phase that started at {@code start} and returns the current time. */

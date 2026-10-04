@@ -67,8 +67,7 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
                               excl.getArtifactId(),
                               dep.getGroupId(),
                               dep.getArtifactId(),
-                              dep.getVersion(),
-                              dep.getScope()));
+                              dep.getVersion()));
             });
   }
 
@@ -113,7 +112,7 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
     Path path = Paths.get(pathToDebloatedPom);
     writePom(path);
     log.info("POM debloated successfully");
-    log.info("pom-debloated.xml file created in: " + pathToDebloatedPom);
+    log.info("pom-debloated.xml file created in: {}", pathToDebloatedPom);
   }
 
   private boolean hasVersionAsProperty(Dependency initialDependency) {
@@ -150,9 +149,7 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
         .toString()
         .toLowerCase(Locale.ROOT)
         .contains(
-            String.format(
-                    "%s:%s:%s",
-                    artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion())
+            (artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion())
                 .toLowerCase(Locale.ROOT));
   }
 

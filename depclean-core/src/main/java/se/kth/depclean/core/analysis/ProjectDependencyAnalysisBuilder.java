@@ -142,14 +142,15 @@ public class ProjectDependencyAnalysisBuilder {
         context.getDependencyGraph().inheritedTransitiveDependencies(), "Inherited Transitive");
   }
 
-  private Set<Dependency> filterUsedDependencies(
-      Collection<Dependency> candidates, String label) {
+  private Set<Dependency> filterUsedDependencies(Collection<Dependency> candidates, String label) {
     final Set<Dependency> result =
         usedDependencies.stream().filter(candidates::contains).collect(Collectors.toSet());
     result.forEach(dependency -> log.trace("## Used {} dependency {}", label, dependency));
     return result;
   }
 
+  @SuppressWarnings(
+      "java:S6204") // Stream.toList() is Java 16+, this module is built with --release 8
   private Set<Dependency> getUnusedDirectDependencies(Set<Dependency> usedDirectDependencies) {
     return getUnusedDependencies(
         context.getDependencyGraph().directDependencies(), usedDirectDependencies);

@@ -19,7 +19,7 @@ import se.kth.depclean.core.analysis.asm.DefaultSignatureVisitor;
 import se.kth.depclean.core.analysis.asm.ResultCollector;
 import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
-public class ASMTest {
+class ASMTest {
 
   // Resource class for testing.
   private static final File classFile =

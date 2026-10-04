@@ -94,6 +94,9 @@ public class DefaultClassVisitor extends ClassVisitor {
   }
 
   @Override
+  @SuppressWarnings(
+      "java:S6201") // pattern matching for instanceof is Java 16+, this module is built with
+  // --release 8
   public FieldVisitor visitField(
       final int access,
       final String name,

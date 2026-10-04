@@ -66,7 +66,7 @@ public final class JarUtils {
           // delete the original dependency jar file
           FileUtils.forceDelete(f);
         } catch (IOException e) {
-          log.warn("Problem decompressing jar file: " + f.getAbsolutePath());
+          log.warn("Problem decompressing jar file: {}", f.getAbsolutePath());
           log.error(e.getMessage(), e);
         }
       }
