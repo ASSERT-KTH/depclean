@@ -48,6 +48,7 @@ dependencies {
     implementation(gradleApi())
     implementation(gradleTestKit())
     implementation("se.kth.castor:depclean-core:${depcleanVersion}")
+    implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.slf4j:slf4j-reload4j:${slf4jVersion}")
     compileOnly("org.jspecify:jspecify:${jspecifyVersion}")
 
