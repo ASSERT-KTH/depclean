@@ -177,15 +177,12 @@ public class DepCleanManager {
   private void copyDependencies(Dependency dependency, File destFolder) {
     File file = dependency.getFile();
     if (file != null) {
-      copyDependencies(file, destFolder);
-    }
-  }
-
-  private void copyDependencies(File jarFile, File destFolder) {
-    try {
-      FileUtils.copyFileToDirectory(jarFile, destFolder);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+      try {
+        FileUtils.copyFileToDirectory(file, destFolder);
+      } catch (IOException e) {
+        throw new AnalysisFailureException(
+            "Failed to copy dependency " + dependency + " to " + destFolder, e);
+      }
     }
   }
 
@@ -327,7 +324,7 @@ public class DepCleanManager {
   }
 
   private void printString(final String string) {
-    System.out.println(string); // NOSONAR avoid a warning of non-used logger
+    getLog().info(string);
   }
 
   private LogWrapper getLog() {
