@@ -177,7 +177,7 @@ public class DepCleanGradleAction implements Action<Project> {
             inheritedCoordinates);
 
     /* Printing the results to the terminal */
-    printAnalysisResults(coordinates, allUnresolvedDependencies);
+    printAnalysisResults(logger, coordinates, allUnresolvedDependencies);
 
     failBuildIfConfigured(coordinates);
 
@@ -244,7 +244,7 @@ public class DepCleanGradleAction implements Action<Project> {
     addDependencySize(dependencyDirPath, logger);
 
     /* Decompress dependencies */
-    decompressDependencies(dependencyDirectory, dependencyDirPath.toString());
+    decompressDependencies(dependencyDirectory, dependencyDirPath.toString(), logger);
   }
 
   /** Splits the analysed artifacts into the six coordinate categories. */
@@ -255,99 +255,115 @@ public class DepCleanGradleAction implements Action<Project> {
       Set<ResolvedArtifact> unusedTransitiveArtifacts,
       DependencyGraph dependencyGraph,
       Set<String> inheritedCoordinates) {
-    // --- used dependencies
-    Set<String> usedDirectArtifactsCoordinates = new HashSet<>();
-    Set<String> usedInheritedArtifactsCoordinates = new HashSet<>();
-    Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>();
+    Classification used =
+        classify(
+            usedDirectArtifacts, usedTransitiveArtifacts, inheritedCoordinates, dependencyGraph);
+    Classification unused =
+        classify(
+            unusedDirectArtifacts,
+            unusedTransitiveArtifacts,
+            inheritedCoordinates,
+            dependencyGraph);
 
+    // Filtering with name(String) because removeAll function didn't work on
+    // Artifact.
+    Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>(unused.transitive());
+    unusedTransitiveArtifactsCoordinates.removeAll(used.direct());
+    unusedTransitiveArtifactsCoordinates.removeAll(used.transitive());
+    unusedTransitiveArtifactsCoordinates.removeAll(used.inherited());
+    unusedTransitiveArtifactsCoordinates.removeAll(unused.direct());
+    unusedTransitiveArtifactsCoordinates.removeAll(unused.inherited());
+
+    Set<String> usedDirectArtifactsCoordinates = new HashSet<>(used.direct());
+    Set<String> usedInheritedArtifactsCoordinates = new HashSet<>(used.inherited());
+    Set<String> usedTransitiveArtifactsCoordinates = new HashSet<>(used.transitive());
+    Set<String> unusedDirectArtifactsCoordinates = new HashSet<>(unused.direct());
+    Set<String> unusedInheritedArtifactsCoordinates = new HashSet<>(unused.inherited());
+
+    return applyUserExclusions(
+        new CoordinateSets(
+            usedDirectArtifactsCoordinates,
+            usedInheritedArtifactsCoordinates,
+            usedTransitiveArtifactsCoordinates,
+            unusedDirectArtifactsCoordinates,
+            unusedInheritedArtifactsCoordinates,
+            unusedTransitiveArtifactsCoordinates),
+        dependencyGraph);
+  }
+
+  /** Applies user-specified configuration and dependency exclusions to all six categories. */
+  private CoordinateSets applyUserExclusions(
+      CoordinateSets coordinates, DependencyGraph dependencyGraph) {
+    Set<String> usedDirect = new HashSet<>(coordinates.usedDirect());
+    Set<String> usedInherited = new HashSet<>(coordinates.usedInherited());
+    Set<String> usedTransitive = new HashSet<>(coordinates.usedTransitive());
+    Set<String> unusedDirect = new HashSet<>(coordinates.unusedDirect());
+    Set<String> unusedInherited = new HashSet<>(coordinates.unusedInherited());
+    Set<String> unusedTransitive = new HashSet<>(coordinates.unusedTransitive());
+
+    if (ignoreConfiguration != null) {
+      usedDirect = excludeConfiguration(usedDirect);
+      usedTransitive = excludeConfiguration(usedTransitive);
+      usedInherited = excludeConfiguration(usedInherited);
+      unusedDirect = excludeConfiguration(unusedDirect);
+      unusedTransitive = excludeConfiguration(unusedTransitive);
+      unusedInherited = excludeConfiguration(unusedInherited);
+    }
+
+    if (ignoreDependencies != null) {
+      for (String ignored : new ArrayList<>(ignoreDependencies)) {
+        ignoreDependencies.addAll(
+            dependencyGraph.inducedBy().getOrDefault(ignored, Collections.emptySet()));
+      }
+      usedDirect = excludeDependencies(usedDirect);
+      usedTransitive = excludeDependencies(usedTransitive);
+      usedInherited = excludeDependencies(usedInherited);
+      unusedDirect = excludeDependencies(unusedDirect);
+      unusedTransitive = excludeDependencies(unusedTransitive);
+      unusedInherited = excludeDependencies(unusedInherited);
+    }
+
+    return new CoordinateSets(
+        usedDirect, usedInherited, usedTransitive, unusedDirect, unusedInherited, unusedTransitive);
+  }
+
+  /** The three coordinate categories of one usage status (used or unused). */
+  private record Classification(
+      Set<String> direct, Set<String> inherited, Set<String> transitive) {}
+
+  /**
+   * Classifies artifacts into direct, inherited and transitive coordinate categories. Direct
+   * artifacts are split by whether the build itself declares them; transitive artifacts are
+   * inherited when every first-level dependency pulling them in was itself inherited.
+   */
+  private static Classification classify(
+      Set<ResolvedArtifact> directArtifacts,
+      Set<ResolvedArtifact> transitiveArtifacts,
+      Set<String> inheritedCoordinates,
+      DependencyGraph dependencyGraph) {
+    Set<String> directArtifactsCoordinates = new HashSet<>();
+    Set<String> inheritedArtifactsCoordinates = new HashSet<>();
     partitionByInherited(
-        usedDirectArtifacts,
+        directArtifacts,
         inheritedCoordinates,
-        usedDirectArtifactsCoordinates,
-        usedInheritedArtifactsCoordinates);
+        directArtifactsCoordinates,
+        inheritedArtifactsCoordinates);
 
     /*
      * A used dependency that the build does not declare is reported as inherited when every
      * first-level dependency pulling it in was itself inherited, and as transitive otherwise.
      */
-    for (ResolvedArtifact artifact : usedTransitiveArtifacts) {
+    Set<String> transitiveArtifactsCoordinates = new HashSet<>();
+    for (ResolvedArtifact artifact : transitiveArtifacts) {
       String coordinates = getName(artifact);
       if (isInducedByInheritedOnly(coordinates, dependencyGraph, inheritedCoordinates)) {
-        usedInheritedArtifactsCoordinates.add(coordinates);
+        inheritedArtifactsCoordinates.add(coordinates);
       } else {
-        usedTransitiveArtifactsCoordinates.add(coordinates);
+        transitiveArtifactsCoordinates.add(coordinates);
       }
     }
-
-    // --- unused dependencies
-    Set<String> unusedDirectArtifactsCoordinates = new HashSet<>();
-    Set<String> unusedInheritedArtifactsCoordinates = new HashSet<>();
-    Set<String> unusedTransitiveArtifactsCoordinates = new HashSet<>();
-
-    partitionByInherited(
-        unusedDirectArtifacts,
-        inheritedCoordinates,
-        unusedDirectArtifactsCoordinates,
-        unusedInheritedArtifactsCoordinates);
-
-    // Same attribution as for the used dependencies above.
-    for (ResolvedArtifact artifact : unusedTransitiveArtifacts) {
-      String coordinates = getName(artifact);
-      if (isInducedByInheritedOnly(coordinates, dependencyGraph, inheritedCoordinates)) {
-        unusedInheritedArtifactsCoordinates.add(coordinates);
-      } else {
-        unusedTransitiveArtifactsCoordinates.add(coordinates);
-      }
-    }
-
-    // Filtering with name(String) because removeAll function didn't work on
-    // Artifact.
-    unusedTransitiveArtifactsCoordinates.removeAll(usedDirectArtifactsCoordinates);
-    unusedTransitiveArtifactsCoordinates.removeAll(usedTransitiveArtifactsCoordinates);
-    unusedTransitiveArtifactsCoordinates.removeAll(usedInheritedArtifactsCoordinates);
-    unusedTransitiveArtifactsCoordinates.removeAll(unusedDirectArtifactsCoordinates);
-    unusedTransitiveArtifactsCoordinates.removeAll(unusedInheritedArtifactsCoordinates);
-
-    // Exclude dependencies with specific scopes from the post analysis result.
-    if (ignoreConfiguration != null) {
-      usedDirectArtifactsCoordinates = excludeConfiguration(usedDirectArtifactsCoordinates);
-      usedTransitiveArtifactsCoordinates = excludeConfiguration(usedTransitiveArtifactsCoordinates);
-      usedInheritedArtifactsCoordinates = excludeConfiguration(usedInheritedArtifactsCoordinates);
-      unusedDirectArtifactsCoordinates = excludeConfiguration(unusedDirectArtifactsCoordinates);
-      unusedTransitiveArtifactsCoordinates =
-          excludeConfiguration(unusedTransitiveArtifactsCoordinates);
-      unusedInheritedArtifactsCoordinates =
-          excludeConfiguration(unusedInheritedArtifactsCoordinates);
-    }
-
-    // Excluding dependencies ignored by the user from post analysis result.
-    if (ignoreDependencies != null) {
-      /*
-       * Ignoring a direct dependency also ignores everything it induces: a transitive dependency
-       * cannot be removed on its own, so leaving it in the analysis would report it as unused even
-       * though the user explicitly asked DepClean to leave that subtree alone.
-       */
-      for (String ignored : new ArrayList<>(ignoreDependencies)) {
-        ignoreDependencies.addAll(
-            dependencyGraph.inducedBy().getOrDefault(ignored, Collections.emptySet()));
-      }
-      usedDirectArtifactsCoordinates = excludeDependencies(usedDirectArtifactsCoordinates);
-      usedTransitiveArtifactsCoordinates = excludeDependencies(usedTransitiveArtifactsCoordinates);
-      usedInheritedArtifactsCoordinates = excludeDependencies(usedInheritedArtifactsCoordinates);
-      unusedDirectArtifactsCoordinates = excludeDependencies(unusedDirectArtifactsCoordinates);
-      unusedTransitiveArtifactsCoordinates =
-          excludeDependencies(unusedTransitiveArtifactsCoordinates);
-      unusedInheritedArtifactsCoordinates =
-          excludeDependencies(unusedInheritedArtifactsCoordinates);
-    }
-
-    return new CoordinateSets(
-        usedDirectArtifactsCoordinates,
-        usedInheritedArtifactsCoordinates,
-        usedTransitiveArtifactsCoordinates,
-        unusedDirectArtifactsCoordinates,
-        unusedInheritedArtifactsCoordinates,
-        unusedTransitiveArtifactsCoordinates);
+    return new Classification(
+        directArtifactsCoordinates, inheritedArtifactsCoordinates, transitiveArtifactsCoordinates);
   }
 
   /**
@@ -484,56 +500,65 @@ public class DepCleanGradleAction implements Action<Project> {
     return roots != null && !roots.isEmpty() && inheritedCoordinates.containsAll(roots);
   }
 
-  /** Prints the analysis results to the terminal. */
+  /**
+   * Prints the analysis results to the terminal.
+   *
+   * @param logger Gradle logger for output
+   * @param coordinates The six coordinate categories
+   * @param allUnresolvedDependencies Unresolved dependencies
+   */
   private void printAnalysisResults(
-      CoordinateSets coordinates, Set<UnresolvedDependency> allUnresolvedDependencies) {
-    printString(SEPARATOR);
-    printString(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
-    printString(SEPARATOR);
-    printString(SEPARATOR);
-    printInfoOfDependencies("Used direct dependencies", coordinates.usedDirect());
-    printInfoOfDependencies("Used inherited dependencies", coordinates.usedInherited());
-    printInfoOfDependencies("Used transitive dependencies", coordinates.usedTransitive());
-    printInfoOfDependencies("Potentially unused direct dependencies", coordinates.unusedDirect());
+      Logger logger,
+      CoordinateSets coordinates,
+      Set<UnresolvedDependency> allUnresolvedDependencies) {
+    logger.lifecycle(SEPARATOR);
+    logger.lifecycle(" D E P C L E A N   A N A L Y S I S   R E S U L T S");
+    logger.lifecycle(SEPARATOR);
+    logger.lifecycle(SEPARATOR);
+    printInfoOfDependencies(logger, "Used direct dependencies", coordinates.usedDirect());
+    printInfoOfDependencies(logger, "Used inherited dependencies", coordinates.usedInherited());
+    printInfoOfDependencies(logger, "Used transitive dependencies", coordinates.usedTransitive());
     printInfoOfDependencies(
-        "Potentially unused inherited dependencies", coordinates.unusedInherited());
+        logger, "Potentially unused direct dependencies", coordinates.unusedDirect());
     printInfoOfDependencies(
-        "Potentially unused transitive dependencies", coordinates.unusedTransitive());
+        logger, "Potentially unused inherited dependencies", coordinates.unusedInherited());
+    printInfoOfDependencies(
+        logger, "Potentially unused transitive dependencies", coordinates.unusedTransitive());
 
-    printString(SEPARATOR);
+    logger.lifecycle(SEPARATOR);
 
     // If there is any dependency which is unresolved during the analysis then
     // reporting it.
     if (!allUnresolvedDependencies.isEmpty()) {
-      printString(
+      logger.lifecycle(
           "\nDependencies that can't be resolved during the analysis"
               + " ["
               + allUnresolvedDependencies.size()
               + "]"
               + ": ");
-      allUnresolvedDependencies.forEach(s -> printString("\t" + s));
+      allUnresolvedDependencies.forEach(s -> logger.lifecycle("\t" + s));
     }
 
     // Configurations ignored by the depclean analysis on user's wish.
-    if (ignoreConfiguration != null && !ignoreConfiguration.isEmpty()) {
-      printString(
+    if (!ignoreConfiguration.isEmpty()) {
+      logger.lifecycle(
           "\nConfigurations ignored in the analysis by the user : "
               + " ["
               + ignoreConfiguration.size()
               + "]"
               + ": ");
-      ignoreConfiguration.forEach(s -> printString("\t" + s));
+      ignoreConfiguration.forEach(s -> logger.lifecycle("\t" + s));
     }
 
     // Dependencies ignored by depclean analysis on user's wish.
-    if (ignoreDependencies != null && !ignoreDependencies.isEmpty()) {
-      printString(
+    if (!ignoreDependencies.isEmpty()) {
+      logger.lifecycle(
           "\nDependencies ignored in the analysis by the user"
               + " ["
               + ignoreDependencies.size()
               + "]"
               + ": ");
-      ignoreDependencies.forEach(s -> printString("\t" + s));
+      ignoreDependencies.forEach(s -> logger.lifecycle("\t" + s));
     }
   }
 
@@ -644,7 +669,7 @@ public class DepCleanGradleAction implements Action<Project> {
     try {
       // Delete the previous existence (if exist).
       if (debloatedDependencies.exists()) {
-        se.kth.depclean.util.FileUtils.forceDelete(debloatedDependencies);
+        se.kth.depclean.core.util.FileUtils.forceDelete(debloatedDependencies);
         if (!debloatedDependencies.createNewFile()) {
           logger.warn("Could not recreate file " + debloatedDependencies.getAbsolutePath());
         }
@@ -672,13 +697,13 @@ public class DepCleanGradleAction implements Action<Project> {
       DefaultGradleProjectDependencyAnalyzer dependencyAnalyzer,
       Set<ResolvedDependency> declaredDependencies,
       CoordinateSets coordinates) {
-    printString("Creating depclean-results.json, please wait...");
+    logger.lifecycle("Creating depclean-results.json, please wait...");
     final File jsonFile =
         projectDirPath.resolve(BUILD_DIR + File.separator + "depclean-results.json").toFile();
     final File classUsageFile =
         projectDirPath.resolve(BUILD_DIR + File.separator + "class-usage.csv").toFile();
     if (createClassUsageCsv) {
-      printString("Creating class-usage.csv, please wait...");
+      logger.lifecycle("Creating class-usage.csv, please wait...");
       try {
         FileUtils.write(
             classUsageFile, "OriginClass,TargetClass,Dependency\n", StandardCharsets.UTF_8);
@@ -795,50 +820,57 @@ public class DepCleanGradleAction implements Action<Project> {
    *
    * @param dependencyDirectory The directory.
    * @param dependencyDirPath Path to the directory.
+   * @param logger Gradle logger for output
    */
   public void decompressDependencies(
-      @NonNull final File dependencyDirectory, @NonNull final String dependencyDirPath) {
+      @NonNull final File dependencyDirectory,
+      @NonNull final String dependencyDirPath,
+      @NonNull final Logger logger) {
     if (dependencyDirectory.exists()) {
       JarUtils.decompress(dependencyDirPath);
     } else {
-      printString("Unable to decompress jars at " + dependencyDirPath);
+      logger.warn("Unable to decompress jars at " + dependencyDirPath);
     }
   }
 
   /**
    * Util function to print the information of the analyzed artifacts.
    *
+   * @param logger Gradle logger for output
    * @param info The usage status (used or unused) and type (direct, transitive, inherited) of
    *     artifacts.
    * @param dependencies The GAV of the artifact.
    */
   private void printInfoOfDependencies(
-      @NonNull final String info, @NonNull final Set<String> dependencies) {
-    printString(info.toUpperCase(Locale.ROOT) + " [" + dependencies.size() + "]" + ": ");
-    printDependencies(dependencies);
-  }
-
-  /**
-   * To print a string in a new line.
-   *
-   * @param string String to be printed.
-   */
-  private void printString(@NonNull final String string) {
-    System.out.println(string); // NOSONAR avoid a warning of non-used logger
+      Logger logger, @NonNull final String info, @NonNull final Set<String> dependencies) {
+    logger.lifecycle(info.toUpperCase(Locale.ROOT) + " [" + dependencies.size() + "]" + ": ");
+    printDependencies(logger, dependencies);
   }
 
   /**
    * Print the status of the dependencies to the standard output. The format is:
    * "[coordinates][scope] [(size)]"
    *
+   * @param logger Gradle logger for output
    * @param dependencies The set dependencies to print.
    */
-  private void printDependencies(@NonNull final Set<String> dependencies) {
+  private void printDependencies(
+      @NonNull final Logger logger, @NonNull final Set<String> dependencies) {
     List<String> sortedDependencies =
         dependencies.stream()
             .sorted(Comparator.comparing(this::getSizeOfDependency).reversed())
             .toList();
-    sortedDependencies.forEach(s -> printString("\t" + s + " (" + getSize(s) + ")"));
+    sortedDependencies.forEach(s -> logger.lifecycle("\t" + s + " (" + getSize(s) + ")"));
+  }
+
+  /**
+   * Returns the jar file name (for example {@code commons-lang3-3.12.0.jar}) that corresponds to a
+   * dependency coordinate string of the form {@code group:artifact:version} or {@code
+   * group:artifact:version:configuration}.
+   */
+  private static String jarFileName(@NonNull String dependency) {
+    List<String> parts = Splitter.on(':').splitToList(dependency);
+    return parts.get(1) + "-" + parts.get(2) + ".jar";
   }
 
   /**
@@ -851,9 +883,7 @@ public class DepCleanGradleAction implements Action<Project> {
    */
   @NonNull
   private Long getSizeOfDependency(@NonNull final String dependency) {
-    List<String> parts = Splitter.on(':').splitToList(dependency);
-    String dep = parts.get(1) + "-" + parts.get(2);
-    Long size = SizeOfDependencies.get(dep + ".jar");
+    Long size = SizeOfDependencies.get(jarFileName(dependency));
     return Objects.requireNonNullElse(size, 0L);
   }
 
@@ -865,11 +895,9 @@ public class DepCleanGradleAction implements Action<Project> {
    */
   @NonNull
   private String getSize(@NonNull final String dependency) {
-    List<String> break1 = Splitter.on(')').splitToList(dependency);
-    List<String> a = Splitter.on(':').splitToList(break1.get(0));
-    String dep = a.get(1) + "-" + a.get(2);
-    if (SizeOfDependencies.containsKey(dep + ".jar")) {
-      return FileUtils.byteCountToDisplaySize(SizeOfDependencies.get(dep + ".jar"));
+    String jar = jarFileName(dependency);
+    if (SizeOfDependencies.containsKey(jar)) {
+      return FileUtils.byteCountToDisplaySize(SizeOfDependencies.get(jar));
     } else {
       // The size cannot be obtained.
       return "size unknown";
@@ -932,7 +960,7 @@ public class DepCleanGradleAction implements Action<Project> {
   }
 
   /**
-   * Remove those artifact coordinates which are ignores by the user.
+   * Remove artifact coordinates that are ignored by the user.
    *
    * @param artifactCoordinates Coordinates of the artifact.
    * @return Un-ignored coordinates.
@@ -943,7 +971,6 @@ public class DepCleanGradleAction implements Action<Project> {
     for (String coordinates : artifactCoordinates) {
       if (!ignoreDependencies.contains(coordinates)) {
         nonExcludedDependencies.add(coordinates);
-        ignoreDependencies.remove(coordinates);
       }
     }
     return nonExcludedDependencies;
