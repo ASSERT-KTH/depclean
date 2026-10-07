@@ -854,7 +854,8 @@ public class DepCleanGradleAction implements Action<Project> {
    * @param logger Gradle logger for output
    * @param dependencies The set dependencies to print.
    */
-  private void printDependencies(@NonNull final Logger logger, @NonNull final Set<String> dependencies) {
+  private void printDependencies(
+      @NonNull final Logger logger, @NonNull final Set<String> dependencies) {
     List<String> sortedDependencies =
         dependencies.stream()
             .sorted(Comparator.comparing(this::getSizeOfDependency).reversed())
