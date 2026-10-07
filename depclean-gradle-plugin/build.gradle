@@ -37,6 +37,7 @@ repositories {
 ext {
     depcleanVersion = '2.2.1-SNAPSHOT'
     errorProneCoreVersion = '2.50.0'
+    gsonVersion = '2.10.1'
     jspecifyVersion = '1.0.1'
     nullawayVersion = '0.14.2'
     slf4jVersion = '2.0.20'
@@ -48,7 +49,7 @@ dependencies {
     implementation(gradleApi())
     implementation(gradleTestKit())
     implementation("se.kth.castor:depclean-core:${depcleanVersion}")
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.code.gson:gson:${gsonVersion}")
     implementation("org.slf4j:slf4j-reload4j:${slf4jVersion}")
     compileOnly("org.jspecify:jspecify:${jspecifyVersion}")
 
