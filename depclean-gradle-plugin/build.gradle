@@ -37,7 +37,7 @@ repositories {
 ext {
     depcleanVersion = '2.2.1-SNAPSHOT'
     errorProneCoreVersion = '2.50.0'
-    gsonVersion = '2.10.1'
+    gsonVersion = '2.14.0'
     jspecifyVersion = '1.0.1'
     nullawayVersion = '0.14.2'
     slf4jVersion = '2.0.20'
