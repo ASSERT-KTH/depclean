@@ -148,14 +148,13 @@ public class DepCleanManager {
     return analysis;
   }
 
-  private void extractClassesFromDependencies() throws IOException {
+  private void extractClassesFromDependencies() throws IOException, AnalysisFailureException {
     File dependencyDirectory =
         dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES).toFile();
     FileUtils.deleteDirectory(dependencyDirectory);
-    dependencyManager
-        .dependencyGraph()
-        .allDependencies()
-        .forEach(jarFile -> copyDependencies(jarFile, dependencyDirectory));
+    for (Dependency dep : dependencyManager.dependencyGraph().allDependencies()) {
+      copyDependencies(dep, dependencyDirectory);
+    }
 
     // Workaround for dependencies that are in located in a project's libs
     // directory.
@@ -174,7 +173,7 @@ public class DepCleanManager {
     }
   }
 
-  private void copyDependencies(Dependency dependency, File destFolder) {
+  private void copyDependencies(Dependency dependency, File destFolder) throws AnalysisFailureException {
     File file = dependency.getFile();
     if (file != null) {
       try {
