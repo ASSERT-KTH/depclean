@@ -22,7 +22,7 @@
 
   <properties>
     <!-- Dependencies -->
-    <asm.version>9.10.1</asm.version>
+    <asm.version>9.11</asm.version>
     <guava.version>33.7.2-jre</guava.version>
     <plexus-utils.version>4.1.0</plexus-utils.version>
     <qdox.version>2.2.0</qdox.version>
