@@ -126,7 +126,7 @@ class DepCleanGradleFT extends Specification {
         assert edges.every { !it.split(",")[1].startsWith("java.") }
         // the project's own class references commons-codec, which must be attributed to it
         // (the origin may or may not carry its package prefix, see ClassFileVisitorUtils.getChild)
-        assert edges.any { it ==~ /(org\.)?UseCommonsCodec,org\.apache\.commons\.codec\.Charsets,commons-codec:commons-codec:1\.22\.1/ }
+        assert edges.any { it ==~ /(org\.)?UseCommonsCodec,org\.apache\.commons\.codec\.Charsets,commons-codec:commons-codec:1\.23\.0/ }
     }
 
     String projectPath5 = "src/test/resources-fts/multi_project"

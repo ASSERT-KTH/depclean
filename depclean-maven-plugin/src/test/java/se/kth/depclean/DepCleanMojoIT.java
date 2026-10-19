@@ -212,7 +212,7 @@ public class DepCleanMojoIT {
             "	org.projectlombok:lombok:1.18.48:compile (1 MB)",
             "	org.apache.commons:commons-lang3:3.21.0:compile (731 KB)",
             "	commons-io:commons-io:2.22.0:compile (594 KB)",
-            "	commons-codec:commons-codec:1.22.1:compile (412 KB)",
+            "	commons-codec:commons-codec:1.23.0:compile (430 KB)",
             "	org.kohsuke.metainf-services:metainf-services:1.11:compile (7 KB)",
             "USED TRANSITIVE DEPENDENCIES [0]: ",
             "USED INHERITED DIRECT DEPENDENCIES [0]: ",

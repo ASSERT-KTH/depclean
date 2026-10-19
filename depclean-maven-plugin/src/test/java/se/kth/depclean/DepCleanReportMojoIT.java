@@ -51,10 +51,8 @@ public class DepCleanReportMojoIT {
     // The report never touches the project or writes the depclean:depclean artifacts
     Path project = targetDirectory(result).getParent();
     assertThat(project.resolve("pom-debloated.xml")).doesNotExist();
-    assertThat(targetDirectory(result).resolve("depclean-results.json"))
-        .doesNotExist();
-    assertThat(targetDirectory(result).resolve("depclean-analysis.json"))
-        .exists();
+    assertThat(targetDirectory(result).resolve("depclean-results.json")).doesNotExist();
+    assertThat(targetDirectory(result).resolve("depclean-analysis.json")).exists();
   }
 
   @MavenTest
@@ -85,9 +83,7 @@ public class DepCleanReportMojoIT {
             "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [2]: ");
 
     String report = read(targetDirectory(result).resolve("reports").resolve("depclean.html"));
-    assertThat(report)
-        .contains("computed by this report")
-        .contains("<td>commons-compress</td>");
+    assertThat(report).contains("computed by this report").contains("<td>commons-compress</td>");
   }
 
   private static Path targetDirectory(MavenExecutionResult result) {
@@ -100,7 +96,10 @@ public class DepCleanReportMojoIT {
     return new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
   }
 
-  /** Asserts that the build succeeded and returns its standard output, normalized across Maven versions. */
+  /**
+   * Asserts that the build succeeded and returns its standard output, normalized across Maven
+   * versions.
+   */
   private static ListAssert<String> assertThatStdout(MavenExecutionResult result) {
     assertThat(result).isSuccessful();
     try {

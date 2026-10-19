@@ -3,6 +3,7 @@ package se.kth.depclean.report;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -78,7 +79,7 @@ class AnalysisSnapshotFileTest {
 
   @Test
   void isNotReusableWhenCorrupt() throws IOException {
-    Files.write(snapshotFile.getPath(), "{ not json".getBytes("UTF-8"));
+    Files.write(snapshotFile.getPath(), "{ not json".getBytes(StandardCharsets.UTF_8));
 
     assertThat(snapshotFile.readIfFresh(settings, FINGERPRINT)).isEmpty();
   }
@@ -88,7 +89,7 @@ class AnalysisSnapshotFileTest {
     Files.write(
         snapshotFile.getPath(),
         "{\"settings\":{\"ignoreTests\":false,\"ignoreScopes\":[],\"ignoreDependencies\":[]}}"
-            .getBytes("UTF-8"));
+            .getBytes(StandardCharsets.UTF_8));
 
     AnalysisSnapshot.Settings plain =
         new AnalysisSnapshot.Settings(false, Collections.emptySet(), Collections.emptySet());

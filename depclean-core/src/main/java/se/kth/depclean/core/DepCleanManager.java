@@ -173,7 +173,8 @@ public class DepCleanManager {
     }
   }
 
-  private void copyDependencies(Dependency dependency, File destFolder) throws AnalysisFailureException {
+  private void copyDependencies(Dependency dependency, File destFolder)
+      throws AnalysisFailureException {
     File file = dependency.getFile();
     if (file != null) {
       try {

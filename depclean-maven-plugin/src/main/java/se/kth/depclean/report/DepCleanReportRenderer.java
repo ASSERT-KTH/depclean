@@ -26,7 +26,9 @@ import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.reporting.AbstractMavenReportRenderer;
 import se.kth.depclean.report.AnalysisSnapshot.Entry;
 
-/** Renders an {@link AnalysisSnapshot} as a Doxia document, i.e. the body of the DepClean site page. */
+/**
+ * Renders an {@link AnalysisSnapshot} as a Doxia document, i.e. the body of the DepClean site page.
+ */
 public final class DepCleanReportRenderer extends AbstractMavenReportRenderer {
 
   private static final String[] DEPENDENCY_TABLE_HEADER = {
