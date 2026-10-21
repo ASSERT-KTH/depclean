@@ -14,6 +14,6 @@ POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [0]:
 -------------------------------------------------------
 
 Dependencies ignored in the analysis by the user [3]: 
-	com.fasterxml.jackson.core:jackson-databind:2.22.3:compile
+	com.fasterxml.jackson.core:jackson-databind:2.22.4:compile
 	com.fasterxml.jackson.core:jackson-annotations:2.22:compile
-	com.fasterxml.jackson.core:jackson-core:2.22.3:compile
+	com.fasterxml.jackson.core:jackson-core:2.22.4:compile

@@ -25,12 +25,20 @@
       "enabled": false
     },
     {
-      "description": "IT/FT fixture dependencies have golden output assertions coupled to exact versions and sizes; never automerge, update the goldens in the same PR instead",
+      "description": "IT/FT fixtures are golden test data: their dependency versions and jar sizes are hard-coded in DepCleanMojoIT.java, DepCleanGradleFT.groovy, expectedOutputFile.txt and pom-debloated.xml goldens. Renovate cannot update those goldens (it cannot compute the jar sizes they assert), so a bump here always breaks CI. Never touch fixture dependencies; bump them manually together with their goldens.",
       "matchFileNames": [
         "depclean-maven-plugin/src/test/resources-its/**",
         "depclean-gradle-plugin/src/test/resources-fts/**"
       ],
-      "automerge": false
+      "enabled": false
+    },
+    {
+      "description": "basic_spring_maven_project fixtures feed golden trees: MavenInvokerTest diffs `mvn dependency:tree` output against tree_expected.txt, which hard-codes every transitive version resolved from the spring-boot parent. Renovate bumps of spring-boot-starter-parent here always desync the golden (see #503, needed a manual golden regeneration). Update manually together with the tree golden.",
+      "matchFileNames": [
+        "depclean-core/src/test/resources/basic_spring_maven_project/**",
+        "depclean-maven-plugin/src/test/resources/MavenInvokerResources/**"
+      ],
+      "enabled": false
     },
     {
       "description": "Security fix PRs get top priority",
