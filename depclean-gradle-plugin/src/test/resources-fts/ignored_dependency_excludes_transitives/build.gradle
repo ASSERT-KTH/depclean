@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.3'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.4'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -40,5 +40,5 @@ tasks.withType(JavaCompile).configureEach {
 // ignored as well. Without that, jackson-core and jackson-annotations are reported as
 // unused transitive dependencies that the user cannot remove on their own.
 depclean {
-    ignoreDependency = ['com.fasterxml.jackson.core:jackson-databind:2.22.3:compile']
+    ignoreDependency = ['com.fasterxml.jackson.core:jackson-databind:2.22.4:compile']
 }
