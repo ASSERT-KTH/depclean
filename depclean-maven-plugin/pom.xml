@@ -29,7 +29,7 @@
     <maven-dependency-tree-parser.version>1.0.6</maven-dependency-tree-parser.version>
     <maven-dependency-tree.version>3.3.0</maven-dependency-tree.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
-    <maven-reporting-api.version>4.0.0</maven-reporting-api.version>
+    <maven-reporting-api.version>4.1.0</maven-reporting-api.version>
     <maven-reporting-impl.version>4.0.0</maven-reporting-impl.version>
     <plexus-xml.version>4.2.0</plexus-xml.version>
 
