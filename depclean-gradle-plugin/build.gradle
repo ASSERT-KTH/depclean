@@ -87,7 +87,7 @@ tasks.withType(Test).configureEach {
 }
 
 jacoco {
-    toolVersion = '0.8.15'
+    toolVersion = '0.8.16'
 }
 
 tasks.named('jacocoTestReport', JacocoReport) {
