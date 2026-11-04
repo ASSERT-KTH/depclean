@@ -7,7 +7,7 @@
   <!-- Coordinates -->
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-parent-pom</artifactId>
-  <version>2.3.0</version>
+  <version>2.3.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!-- Name of the parent module -->
@@ -59,7 +59,7 @@
     <java.version>8</java.version>
     <java.test.version>17</java.test.version>
     <linkXRef>false</linkXRef>
-    <project.build.outputTimestamp>2026-11-03T22:05:59Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-11-04T05:28:22Z</project.build.outputTimestamp>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
