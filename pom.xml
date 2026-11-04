@@ -26,7 +26,7 @@
   <properties>
     <!-- Dependencies -->
     <assertj.version>3.27.7</assertj.version>
-    <checkstyle.version>14.3.0</checkstyle.version>
+    <checkstyle.version>14.4.0</checkstyle.version>
     <commons-io.version>2.22.0</commons-io.version>
     <error_prone_core.version>2.51.0</error_prone_core.version>
     <jspecify.version>1.0.1</jspecify.version>
