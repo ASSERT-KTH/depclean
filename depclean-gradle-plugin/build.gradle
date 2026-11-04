@@ -27,7 +27,7 @@ tasks.withType(GroovyCompile).configureEach {
 }
 
 group = 'se.kth.castor'
-version = '2.2.1-SNAPSHOT'
+version = '2.3.0'
 
 repositories {
   mavenLocal()
@@ -35,7 +35,7 @@ repositories {
 }
 
 ext {
-    depcleanVersion = '2.2.1-SNAPSHOT'
+    depcleanVersion = '2.3.0'
     errorProneCoreVersion = '2.51.0'
     gsonVersion = '2.15.0'
     jspecifyVersion = '1.0.1'
