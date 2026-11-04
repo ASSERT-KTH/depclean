@@ -66,7 +66,7 @@ Configure the `pom.xml` file of your Maven project to use DepClean as part of th
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.2.0</version>
+  <version>2.3.0</version>
   <executions>
     <execution>
       <goals>
@@ -82,7 +82,7 @@ Or you can run DepClean directly from the command line (the project needs to be 
 ```bash
 cd {PATH_TO_MAVEN_PROJECT}
 mvn test-compile
-mvn se.kth.castor:depclean-maven-plugin:2.2.0:depclean
+mvn se.kth.castor:depclean-maven-plugin:2.3.0:depclean
 ```
 
 The examples above use the latest release published to [Maven Central](https://central.sonatype.com/artifact/se.kth.castor/depclean-maven-plugin). To try the latest snapshot instead, [build from source](#installing-and-building-from-source).
@@ -117,7 +117,7 @@ For example, if you want to fail the build in the presence of unused direct depe
 <plugin>
   <groupId>se.kth.castor</groupId>
   <artifactId>depclean-maven-plugin</artifactId>
-  <version>2.2.0</version>
+  <version>2.3.0</version>
   <executions>
     <execution>
       <goals>
@@ -135,7 +135,7 @@ For example, if you want to fail the build in the presence of unused direct depe
 Of course, it is also possible to execute DepClean with parameters directly from the command line. The previous example can be executed directly as follows:
 
 ```bash
-mvn se.kth.castor:depclean-maven-plugin:2.2.0:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
+mvn se.kth.castor:depclean-maven-plugin:2.3.0:depclean -DfailIfUnusedDirect=true -DignoreScopes=provided,test,runtime,system,import
 ```
 
 Every `depclean` run also leaves a machine-readable summary of the analysis in `target/depclean-analysis.json`; the `report` goal reuses it to avoid analysing the project twice (and writes the file back whenever it has to analyse the project itself).
@@ -150,7 +150,7 @@ The `report` goal renders the analysis as a page of the Maven site (`target/site
     <plugin>
       <groupId>se.kth.castor</groupId>
       <artifactId>depclean-maven-plugin</artifactId>
-      <version>2.2.0</version>
+      <version>2.3.0</version>
       <reportSets>
         <reportSet>
           <reports>
@@ -168,7 +168,7 @@ Then run `mvn site`. The goal forks `test-compile`, so the project does not need
 The report can also be generated on its own, in which case it is written to `target/reports/depclean.html`:
 
 ```bash
-mvn se.kth.castor:depclean-maven-plugin:2.2.0:report
+mvn se.kth.castor:depclean-maven-plugin:2.3.0:report
 ```
 
 The report is built on Doxia 2 and therefore needs `maven-site-plugin` 3.20.0 or newer. Maven 3.9 still defaults to 3.12.1, so pin a recent version in `<build><pluginManagement>`; Maven 4 defaults to a compatible version. With an older site plugin the DepClean page itself can still appear, but its Doxia 2 classes clash with the plugin's Doxia and break sibling reports (for example `LinkageError: void org.apache.maven.doxia.sink.Sink.verbatim()`), so the pin matters.
