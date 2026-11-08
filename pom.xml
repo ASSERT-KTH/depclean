@@ -52,6 +52,8 @@
     <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
     <sonar-maven-plugin.version>5.8.0.7211</sonar-maven-plugin.version>
     <spotless-maven-plugin.version>3.11.0</spotless-maven-plugin.version>
+    <!-- Pin the formatter so spotless minor bumps can't silently change formatting (spotless docs recommend this) -->
+    <google-java-format.version>2.0.0</google-java-format.version>
 
     <!-- Build settings -->
     <!-- Main sources target Java 8 bytecode so the plugin runs on Maven with JDK 8+;
@@ -253,7 +255,9 @@
         <version>${spotless-maven-plugin.version}</version>
         <configuration>
           <java>
-            <googleJavaFormat></googleJavaFormat>
+            <googleJavaFormat>
+              <version>${google-java-format.version}</version>
+            </googleJavaFormat>
           </java>
         </configuration>
         <!-- check for latest -->

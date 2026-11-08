@@ -99,7 +99,9 @@ tasks.named('jacocoTestReport', JacocoReport) {
 
 spotless {
   java {
-    googleJavaFormat()
+    // Pin the formatter version: spotless's default google-java-format may change
+    // on any spotless bump, which would fail spotlessCheck on unrelated renovate PRs
+    googleJavaFormat('2.0.0')
   }
 }
 
