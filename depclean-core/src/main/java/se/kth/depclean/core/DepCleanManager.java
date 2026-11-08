@@ -267,9 +267,8 @@ public class DepCleanManager {
         dependencyManager.getDependenciesDirectory(),
         ignoreScopes.stream().map(scope -> new Scope(scope)).collect(Collectors.toSet()),
         ignoreDependencies.stream()
-            .map(
-                pattern ->
-                    toDependency(dependencyManager.dependencyGraph().allDependencies(), pattern))
+            .map(pattern ->
+                toDependency(dependencyManager.dependencyGraph().allDependencies(), pattern))
             .flatMap(Set::stream)
             .collect(Collectors.toSet()),
         allUsedClasses);

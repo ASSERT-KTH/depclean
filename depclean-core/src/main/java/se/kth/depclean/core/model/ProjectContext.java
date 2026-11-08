@@ -149,12 +149,10 @@ public final class ProjectContext {
   private void populateDependenciesAndClassesMap(Set<Dependency> dependencies) {
     dependencies.stream()
         .filter(this::excludeDependenciesBasedOnIgnoredScopes)
-        .forEach(
-            dc -> {
-              log.debug(
-                  "Adding dependency {} with related classes: {}", dc, dc.getRelatedClasses());
-              classesPerDependency.putAll(dc, dc.getRelatedClasses());
-            });
+        .forEach(dc -> {
+          log.debug("Adding dependency {} with related classes: {}", dc, dc.getRelatedClasses());
+          classesPerDependency.putAll(dc, dc.getRelatedClasses());
+        });
   }
 
   /**

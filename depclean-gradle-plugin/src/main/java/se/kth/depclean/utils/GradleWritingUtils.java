@@ -177,12 +177,11 @@ public class GradleWritingUtils {
     for (String excludeDep : excludeChildrenDependencies) {
       writer.println("\t" + configuration + " ('" + excludeDep + "') {");
       Collection<String> excludeDependencies = excludedTransitiveArtifactsMap.get(excludeDep);
-      excludeDependencies.forEach(
-          s -> {
-            List<String> parts = Splitter.on(':').splitToList(s);
-            writer.println(
-                "\t\t\texclude group: '" + parts.get(0) + "', module: '" + parts.get(1) + "'");
-          });
+      excludeDependencies.forEach(s -> {
+        List<String> parts = Splitter.on(':').splitToList(s);
+        writer.println(
+            "\t\t\texclude group: '" + parts.get(0) + "', module: '" + parts.get(1) + "'");
+      });
       writer.println("\t}");
     }
   }

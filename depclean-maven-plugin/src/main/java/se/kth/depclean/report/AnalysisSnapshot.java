@@ -107,9 +107,8 @@ public final class AnalysisSnapshot {
   private static List<Entry> entries(
       ProjectDependencyAnalysis analysis, Collection<Dependency> dependencies) {
     return dependencies.stream()
-        .map(
-            dependency ->
-                Entry.from(dependency, analysis.getDependencyClassesMap().get(dependency)))
+        .map(dependency ->
+            Entry.from(dependency, analysis.getDependencyClassesMap().get(dependency)))
         .collect(Collectors.toList());
   }
 
