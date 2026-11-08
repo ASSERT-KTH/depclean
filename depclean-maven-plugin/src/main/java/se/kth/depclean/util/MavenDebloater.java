@@ -50,25 +50,23 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
   protected void logDependencies() {
     model
         .getDependencies()
-        .forEach(
-            dep -> {
-              log.info(
-                  "Adding {}:{}:{}:{}",
-                  dep.getGroupId(),
-                  dep.getArtifactId(),
-                  dep.getVersion(),
-                  dep.getScope());
-              dep.getExclusions()
-                  .forEach(
-                      excl ->
-                          log.info(
-                              "Excluding {}:{} from {}:{}:{}",
-                              excl.getGroupId(),
-                              excl.getArtifactId(),
-                              dep.getGroupId(),
-                              dep.getArtifactId(),
-                              dep.getVersion()));
-            });
+        .forEach(dep -> {
+          log.info(
+              "Adding {}:{}:{}:{}",
+              dep.getGroupId(),
+              dep.getArtifactId(),
+              dep.getVersion(),
+              dep.getScope());
+          dep.getExclusions()
+              .forEach(excl ->
+                  log.info(
+                      "Excluding {}:{} from {}:{}:{}",
+                      excl.getGroupId(),
+                      excl.getArtifactId(),
+                      dep.getGroupId(),
+                      dep.getArtifactId(),
+                      dep.getVersion()));
+        });
   }
 
   @Override
@@ -95,14 +93,13 @@ public class MavenDebloater extends AbstractDebloater<Dependency> {
   protected void postProcessDependencies() {
     model
         .getDependencies()
-        .forEach(
-            dep -> {
-              for (Dependency initialDependency : initialDependencies) {
-                if (hasVersionAsProperty(initialDependency) && matches(dep, initialDependency)) {
-                  dep.setVersion(initialDependency.getVersion());
-                }
-              }
-            });
+        .forEach(dep -> {
+          for (Dependency initialDependency : initialDependencies) {
+            if (hasVersionAsProperty(initialDependency) && matches(dep, initialDependency)) {
+              dep.setVersion(initialDependency.getVersion());
+            }
+          }
+        });
   }
 
   @Override

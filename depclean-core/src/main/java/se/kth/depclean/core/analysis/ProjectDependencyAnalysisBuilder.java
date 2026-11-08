@@ -64,21 +64,19 @@ public class ProjectDependencyAnalysisBuilder {
     // ignore dependencies
     context
         .getIgnoredDependencies()
-        .forEach(
-            dependencyToIgnore -> {
-              ignoreDependency(
-                  usedDirectDependencies, unusedDirectDependencies, dependencyToIgnore);
-              ignoreDependency(
-                  usedTransitiveDependencies, unusedTransitiveDependencies, dependencyToIgnore);
-              ignoreDependency(
-                  usedInheritedDirectDependencies,
-                  unusedInheritedDirectDependencies,
-                  dependencyToIgnore);
-              ignoreDependency(
-                  usedInheritedTransitiveDependencies,
-                  unusedInheritedTransitiveDependencies,
-                  dependencyToIgnore);
-            });
+        .forEach(dependencyToIgnore -> {
+          ignoreDependency(usedDirectDependencies, unusedDirectDependencies, dependencyToIgnore);
+          ignoreDependency(
+              usedTransitiveDependencies, unusedTransitiveDependencies, dependencyToIgnore);
+          ignoreDependency(
+              usedInheritedDirectDependencies,
+              unusedInheritedDirectDependencies,
+              dependencyToIgnore);
+          ignoreDependency(
+              usedInheritedTransitiveDependencies,
+              unusedInheritedTransitiveDependencies,
+              dependencyToIgnore);
+        });
     // ignore scopes
     ignoreDependencyWithIgnoredScope(
         usedDirectDependencies, unusedDirectDependencies, context.getIgnoredScopes());

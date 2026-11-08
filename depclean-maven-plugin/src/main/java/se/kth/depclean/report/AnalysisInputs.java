@@ -76,15 +76,14 @@ public final class AnalysisInputs {
   @SuppressWarnings("java:S6204") // Stream.toList() is Java 16+, the plugin targets Java 8
   public static List<String> resolvedCoordinates(MavenProject project) {
     return project.getArtifacts().stream()
-        .map(
-            artifact ->
-                artifact.getGroupId()
-                    + ":"
-                    + artifact.getArtifactId()
-                    + ":"
-                    + artifact.getVersion()
-                    + ":"
-                    + artifact.getScope())
+        .map(artifact ->
+            artifact.getGroupId()
+                + ":"
+                + artifact.getArtifactId()
+                + ":"
+                + artifact.getVersion()
+                + ":"
+                + artifact.getScope())
         .collect(Collectors.toList());
   }
 

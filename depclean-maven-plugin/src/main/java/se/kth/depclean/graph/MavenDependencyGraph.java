@@ -70,13 +70,12 @@ public class MavenDependencyGraph implements DependencyGraph {
 
     // Logs
     if (log.isDebugEnabled()) {
-      this.allDependencies.forEach(
-          dep -> {
-            log.debug("Found dependency {}", dep);
-            if (dependenciesPerDependency.containsKey(dep)) {
-              dependenciesPerDependency.get(dep).forEach(transDep -> log.debug("# {}", transDep));
-            }
-          });
+      this.allDependencies.forEach(dep -> {
+        log.debug("Found dependency {}", dep);
+        if (dependenciesPerDependency.containsKey(dep)) {
+          dependenciesPerDependency.get(dep).forEach(transDep -> log.debug("# {}", transDep));
+        }
+      });
     }
   }
 
@@ -152,17 +151,15 @@ public class MavenDependencyGraph implements DependencyGraph {
         Set<Dependency> c = new HashSet<>(dependenciesPerDependency.get(inheritedDirectDependency));
         for (Dependency d : c) {
           project.getArtifacts().stream()
-              .filter(
-                  artifact ->
-                      artifact.getGroupId().equals(d.getGroupId())
-                          && artifact.getArtifactId().equals(d.getDependencyId()))
+              .filter(artifact ->
+                  artifact.getGroupId().equals(d.getGroupId())
+                      && artifact.getArtifactId().equals(d.getDependencyId()))
               .findFirst()
-              .ifPresent(
-                  artifact -> {
-                    if (artifact.getVersion().equals(d.getVersion())) {
-                      inheritedTransitiveDependencies.add(toDepCleanDependency(artifact));
-                    }
-                  });
+              .ifPresent(artifact -> {
+                if (artifact.getVersion().equals(d.getVersion())) {
+                  inheritedTransitiveDependencies.add(toDepCleanDependency(artifact));
+                }
+              });
         }
         inheritedTransitiveDependencies(c, inheritedTransitiveDependencies);
       }
@@ -183,13 +180,12 @@ public class MavenDependencyGraph implements DependencyGraph {
   private void buildDependencyDependencies(DependencyNode parentNode) {
     parentNode
         .getChildren()
-        .forEach(
-            childNode -> {
-              dependenciesPerDependency.put(
-                  toDepCleanDependency(parentNode.getArtifact()),
-                  toDepCleanDependency(childNode.getArtifact()));
-              buildDependencyDependencies(childNode);
-            });
+        .forEach(childNode -> {
+          dependenciesPerDependency.put(
+              toDepCleanDependency(parentNode.getArtifact()),
+              toDepCleanDependency(childNode.getArtifact()));
+          buildDependencyDependencies(childNode);
+        });
   }
 
   private Dependency toDepCleanDependency(Artifact artifact) {

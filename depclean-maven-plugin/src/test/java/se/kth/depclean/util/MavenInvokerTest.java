@@ -196,10 +196,9 @@ class MavenInvokerTest {
         """
             .formatted(lines));
 
-    assertThatThrownBy(
-            () ->
-                MavenInvoker.runCommand(
-                    List.of(javaExecutable(), source.toAbsolutePath().toString()), null))
+    assertThatThrownBy(() ->
+            MavenInvoker.runCommand(
+                List.of(javaExecutable(), source.toAbsolutePath().toString()), null))
         .isInstanceOf(IOException.class)
         .hasMessageContaining("terminated with exit code 3")
         .hasMessageContaining("only the last 200 lines are shown")
@@ -247,21 +246,20 @@ class MavenInvokerTest {
     AtomicReference<Throwable> failure = new AtomicReference<>();
     AtomicBoolean interruptStatusRestored = new AtomicBoolean();
     Thread caller =
-        new Thread(
-            () -> {
-              try {
-                MavenInvoker.runCommand(
-                    List.of(
-                        javaExecutable(),
-                        source.toAbsolutePath().toString(),
-                        pidFile.toAbsolutePath().toString(),
-                        readyFile.toAbsolutePath().toString()),
-                    null);
-              } catch (Throwable t) {
-                failure.set(t);
-                interruptStatusRestored.set(Thread.currentThread().isInterrupted());
-              }
-            });
+        new Thread(() -> {
+          try {
+            MavenInvoker.runCommand(
+                List.of(
+                    javaExecutable(),
+                    source.toAbsolutePath().toString(),
+                    pidFile.toAbsolutePath().toString(),
+                    readyFile.toAbsolutePath().toString()),
+                null);
+          } catch (Throwable t) {
+            failure.set(t);
+            interruptStatusRestored.set(Thread.currentThread().isInterrupted());
+          }
+        });
     caller.start();
     // Interrupt only once the process is actually running, so that the cleanup has something to do.
     long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
