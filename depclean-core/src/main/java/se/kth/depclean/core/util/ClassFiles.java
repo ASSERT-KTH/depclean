@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -45,6 +47,47 @@ public final class ClassFiles {
       return listJar(classpathEntry);
     }
     return Collections.emptyMap();
+  }
+
+  /**
+   * Lists the files of a classpath entry that are directly inside one of its directories.
+   *
+   * @param classpathEntry a jar file or a directory of class files; anything else has no files
+   * @param directory the directory to list, relative to the root of the entry, with {@code /} as
+   *     separator and a trailing {@code /}, e.g. {@code META-INF/services/}
+   * @return the paths of the files, relative to the root of the entry, with {@code /} as separator
+   */
+  public static List<String> listResources(File classpathEntry, String directory) {
+    final List<String> resources = new ArrayList<>();
+    if (classpathEntry.isDirectory()) {
+      final File[] files = new File(classpathEntry, directory).listFiles(File::isFile);
+      if (files != null) {
+        for (File file : files) {
+          resources.add(directory + file.getName());
+        }
+      }
+    } else if (classpathEntry.isFile() && classpathEntry.getName().endsWith(".jar")) {
+      try (ZipFile zip = new ZipFile(classpathEntry)) {
+        if (zip.size() > MAX_ENTRIES) {
+          return resources;
+        }
+        final Enumeration<? extends ZipEntry> entries = zip.entries();
+        while (entries.hasMoreElements()) {
+          final ZipEntry entry = entries.nextElement();
+          final String path = entry.getName();
+          if (!entry.isDirectory()
+              && path.length() <= MAX_ENTRY_NAME_LENGTH
+              && path.startsWith(directory)
+              && path.indexOf('/', directory.length()) < 0) {
+            resources.add(path);
+          }
+        }
+      } catch (IOException e) {
+        log.warn("Unable to list the files of {}: {}", classpathEntry, e.getMessage());
+      }
+    }
+    Collections.sort(resources);
+    return resources;
   }
 
   private static Map<String, String> listJar(File jar) {

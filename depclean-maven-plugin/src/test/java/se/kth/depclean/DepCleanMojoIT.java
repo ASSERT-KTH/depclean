@@ -166,7 +166,12 @@ public class DepCleanMojoIT {
             "-------------------------------------------------------",
             "USED DIRECT DEPENDENCIES [1]: ",
             "	org.springframework:spring-web:7.0.9:compile (2 MB)",
-            "USED TRANSITIVE DEPENDENCIES [0]: ",
+            // what the servlet class named in web.xml needs to be loaded
+            "USED TRANSITIVE DEPENDENCIES [4]: ",
+            "	org.springframework:spring-core:7.0.9:compile (1 MB)",
+            "	org.springframework:spring-beans:7.0.9:compile (906 KB)",
+            "	commons-logging:commons-logging:1.3.5:compile (72 KB)",
+            "	org.jspecify:jspecify:1.0.0:compile (3 KB)",
             "USED INHERITED DIRECT DEPENDENCIES [0]: ",
             "USED INHERITED TRANSITIVE DEPENDENCIES [0]: ",
             "POTENTIALLY UNUSED DIRECT DEPENDENCIES [0]: ");
@@ -301,13 +306,14 @@ public class DepCleanMojoIT {
     assertThatStdout(result)
         .contains(
             "[INFO] Starting debloating POM file...",
-            "[INFO] Adding 1 used transitive dependency as direct dependency.",
+            // jackson-annotations is used: the jackson-databind classes that the project
+            // references cannot be linked without it
+            "[INFO] Adding 2 used transitive dependencies as direct dependencies.",
             "[INFO] Removing 1 unused direct dependency.",
-            "[INFO] Excluding 1 unused transitive dependency one-by-one.",
             "[INFO] Adding com.fasterxml.jackson.core:jackson-core:2.22.4:compile",
             "[INFO] Adding org.mapstruct:mapstruct-processor:1.6.3:provided",
             "[INFO] Adding com.fasterxml.jackson.core:jackson-databind:2.22.4:compile",
-            "[INFO] Excluding com.fasterxml.jackson.core:jackson-annotations from com.fasterxml.jackson.core:jackson-databind:2.22.4",
+            "[INFO] Adding com.fasterxml.jackson.core:jackson-annotations:2.22:compile",
             "[INFO] POM debloated successfully",
             "[INFO] pom-debloated.xml file created in: " + generatedPomDebloated.getAbsolutePath());
     Assertions.assertTrue(generatedPomDebloated.exists());

@@ -86,8 +86,10 @@ class ClassUsageAnalyzerTest {
         new ClassUsageAnalyzer()
             .analyze(
                 Collections.singletonList(projectClasses),
+                Collections.emptyList(),
                 Arrays.asList(libraryJar.toFile(), transitiveJar.toFile()),
-                Collections.singleton("l.Unused"));
+                Collections.singleton("l.Unused"),
+                Collections.emptySet());
 
     assertThat(graph.getReachableClasses()).contains("l.Unused", "t.Spare");
   }

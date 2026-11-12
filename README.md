@@ -42,6 +42,8 @@ Importantly, **DepClean does *not* modify your source code or original `pom.xml`
 * Automatically detects and removes unused dependencies from the `pom.xml`, including those inherited from parent projects.
 * Analyzes bytecode of any Java version, up to the latest release, ensuring compatibility with modern Java features.
 * Runs on Java 8 and above: the plugin ships Java 8 bytecode, so it works on legacy toolchains while still analyzing modern bytecode.
+* Follows the `ServiceLoader` mechanism: a JDBC driver, a logging backend or a JUnit engine that is only registered in `META-INF/services` is recognized as used.
+* Tells you which `compile` or `runtime` dependencies are only used by your tests, so that you can declare them with the `test` scope.
 * Generates a clean and minimal `pom.xml`, free from unused dependencies.
 * Produces detailed, per-dependency usage reports.
 * Offers fine-grained configuration options to tailor the analysis and cleaning process.
@@ -175,9 +177,25 @@ The report is built on Doxia 2 and therefore needs `maven-site-plugin` 3.20.0 or
 
 ## How does DepClean work?
 
-By default, DepClean binds to the `package` phase of the Maven build lifecycle. It statically collects all the types
-referenced in the project under analysis as well as in its declared dependencies. Then, it compares the types that the
-project actually uses in the bytecode with respect to the class members belonging to its dependencies.
+By default, DepClean binds to the `package` phase of the Maven build lifecycle. It starts from the compiled classes of
+the project under analysis and follows the references of the bytecode: to the classes of the dependencies they use, to
+the classes those use, and so on. A dependency is used when at least one of its classes can be reached this way. The
+class files of the dependencies are read straight from their jars, and only the ones the project can reach.
+
+The bytecode does not tell everything, so DepClean also considers as used:
+
+- the classes imported in the sources (the compiler inlines constants and erases source-retention annotations),
+- the classes named in XML resources such as Spring XML configurations, `web.xml` or `persistence.xml`,
+- the annotation processors configured for the `maven-processor-plugin`,
+- the implementations registered in `META-INF/services` for a service type that the project can reach
+  (the `ServiceLoader` mechanism), and the JUnit Platform test engines when the project has tests.
+
+Whatever these classes reference is followed as well. Usages that only exist at runtime, such as reflection on a
+computed class name, cannot be seen: this is why DepClean reports dependencies as *potentially* unused, and why
+`ignoreDependencies` exists.
+
+When a dependency declared with the `compile` or `runtime` scope is only reached from the tests, DepClean lists it
+under "used only by the tests": it is not bloat, but it can be declared with the `test` scope.
 
 With this usage information, DepClean constructs a new `pom.xml` based on the following steps:
 

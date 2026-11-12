@@ -18,6 +18,7 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
 
   protected static final Path RESOURCES_PATH = Paths.get("src/test/resources");
   protected static final Path END_2_END_PATH = RESOURCES_PATH.resolve("end2end");
+  private static final Path NO_SOURCES = RESOURCES_PATH.resolve("no-sources");
 
   private final Logger log;
   private final FakeDependencyGraph dependencyGraph;
@@ -68,12 +69,12 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
 
   @Override
   public Path getSourceDirectory() {
-    return FileUtils.getTempDirectory().toPath();
+    return NO_SOURCES;
   }
 
   @Override
   public Path getTestDirectory() {
-    return FileUtils.getTempDirectory().toPath();
+    return NO_SOURCES;
   }
 
   @Override
@@ -88,11 +89,6 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
 
   @Override
   public Set<String> collectUsedClassesFromProcessors() {
-    return ImmutableSet.of();
-  }
-
-  @Override
-  public Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testDirectory) {
     return ImmutableSet.of();
   }
 
