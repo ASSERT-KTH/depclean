@@ -29,9 +29,6 @@ public final class ProjectContext {
 
   private final Set<Path> outputFolders;
   private final Set<Path> testOutputFolders;
-  private final Path sourceFolder;
-  private final Path testFolder;
-  private final Path dependenciesFolder;
 
   private final Set<Scope> ignoredScopes;
   private final Set<Dependency> ignoredDependencies;
@@ -44,9 +41,6 @@ public final class ProjectContext {
    * @param dependencyGraph the dependencyGraph
    * @param outputFolders where the project's classes are compiled
    * @param testOutputFolders where the project's test classes are compiled
-   * @param sourceFolder where the project's source code are located
-   * @param tesSourceFolder where the project's test sources are located
-   * @param dependenciesFolder where the dependency classes are located
    * @param ignoredScopes the scopes to ignore
    * @param ignoredDependencies the dependencies to ignore (i.e. considered as 'used')
    * @param extraClasses some classes we want to tell the analyser to consider used
@@ -57,18 +51,12 @@ public final class ProjectContext {
       DependencyGraph dependencyGraph,
       Set<Path> outputFolders,
       Set<Path> testOutputFolders,
-      Path sourceFolder,
-      Path tesSourceFolder,
-      Path dependenciesFolder,
       Set<Scope> ignoredScopes,
       Set<Dependency> ignoredDependencies,
       Set<ClassName> extraClasses) {
     this.dependencyGraph = dependencyGraph;
     this.outputFolders = outputFolders;
     this.testOutputFolders = testOutputFolders;
-    this.sourceFolder = sourceFolder;
-    this.testFolder = tesSourceFolder;
-    this.dependenciesFolder = dependenciesFolder;
     this.ignoredScopes = ignoredScopes;
     this.ignoredDependencies = ignoredDependencies;
     this.extraClasses = extraClasses;
@@ -89,18 +77,6 @@ public final class ProjectContext {
 
   public Set<Path> getTestOutputFolders() {
     return testOutputFolders;
-  }
-
-  public Path getSourceFolder() {
-    return sourceFolder;
-  }
-
-  public Path getTestFolder() {
-    return testFolder;
-  }
-
-  public Path getDependenciesFolder() {
-    return dependenciesFolder;
   }
 
   public Set<Scope> getIgnoredScopes() {
@@ -184,9 +160,6 @@ public final class ProjectContext {
         && Objects.equals(dependenciesPerClass, that.dependenciesPerClass)
         && Objects.equals(outputFolders, that.outputFolders)
         && Objects.equals(testOutputFolders, that.testOutputFolders)
-        && Objects.equals(sourceFolder, that.sourceFolder)
-        && Objects.equals(testFolder, that.testFolder)
-        && Objects.equals(dependenciesFolder, that.dependenciesFolder)
         && Objects.equals(ignoredScopes, that.ignoredScopes)
         && Objects.equals(ignoredDependencies, that.ignoredDependencies)
         && Objects.equals(extraClasses, that.extraClasses)
@@ -200,9 +173,6 @@ public final class ProjectContext {
         dependenciesPerClass,
         outputFolders,
         testOutputFolders,
-        sourceFolder,
-        testFolder,
-        dependenciesFolder,
         ignoredScopes,
         ignoredDependencies,
         extraClasses,
@@ -219,12 +189,6 @@ public final class ProjectContext {
         + outputFolders
         + ", testOutputFolders="
         + testOutputFolders
-        + ", sourceFolder="
-        + sourceFolder
-        + ", testFolder="
-        + testFolder
-        + ", dependenciesFolder="
-        + dependenciesFolder
         + ", ignoredScopes="
         + ignoredScopes
         + ", ignoredDependencies="

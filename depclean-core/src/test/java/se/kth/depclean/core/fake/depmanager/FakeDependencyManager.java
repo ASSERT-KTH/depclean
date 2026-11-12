@@ -92,11 +92,6 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public Path getDependenciesDirectory() {
-    return FileUtils.getTempDirectory().toPath();
-  }
-
-  @Override
   public Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testDirectory) {
     return ImmutableSet.of();
   }

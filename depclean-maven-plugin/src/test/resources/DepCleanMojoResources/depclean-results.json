@@ -36,8 +36,7 @@
         "com.jcabi.manifests.Mfs",
         "com.jcabi.manifests.ServletMfs",
         "com.jcabi.manifests.StreamsMfs",
-        "com.jcabi.manifests.StringMfs",
-        "com.jcabi.manifests.package-info"
+        "com.jcabi.manifests.StringMfs"
       ],
       "usedTypes": [
         "com.jcabi.manifests.ClasspathMfs",
@@ -45,7 +44,7 @@
         "com.jcabi.manifests.MfMap",
         "com.jcabi.manifests.Mfs"
       ],
-      "usageRatio": 0.4,
+      "usageRatio": 0.4444444444444444,
       "children": []
     },
     {
@@ -62,7 +61,6 @@
       "status": "bloated",
       "parent": "org.foo.bar:foobar:jar:1.0.0-SNAPSHOT",
       "allTypes": [
-        "META-INF.versions.9.module-info",
         "org.apache.commons.io.ByteBuffers",
         "org.apache.commons.io.ByteOrderMark",
         "org.apache.commons.io.ByteOrderParser",
@@ -127,7 +125,6 @@
         "org.apache.commons.io.build.AbstractOriginSupplier",
         "org.apache.commons.io.build.AbstractStreamBuilder",
         "org.apache.commons.io.build.AbstractSupplier",
-        "org.apache.commons.io.build.package-info",
         "org.apache.commons.io.channels.ByteArraySeekableByteChannel",
         "org.apache.commons.io.channels.ByteArraySeekableByteChannel$1",
         "org.apache.commons.io.channels.ByteArraySeekableByteChannel$Builder",
@@ -153,10 +150,8 @@
         "org.apache.commons.io.channels.FilterWritableByteChannel",
         "org.apache.commons.io.channels.FilterWritableByteChannel$AbstractBuilder",
         "org.apache.commons.io.channels.FilterWritableByteChannel$Builder",
-        "org.apache.commons.io.channels.package-info",
         "org.apache.commons.io.charset.CharsetDecoders",
         "org.apache.commons.io.charset.CharsetEncoders",
-        "org.apache.commons.io.charset.package-info",
         "org.apache.commons.io.comparator.AbstractFileComparator",
         "org.apache.commons.io.comparator.CompositeFileComparator",
         "org.apache.commons.io.comparator.DefaultFileComparator",
@@ -167,7 +162,6 @@
         "org.apache.commons.io.comparator.PathFileComparator",
         "org.apache.commons.io.comparator.ReverseFileComparator",
         "org.apache.commons.io.comparator.SizeFileComparator",
-        "org.apache.commons.io.comparator.package-info",
         "org.apache.commons.io.file.AccumulatorPathVisitor",
         "org.apache.commons.io.file.AccumulatorPathVisitor$1",
         "org.apache.commons.io.file.AccumulatorPathVisitor$Builder",
@@ -201,10 +195,7 @@
         "org.apache.commons.io.file.SimplePathVisitor$AbstractBuilder",
         "org.apache.commons.io.file.StandardDeleteOption",
         "org.apache.commons.io.file.attribute.FileTimes",
-        "org.apache.commons.io.file.attribute.package-info",
-        "org.apache.commons.io.file.package-info",
         "org.apache.commons.io.file.spi.FileSystemProviders",
-        "org.apache.commons.io.file.spi.package-info",
         "org.apache.commons.io.filefilter.AbstractFileFilter",
         "org.apache.commons.io.filefilter.AgeFileFilter",
         "org.apache.commons.io.filefilter.AndFileFilter",
@@ -238,7 +229,6 @@
         "org.apache.commons.io.filefilter.WildcardFileFilter$1",
         "org.apache.commons.io.filefilter.WildcardFileFilter$Builder",
         "org.apache.commons.io.filefilter.WildcardFilter",
-        "org.apache.commons.io.filefilter.package-info",
         "org.apache.commons.io.function.Constants",
         "org.apache.commons.io.function.Erase",
         "org.apache.commons.io.function.IOBaseStream",
@@ -274,7 +264,6 @@
         "org.apache.commons.io.function.UncheckedIOIterable",
         "org.apache.commons.io.function.UncheckedIOIterator",
         "org.apache.commons.io.function.UncheckedIOSpliterator",
-        "org.apache.commons.io.function.package-info",
         "org.apache.commons.io.input.AbstractCharacterFilterReader",
         "org.apache.commons.io.input.AbstractInputStream",
         "org.apache.commons.io.input.AbstractLineEndingInputStream",
@@ -404,8 +393,6 @@
         "org.apache.commons.io.input.buffer.CircularBufferInputStream",
         "org.apache.commons.io.input.buffer.CircularByteBuffer",
         "org.apache.commons.io.input.buffer.PeekableInputStream",
-        "org.apache.commons.io.input.buffer.package-info",
-        "org.apache.commons.io.input.package-info",
         "org.apache.commons.io.monitor.FileAlterationListener",
         "org.apache.commons.io.monitor.FileAlterationListenerAdaptor",
         "org.apache.commons.io.monitor.FileAlterationMonitor",
@@ -414,7 +401,6 @@
         "org.apache.commons.io.monitor.FileAlterationObserver$Builder",
         "org.apache.commons.io.monitor.FileEntry",
         "org.apache.commons.io.monitor.SerializableFileTime",
-        "org.apache.commons.io.monitor.package-info",
         "org.apache.commons.io.output.AbstractByteArrayOutputStream",
         "org.apache.commons.io.output.AbstractByteArrayOutputStream$InputStreamConstructor",
         "org.apache.commons.io.output.AppendableOutputStream",
@@ -480,8 +466,6 @@
         "org.apache.commons.io.output.XmlStreamWriter",
         "org.apache.commons.io.output.XmlStreamWriter$1",
         "org.apache.commons.io.output.XmlStreamWriter$Builder",
-        "org.apache.commons.io.output.package-info",
-        "org.apache.commons.io.package-info",
         "org.apache.commons.io.serialization.ClassNameMatcher",
         "org.apache.commons.io.serialization.FullClassNameMatcher",
         "org.apache.commons.io.serialization.ObjectStreamClassPredicate",
@@ -489,8 +473,7 @@
         "org.apache.commons.io.serialization.ValidatingObjectInputStream",
         "org.apache.commons.io.serialization.ValidatingObjectInputStream$1",
         "org.apache.commons.io.serialization.ValidatingObjectInputStream$Builder",
-        "org.apache.commons.io.serialization.WildcardClassNameMatcher",
-        "org.apache.commons.io.serialization.package-info"
+        "org.apache.commons.io.serialization.WildcardClassNameMatcher"
       ],
       "usedTypes": [],
       "usageRatio": 0.0,
@@ -510,7 +493,6 @@
       "status": "used",
       "parent": "org.foo.bar:foobar:jar:1.0.0-SNAPSHOT",
       "allTypes": [
-        "META-INF.versions.9.module-info",
         "org.apache.commons.codec.BinaryDecoder",
         "org.apache.commons.codec.BinaryEncoder",
         "org.apache.commons.codec.CharEncoding",
@@ -581,9 +563,7 @@
         "org.apache.commons.codec.binary.CharSequenceUtils",
         "org.apache.commons.codec.binary.Hex",
         "org.apache.commons.codec.binary.StringUtils",
-        "org.apache.commons.codec.binary.package-info",
         "org.apache.commons.codec.cli.Digest",
-        "org.apache.commons.codec.cli.package-info",
         "org.apache.commons.codec.digest.B64",
         "org.apache.commons.codec.digest.Blake3",
         "org.apache.commons.codec.digest.Blake3$1",
@@ -615,7 +595,6 @@
         "org.apache.commons.codec.digest.Sha2Crypt",
         "org.apache.commons.codec.digest.UnixCrypt",
         "org.apache.commons.codec.digest.XXHash32",
-        "org.apache.commons.codec.digest.package-info",
         "org.apache.commons.codec.language.AbstractCaverphone",
         "org.apache.commons.codec.language.Caverphone",
         "org.apache.commons.codec.language.Caverphone1",
@@ -662,22 +641,18 @@
         "org.apache.commons.codec.language.bm.Rule$PhonemeList",
         "org.apache.commons.codec.language.bm.Rule$RPattern",
         "org.apache.commons.codec.language.bm.RuleType",
-        "org.apache.commons.codec.language.bm.package-info",
-        "org.apache.commons.codec.language.package-info",
         "org.apache.commons.codec.net.BCodec",
         "org.apache.commons.codec.net.PercentCodec",
         "org.apache.commons.codec.net.QCodec",
         "org.apache.commons.codec.net.QuotedPrintableCodec",
         "org.apache.commons.codec.net.RFC1522Codec",
         "org.apache.commons.codec.net.URLCodec",
-        "org.apache.commons.codec.net.Utils",
-        "org.apache.commons.codec.net.package-info",
-        "org.apache.commons.codec.package-info"
+        "org.apache.commons.codec.net.Utils"
       ],
       "usedTypes": [
         "org.apache.commons.codec.Charsets"
       ],
-      "usageRatio": 0.006134969325153374,
+      "usageRatio": 0.0064516129032258064,
       "children": []
     }
   ]

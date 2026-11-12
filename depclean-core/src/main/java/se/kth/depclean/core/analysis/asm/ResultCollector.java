@@ -25,22 +25,43 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.Type;
 
-/** Used for storing the types visited statically. */
+/** Collects the fully qualified names of the classes referenced by a class file. */
 public class ResultCollector {
 
   private final Set<String> classes = new HashSet<>();
 
+  /**
+   * The classes collected so far.
+   *
+   * @return the fully qualified, dot-separated names of the referenced classes
+   */
   @NonNull
   public Set<String> getDependencies() {
     return classes;
   }
 
-  public void clearClasses() {
-    classes.clear();
-  }
-
+  /**
+   * Adds every class type that occurs in a field or method descriptor, e.g. {@code
+   * (Lcom/foo/A;[Lcom/foo/B;I)Lcom/foo/C;}.
+   *
+   * @param desc a field or method descriptor
+   */
   public void addDesc(@NonNull final String desc) {
-    addType(Type.getType(desc));
+    int i = 0;
+    final int length = desc.length();
+    while (i < length) {
+      // Only class types start with 'L'; once inside a class name, skip to its terminating ';'.
+      if (desc.charAt(i) == 'L') {
+        int end = desc.indexOf(';', i);
+        if (end < 0) {
+          return;
+        }
+        classes.add(desc.substring(i + 1, end).replace('/', '.'));
+        i = end + 1;
+      } else {
+        i++;
+      }
+    }
   }
 
   void addType(@NonNull final Type t) {
@@ -49,10 +70,13 @@ public class ResultCollector {
         addType(t.getElementType());
         break;
       case Type.OBJECT:
-        addName(t.getClassName().replace('.', '/'));
+        classes.add(t.getClassName());
+        break;
+      case Type.METHOD:
+        addDesc(t.getDescriptor());
         break;
       default:
-        // no-op
+        // primitive types are not classes
         break;
     }
   }
@@ -66,24 +90,24 @@ public class ResultCollector {
     }
   }
 
+  /**
+   * Adds a class given by its internal name ({@code com/foo/Bar}) or, as the constant pool does for
+   * array classes, by an array descriptor ({@code [Lcom/foo/Bar;}).
+   *
+   * @param name the internal name or array descriptor, ignored when null
+   */
   void addName(@Nullable String name) {
-    if (name == null) {
+    if (name == null || name.isEmpty()) {
       return;
     }
-    // decode arrays
-    if (name.startsWith("[L") && name.endsWith(";")) {
-      name = name.substring(2, name.length() - 1);
+    if (name.charAt(0) == '[') {
+      addDesc(name);
+    } else {
+      classes.add(name.replace('/', '.'));
     }
-    // decode internal representation
-    name = name.replace('/', '.');
-    classes.add(name);
   }
 
   void addMethodDesc(@NonNull final String desc) {
-    addType(Type.getReturnType(desc));
-    Type[] types = Type.getArgumentTypes(desc);
-    for (Type type : types) {
-      addType(type);
-    }
+    addDesc(desc);
   }
 }

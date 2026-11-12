@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.jspecify.annotations.Nullable;
-import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.DependencyAnalysisInfo;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
@@ -151,7 +150,7 @@ public class NodeAdapter extends TypeAdapter<Node> {
     if (originsByTarget == null) {
       Map<String, Set<String>> inverted = new HashMap<>();
       for (Map.Entry<String, Set<String>> usages :
-          DefaultCallGraph.getUsagesPerClass().entrySet()) {
+          analysis.getClassUsageGraph().getUsagesPerClass().entrySet()) {
         for (String target : usages.getValue()) {
           inverted.computeIfAbsent(target, k -> new HashSet<>()).add(usages.getKey());
         }

@@ -14,13 +14,13 @@ import org.apache.commons.io.FileUtils;
 import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.analysis.src.XmlClassesAnalyzer;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
 import se.kth.depclean.core.model.ProjectContext;
 import se.kth.depclean.core.model.Scope;
-import se.kth.depclean.core.util.JarUtils;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.core.wrapper.LogWrapper;
 
@@ -28,7 +28,6 @@ import se.kth.depclean.core.wrapper.LogWrapper;
 public class DepCleanManager {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
-  private static final String DIRECTORY_TO_EXTRACT_DEPENDENCIES = "dependency";
 
   private final DependencyManagerWrapper dependencyManager;
   private final boolean skipDepClean;
@@ -92,9 +91,6 @@ public class DepCleanManager {
     }
 
     long phaseStart = System.currentTimeMillis();
-    extractClassesFromDependencies();
-    phaseStart = logPhase("Extracting dependency classes", phaseStart);
-
     final ProjectContext projectContext = buildProjectContext();
     phaseStart = logPhase("Building project context", phaseStart);
 
@@ -148,44 +144,6 @@ public class DepCleanManager {
     return analysis;
   }
 
-  private void extractClassesFromDependencies() throws IOException, AnalysisFailureException {
-    File dependencyDirectory =
-        dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES).toFile();
-    FileUtils.deleteDirectory(dependencyDirectory);
-    for (Dependency dep : dependencyManager.dependencyGraph().allDependencies()) {
-      copyDependencies(dep, dependencyDirectory);
-    }
-
-    // Workaround for dependencies that are in located in a project's libs
-    // directory.
-    if (dependencyManager.getBuildDirectory().resolve("libs").toFile().exists()) {
-      try {
-        FileUtils.copyDirectory(
-            dependencyManager.getBuildDirectory().resolve("libs").toFile(), dependencyDirectory);
-      } catch (IOException | NullPointerException e) {
-        getLog().error("Error copying directory libs to" + dependencyDirectory.getAbsolutePath());
-      }
-    }
-
-    /* Decompress dependencies */
-    if (dependencyDirectory.exists()) {
-      JarUtils.decompress(dependencyDirectory.getAbsolutePath());
-    }
-  }
-
-  private void copyDependencies(Dependency dependency, File destFolder)
-      throws AnalysisFailureException {
-    File file = dependency.getFile();
-    if (file != null) {
-      try {
-        FileUtils.copyFileToDirectory(file, destFolder);
-      } catch (IOException e) {
-        throw new AnalysisFailureException(
-            "Failed to copy dependency " + dependency + " to " + destFolder, e);
-      }
-    }
-  }
-
   private void createResultJson(ProjectDependencyAnalysis analysis) {
     printString("Creating depclean-results.json, please wait...");
     final File jsonFile =
@@ -231,6 +189,8 @@ public class DepCleanManager {
   }
 
   private ProjectContext buildProjectContext() {
+    // Resolved once: building the graph lists the classes of every dependency
+    final DependencyGraph dependencyGraph = dependencyManager.dependencyGraph();
     if (ignoreTests) {
       ignoreScopes.add("test");
     }
@@ -259,16 +219,12 @@ public class DepCleanManager {
     allUsedClasses.addAll(collectUsedClassesFromXmlResources());
 
     return new ProjectContext(
-        dependencyManager.dependencyGraph(),
+        dependencyGraph,
         dependencyManager.getOutputDirectories(),
         dependencyManager.getTestOutputDirectories(),
-        dependencyManager.getSourceDirectory(),
-        dependencyManager.getTestDirectory(),
-        dependencyManager.getDependenciesDirectory(),
         ignoreScopes.stream().map(scope -> new Scope(scope)).collect(Collectors.toSet()),
         ignoreDependencies.stream()
-            .map(pattern ->
-                toDependency(dependencyManager.dependencyGraph().allDependencies(), pattern))
+            .map(pattern -> toDependency(dependencyGraph.allDependencies(), pattern))
             .flatMap(Set::stream)
             .collect(Collectors.toSet()),
         allUsedClasses);
