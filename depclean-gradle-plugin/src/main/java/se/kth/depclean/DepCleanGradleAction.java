@@ -669,7 +669,7 @@ public class DepCleanGradleAction implements Action<Project> {
     try {
       // Delete the previous existence (if exist).
       if (debloatedDependencies.exists()) {
-        se.kth.depclean.core.util.FileUtils.forceDelete(debloatedDependencies);
+        FileUtils.forceDelete(debloatedDependencies);
         if (!debloatedDependencies.createNewFile()) {
           logger.warn("Could not recreate file " + debloatedDependencies.getAbsolutePath());
         }

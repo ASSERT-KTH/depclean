@@ -47,13 +47,12 @@ ext {
 
 dependencies {
     implementation(gradleApi())
-    implementation(gradleTestKit())
     implementation("se.kth.castor:depclean-core:${depcleanVersion}")
     implementation("com.google.code.gson:gson:${gsonVersion}")
-    implementation("org.slf4j:slf4j-reload4j:${slf4jVersion}")
+    implementation("org.slf4j:slf4j-api:${slf4jVersion}")
     compileOnly("org.jspecify:jspecify:${jspecifyVersion}")
 
-    implementation("com.github.spotbugs:spotbugs-annotations:${spotbugsAnnotationsVersion}")
+    compileOnly("com.github.spotbugs:spotbugs-annotations:${spotbugsAnnotationsVersion}")
 
     testImplementation("org.spockframework:spock-core:${spockVersion}")
 

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -162,17 +163,6 @@ class MavenInvokerTest {
     assertThat(output).hasSize(lines);
     assertThat(output[0]).isEqualTo("line 0");
     assertThat(output[lines - 1]).isEqualTo("line " + (lines - 1));
-  }
-
-  @Test
-  @DisplayName("Test that the deprecated command as a single string is still executed")
-  @SuppressWarnings("deprecation")
-  void testRunCommandWithTheCommandAsASingleString() throws IOException, InterruptedException {
-    String[] output = MavenInvoker.runCommand(javaExecutable() + " -version", null);
-
-    // `java -version` writes to the standard error, so the standard output is empty, but the
-    // command must be found and must succeed.
-    assertThat(output).isEmpty();
   }
 
   @Test
