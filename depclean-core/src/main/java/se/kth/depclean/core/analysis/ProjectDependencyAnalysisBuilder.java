@@ -2,8 +2,11 @@ package se.kth.depclean.core.analysis;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -23,21 +26,32 @@ public class ProjectDependencyAnalysisBuilder {
 
   private static final Logger log = LoggerFactory.getLogger(ProjectDependencyAnalysisBuilder.class);
 
+  /** The scopes of the dependencies that are packaged with the main code of a project. */
+  private static final Set<String> PACKAGED_SCOPES =
+      Collections.unmodifiableSet(new HashSet<>(Arrays.asList("compile", "runtime")));
+
   private final ProjectContext context;
   private final ActualUsedClasses actualUsedClasses;
   private final ClassUsageGraph classUsageGraph;
+  private final Set<ClassName> classesUsedByMain;
   private final Set<Dependency> usedDependencies;
 
   ProjectDependencyAnalysisBuilder(ProjectContext context, ActualUsedClasses actualUsedClasses) {
-    this(context, actualUsedClasses, ClassUsageGraph.empty());
+    this(
+        context,
+        actualUsedClasses,
+        ClassUsageGraph.empty(),
+        actualUsedClasses.getRegisteredClasses());
   }
 
   ProjectDependencyAnalysisBuilder(
       ProjectContext context,
       ActualUsedClasses actualUsedClasses,
-      ClassUsageGraph classUsageGraph) {
+      ClassUsageGraph classUsageGraph,
+      Set<ClassName> classesUsedByMain) {
     this.context = context;
     this.classUsageGraph = classUsageGraph;
+    this.classesUsedByMain = classesUsedByMain;
     this.actualUsedClasses = actualUsedClasses;
     usedDependencies =
         actualUsedClasses.getRegisteredClasses().stream()
@@ -101,19 +115,43 @@ public class ProjectDependencyAnalysisBuilder {
         unusedInheritedTransitiveDependencies,
         context.getIgnoredScopes());
 
+    // computed before the ignored dependencies and scopes are moved to the used sets
+    final Set<Dependency> dependenciesUsedOnlyByTests = getDependenciesUsedOnlyByTests();
+
     return new ProjectDependencyAnalysis(
-        usedDirectDependencies,
-        usedTransitiveDependencies,
-        usedInheritedDirectDependencies,
-        usedInheritedTransitiveDependencies,
-        unusedDirectDependencies,
-        unusedTransitiveDependencies,
-        unusedInheritedDirectDependencies,
-        unusedInheritedTransitiveDependencies,
-        context.getIgnoredDependencies(),
-        dependencyClassesMap,
-        context.getDependencyGraph(),
-        classUsageGraph);
+            usedDirectDependencies,
+            usedTransitiveDependencies,
+            usedInheritedDirectDependencies,
+            usedInheritedTransitiveDependencies,
+            unusedDirectDependencies,
+            unusedTransitiveDependencies,
+            unusedInheritedDirectDependencies,
+            unusedInheritedTransitiveDependencies,
+            context.getIgnoredDependencies(),
+            dependencyClassesMap,
+            context.getDependencyGraph(),
+            classUsageGraph)
+        .withDependenciesUsedOnlyByTests(dependenciesUsedOnlyByTests);
+  }
+
+  /**
+   * The declared dependencies that are packaged with the project although only its tests use them.
+   * Those can be declared with the test scope instead. Transitive dependencies are left out: their
+   * scope follows from the dependency that brings them.
+   */
+  private Set<Dependency> getDependenciesUsedOnlyByTests() {
+    final Set<Dependency> usedByMain =
+        classesUsedByMain.stream()
+            .flatMap(clazz -> context.getDependenciesForClass(clazz).stream())
+            .collect(Collectors.toSet());
+    final Set<Dependency> declared = newHashSet(context.getDependencyGraph().directDependencies());
+    declared.addAll(context.getDependencyGraph().inheritedDirectDependencies());
+    return usedDependencies.stream()
+        .filter(declared::contains)
+        .filter(dependency -> !usedByMain.contains(dependency))
+        .filter(dependency -> !context.getIgnoredDependencies().contains(dependency))
+        .filter(dependency -> PACKAGED_SCOPES.contains(String.valueOf(dependency.getScope())))
+        .collect(Collectors.toSet());
   }
 
   private Map<Dependency, DependencyTypes> buildDependencyClassesMap() {

@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
@@ -45,6 +46,12 @@ public final class ClassUsageAnalyzer {
   private static final long MAX_CLASS_FILE_SIZE = 64L * 1024 * 1024;
 
   /**
+   * A service that is not looked up by the code of a project but by the launcher that runs its
+   * tests. A test engine on the classpath is in use although no class references this type.
+   */
+  private static final String TEST_ENGINE = "org.junit.platform.engine.TestEngine";
+
+  /**
    * Analyzes the bytecode of a project.
    *
    * @param projectClassDirectories the directories with the compiled classes of the project;
@@ -54,46 +61,89 @@ public final class ClassUsageAnalyzer {
    */
   public ClassUsageGraph analyze(
       Collection<Path> projectClassDirectories, Collection<File> classpath) {
-    return analyze(projectClassDirectories, classpath, Collections.emptySet());
+    return analyze(
+        projectClassDirectories,
+        Collections.emptySet(),
+        classpath,
+        Collections.emptySet(),
+        Collections.emptySet());
   }
 
   /**
-   * Analyzes the bytecode of a project, with additional starting points.
+   * Analyzes the bytecode of a project, keeping apart what the main code and what the tests use.
    *
-   * @param projectClassDirectories the directories with the compiled classes of the project;
+   * <p>Besides the references of the bytecode, the analysis follows the {@link
+   * java.util.ServiceLoader} mechanism: when a service type is reachable, the implementations that
+   * the jars of the classpath register for it in {@code META-INF/services} are reachable too.
+   *
+   * @param mainClassDirectories the directories with the compiled main classes of the project;
    *     directories that do not exist are skipped
+   * @param testClassDirectories the directories with the compiled test classes of the project
    * @param classpath the jars and class directories the project depends on
-   * @param extraRoots classes known to be used although the bytecode of the project does not
+   * @param mainRoots classes known to be used by the main code although its bytecode does not
    *     reference them (e.g. classes named in configuration files); what they reference is used as
    *     well
+   * @param testRoots the same, for the tests
    * @return the classes reachable from the project
    */
   public ClassUsageGraph analyze(
-      Collection<Path> projectClassDirectories,
+      Collection<Path> mainClassDirectories,
+      Collection<Path> testClassDirectories,
       Collection<File> classpath,
-      Collection<String> extraRoots) {
+      Collection<String> mainRoots,
+      Collection<String> testRoots) {
     final Map<String, Set<String>> usagesPerClass = new HashMap<>();
-    final Set<String> projectClasses = new LinkedHashSet<>();
-    final Deque<String> pending = new ArrayDeque<>(extraRoots);
+    final Map<String, Set<String>> serviceProviders = new HashMap<>();
+    final Deque<String> pending = new ArrayDeque<>();
 
-    for (Path directory : projectClassDirectories) {
-      analyzeProjectDirectory(directory, projectClasses, usagesPerClass, pending);
+    final Set<String> mainClasses = new LinkedHashSet<>();
+    for (Path directory : mainClassDirectories) {
+      analyzeProjectDirectory(directory, mainClasses, usagesPerClass, pending);
+    }
+    final Set<String> testClasses = new LinkedHashSet<>();
+    for (Path directory : testClassDirectories) {
+      analyzeProjectDirectory(directory, testClasses, usagesPerClass, pending);
     }
 
+    final Set<String> projectClasses = new LinkedHashSet<>(mainClasses);
+    projectClasses.addAll(testClasses);
+
+    // Where the main code starts from: its own classes and the classes it is configured with.
+    final Set<String> mainEntryPoints = new LinkedHashSet<>(mainClasses);
+    mainEntryPoints.addAll(mainRoots);
+    final Set<String> entryPoints = new LinkedHashSet<>(mainEntryPoints);
+    entryPoints.addAll(testClasses);
+    entryPoints.addAll(testRoots);
+    if (!testClasses.isEmpty()) {
+      entryPoints.add(TEST_ENGINE);
+    }
+    pending.addAll(entryPoints);
+
     try (Classpath index = new Classpath(classpath)) {
-      final Set<String> visited = new HashSet<>(projectClasses);
+      // Project classes are analyzed already, but can be a service type themselves.
+      final Set<String> visited = new HashSet<>();
       while (!pending.isEmpty()) {
         final String className = pending.pop();
         if (!visited.add(className)) {
           continue;
         }
-        final Set<String> references = index.referencesOf(className);
-        if (references != null) {
-          usagesPerClass.put(className, references);
-          for (String reference : references) {
-            if (!visited.contains(reference)) {
-              pending.push(reference);
-            }
+        final Set<String> references = new HashSet<>();
+        if (!projectClasses.contains(className)) {
+          final Set<String> bytecodeReferences = index.referencesOf(className);
+          if (bytecodeReferences != null) {
+            usagesPerClass.put(className, references);
+            references.addAll(bytecodeReferences);
+          }
+        }
+        final Set<String> providers = index.providersOf(className);
+        if (!providers.isEmpty()) {
+          serviceProviders.put(className, providers);
+          usagesPerClass.computeIfAbsent(className, k -> references).addAll(providers);
+          references.addAll(providers);
+        }
+        for (String reference : references) {
+          if (!visited.contains(reference)) {
+            pending.push(reference);
           }
         }
       }
@@ -102,7 +152,8 @@ public final class ClassUsageAnalyzer {
         "Analyzed {} project classes and {} classpath classes",
         projectClasses.size(),
         usagesPerClass.size() - projectClasses.size());
-    return new ClassUsageGraph(projectClasses, usagesPerClass);
+    return new ClassUsageGraph(
+        projectClasses, mainEntryPoints, entryPoints, usagesPerClass, serviceProviders);
   }
 
   private static void analyzeProjectDirectory(
@@ -132,7 +183,10 @@ public final class ClassUsageAnalyzer {
   /** An index of the classes of the classpath, which reads class files on demand. */
   private static final class Classpath implements Closeable {
 
+    private static final String SERVICES_DIRECTORY = "META-INF/services/";
+
     private final Map<String, List<Location>> locations = new HashMap<>();
+    private final Map<String, List<Location>> services = new HashMap<>();
     private final Map<File, ZipFile> openJars = new HashMap<>();
 
     Classpath(Collection<File> entries) {
@@ -143,7 +197,47 @@ public final class ClassUsageAnalyzer {
               .computeIfAbsent(classFile.getKey(), k -> new ArrayList<>(1))
               .add(new Location(entry, classFile.getValue()));
         }
+        for (String path : ClassFiles.listResources(entry, SERVICES_DIRECTORY)) {
+          services
+              .computeIfAbsent(path.substring(SERVICES_DIRECTORY.length()), k -> new ArrayList<>(1))
+              .add(new Location(entry, path));
+        }
       }
+    }
+
+    /**
+     * The implementations that the classpath registers for a service type, in the provider
+     * configuration files of {@link java.util.ServiceLoader}.
+     *
+     * @return the fully qualified names of the implementation classes, empty if there are none
+     */
+    Set<String> providersOf(String serviceType) {
+      final List<Location> configurations = services.get(serviceType);
+      if (configurations == null) {
+        return Collections.emptySet();
+      }
+      final Set<String> providers = new LinkedHashSet<>();
+      for (Location configuration : configurations) {
+        try {
+          final byte[] content = read(configuration);
+          if (content != null) {
+            for (String line : new String(content, StandardCharsets.UTF_8).split("\\R")) {
+              final int comment = line.indexOf('#');
+              final String provider = (comment < 0 ? line : line.substring(0, comment)).trim();
+              if (!provider.isEmpty()) {
+                providers.add(provider);
+              }
+            }
+          }
+        } catch (IOException e) {
+          log.warn(
+              "Unable to read {} in {}: {}",
+              configuration.path,
+              configuration.container,
+              e.getMessage());
+        }
+      }
+      return providers;
     }
 
     /**

@@ -20,7 +20,7 @@ package se.kth.depclean.core.analysis;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,12 +43,10 @@ public class DefaultProjectDependencyAnalyzer {
    *     unusedDeclaredArtifacts.
    */
   public ProjectDependencyAnalysis analyze(final ProjectContext projectContext) {
-    // the compiled classes of the project, tests included unless they are ignored
-    final Set<Path> projectClassDirectories =
-        new LinkedHashSet<>(projectContext.getOutputFolders());
-    if (!projectContext.ignoreTests()) {
-      projectClassDirectories.addAll(projectContext.getTestOutputFolders());
-    }
+    // the compiled classes of the project; the tests are left out when they are ignored
+    final boolean analyzeTests = !projectContext.ignoreTests();
+    final Set<Path> testClassDirectories =
+        analyzeTests ? projectContext.getTestOutputFolders() : Collections.emptySet();
 
     // every dependency is traversed, whatever its scope: a class of an ignored dependency can be
     // the only path to a class of a dependency that is not ignored
@@ -60,18 +58,32 @@ public class DefaultProjectDependencyAnalyzer {
     }
 
     final ClassUsageGraph classUsageGraph =
-        classUsageAnalyzer.analyze(projectClassDirectories, classpath);
+        classUsageAnalyzer.analyze(
+            projectContext.getOutputFolders(),
+            testClassDirectories,
+            classpath,
+            names(projectContext.getExtraClasses()),
+            names(projectContext.getExtraTestClasses()));
 
     final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(projectContext);
-    // classes found by the static analysis of the sources and of the resources
-    actualUsedClasses.registerClasses(projectContext.getExtraClasses());
-    // classes reachable from the bytecode of the project
-    actualUsedClasses.registerClasses(
-        classUsageGraph.getReachableClasses().stream()
-            .map(ClassName::new)
-            .collect(Collectors.toSet()));
+    actualUsedClasses.registerClasses(classNames(classUsageGraph.getReachableClasses()));
 
-    return new ProjectDependencyAnalysisBuilder(projectContext, actualUsedClasses, classUsageGraph)
+    // Without tests there is nothing to tell apart from the main code.
+    final Set<ClassName> classesUsedByMain =
+        analyzeTests
+            ? classNames(classUsageGraph.getClassesReachableFromMain())
+            : actualUsedClasses.getRegisteredClasses();
+
+    return new ProjectDependencyAnalysisBuilder(
+            projectContext, actualUsedClasses, classUsageGraph, classesUsedByMain)
         .analyse();
+  }
+
+  private static Set<String> names(Set<ClassName> classes) {
+    return classes.stream().map(ClassName::getValue).collect(Collectors.toSet());
+  }
+
+  private static Set<ClassName> classNames(Set<String> names) {
+    return names.stream().map(ClassName::new).collect(Collectors.toSet());
   }
 }

@@ -79,6 +79,23 @@ public final class Bytecode {
     return jar;
   }
 
+  /**
+   * Adds a text file to a directory of classes, e.g. a provider configuration file.
+   *
+   * @param classesDirectory the root directory
+   * @param path the path of the file, relative to the root directory
+   * @param content the content of the file
+   */
+  public static void resource(Path classesDirectory, String path, String content) {
+    try {
+      final Path file = classesDirectory.resolve(path);
+      Files.createDirectories(file.getParent());
+      Files.write(file, content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
   private static final class SourceFile extends SimpleJavaFileObject {
     private final String source;
 

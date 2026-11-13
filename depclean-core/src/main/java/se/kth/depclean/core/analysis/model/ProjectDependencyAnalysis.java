@@ -55,6 +55,7 @@ public final class ProjectDependencyAnalysis {
   private final Map<Dependency, DependencyTypes> dependencyClassesMap;
   private final DependencyGraph dependencyGraph;
   private final ClassUsageGraph classUsageGraph;
+  private final Set<Dependency> dependenciesUsedOnlyByTests;
 
   /** Creates a project dependency analysis result. */
   @SuppressWarnings(
@@ -117,6 +118,39 @@ public final class ProjectDependencyAnalysis {
       Map<Dependency, DependencyTypes> dependencyClassesMap,
       DependencyGraph dependencyGraph,
       ClassUsageGraph classUsageGraph) {
+    this(
+        usedDirectDependencies,
+        usedTransitiveDependencies,
+        usedInheritedDirectDependencies,
+        usedInheritedTransitiveDependencies,
+        unusedDirectDependencies,
+        unusedTransitiveDependencies,
+        unusedInheritedDirectDependencies,
+        unusedInheritedTransitiveDependencies,
+        ignoredDependencies,
+        dependencyClassesMap,
+        dependencyGraph,
+        classUsageGraph,
+        ImmutableSet.of());
+  }
+
+  @SuppressWarnings(
+      "java:S107") // the parameters mirror the reported analysis dimensions one-to-one
+  private ProjectDependencyAnalysis(
+      Set<Dependency> usedDirectDependencies,
+      Set<Dependency> usedTransitiveDependencies,
+      Set<Dependency> usedInheritedDirectDependencies,
+      Set<Dependency> usedInheritedTransitiveDependencies,
+      Set<Dependency> unusedDirectDependencies,
+      Set<Dependency> unusedTransitiveDependencies,
+      Set<Dependency> unusedInheritedDirectDependencies,
+      Set<Dependency> unusedInheritedTransitiveDependencies,
+      Set<Dependency> ignoredDependencies,
+      Map<Dependency, DependencyTypes> dependencyClassesMap,
+      DependencyGraph dependencyGraph,
+      ClassUsageGraph classUsageGraph,
+      Set<Dependency> dependenciesUsedOnlyByTests) {
+    this.dependenciesUsedOnlyByTests = ImmutableSet.copyOf(dependenciesUsedOnlyByTests);
     this.classUsageGraph = classUsageGraph;
     this.usedDirectDependencies = ImmutableSet.copyOf(usedDirectDependencies);
     this.usedTransitiveDependencies = ImmutableSet.copyOf(usedTransitiveDependencies);
@@ -187,6 +221,41 @@ public final class ProjectDependencyAnalysis {
     return classUsageGraph;
   }
 
+  /**
+   * The declared dependencies with a compile or runtime scope that only the tests of the project
+   * use. They are used, so they are not bloat, but they are shipped with the project for nothing:
+   * they can be declared with the test scope.
+   *
+   * @return the used dependencies whose scope can be narrowed to test
+   */
+  public Set<Dependency> getDependenciesUsedOnlyByTests() {
+    return dependenciesUsedOnlyByTests;
+  }
+
+  /**
+   * A copy of this analysis that also reports the dependencies only used by the tests.
+   *
+   * @param dependencies the declared dependencies with a compile or runtime scope that only the
+   *     tests of the project use
+   * @return the new analysis
+   */
+  public ProjectDependencyAnalysis withDependenciesUsedOnlyByTests(Set<Dependency> dependencies) {
+    return new ProjectDependencyAnalysis(
+        usedDirectDependencies,
+        usedTransitiveDependencies,
+        usedInheritedDirectDependencies,
+        usedInheritedTransitiveDependencies,
+        unusedDirectDependencies,
+        unusedTransitiveDependencies,
+        unusedInheritedDirectDependencies,
+        unusedInheritedTransitiveDependencies,
+        ignoredDependencies,
+        dependencyClassesMap,
+        dependencyGraph,
+        classUsageGraph,
+        dependencies);
+  }
+
   public boolean hasUsedTransitiveDependencies() {
     return !usedTransitiveDependencies.isEmpty();
   }
@@ -227,6 +296,13 @@ public final class ProjectDependencyAnalysis {
     printInfoOfDependencies(
         "Potentially unused inherited transitive dependencies",
         getUnusedInheritedTransitiveDependencies());
+    if (!dependenciesUsedOnlyByTests.isEmpty()) {
+      printString(SEPARATOR);
+      printInfoOfDependencies(
+          "Used only by the tests, can be declared with the test scope",
+          dependenciesUsedOnlyByTests);
+    }
+
     if (!ignoredDependencies.isEmpty()) {
       printString(SEPARATOR);
       printString(
