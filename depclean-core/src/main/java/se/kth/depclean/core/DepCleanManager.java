@@ -149,21 +149,8 @@ public class DepCleanManager {
     printString("Creating depclean-results.json, please wait...");
     final File jsonFile =
         new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-results.json");
-    final File treeFile =
-        new File(dependencyManager.getBuildDirectory() + File.separator + "tree.txt");
     final File csvFile =
         new File(dependencyManager.getBuildDirectory() + File.separator + "depclean-callgraph.csv");
-    try {
-      dependencyManager.generateDependencyTree(treeFile);
-    } catch (IOException e) {
-      getLog().error("Unable to generate the dependency tree: " + e.getMessage());
-      return;
-    } catch (InterruptedException e) {
-      getLog().error("Interrupted while generating the dependency tree.");
-      // Restore interrupted state...
-      Thread.currentThread().interrupt();
-      return;
-    }
     if (createCallGraphCsv) {
       printString("Creating " + csvFile.getName() + ", please wait...");
       try {
@@ -173,8 +160,7 @@ public class DepCleanManager {
         getLog().error("Error writing the CSV header.");
       }
     }
-    String treeAsJson =
-        dependencyManager.getTreeAsJson(treeFile, analysis, csvFile, createCallGraphCsv);
+    String treeAsJson = dependencyManager.getTreeAsJson(analysis, csvFile, createCallGraphCsv);
 
     try {
       FileUtils.write(jsonFile, treeAsJson, StandardCharsets.UTF_8);
