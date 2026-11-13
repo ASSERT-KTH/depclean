@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.kth.depclean.util.OsUtils;
 
 /**
  * This class executes integration tests against the DepCleanMojo. The projects used for testing are
@@ -275,7 +274,7 @@ public class DepCleanMojoIT {
 
   @MavenTest
   void json_should_be_correct(MavenExecutionResult result) throws IOException {
-    if (OsUtils.isUnix()) {
+    {
       log.trace("Test that DepClean creates a proper depclean-results.json file");
       File expectedJsonFile =
           new File("src/test/resources/DepCleanMojoResources/depclean-results.json");

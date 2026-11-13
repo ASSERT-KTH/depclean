@@ -1,7 +1,6 @@
 package se.kth.depclean.core.wrapper;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 import se.kth.depclean.core.Debloater;
@@ -110,24 +109,13 @@ public interface DependencyManagerWrapper {
   Path getBuildDirectory();
 
   /**
-   * Generates the dependency tree.
+   * Gets the JSON representation of the dependency tree, annotated with the analysis results.
    *
-   * @param treeFile the file to store the result to
-   */
-  void generateDependencyTree(File treeFile) throws IOException, InterruptedException;
-
-  /**
-   * Gets the JSON representation of the dependency tree.
-   *
-   * @param treeFile the file containing the tree
    * @param analysis the depclean analysis result
    * @param classUsageFile the class usage file
    * @param createCallGraphCsv whether to write the call graph of usages down
    * @return the JSON tree
    */
   String getTreeAsJson(
-      File treeFile,
-      ProjectDependencyAnalysis analysis,
-      File classUsageFile,
-      boolean createCallGraphCsv);
+      ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv);
 }

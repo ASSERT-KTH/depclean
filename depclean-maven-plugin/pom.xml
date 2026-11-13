@@ -26,7 +26,6 @@
     <gson.version>2.15.0</gson.version>
     <itf-jupiter-extension.version>0.13.1</itf-jupiter-extension.version>
     <javax.inject.version>1</javax.inject.version>
-    <maven-dependency-tree-parser.version>1.0.6</maven-dependency-tree-parser.version>
     <maven-dependency-tree.version>3.3.0</maven-dependency-tree.version>
     <plexus-utils.version>4.1.0</plexus-utils.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
@@ -143,11 +142,6 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>${gson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.whitesource</groupId>
-      <artifactId>maven-dependency-tree-parser</artifactId>
-      <version>${maven-dependency-tree-parser.version}</version>
     </dependency>
 
     <!-- Integration tests -->
