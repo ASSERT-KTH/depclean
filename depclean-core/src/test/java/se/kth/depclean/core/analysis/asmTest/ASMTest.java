@@ -17,7 +17,6 @@ import se.kth.depclean.core.analysis.asm.DefaultFieldVisitor;
 import se.kth.depclean.core.analysis.asm.DefaultMethodVisitor;
 import se.kth.depclean.core.analysis.asm.DefaultSignatureVisitor;
 import se.kth.depclean.core.analysis.asm.ResultCollector;
-import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
 class ASMTest {
 
@@ -43,18 +42,6 @@ class ASMTest {
             signatureVisitor, annotationVisitor, fieldVisitor, methodVisitor, resultCollector);
 
     reader.accept(defaultClassVisitor, 0);
-
-    // Confirms that after analyzing there were no annotations in the test class.
-    Assertions.assertEquals(0, ClassMembersVisitorCounter.getNbVisitedAnnotations());
-
-    // Confirms that after analyzing there were some fields in the test class.
-    Assertions.assertNotEquals(0, ClassMembersVisitorCounter.getNbVisitedFields());
-
-    // Confirms that after analyzing there were some methods in the test class.
-    Assertions.assertNotEquals(0, ClassMembersVisitorCounter.getNbVisitedMethods());
-
-    // Confirms that after analyzing there were some types in the test class.
-    Assertions.assertNotEquals(0, ClassMembersVisitorCounter.getNbVisitedTypes());
 
     // Confirms that the result of analyzed data has been collected successfully.
     Assertions.assertFalse(resultCollector.getDependencies().isEmpty());

@@ -57,10 +57,6 @@ public class ResultCollector {
     }
   }
 
-  public void add(@NonNull String name) {
-    classes.add(name);
-  }
-
   void addNames(@Nullable final String[] names) {
     if (names == null) {
       return;
