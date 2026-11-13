@@ -1,17 +1,7 @@
-buildscript {
-    repositories {
-        mavenLocal()
-    }
-    dependencies {
-        classpath 'se.kth.castor:depclean-gradle-plugin:2.3.1-SNAPSHOT'
-    }
-}
-
 plugins {
     id 'java'
+    id 'se.kth.castor.depclean-gradle-plugin'
 }
-
-apply plugin: 'se.kth.castor.depclean-gradle-plugin'
 
 group = 'org.foo.bar'
 version = '0.1.0-SNAPSHOT'

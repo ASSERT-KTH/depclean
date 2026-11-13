@@ -139,7 +139,7 @@ jobs:
           grep -q '<td>commons-lang3</td>' .github/smoke/java8/target/reports/depclean.html
 
   # --------------------------------------------------------------------------------------------------------------------
-  # The Gradle plugin, its test fixtures and the READMEs carry the version as a literal;
+  # The Gradle plugin and the READMEs carry the version as a literal;
   # this fails fast when any of them drifts from pom.xml (see scripts/set-version.sh).
   version-consistency:
     name: Version references match pom.xml
@@ -197,7 +197,7 @@ jobs:
 
       - name: Build with Gradle
         working-directory: ./depclean-gradle-plugin
-        run: ./gradlew clean publishToMavenLocal build -PtestJavaVersion=${{ matrix.test-java }}
+        run: ./gradlew clean build -PtestJavaVersion=${{ matrix.test-java }}
 
       - name: "Codecov (gradle plugin)"
         if: matrix.test-java == 25 && github.repository == 'ASSERT-KTH/depclean'

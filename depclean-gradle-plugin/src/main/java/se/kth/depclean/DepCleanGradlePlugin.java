@@ -32,18 +32,22 @@ public class DepCleanGradlePlugin implements Plugin<Project> {
    * @param project The Gradle project.
    */
   public void createTask(final Project project) {
-    final String depCleanTaskName = "debloat";
-    DepCleanGradleTask task =
-        project.getTasks().register(depCleanTaskName, DepCleanGradleTask.class).get();
-    task.setGroup("dependency management");
-    task.setDescription(
-        "Analyze the project byte-code and configure out the debloated dependencies.");
-    // The analysis needs the live Project (dependency graph, subprojects), which the
-    // configuration cache cannot serialize; degrade gracefully instead of failing.
-    task.notCompatibleWithConfigurationCache(
-        "DepClean analyzes the live project model at execution time");
-
-    // Inject the project to avoid Task.project deprecation
-    task.getTargetProject().set(project);
+    // Registered lazily: the task is only created and configured when it is going to run.
+    project
+        .getTasks()
+        .register(
+            "debloat",
+            DepCleanGradleTask.class,
+            task -> {
+              task.setGroup("dependency management");
+              task.setDescription(
+                  "Analyze the project byte-code and configure out the debloated dependencies.");
+              // The analysis needs the live Project (dependency graph, subprojects), which the
+              // configuration cache cannot serialize; degrade gracefully instead of failing.
+              task.notCompatibleWithConfigurationCache(
+                  "DepClean analyzes the live project model at execution time");
+              // Inject the project to avoid Task.project deprecation
+              task.getTargetProject().set(project);
+            });
   }
 }

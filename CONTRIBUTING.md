@@ -56,7 +56,7 @@ Please follow the checklist in the [pull request template](.github/PULL_REQUEST_
 
 Releases are published to Maven Central through the [Central Publisher Portal](https://central.sonatype.com) (see the [Sonatype Maven guide](https://central.sonatype.org/publish/publish-portal-maven/)) by the [Deploy workflow](.github/workflows/deploy.yml).
 
-The version is carried not only by the Maven POMs but also by the Gradle plugin, its test fixtures and the READMEs. `scripts/set-version.sh <version>` updates all of them at once, and CI fails if any of them drifts from `pom.xml` (`scripts/set-version.sh --check`). Never bump versions by hand. The one exception is the root `README.md`: it documents the plugin as consumed from Maven Central, so it always shows the latest *release* and is not touched by `-SNAPSHOT` bumps (the Gradle plugin README does follow the snapshot, because that plugin is only available from a local build).
+The version is carried not only by the Maven POMs but also by the Gradle plugin and the READMEs. `scripts/set-version.sh <version>` updates all of them at once, and CI fails if any of them drifts from `pom.xml` (`scripts/set-version.sh --check`). Never bump versions by hand. The one exception is the root `README.md`: it documents the plugin as consumed from Maven Central, so it always shows the latest *release* and is not touched by `-SNAPSHOT` bumps (the Gradle plugin README does follow the snapshot, because that plugin is only available from a local build).
 
 `scripts/release.sh` drives the release from a clean, up-to-date `master` checkout (needs an authenticated `gh`):
 
