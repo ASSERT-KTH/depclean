@@ -24,7 +24,6 @@
     <!-- Dependencies -->
     <asm.version>9.11.1</asm.version>
     <guava.version>33.8.0-jre</guava.version>
-    <plexus-utils.version>4.1.0</plexus-utils.version>
     <qdox.version>2.2.0</qdox.version>
 
     <!-- Build settings -->
@@ -45,14 +44,6 @@
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
       <version>${asm.version}</version>
-    </dependency>
-
-    <!-- Directory scanning (DirectoryScanner) -->
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-      <version>${plexus-utils.version}</version>
-      <scope>compile</scope>
     </dependency>
 
     <!-- Utils -->

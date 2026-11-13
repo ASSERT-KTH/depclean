@@ -2,27 +2,14 @@ package se.kth.depclean.core.model;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import org.apache.commons.io.FileUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import se.kth.depclean.core.analysis.ClassAnalyzer;
-import se.kth.depclean.core.analysis.DefaultClassAnalyzer;
-import se.kth.depclean.core.util.JarUtils;
+import se.kth.depclean.core.util.ClassFiles;
 
 /** Identifies a dependency to analyse. */
 public class Dependency {
-
-  private static final Logger log = LoggerFactory.getLogger(Dependency.class);
 
   @NonNull private final String groupId;
   @NonNull private final String dependencyId;
@@ -131,67 +118,12 @@ public class Dependency {
 
   @NonNull
   private Iterable<ClassName> findRelatedClasses() {
-    final Set<ClassName> classes = new HashSet<>();
-    if (file != null && file.getName().endsWith(".jar")) {
-      // optimized solution for the jar case
-      addClassesFromJar(file, classes);
-    } else if (file != null && file.isDirectory()) {
-      addClassesFromDirectory(file, classes);
+    if (file == null) {
+      return ImmutableSet.of();
     }
-    log.trace(
-        "Finding related classes for Dependency: {}:{}:{}:{}:{}",
-        groupId,
-        dependencyId,
-        version,
-        scope,
-        file);
-    log.trace("Related classes: {}", classes);
-    return ImmutableSet.copyOf(classes);
-  }
-
-  private void addClassesFromJar(File jar, Set<ClassName> classes) {
-    try (JarFile jarFile = new JarFile(jar)) {
-      Enumeration<JarEntry> jarEntries = jarFile.entries();
-
-      // Protection against ZIP bomb attacks
-      int maxEntries = JarUtils.MAX_ENTRIES;
-      int entryCount = 0;
-
-      while (jarEntries.hasMoreElements() && entryCount < maxEntries) {
-        JarEntry jarEntry = jarEntries.nextElement();
-        String entry = jarEntry.getName();
-        entryCount++;
-
-        // Additional protection: skip entries with suspicious characteristics
-        if (entry.length() > 1000) { // Skip entries with very long names
-          continue;
-        }
-
-        if (entry.endsWith(".class")) {
-          classes.add(new ClassName(entry));
-        }
-      }
-
-      if (entryCount >= maxEntries) {
-        log.warn(
-            "JAR file {} has too many entries ({}), processing truncated",
-            jar.getName(),
-            entryCount);
-      }
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
-    }
-  }
-
-  private void addClassesFromDirectory(File directory, Set<ClassName> classes) {
-    try {
-      URL url = directory.toURI().toURL();
-      ClassAnalyzer classAnalyzer = new DefaultClassAnalyzer();
-      Set<String> analyzedClasses = classAnalyzer.analyze(url);
-      analyzedClasses.forEach(c -> classes.add(new ClassName(c)));
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
-    }
+    final ImmutableSet.Builder<ClassName> classes = ImmutableSet.builder();
+    ClassFiles.list(file).keySet().forEach(className -> classes.add(new ClassName(className)));
+    return classes.build();
   }
 
   @NonNull

@@ -39,8 +39,6 @@ import se.kth.depclean.util.json.ParsedDependencies;
 /** Maven's implementation of the dependency manager wrapper. */
 public class MavenDependencyManager implements DependencyManagerWrapper {
 
-  private static final String DIRECTORY_TO_COPY_DEPENDENCIES = "dependency";
-
   private final Log logger;
   private final MavenProject project;
   private final MavenSession session;
@@ -183,13 +181,6 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
         .map(Xpp3Dom::getChildren)
         .map(arr -> Arrays.stream(arr).map(Xpp3Dom::getValue).collect(Collectors.toSet()))
         .orElse(ImmutableSet.of());
-  }
-
-  @Override
-  public Path getDependenciesDirectory() {
-    String dependencyDirectoryName =
-        project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
-    return new File(dependencyDirectoryName).toPath();
   }
 
   @Override

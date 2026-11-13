@@ -28,6 +28,7 @@
     <javax.inject.version>1</javax.inject.version>
     <maven-dependency-tree-parser.version>1.0.6</maven-dependency-tree-parser.version>
     <maven-dependency-tree.version>3.3.0</maven-dependency-tree.version>
+    <plexus-utils.version>4.1.0</plexus-utils.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
     <maven-reporting-api.version>4.1.0</maven-reporting-api.version>
     <maven-reporting-impl.version>4.0.0</maven-reporting-impl.version>
@@ -86,6 +87,13 @@
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-tree</artifactId>
       <version>${maven-dependency-tree.version}</version>
+    </dependency>
+    <!-- Not used by the plugin itself: keeps the 4.x line (which has no XML classes of its own,
+         see plexus-xml below) ahead of the 3.x version that the reporting stack asks for -->
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>${plexus-utils.version}</version>
     </dependency>
     <!-- Xpp3Dom is exported by the Maven core class realm at runtime -->
     <dependency>

@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import se.kth.depclean.core.analysis.DependencyTypes;
+import se.kth.depclean.core.analysis.graph.ClassUsageGraph;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
@@ -53,6 +54,7 @@ public final class ProjectDependencyAnalysis {
   private final Set<Dependency> ignoredDependencies;
   private final Map<Dependency, DependencyTypes> dependencyClassesMap;
   private final DependencyGraph dependencyGraph;
+  private final ClassUsageGraph classUsageGraph;
 
   /** Creates a project dependency analysis result. */
   @SuppressWarnings(
@@ -69,6 +71,53 @@ public final class ProjectDependencyAnalysis {
       Set<Dependency> ignoredDependencies,
       Map<Dependency, DependencyTypes> dependencyClassesMap,
       DependencyGraph dependencyGraph) {
+    this(
+        usedDirectDependencies,
+        usedTransitiveDependencies,
+        usedInheritedDirectDependencies,
+        usedInheritedTransitiveDependencies,
+        unusedDirectDependencies,
+        unusedTransitiveDependencies,
+        unusedInheritedDirectDependencies,
+        unusedInheritedTransitiveDependencies,
+        ignoredDependencies,
+        dependencyClassesMap,
+        dependencyGraph,
+        ClassUsageGraph.empty());
+  }
+
+  /**
+   * Creates the result of an analysis, including the references between classes it is based on.
+   *
+   * @param usedDirectDependencies the used direct dependencies
+   * @param usedTransitiveDependencies the used transitive dependencies
+   * @param usedInheritedDirectDependencies the used inherited direct dependencies
+   * @param usedInheritedTransitiveDependencies the used inherited transitive dependencies
+   * @param unusedDirectDependencies the unused direct dependencies
+   * @param unusedTransitiveDependencies the unused transitive dependencies
+   * @param unusedInheritedDirectDependencies the unused inherited direct dependencies
+   * @param unusedInheritedTransitiveDependencies the unused inherited transitive dependencies
+   * @param ignoredDependencies the dependencies the user asked to consider as used
+   * @param dependencyClassesMap the classes, and the used classes, of every dependency
+   * @param dependencyGraph the dependency graph of the project
+   * @param classUsageGraph the references between the classes reachable from the project
+   */
+  @SuppressWarnings(
+      "java:S107") // the parameters mirror the reported analysis dimensions one-to-one
+  public ProjectDependencyAnalysis(
+      Set<Dependency> usedDirectDependencies,
+      Set<Dependency> usedTransitiveDependencies,
+      Set<Dependency> usedInheritedDirectDependencies,
+      Set<Dependency> usedInheritedTransitiveDependencies,
+      Set<Dependency> unusedDirectDependencies,
+      Set<Dependency> unusedTransitiveDependencies,
+      Set<Dependency> unusedInheritedDirectDependencies,
+      Set<Dependency> unusedInheritedTransitiveDependencies,
+      Set<Dependency> ignoredDependencies,
+      Map<Dependency, DependencyTypes> dependencyClassesMap,
+      DependencyGraph dependencyGraph,
+      ClassUsageGraph classUsageGraph) {
+    this.classUsageGraph = classUsageGraph;
     this.usedDirectDependencies = ImmutableSet.copyOf(usedDirectDependencies);
     this.usedTransitiveDependencies = ImmutableSet.copyOf(usedTransitiveDependencies);
     this.usedInheritedDirectDependencies = ImmutableSet.copyOf(usedInheritedDirectDependencies);
@@ -126,6 +175,16 @@ public final class ProjectDependencyAnalysis {
 
   public DependencyGraph getDependencyGraph() {
     return dependencyGraph;
+  }
+
+  /**
+   * The references between the classes reachable from the project, which the result is based on. It
+   * is not part of the identity of the result.
+   *
+   * @return the class usage graph, empty if the analysis was not created from bytecode
+   */
+  public ClassUsageGraph getClassUsageGraph() {
+    return classUsageGraph;
   }
 
   public boolean hasUsedTransitiveDependencies() {

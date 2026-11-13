@@ -23,7 +23,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.core.analysis.DependencyTypes;
-import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
+import se.kth.depclean.core.analysis.graph.ClassUsageGraph;
 import se.kth.depclean.core.model.ClassName;
 
 /**
@@ -45,6 +45,7 @@ public class JsonResultWriter {
   private final File classUsageFile;
   private final boolean createClassUsageCsv;
   private final Map<String, DependencyTypes> dependenciesClassesMap;
+  private final ClassUsageGraph classUsageGraph;
   private final Set<String> classUsageDependenciesWritten = new HashSet<>();
   @Nullable private Writer classUsageWriter;
   @Nullable private Map<String, Set<String>> originsByTarget;
@@ -77,6 +78,7 @@ public class JsonResultWriter {
     this.unusedInheritedArtifactsCoordinates = unusedInheritedArtifactsCoordinates;
     this.unusedTransitiveArtifactsCoordinates = unusedTransitiveArtifactsCoordinates;
     this.dependenciesClassesMap = dependencyAnalyzer.getDependenciesClassesMap();
+    this.classUsageGraph = dependencyAnalyzer.getClassUsageGraph();
   }
 
   /**
@@ -303,8 +305,7 @@ public class JsonResultWriter {
   private Map<String, Set<String>> originsByTarget() {
     if (originsByTarget == null) {
       Map<String, Set<String>> inverted = new HashMap<>();
-      for (Map.Entry<String, Set<String>> usages :
-          DefaultCallGraph.getUsagesPerClass().entrySet()) {
+      for (Map.Entry<String, Set<String>> usages : classUsageGraph.getUsagesPerClass().entrySet()) {
         for (String target : usages.getValue()) {
           inverted.computeIfAbsent(target, k -> new HashSet<>()).add(usages.getKey());
         }

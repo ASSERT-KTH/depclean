@@ -13,7 +13,8 @@ class ProjectContextTest implements ProjectContextCreator {
     assertThat(context.getClassesForDependency(COMMONS_IO_DEPENDENCY)).hasSize(123);
     assertThat(context.getClassesForDependency(COMMONS_LANG_DEPENDENCY)).hasSize(345);
     assertThat(context.getClassesForDependency(COMMONS_LOGGING_DEPENDENCY)).hasSize(20);
-    assertThat(context.getClassesForDependency(JUNIT_DEPENDENCY)).hasSize(113);
+    // 113 class files, one of which is module-info.class, which is not a type
+    assertThat(context.getClassesForDependency(JUNIT_DEPENDENCY)).hasSize(112);
     assertThat(context.getClassesForDependency(UNKNOWN_DEPENDENCY)).isEmpty();
   }
 

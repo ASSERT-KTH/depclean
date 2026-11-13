@@ -37,9 +37,6 @@ public interface ProjectContextCreator {
             ImmutableSet.of(COMMONS_LOGGING_DEPENDENCY)),
         ImmutableSet.of(Paths.get("target/classes")),
         ImmutableSet.of(Paths.get("target/test-classes")),
-        Paths.get("/main"),
-        Paths.get("/test"),
-        Paths.get(""),
         Collections.emptySet(),
         Collections.emptySet(),
         Collections.emptySet());
@@ -55,9 +52,6 @@ public interface ProjectContextCreator {
             ImmutableSet.of(COMMONS_LOGGING_DEPENDENCY)),
         ImmutableSet.of(Paths.get("target/classes")),
         ImmutableSet.of(Paths.get("target/test-classes")),
-        Paths.get("/main"),
-        Paths.get("/test"),
-        Paths.get(""),
         ImmutableSet.of(new Scope("test")),
         Collections.emptySet(),
         Collections.emptySet());
@@ -73,9 +67,6 @@ public interface ProjectContextCreator {
             ImmutableSet.of(COMMONS_LOGGING_DEPENDENCY)),
         ImmutableSet.of(Paths.get("target/classes")),
         ImmutableSet.of(Paths.get("target/test-classes")),
-        Paths.get("/main"),
-        Paths.get("/test"),
-        Paths.get(""),
         ImmutableSet.of(new Scope("test")),
         ImmutableSet.of(COMMONS_IO_DEPENDENCY),
         Collections.emptySet());

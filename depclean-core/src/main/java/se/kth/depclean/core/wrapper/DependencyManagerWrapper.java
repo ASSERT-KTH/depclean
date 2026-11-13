@@ -78,13 +78,6 @@ public interface DependencyManagerWrapper {
   Set<String> collectUsedClassesFromProcessors();
 
   /**
-   * Where the compiled dependencies are located.
-   *
-   * @return the path to the compiled dependencies.
-   */
-  Path getDependenciesDirectory();
-
-  /**
    * Find classes used in sources.
    *
    * @return the classes used.

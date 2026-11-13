@@ -13,11 +13,9 @@ import java.util.stream.Collectors;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
-import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.fake.depmanager.AllDependenciesUsedDependencyManager;
 import se.kth.depclean.core.fake.depmanager.EmptyProjectDependencyManager;
@@ -37,12 +35,6 @@ class DepCleanManagerEnd2EndTest {
   @BeforeAll
   static void setup() {
     logger.addAppender(appender);
-  }
-
-  @AfterEach
-  void tearDown() {
-    // Static classes are evils :)
-    DefaultCallGraph.clear();
   }
 
   @Test

@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.kth.depclean.core.analysis.graph.ClassUsageGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
@@ -24,10 +25,19 @@ public class ProjectDependencyAnalysisBuilder {
 
   private final ProjectContext context;
   private final ActualUsedClasses actualUsedClasses;
+  private final ClassUsageGraph classUsageGraph;
   private final Set<Dependency> usedDependencies;
 
   ProjectDependencyAnalysisBuilder(ProjectContext context, ActualUsedClasses actualUsedClasses) {
+    this(context, actualUsedClasses, ClassUsageGraph.empty());
+  }
+
+  ProjectDependencyAnalysisBuilder(
+      ProjectContext context,
+      ActualUsedClasses actualUsedClasses,
+      ClassUsageGraph classUsageGraph) {
     this.context = context;
+    this.classUsageGraph = classUsageGraph;
     this.actualUsedClasses = actualUsedClasses;
     usedDependencies =
         actualUsedClasses.getRegisteredClasses().stream()
@@ -102,7 +112,8 @@ public class ProjectDependencyAnalysisBuilder {
         unusedInheritedTransitiveDependencies,
         context.getIgnoredDependencies(),
         dependencyClassesMap,
-        context.getDependencyGraph());
+        context.getDependencyGraph(),
+        classUsageGraph);
   }
 
   private Map<Dependency, DependencyTypes> buildDependencyClassesMap() {
