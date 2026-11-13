@@ -12,9 +12,15 @@ While it has shown promising results, the tool is not yet mature for production 
 
 ### Usage
 
-Once you have the plugin installed in your local Maven repository (see [Installing and Building From Source](#installing-and-building-from-source) below), you can use it in your Gradle projects.
+Add the plugin to your `build.gradle` file:
 
-Because the plugin is resolved from your local Maven repository, add `mavenLocal()` to the plugin repositories in your `settings.gradle`:
+```groovy
+plugins {
+    id 'se.kth.castor.depclean-gradle-plugin' version '2.3.1-SNAPSHOT'
+}
+```
+
+Released versions are published to the [Gradle Plugin Portal](https://plugins.gradle.org), so no extra repository is needed. To try a version you built yourself (see [Installing and Building From Source](#installing-and-building-from-source) below), add `mavenLocal()` to the plugin repositories in your `settings.gradle`:
 
 ```groovy
 pluginManagement {
@@ -25,14 +31,7 @@ pluginManagement {
 }
 ```
 
-Then add the plugin to your `build.gradle` file:
-
-```groovy
-plugins {
-    id 'se.kth.castor.depclean-gradle-plugin' version '2.3.1-SNAPSHOT'
-}
-```
-Then, you can run the `debloat` task to analyze your project and remove unused dependencies:
+Then, you can run the `debloat` task to analyze your project and report its unused dependencies:
 
 ```bash
 ./gradlew debloat

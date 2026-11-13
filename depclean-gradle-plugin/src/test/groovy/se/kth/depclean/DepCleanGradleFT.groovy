@@ -212,6 +212,8 @@ class DepCleanGradleFT extends Specification {
     private static BuildResult createRunner(File project, String argument) {
         BuildResult result = GradleRunner.create()
                 .withProjectDir(project)
+                // The plugin under test comes from this build, not from a published artifact
+                .withPluginClasspath()
                 .withArguments(argument)
                 .withDebug(true)
                 .build()

@@ -7,7 +7,7 @@
 #   scripts/set-version.sh --readme-only <v>  update only README.md (used by the Deploy workflow)
 #
 # The root pom.xml is the single source of truth. The Maven modules are handled by
-# versions:set; everything else (Gradle plugin, test fixtures, READMEs) is a literal
+# versions:set; everything else (Gradle plugin, READMEs) is a literal
 # string that this script keeps in sync. Every substitution is anchored on a DepClean
 # coordinate so unrelated versions (e.g. jcabi-manifests 2.2.0) are never touched.
 #
@@ -37,7 +37,6 @@ MAVEN_XML_FILES=(
 
 GRADLE_BUILD=depclean-gradle-plugin/build.gradle
 GRADLE_README=depclean-gradle-plugin/README.md
-GRADLE_FIXTURES=(depclean-gradle-plugin/src/test/resources-fts/*/build.gradle)
 
 # apply <file> <anchor-regex> <sed-expression>
 # Applies the substitution and fails if the anchor does not occur in the file,
@@ -77,9 +76,6 @@ set_literals() {
   apply "$GRADLE_BUILD" "^version = '" "s|^version = '[^']*'|version = '$v'|"
   apply "$GRADLE_BUILD" "depcleanVersion = '" "s|(depcleanVersion = ')[^']*'|\1$v'|"
   apply "$GRADLE_README" "depclean-gradle-plugin' version '" "s|(depclean-gradle-plugin' version ')[^']*'|\1$v'|"
-  for f in "${GRADLE_FIXTURES[@]}"; do
-    apply "$f" 'depclean-gradle-plugin:' "s|(depclean-gradle-plugin:)[^']*'|\1$v'|"
-  done
 }
 
 set_version() {
@@ -102,7 +98,7 @@ check_version() {
   tmp=$(mktemp -d)
   # shellcheck disable=SC2064  # expand now: $tmp is local and gone when the trap fires
   trap "rm -rf '$tmp'" EXIT
-  local files=("${MAVEN_XML_FILES[@]}" "$README" "$GRADLE_BUILD" "$GRADLE_README" "${GRADLE_FIXTURES[@]}")
+  local files=("${MAVEN_XML_FILES[@]}" "$README" "$GRADLE_BUILD" "$GRADLE_README")
   local f
   for f in "${files[@]}"; do
     mkdir -p "$tmp/$(dirname "$f")"

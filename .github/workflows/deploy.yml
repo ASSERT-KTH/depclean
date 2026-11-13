@@ -23,6 +23,9 @@ jobs:
     environment: release
     permissions:
       contents: write
+    outputs:
+      # The commit the release tag points to, for the jobs that build from the release
+      tag-sha: ${{ steps.tag.outputs.sha }}
     steps:
       - name: Check out Git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -72,6 +75,7 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Create and push tag
+        id: tag
         env:
           TAG: ${{ github.event.inputs.newVersion }}
         run: |
@@ -79,6 +83,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "$TAG" -m "Release v$TAG"
           git push origin "$TAG"
+          echo "sha=$(git rev-parse "$TAG^{commit}")" >> "$GITHUB_OUTPUT"
 
       - name: Create Release on GitHub
         uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
@@ -102,3 +107,75 @@ jobs:
             git commit -m "docs: update version to $NEW_VERSION in README"
             git push origin HEAD:master
           fi
+
+  # ------------------------------------------------------------------------------------------------------------------
+  # The Gradle plugin is released to the Gradle Plugin Portal, from the commit the Maven release just tagged.
+  # It needs the GRADLE_PUBLISH_KEY / GRADLE_PUBLISH_SECRET repository secrets (an API key of the
+  # Plugin Portal account that owns the `se.kth.castor` plugin id prefix). Until they are configured
+  # the job is skipped, so the Maven release is not affected.
+  gradle-plugin:
+    name: Release Gradle plugin
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: release
+    permissions:
+      contents: read
+    env:
+      GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+      GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+    steps:
+      - name: Check for Plugin Portal credentials
+        id: credentials
+        run: |
+          if [ -n "$GRADLE_PUBLISH_KEY" ] && [ -n "$GRADLE_PUBLISH_SECRET" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::GRADLE_PUBLISH_KEY / GRADLE_PUBLISH_SECRET are not set, the Gradle plugin is not published"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The exact commit the release job tagged: a bare version name could also match a branch
+      - name: Check out the release commit
+        if: steps.credentials.outputs.available == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release.outputs.tag-sha }}
+          persist-credentials: false
+
+      - name: Install Java
+        if: steps.credentials.outputs.available == 'true'
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: "temurin"
+          java-version: 25
+          cache: "maven"
+
+      - name: Set up Gradle
+        if: steps.credentials.outputs.available == 'true'
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          validate-wrappers: true
+
+      # The plugin is built against the very depclean-core of this tag, installed in the local
+      # repository, so the job does not have to wait for Maven Central to serve the new release.
+      - name: Install depclean-core
+        if: steps.credentials.outputs.available == 'true'
+        run: ./mvnw -ntp clean install -DskipTests -DskipITs -Djacoco.skip=true -q
+
+      - name: Verify plugin version matches release version
+        if: steps.credentials.outputs.available == 'true'
+        working-directory: ./depclean-gradle-plugin
+        env:
+          NEW_VERSION: ${{ github.event.inputs.newVersion }}
+        run: |
+          PLUGIN_VERSION=$(./gradlew -q properties --property version | sed -n 's/^version: //p')
+          if [ "$PLUGIN_VERSION" != "$NEW_VERSION" ]; then
+            echo "::error::Gradle plugin version '$PLUGIN_VERSION' does not match newVersion '$NEW_VERSION'"
+            exit 1
+          fi
+
+      - name: Publish to the Gradle Plugin Portal
+        if: steps.credentials.outputs.available == 'true'
+        working-directory: ./depclean-gradle-plugin
+        run: ./gradlew build publishPlugins

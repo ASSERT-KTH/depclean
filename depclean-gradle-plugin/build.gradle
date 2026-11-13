@@ -3,9 +3,8 @@ plugins {
     id 'groovy'
     id 'jacoco'
     id 'java'
-    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '2.0.0'
     id 'jvm-test-suite'
-    id 'maven-publish'
     id 'net.ltgt.errorprone' version '5.2.0'
 }
 
@@ -104,13 +103,28 @@ spotless {
   }
 }
 
+// com.gradle.plugin-publish applies java-gradle-plugin and maven-publish, attaches the sources
+// and javadoc jars, and adds the publishPlugins task that uploads to the Gradle Plugin Portal.
 gradlePlugin {
+    website = 'https://github.com/ASSERT-KTH/depclean'
+    vcsUrl = 'https://github.com/ASSERT-KTH/depclean.git'
     plugins {
         depcleanPlugin {
             id = 'se.kth.castor.depclean-gradle-plugin'
             implementationClass = 'se.kth.depclean.DepCleanGradlePlugin'
             displayName = 'DepClean Gradle Plugin'
-            description = 'A plugin to analyze and debloat dependencies in Gradle projects'
+            description = 'Detects the unused dependencies of a Gradle project by analyzing its bytecode, and writes a debloated dependencies block'
+            tags.set(['dependencies', 'dependency-analysis', 'debloat', 'unused-dependencies', 'bytecode'])
+        }
+    }
+}
+
+// The released plugin is built against the depclean-core release on Maven Central; mavenLocal
+// only serves the SNAPSHOT of the core installed by the Maven build of this repository.
+tasks.named('publishPlugins') {
+    doFirst {
+        if (version.toString().endsWith('-SNAPSHOT')) {
+            throw new GradleException("Refusing to publish the SNAPSHOT version ${version} to the Plugin Portal")
         }
     }
 }
