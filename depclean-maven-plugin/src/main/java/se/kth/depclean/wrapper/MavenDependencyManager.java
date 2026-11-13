@@ -1,13 +1,16 @@
 package se.kth.depclean.wrapper;
 
 import com.google.common.collect.ImmutableSet;
-import fr.dutra.tools.maven.deptree.core.ParseException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,8 +35,7 @@ import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.core.wrapper.LogWrapper;
 import se.kth.depclean.graph.MavenDependencyGraph;
 import se.kth.depclean.util.MavenDebloater;
-import se.kth.depclean.util.MavenInvoker;
-import se.kth.depclean.util.json.ParsedDependencies;
+import se.kth.depclean.util.json.DependencyTreeJsonWriter;
 
 /** Maven's implementation of the dependency manager wrapper. */
 public class MavenDependencyManager implements DependencyManagerWrapper {
@@ -110,12 +112,16 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
 
   @Override
   public DependencyGraph dependencyGraph() {
+    return new MavenDependencyGraph(project, model, resolveRootNode());
+  }
+
+  /** The dependency tree that Maven resolved for the project in the running build. */
+  private DependencyNode resolveRootNode() {
     ProjectBuildingRequest buildingRequest =
         new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
     buildingRequest.setProject(project);
     try {
-      DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
-      return new MavenDependencyGraph(project, model, rootNode);
+      return dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
     } catch (DependencyGraphBuilderException e) {
       throw new IllegalStateException(e);
     }
@@ -239,22 +245,19 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public void generateDependencyTree(File treeFile) throws IOException, InterruptedException {
-    MavenInvoker.runCommand(
-        Arrays.asList("mvn", "dependency:tree", "-DoutputFile=" + treeFile, "-Dverbose=true"),
-        null);
-  }
-
-  @Override
   public String getTreeAsJson(
-      File treeFile,
-      ProjectDependencyAnalysis analysis,
-      File classUsageFile,
-      boolean createCallGraphCsv) {
-    try {
-      return new ParsedDependencies(treeFile, analysis, classUsageFile, createCallGraphCsv)
-          .parseTreeToJson();
-    } catch (ParseException | IOException e) {
+      ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv) {
+    // Appends below the header that DepCleanManager writes when it (re)creates the file.
+    try (Writer callGraphWriter =
+        createCallGraphCsv
+            ? Files.newBufferedWriter(
+                classUsageFile.toPath(),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND)
+            : null) {
+      return new DependencyTreeJsonWriter(analysis, callGraphWriter).write(resolveRootNode());
+    } catch (IOException e) {
       throw new IllegalStateException(e);
     }
   }

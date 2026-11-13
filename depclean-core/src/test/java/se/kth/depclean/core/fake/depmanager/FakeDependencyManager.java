@@ -114,17 +114,9 @@ public class FakeDependencyManager implements DependencyManagerWrapper {
   }
 
   @Override
-  public void generateDependencyTree(File treeFile) {
-    // not needed by the fake
-  }
-
-  @Override
   @SuppressWarnings("NullAway")
   public String getTreeAsJson(
-      File treeFile,
-      ProjectDependencyAnalysis analysis,
-      File classUsageFile,
-      boolean createClassUsageCsv) {
+      ProjectDependencyAnalysis analysis, File classUsageFile, boolean createClassUsageCsv) {
     return null;
   }
 }
