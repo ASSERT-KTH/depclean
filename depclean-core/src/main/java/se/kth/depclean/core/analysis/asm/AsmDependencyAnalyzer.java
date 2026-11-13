@@ -23,7 +23,6 @@ import java.net.URL;
 import java.util.Set;
 import se.kth.depclean.core.analysis.ClassFileVisitorUtils;
 import se.kth.depclean.core.analysis.DependencyAnalyzer;
-import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
 /** Dependency analyzer. */
 public class AsmDependencyAnalyzer implements DependencyAnalyzer {
@@ -35,7 +34,6 @@ public class AsmDependencyAnalyzer implements DependencyAnalyzer {
    */
   @Override
   public Set<String> analyze(URL url) {
-    ClassMembersVisitorCounter.resetClassCounters();
     DependencyClassFileVisitor visitor = new DependencyClassFileVisitor();
     ClassFileVisitorUtils.accept(url, visitor);
     return visitor.getDependencies();

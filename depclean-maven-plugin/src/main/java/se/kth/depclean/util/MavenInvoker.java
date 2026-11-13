@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -57,34 +56,6 @@ public final class MavenInvoker {
   private static final long FORCIBLE_KILL_GRACE_MILLIS = TimeUnit.SECONDS.toMillis(2);
 
   private MavenInvoker() {}
-
-  /**
-   * Creates a native process to execute a custom command.
-   *
-   * @param cmd The command to be executed. It is split on whitespace, so it cannot contain
-   *     arguments with spaces.
-   * @param directory The working directory of the subprocess, or null if the subprocess should
-   *     inherit the working directory of the current process.
-   * @return The lines the command wrote to its standard output.
-   * @throws IOException In case of IO issues, or if the command terminates with a non-zero exit
-   *     code.
-   * @throws InterruptedException If the current thread is interrupted while waiting for the
-   *     command.
-   * @deprecated use {@link #runCommand(List, File)} instead, which supports arguments containing
-   *     spaces. Deprecated since 2.2.0.
-   */
-  @SuppressWarnings("java:S6355") // @Deprecated(since=) is Java 9+; the javadoc states the version
-  @Deprecated
-  public static String[] runCommand(String cmd, @Nullable File directory)
-      throws IOException, InterruptedException {
-    // The same tokenization Runtime.exec(String) used to apply to this command.
-    List<String> command = new ArrayList<>();
-    StringTokenizer tokenizer = new StringTokenizer(cmd);
-    while (tokenizer.hasMoreTokens()) {
-      command.add(tokenizer.nextToken());
-    }
-    return runCommand(command, directory);
-  }
 
   /**
    * Creates a native process to execute a command. This method is used to invoke maven plugins

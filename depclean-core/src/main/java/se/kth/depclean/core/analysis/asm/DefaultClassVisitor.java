@@ -29,7 +29,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
-import se.kth.depclean.core.analysis.graph.ClassMembersVisitorCounter;
 
 /**
  * Computes the set of classes referenced by visited code. Inspired by <code>
@@ -66,7 +65,6 @@ public class DefaultClassVisitor extends ClassVisitor {
       @Nullable final String signature,
       @Nullable final String superName,
       @Nullable final String[] interfaces) {
-    ClassMembersVisitorCounter.addVisitedClass();
     if (signature == null) {
       resultCollector.addName(superName);
       resultCollector.addNames(interfaces);
@@ -83,7 +81,6 @@ public class DefaultClassVisitor extends ClassVisitor {
   @Override
   @Nullable
   public AnnotationVisitor visitAnnotation(@NonNull final String desc, final boolean visible) {
-    ClassMembersVisitorCounter.addVisitedAnnotation();
     resultCollector.addDesc(desc);
     return annotationVisitor;
   }
@@ -103,7 +100,6 @@ public class DefaultClassVisitor extends ClassVisitor {
       final String desc,
       final String signature,
       final Object value) {
-    ClassMembersVisitorCounter.addVisitedField();
     if (signature == null) {
       resultCollector.addDesc(desc);
     } else {
@@ -122,7 +118,6 @@ public class DefaultClassVisitor extends ClassVisitor {
       final String desc,
       final String signature,
       final String[] exceptions) {
-    ClassMembersVisitorCounter.addVisitedMethod();
     if (signature == null) {
       resultCollector.addMethodDesc(desc);
     } else {
