@@ -274,25 +274,26 @@ public class DepCleanMojoIT {
 
   @MavenTest
   void json_should_be_correct(MavenExecutionResult result) throws IOException {
-    {
-      log.trace("Test that DepClean creates a proper depclean-results.json file");
-      File expectedJsonFile =
-          new File("src/test/resources/DepCleanMojoResources/depclean-results.json");
-      String expectedJsonContent =
-          FileUtils.readFileToString(expectedJsonFile, StandardCharsets.UTF_8);
-      File actualJsonFile =
-          new File(
-              "target/maven-it/se/kth/depclean/DepCleanMojoIT/json_should_be_correct"
-                  + "/project/target/depclean-results.json");
-      assertThat(result).isSuccessful();
-      String actualJsonContent = FileUtils.readFileToString(actualJsonFile, StandardCharsets.UTF_8);
-      // Jar sizes vary with the JDK that built them, so compare with sizes masked
-      Assertions.assertEquals(maskSizes(expectedJsonContent), maskSizes(actualJsonContent));
-    }
+    log.trace("Test that DepClean creates a proper depclean-results.json file");
+    File expectedJsonFile =
+        new File("src/test/resources/DepCleanMojoResources/depclean-results.json");
+    String expectedJsonContent =
+        FileUtils.readFileToString(expectedJsonFile, StandardCharsets.UTF_8);
+    File actualJsonFile =
+        new File(
+            "target/maven-it/se/kth/depclean/DepCleanMojoIT/json_should_be_correct"
+                + "/project/target/depclean-results.json");
+    assertThat(result).isSuccessful();
+    String actualJsonContent = FileUtils.readFileToString(actualJsonFile, StandardCharsets.UTF_8);
+    Assertions.assertEquals(normalize(expectedJsonContent), normalize(actualJsonContent));
   }
 
-  private static String maskSizes(String json) {
-    return json.replaceAll("\"size\": \\d+", "\"size\": 0");
+  /**
+   * Masks the jar sizes, which vary with the JDK that built the jars, and the line endings, which
+   * are CRLF in a Windows checkout of the expected file.
+   */
+  private static String normalize(String json) {
+    return json.replace("\r\n", "\n").replaceAll("\"size\": \\d+", "\"size\": 0");
   }
 
   @MavenTest
