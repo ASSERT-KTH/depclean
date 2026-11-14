@@ -204,8 +204,12 @@ class DeepUsageAnalysisTest {
         new ClassUsageAnalyzer().analyze(Collections.singletonList(mainClasses), classpath);
 
     assertThat(withTests.getReachableClasses()).contains("engine.Engine");
-    assertThat(withTests.getClassesReachableFromMain()).doesNotContain("engine.Engine");
-    assertThat(withoutTests.getReachableClasses()).doesNotContain("engine.Engine");
+    assertThat(withTests.getClassesReachableFromMain())
+        .contains("app.Main")
+        .doesNotContain("engine.Engine");
+    assertThat(withoutTests.getReachableClasses())
+        .contains("app.Main")
+        .doesNotContain("engine.Engine");
   }
 
   private ProjectDependencyAnalysis analyze(Set<ClassName> extra, Set<ClassName> extraTest) {
