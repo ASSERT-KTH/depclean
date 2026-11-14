@@ -78,20 +78,6 @@ public interface DependencyManagerWrapper {
   Set<String> collectUsedClassesFromProcessors();
 
   /**
-   * Where the compiled dependencies are located.
-   *
-   * @return the path to the compiled dependencies.
-   */
-  Path getDependenciesDirectory();
-
-  /**
-   * Find classes used in sources.
-   *
-   * @return the classes used.
-   */
-  Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testDirectory);
-
-  /**
    * Directories containing the project's main resource files, e.g. {@code src/main/resources} and
    * {@code src/main/webapp}. Classes referenced in XML resources (Spring XML configurations,
    * web.xml, etc.) are considered used. The returned directories may not exist.

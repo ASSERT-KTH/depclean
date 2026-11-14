@@ -17,7 +17,6 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,7 +36,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import se.kth.depclean.analysis.DefaultGradleProjectDependencyAnalyzer;
 import se.kth.depclean.analysis.GradleProjectDependencyAnalysis;
-import se.kth.depclean.core.util.JarUtils;
 import se.kth.depclean.utils.ClassesDirectoryFinder;
 import se.kth.depclean.utils.DependencyUtils;
 import se.kth.depclean.utils.GradleWritingUtils;
@@ -97,12 +95,6 @@ public class DepCleanGradleAction implements Action<Project> {
     // Path to the project directory.
     final Path projectDirPath = Paths.get(project.getProjectDir().getAbsolutePath());
 
-    // Path to the dependency directory.
-    final Path dependencyDirPath = projectDirPath.resolve(Paths.get(BUILD_DIR, "Dependency"));
-
-    // Path to the libs directory.
-    final Path libsDirPath = projectDirPath.resolve(Paths.get(BUILD_DIR, "libs"));
-
     DependencyUtils utils = new DependencyUtils();
 
     // Project's configurations - only get resolvable ones to avoid deprecated API
@@ -147,7 +139,7 @@ public class DepCleanGradleAction implements Action<Project> {
       }
     }
 
-    prepareDependencyDirectory(project, dependencyDirPath, libsDirPath, allArtifacts, logger);
+    registerSizes(project, allArtifacts);
 
     /* Analyze dependencies usage status */
     DefaultGradleProjectDependencyAnalyzer dependencyAnalyzer =
@@ -209,26 +201,10 @@ public class DepCleanGradleAction implements Action<Project> {
       Set<String> unusedInherited,
       Set<String> unusedTransitive) {}
 
-  /** Copies dependencies locally, registers their sizes and decompresses them. */
-  private void prepareDependencyDirectory(
-      Project project,
-      Path dependencyDirPath,
-      Path libsDirPath,
-      Set<ResolvedArtifact> allArtifacts,
-      Logger logger) {
-    // Copying dependencies locally to get their size.
-    File dependencyDirectory = copyDependenciesLocally(dependencyDirPath, allArtifacts, logger);
-
-    // Copying files from libs directory to dependency directory.
-    if (libsDirPath.toFile().exists()) {
-      try {
-        FileUtils.copyDirectory(libsDirPath.toFile(), dependencyDirPath.toFile());
-      } catch (IOException | NullPointerException e) {
-        logger.error("Error copying directory libs to dependency");
-      }
-    }
-
-    // First, add the size of the project, as the sum of all the compiled class directories
+  /** Registers the size of the project and of each of its dependencies. */
+  private void registerSizes(Project project, Set<ResolvedArtifact> allArtifacts) {
+    SizeOfDependencies.clear();
+    // The size of the project is the sum of all the compiled class directories
     // (source sets and Android variants included).
     String projectJar = project.getName() + "-" + project.getVersion() + ".jar";
     long projectSize = 0;
@@ -237,14 +213,13 @@ public class DepCleanGradleAction implements Action<Project> {
     }
     SizeOfDependencies.put(projectJar, projectSize);
 
-    /*
-     * Now adding the size of all the files one by one from the dependency
-     * directory (build/Dependency).
-     */
-    addDependencySize(dependencyDirPath, logger);
-
-    /* Decompress dependencies */
-    decompressDependencies(dependencyDirectory, dependencyDirPath.toString(), logger);
+    // The dependencies are measured where Gradle resolved them, they are not copied.
+    for (ResolvedArtifact artifact : allArtifacts) {
+      File jarFile = artifact.getFile();
+      if (jarFile.isFile() && jarFile.getName().endsWith(".jar")) {
+        SizeOfDependencies.put(jarFile.getName(), jarFile.length());
+      }
+    }
   }
 
   /** Splits the analysed artifacts into the six coordinate categories. */
@@ -764,72 +739,6 @@ public class DepCleanGradleAction implements Action<Project> {
     Set<String> extensionIgnoreDependencies = extension.getIgnoreDependency();
     if (extensionIgnoreDependencies != null) {
       this.ignoreDependencies = extensionIgnoreDependencies;
-    }
-  }
-
-  /**
-   * Copies the dependency locally inside the build/Dependency directory.
-   *
-   * @param dependencyDirPath Directory path
-   * @param allArtifacts All project's artifacts (all dependencies)
-   * @param logger Logger for error reporting
-   * @return A file which contain the copied dependencies.
-   */
-  @NonNull
-  public File copyDependenciesLocally(
-      @NonNull final Path dependencyDirPath,
-      @NonNull final Set<ResolvedArtifact> allArtifacts,
-      @NonNull final Logger logger) {
-    File dependencyDirectory = dependencyDirPath.toFile();
-    for (ResolvedArtifact artifact : allArtifacts) {
-      // copying jar files directly from the user's .m2 directory
-      File jarFile = artifact.getFile();
-      if (jarFile.getAbsolutePath().endsWith(".jar")) {
-        try {
-          FileUtils.copyFileToDirectory(jarFile, dependencyDirectory);
-        } catch (IOException e) {
-          logger.error("Error copying jar file: " + jarFile.getAbsolutePath(), e);
-        }
-      }
-    }
-    return dependencyDirectory;
-  }
-
-  /**
-   * To get the size of each dependency (artifact).
-   *
-   * @param dependencyDirPath Directory path where all the copied dependencies are stored.
-   * @param logger To show some warnings.
-   */
-  public void addDependencySize(
-      @NonNull final Path dependencyDirPath, @NonNull final Logger logger) {
-    if (dependencyDirPath.toFile().exists()) {
-      Iterator<File> iterator =
-          FileUtils.iterateFiles(dependencyDirPath.toFile(), new String[] {"jar"}, true);
-      while (iterator.hasNext()) {
-        File file = iterator.next();
-        SizeOfDependencies.put(file.getName(), FileUtils.sizeOf(file));
-      }
-    } else {
-      logger.warn("Dependencies were not copied locally");
-    }
-  }
-
-  /**
-   * Only decompress the jar files inside any directory.
-   *
-   * @param dependencyDirectory The directory.
-   * @param dependencyDirPath Path to the directory.
-   * @param logger Gradle logger for output
-   */
-  public void decompressDependencies(
-      @NonNull final File dependencyDirectory,
-      @NonNull final String dependencyDirPath,
-      @NonNull final Logger logger) {
-    if (dependencyDirectory.exists()) {
-      JarUtils.decompress(dependencyDirPath);
-    } else {
-      logger.warn("Unable to decompress jars at " + dependencyDirPath);
     }
   }
 

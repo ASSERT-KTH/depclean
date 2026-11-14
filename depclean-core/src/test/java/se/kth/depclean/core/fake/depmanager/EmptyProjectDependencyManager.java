@@ -3,7 +3,6 @@ package se.kth.depclean.core.fake.depmanager;
 import com.google.common.collect.ImmutableSet;
 import java.nio.file.Path;
 import java.util.Set;
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import se.kth.depclean.core.fake.FakeDependencyGraph;
 import se.kth.depclean.core.model.Dependency;
@@ -49,11 +48,11 @@ public class EmptyProjectDependencyManager extends FakeDependencyManager {
 
   @Override
   public Set<Path> getOutputDirectories() {
-    return ImmutableSet.of(FileUtils.getTempDirectory().toPath());
+    return ImmutableSet.of(END_2_END_PATH.resolve("empty"));
   }
 
   @Override
   public Set<Path> getTestOutputDirectories() {
-    return ImmutableSet.of(FileUtils.getTempDirectory().toPath());
+    return ImmutableSet.of(END_2_END_PATH.resolve("empty"));
   }
 }

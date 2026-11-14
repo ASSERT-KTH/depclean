@@ -28,7 +28,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import se.kth.depclean.core.Debloater;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
-import se.kth.depclean.core.analysis.src.ImportsAnalyzer;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.core.wrapper.LogWrapper;
 import se.kth.depclean.graph.MavenDependencyGraph;
@@ -38,8 +37,6 @@ import se.kth.depclean.util.json.ParsedDependencies;
 
 /** Maven's implementation of the dependency manager wrapper. */
 public class MavenDependencyManager implements DependencyManagerWrapper {
-
-  private static final String DIRECTORY_TO_COPY_DEPENDENCIES = "dependency";
 
   private final Log logger;
   private final MavenProject project;
@@ -183,25 +180,6 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
         .map(Xpp3Dom::getChildren)
         .map(arr -> Arrays.stream(arr).map(Xpp3Dom::getValue).collect(Collectors.toSet()))
         .orElse(ImmutableSet.of());
-  }
-
-  @Override
-  public Path getDependenciesDirectory() {
-    String dependencyDirectoryName =
-        project.getBuild().getDirectory() + "/" + DIRECTORY_TO_COPY_DEPENDENCIES;
-    return new File(dependencyDirectoryName).toPath();
-  }
-
-  @Override
-  public Set<String> collectUsedClassesFromSource(Path sourceDirectory, Path testSourceDirectory) {
-    Set<String> allImports = new HashSet<>();
-    ImportsAnalyzer importsInSourceFolder = new ImportsAnalyzer(sourceDirectory);
-    ImportsAnalyzer importsInTestsFolder = new ImportsAnalyzer(testSourceDirectory);
-    Set<String> importsInSourceFolderSet = importsInSourceFolder.collectImportedClassesFromSource();
-    Set<String> importsInTestsFolderSet = importsInTestsFolder.collectImportedClassesFromSource();
-    allImports.addAll(importsInSourceFolderSet);
-    allImports.addAll(importsInTestsFolderSet);
-    return allImports;
   }
 
   @Override

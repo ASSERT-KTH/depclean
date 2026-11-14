@@ -14,13 +14,14 @@ import org.apache.commons.io.FileUtils;
 import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
 import se.kth.depclean.core.analysis.DefaultProjectDependencyAnalyzer;
+import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
+import se.kth.depclean.core.analysis.src.ImportsAnalyzer;
 import se.kth.depclean.core.analysis.src.XmlClassesAnalyzer;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
 import se.kth.depclean.core.model.ProjectContext;
 import se.kth.depclean.core.model.Scope;
-import se.kth.depclean.core.util.JarUtils;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
 import se.kth.depclean.core.wrapper.LogWrapper;
 
@@ -28,7 +29,6 @@ import se.kth.depclean.core.wrapper.LogWrapper;
 public class DepCleanManager {
 
   private static final String SEPARATOR = "-------------------------------------------------------";
-  private static final String DIRECTORY_TO_EXTRACT_DEPENDENCIES = "dependency";
 
   private final DependencyManagerWrapper dependencyManager;
   private final boolean skipDepClean;
@@ -92,9 +92,6 @@ public class DepCleanManager {
     }
 
     long phaseStart = System.currentTimeMillis();
-    extractClassesFromDependencies();
-    phaseStart = logPhase("Extracting dependency classes", phaseStart);
-
     final ProjectContext projectContext = buildProjectContext();
     phaseStart = logPhase("Building project context", phaseStart);
 
@@ -148,44 +145,6 @@ public class DepCleanManager {
     return analysis;
   }
 
-  private void extractClassesFromDependencies() throws IOException, AnalysisFailureException {
-    File dependencyDirectory =
-        dependencyManager.getBuildDirectory().resolve(DIRECTORY_TO_EXTRACT_DEPENDENCIES).toFile();
-    FileUtils.deleteDirectory(dependencyDirectory);
-    for (Dependency dep : dependencyManager.dependencyGraph().allDependencies()) {
-      copyDependencies(dep, dependencyDirectory);
-    }
-
-    // Workaround for dependencies that are in located in a project's libs
-    // directory.
-    if (dependencyManager.getBuildDirectory().resolve("libs").toFile().exists()) {
-      try {
-        FileUtils.copyDirectory(
-            dependencyManager.getBuildDirectory().resolve("libs").toFile(), dependencyDirectory);
-      } catch (IOException | NullPointerException e) {
-        getLog().error("Error copying directory libs to" + dependencyDirectory.getAbsolutePath());
-      }
-    }
-
-    /* Decompress dependencies */
-    if (dependencyDirectory.exists()) {
-      JarUtils.decompress(dependencyDirectory.getAbsolutePath());
-    }
-  }
-
-  private void copyDependencies(Dependency dependency, File destFolder)
-      throws AnalysisFailureException {
-    File file = dependency.getFile();
-    if (file != null) {
-      try {
-        FileUtils.copyFileToDirectory(file, destFolder);
-      } catch (IOException e) {
-        throw new AnalysisFailureException(
-            "Failed to copy dependency " + dependency + " to " + destFolder, e);
-      }
-    }
-  }
-
   private void createResultJson(ProjectDependencyAnalysis analysis) {
     printString("Creating depclean-results.json, please wait...");
     final File jsonFile =
@@ -231,62 +190,52 @@ public class DepCleanManager {
   }
 
   private ProjectContext buildProjectContext() {
+    // Resolved once: building the graph lists the classes of every dependency
+    final DependencyGraph dependencyGraph = dependencyManager.dependencyGraph();
     if (ignoreTests) {
       ignoreScopes.add("test");
     }
 
-    // Consider are used all the classes declared in Maven processors
-    Set<ClassName> allUsedClasses = new HashSet<>();
-    Set<ClassName> usedClassesFromProcessors =
-        dependencyManager.collectUsedClassesFromProcessors().stream()
-            .map(ClassName::new)
-            .collect(Collectors.toSet());
+    // Classes that the main code uses without referencing them in its bytecode: the annotation
+    // processors of the build, the imports of the sources (which also cover what the compiler
+    // inlines or erases, such as constants and source-retention annotations) and the classes
+    // named in XML resources (e.g. Spring XML configurations, web.xml, persistence.xml)
+    final Set<ClassName> extraClasses = new HashSet<>();
+    dependencyManager.collectUsedClassesFromProcessors().stream()
+        .map(ClassName::new)
+        .forEach(extraClasses::add);
+    extraClasses.addAll(importedClasses(dependencyManager.getSourceDirectory()));
+    extraClasses.addAll(xmlReferencedClasses(dependencyManager.getResourcesDirectories()));
 
-    // Consider as used all the classes located in the imports of the source code
-    Set<ClassName> usedClassesFromSource =
-        dependencyManager
-            .collectUsedClassesFromSource(
-                dependencyManager.getSourceDirectory(), dependencyManager.getTestDirectory())
-            .stream()
-            .map(ClassName::new)
-            .collect(Collectors.toSet());
-
-    allUsedClasses.addAll(usedClassesFromProcessors);
-    allUsedClasses.addAll(usedClassesFromSource);
-
-    // Consider as used all the classes referenced in XML resource files
-    // (e.g. Spring XML configurations, web.xml, persistence.xml)
-    allUsedClasses.addAll(collectUsedClassesFromXmlResources());
+    // The same for the tests
+    final Set<ClassName> extraTestClasses =
+        new HashSet<>(importedClasses(dependencyManager.getTestDirectory()));
+    if (!ignoreTests) {
+      extraTestClasses.addAll(
+          xmlReferencedClasses(dependencyManager.getTestResourcesDirectories()));
+    }
 
     return new ProjectContext(
-        dependencyManager.dependencyGraph(),
+        dependencyGraph,
         dependencyManager.getOutputDirectories(),
         dependencyManager.getTestOutputDirectories(),
-        dependencyManager.getSourceDirectory(),
-        dependencyManager.getTestDirectory(),
-        dependencyManager.getDependenciesDirectory(),
         ignoreScopes.stream().map(scope -> new Scope(scope)).collect(Collectors.toSet()),
         ignoreDependencies.stream()
-            .map(pattern ->
-                toDependency(dependencyManager.dependencyGraph().allDependencies(), pattern))
+            .map(pattern -> toDependency(dependencyGraph.allDependencies(), pattern))
             .flatMap(Set::stream)
             .collect(Collectors.toSet()),
-        allUsedClasses);
+        extraClasses,
+        extraTestClasses);
   }
 
-  /**
-   * Collects the classes referenced in XML resource files (Spring XML configurations, web.xml,
-   * etc.), so that dependencies only referenced from XML are considered used. Test resources are
-   * skipped when tests are ignored.
-   *
-   * @return the classes referenced in XML resources
-   */
-  private Set<ClassName> collectUsedClassesFromXmlResources() {
-    final Set<Path> resourcesDirectories =
-        new HashSet<>(dependencyManager.getResourcesDirectories());
-    if (!ignoreTests) {
-      resourcesDirectories.addAll(dependencyManager.getTestResourcesDirectories());
-    }
+  private static Set<ClassName> importedClasses(Path sourceDirectory) {
+    return new ImportsAnalyzer(sourceDirectory)
+        .collectImportedClassesFromSource().stream()
+            .map(ClassName::new)
+            .collect(Collectors.toSet());
+  }
+
+  private static Set<ClassName> xmlReferencedClasses(Set<Path> resourcesDirectories) {
     return resourcesDirectories.stream()
         .map(XmlClassesAnalyzer::new)
         .map(XmlClassesAnalyzer::collectReferencedClassesFromXml)

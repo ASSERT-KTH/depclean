@@ -13,12 +13,10 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import se.kth.depclean.core.analysis.DependencyTypes;
-import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
+import se.kth.depclean.core.analysis.graph.ClassUsageGraph;
 import se.kth.depclean.core.analysis.graph.DependencyGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.model.ClassName;
@@ -36,19 +34,14 @@ class ParsedDependenciesTest {
 
   @TempDir Path tempDir;
 
-  @BeforeEach
-  void populateCallGraph() {
-    DefaultCallGraph.clear();
-    DefaultCallGraph.addEdge(
-        "org.foo.App",
-        ImmutableSet.of("org.dep.used.Api", "java.lang.Object", "org.dep.other.Thing"));
-    DefaultCallGraph.addEdge("org.dep.used.Api", ImmutableSet.of("org.dep.used.Impl"));
-  }
-
-  @AfterEach
-  void clearCallGraph() {
-    DefaultCallGraph.clear();
-  }
+  private static final ClassUsageGraph CLASS_USAGE_GRAPH =
+      new ClassUsageGraph(
+          ImmutableSet.of("org.foo.App"),
+          ImmutableMap.of(
+              "org.foo.App",
+              ImmutableSet.of("org.dep.used.Api", "java.lang.Object", "org.dep.other.Thing"),
+              "org.dep.used.Api",
+              ImmutableSet.of("org.dep.used.Impl")));
 
   @Test
   void csvListsEachEdgeOnceUnderTheDependencyOwningItsTarget() throws Exception {
@@ -114,7 +107,8 @@ class ParsedDependenciesTest {
                     ImmutableSet.of("org.dep.used.Api", "org.dep.used.Impl"),
                     ImmutableSet.of("org.dep.used.Api")),
             OTHER_LIB, types(ImmutableSet.of("org.dep.other.Thing"), ImmutableSet.of())),
-        new StubDependencyGraph());
+        new StubDependencyGraph(),
+        CLASS_USAGE_GRAPH);
   }
 
   private static DependencyTypes types(Set<String> all, Set<String> used) {

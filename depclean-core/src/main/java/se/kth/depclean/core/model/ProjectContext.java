@@ -6,6 +6,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -29,13 +30,11 @@ public final class ProjectContext {
 
   private final Set<Path> outputFolders;
   private final Set<Path> testOutputFolders;
-  private final Path sourceFolder;
-  private final Path testFolder;
-  private final Path dependenciesFolder;
 
   private final Set<Scope> ignoredScopes;
   private final Set<Dependency> ignoredDependencies;
   private final Set<ClassName> extraClasses;
+  private final Set<ClassName> extraTestClasses;
   private final DependencyGraph dependencyGraph;
 
   /**
@@ -44,31 +43,53 @@ public final class ProjectContext {
    * @param dependencyGraph the dependencyGraph
    * @param outputFolders where the project's classes are compiled
    * @param testOutputFolders where the project's test classes are compiled
-   * @param sourceFolder where the project's source code are located
-   * @param tesSourceFolder where the project's test sources are located
-   * @param dependenciesFolder where the dependency classes are located
    * @param ignoredScopes the scopes to ignore
    * @param ignoredDependencies the dependencies to ignore (i.e. considered as 'used')
-   * @param extraClasses some classes we want to tell the analyser to consider used
+   * @param extraClasses some classes we want to tell the analyser to consider used (like maven
+   *     processors)
    */
-  @SuppressWarnings(
-      "java:S107") // the parameters mirror the reported analysis dimensions one-to-one
   public ProjectContext(
       DependencyGraph dependencyGraph,
       Set<Path> outputFolders,
       Set<Path> testOutputFolders,
-      Path sourceFolder,
-      Path tesSourceFolder,
-      Path dependenciesFolder,
       Set<Scope> ignoredScopes,
       Set<Dependency> ignoredDependencies,
       Set<ClassName> extraClasses) {
+    this(
+        dependencyGraph,
+        outputFolders,
+        testOutputFolders,
+        ignoredScopes,
+        ignoredDependencies,
+        extraClasses,
+        Collections.emptySet());
+  }
+
+  /**
+   * Creates a new project context.
+   *
+   * @param dependencyGraph the dependencyGraph
+   * @param outputFolders where the project's classes are compiled
+   * @param testOutputFolders where the project's test classes are compiled
+   * @param ignoredScopes the scopes to ignore
+   * @param ignoredDependencies the dependencies to ignore (i.e. considered as 'used')
+   * @param extraClasses classes that the main code uses although its bytecode does not reference
+   *     them (e.g. classes named in configuration files)
+   * @param extraTestClasses classes that only the tests use although their bytecode does not
+   *     reference them
+   */
+  public ProjectContext(
+      DependencyGraph dependencyGraph,
+      Set<Path> outputFolders,
+      Set<Path> testOutputFolders,
+      Set<Scope> ignoredScopes,
+      Set<Dependency> ignoredDependencies,
+      Set<ClassName> extraClasses,
+      Set<ClassName> extraTestClasses) {
+    this.extraTestClasses = extraTestClasses;
     this.dependencyGraph = dependencyGraph;
     this.outputFolders = outputFolders;
     this.testOutputFolders = testOutputFolders;
-    this.sourceFolder = sourceFolder;
-    this.testFolder = tesSourceFolder;
-    this.dependenciesFolder = dependenciesFolder;
     this.ignoredScopes = ignoredScopes;
     this.ignoredDependencies = ignoredDependencies;
     this.extraClasses = extraClasses;
@@ -91,18 +112,6 @@ public final class ProjectContext {
     return testOutputFolders;
   }
 
-  public Path getSourceFolder() {
-    return sourceFolder;
-  }
-
-  public Path getTestFolder() {
-    return testFolder;
-  }
-
-  public Path getDependenciesFolder() {
-    return dependenciesFolder;
-  }
-
   public Set<Scope> getIgnoredScopes() {
     return ignoredScopes;
   }
@@ -113,6 +122,10 @@ public final class ProjectContext {
 
   public Set<ClassName> getExtraClasses() {
     return extraClasses;
+  }
+
+  public Set<ClassName> getExtraTestClasses() {
+    return extraTestClasses;
   }
 
   public DependencyGraph getDependencyGraph() {
@@ -184,9 +197,6 @@ public final class ProjectContext {
         && Objects.equals(dependenciesPerClass, that.dependenciesPerClass)
         && Objects.equals(outputFolders, that.outputFolders)
         && Objects.equals(testOutputFolders, that.testOutputFolders)
-        && Objects.equals(sourceFolder, that.sourceFolder)
-        && Objects.equals(testFolder, that.testFolder)
-        && Objects.equals(dependenciesFolder, that.dependenciesFolder)
         && Objects.equals(ignoredScopes, that.ignoredScopes)
         && Objects.equals(ignoredDependencies, that.ignoredDependencies)
         && Objects.equals(extraClasses, that.extraClasses)
@@ -200,9 +210,6 @@ public final class ProjectContext {
         dependenciesPerClass,
         outputFolders,
         testOutputFolders,
-        sourceFolder,
-        testFolder,
-        dependenciesFolder,
         ignoredScopes,
         ignoredDependencies,
         extraClasses,
@@ -219,12 +226,6 @@ public final class ProjectContext {
         + outputFolders
         + ", testOutputFolders="
         + testOutputFolders
-        + ", sourceFolder="
-        + sourceFolder
-        + ", testFolder="
-        + testFolder
-        + ", dependenciesFolder="
-        + dependenciesFolder
         + ", ignoredScopes="
         + ignoredScopes
         + ", ignoredDependencies="

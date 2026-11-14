@@ -17,101 +17,73 @@
 
 package se.kth.depclean.core.analysis;
 
-import java.io.IOException;
+import java.io.File;
 import java.nio.file.Path;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import se.kth.depclean.core.analysis.asm.AsmDependencyAnalyzer;
-import se.kth.depclean.core.analysis.graph.DefaultCallGraph;
+import se.kth.depclean.core.analysis.graph.ClassUsageGraph;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.model.ClassName;
+import se.kth.depclean.core.model.Dependency;
 import se.kth.depclean.core.model.ProjectContext;
 
 /** This is principal class that perform the dependency analysis in a Maven project. */
 public class DefaultProjectDependencyAnalyzer {
 
-  private static final Logger log = LoggerFactory.getLogger(DefaultProjectDependencyAnalyzer.class);
-
-  private final DependencyAnalyzer dependencyAnalyzer = new AsmDependencyAnalyzer();
+  private final ClassUsageAnalyzer classUsageAnalyzer = new ClassUsageAnalyzer();
 
   /**
    * Analyze the dependencies in a project.
    *
    * @param projectContext The project's context
-   * @return An object representing the analysis result.
+   * @return An object with the usedDeclaredArtifacts, usedUndeclaredArtifacts, and
+   *     unusedDeclaredArtifacts.
    */
   public ProjectDependencyAnalysis analyze(final ProjectContext projectContext) {
+    // the compiled classes of the project; the tests are left out when they are ignored
+    final boolean analyzeTests = !projectContext.ignoreTests();
+    final Set<Path> testClassDirectories =
+        analyzeTests ? projectContext.getTestOutputFolders() : Collections.emptySet();
 
-    // a map of [dependency] -> [classes]
+    // every dependency is traversed, whatever its scope: a class of an ignored dependency can be
+    // the only path to a class of a dependency that is not ignored
+    final List<File> classpath = new ArrayList<>();
+    for (Dependency dependency : projectContext.getDependencyGraph().allDependencies()) {
+      if (dependency.getFile() != null) {
+        classpath.add(dependency.getFile());
+      }
+    }
+
+    final ClassUsageGraph classUsageGraph =
+        classUsageAnalyzer.analyze(
+            projectContext.getOutputFolders(),
+            testClassDirectories,
+            classpath,
+            names(projectContext.getExtraClasses()),
+            names(projectContext.getExtraTestClasses()));
+
     final ActualUsedClasses actualUsedClasses = new ActualUsedClasses(projectContext);
+    actualUsedClasses.registerClasses(classNames(classUsageGraph.getReachableClasses()));
 
-    /* ******************** bytecode analysis ********************* */
+    // Without tests there is nothing to tell apart from the main code.
+    final Set<ClassName> classesUsedByMain =
+        analyzeTests
+            ? classNames(classUsageGraph.getClassesReachableFromMain())
+            : actualUsedClasses.getRegisteredClasses();
 
-    // The call graph is kept in static fields, and in a Maven reactor build every module is
-    // analyzed by the same plugin classloader, so the graph of a previously analyzed module must
-    // be discarded before building the graph of this one. It cannot be cleared after the analysis
-    // instead, because the JSON writers read the graph once the analysis is done.
-    DefaultCallGraph.clear();
-
-    // analyze project's class files
-    projectContext
-        .getOutputFolders()
-        .forEach(folder -> actualUsedClasses.registerClasses(getProjectDependencyClasses(folder)));
-    // analyze project's tests class files
-    if (!projectContext.ignoreTests()) {
-      projectContext
-          .getTestOutputFolders()
-          .forEach(
-              folder -> actualUsedClasses.registerClasses(getProjectTestDependencyClasses(folder)));
-    }
-    // the set of compiled classes and tests in the project
-    Set<String> projectClasses = new HashSet<>(DefaultCallGraph.getProjectVertices());
-    log.debug("Project classes: {}", projectClasses);
-
-    // analyze dependencies' class files
-    actualUsedClasses.registerClasses(
-        getProjectDependencyClasses(projectContext.getDependenciesFolder()));
-    // analyze extra classes (collected through static analysis of source code)
-    actualUsedClasses.registerClasses(projectContext.getExtraClasses());
-
-    /* ******************** usage analysis ********************* */
-    actualUsedClasses.registerClasses(getReferencedClassMembers(projectClasses));
-
-    /* ******************** results as statically used at the bytecode *********************** */
-    return new ProjectDependencyAnalysisBuilder(projectContext, actualUsedClasses).analyse();
+    return new ProjectDependencyAnalysisBuilder(
+            projectContext, actualUsedClasses, classUsageGraph, classesUsedByMain)
+        .analyse();
   }
 
-  private Iterable<ClassName> getProjectDependencyClasses(Path outputFolder) {
-    // Analyze src classes in the project
-    try {
-      return collectDependencyClasses(outputFolder);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  private static Set<String> names(Set<ClassName> classes) {
+    return classes.stream().map(ClassName::getValue).collect(Collectors.toSet());
   }
 
-  private Iterable<ClassName> getProjectTestDependencyClasses(Path testOutputFolder) {
-    // Analyze test classes in the project
-    log.trace("# getProjectTestDependencyClasses()");
-    try {
-      return collectDependencyClasses(testOutputFolder);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private Iterable<ClassName> collectDependencyClasses(Path path) throws IOException {
-    return dependencyAnalyzer.analyze(path.toUri().toURL()).stream()
-        .map(ClassName::new)
-        .collect(Collectors.toSet());
-  }
-
-  private Iterable<ClassName> getReferencedClassMembers(Set<String> projectClasses) {
-    return DefaultCallGraph.referencedClassMembers(projectClasses).stream()
-        .map(ClassName::new)
-        .collect(Collectors.toSet());
+  private static Set<ClassName> classNames(Set<String> names) {
+    return names.stream().map(ClassName::new).collect(Collectors.toSet());
   }
 }
