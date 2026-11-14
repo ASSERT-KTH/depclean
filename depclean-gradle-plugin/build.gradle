@@ -3,7 +3,7 @@ plugins {
     id 'groovy'
     id 'jacoco'
     id 'java'
-    id 'com.gradle.plugin-publish' version '2.0.0'
+    id 'com.gradle.plugin-publish' version '2.2.1'
     id 'jvm-test-suite'
     id 'net.ltgt.errorprone' version '5.2.0'
 }
