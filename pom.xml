@@ -271,7 +271,7 @@
         <executions>
           <execution>
             <goals>
-              <goal>apply</goal>
+              <goal>check</goal>
             </goals>
           </execution>
         </executions>
@@ -317,7 +317,7 @@
     <developer>
       <id>cesarsotovalero</id>
       <name>César Soto Valero</name>
-      <email>cesarsotovlaero@gmail.com</email>
+      <email>cesarsotovalero@gmail.com</email>
       <organization>Castor Software Research Centre</organization>
       <organizationUrl>https://www.castor.kth.se/</organizationUrl>
     </developer>
