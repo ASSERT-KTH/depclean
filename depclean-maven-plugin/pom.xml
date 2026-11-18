@@ -27,11 +27,11 @@
     <itf-jupiter-extension.version>0.13.1</itf-jupiter-extension.version>
     <javax.inject.version>1</javax.inject.version>
     <maven-dependency-tree.version>3.3.0</maven-dependency-tree.version>
-    <plexus-utils.version>4.1.0</plexus-utils.version>
+    <plexus-utils.version>4.2.0</plexus-utils.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
     <maven-reporting-api.version>4.1.0</maven-reporting-api.version>
     <maven-reporting-impl.version>4.0.0</maven-reporting-impl.version>
-    <plexus-xml.version>4.2.0</plexus-xml.version>
+    <plexus-xml.version>4.2.1</plexus-xml.version>
 
     <!-- Plugins -->
     <maven-failsafe-plugin.version>3.6.1</maven-failsafe-plugin.version>
