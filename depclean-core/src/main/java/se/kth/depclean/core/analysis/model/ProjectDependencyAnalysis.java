@@ -21,15 +21,21 @@ package se.kth.depclean.core.analysis.model;
 
 import static java.util.stream.Collectors.toCollection;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayDeque;
 import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import se.kth.depclean.core.analysis.DependencyTypes;
@@ -56,6 +62,8 @@ public final class ProjectDependencyAnalysis {
   private final DependencyGraph dependencyGraph;
   private final ClassUsageGraph classUsageGraph;
   private final Set<Dependency> dependenciesUsedOnlyByTests;
+  private final Map<Dependency, DependencyUsage> dependencyUsages;
+  @Nullable private Map<Dependency, AggregatorUsage> aggregators;
 
   /** Creates a project dependency analysis result. */
   @SuppressWarnings(
@@ -131,7 +139,8 @@ public final class ProjectDependencyAnalysis {
         dependencyClassesMap,
         dependencyGraph,
         classUsageGraph,
-        ImmutableSet.of());
+        ImmutableSet.of(),
+        ImmutableMap.of());
   }
 
   @SuppressWarnings(
@@ -149,8 +158,10 @@ public final class ProjectDependencyAnalysis {
       Map<Dependency, DependencyTypes> dependencyClassesMap,
       DependencyGraph dependencyGraph,
       ClassUsageGraph classUsageGraph,
-      Set<Dependency> dependenciesUsedOnlyByTests) {
+      Set<Dependency> dependenciesUsedOnlyByTests,
+      Map<Dependency, DependencyUsage> dependencyUsages) {
     this.dependenciesUsedOnlyByTests = ImmutableSet.copyOf(dependenciesUsedOnlyByTests);
+    this.dependencyUsages = ImmutableMap.copyOf(dependencyUsages);
     this.classUsageGraph = classUsageGraph;
     this.usedDirectDependencies = ImmutableSet.copyOf(usedDirectDependencies);
     this.usedTransitiveDependencies = ImmutableSet.copyOf(usedTransitiveDependencies);
@@ -253,7 +264,104 @@ public final class ProjectDependencyAnalysis {
         dependencyClassesMap,
         dependencyGraph,
         classUsageGraph,
-        dependencies);
+        dependencies,
+        dependencyUsages);
+  }
+
+  /**
+   * Why each used dependency is used, as far as the analysis can tell. It is not part of the
+   * identity of the result.
+   *
+   * @return for every used dependency, the evidence found for it; empty if the analysis was not
+   *     created from bytecode
+   */
+  public Map<Dependency, DependencyUsage> getDependencyUsages() {
+    return dependencyUsages;
+  }
+
+  /**
+   * A copy of this analysis that also explains why the used dependencies are used.
+   *
+   * @param usages for every used dependency, the evidence found for it
+   * @return the new analysis
+   */
+  public ProjectDependencyAnalysis withDependencyUsages(Map<Dependency, DependencyUsage> usages) {
+    return new ProjectDependencyAnalysis(
+        usedDirectDependencies,
+        usedTransitiveDependencies,
+        usedInheritedDirectDependencies,
+        usedInheritedTransitiveDependencies,
+        unusedDirectDependencies,
+        unusedTransitiveDependencies,
+        unusedInheritedDirectDependencies,
+        unusedInheritedTransitiveDependencies,
+        ignoredDependencies,
+        dependencyClassesMap,
+        dependencyGraph,
+        classUsageGraph,
+        dependenciesUsedOnlyByTests,
+        usages);
+  }
+
+  /**
+   * The aggregators of the dependency tree: the dependencies without classes of their own that
+   * bring other dependencies, such as Spring Boot starters. Their own bytecode cannot be used, so
+   * they keep the classification of any other dependency (usually potentially unused); this tells
+   * how much of what they bring is used.
+   *
+   * <p>What an aggregator brings is read from the resolved dependency tree, in which a dependency
+   * that several aggregators bring is only listed under one of them.
+   *
+   * @return for every aggregator, how many of the dependencies with classes it brings are used
+   */
+  public Map<Dependency, AggregatorUsage> getAggregators() {
+    if (aggregators == null) {
+      // The nodes of the dependency tree can come without their file (in Maven, the tree is
+      // collected, not resolved): the classes are those of the resolved dependency they equal.
+      final Map<Dependency, Dependency> resolved = new HashMap<>();
+      dependencyGraph.allDependencies().forEach(dependency -> resolved.put(dependency, dependency));
+      final Predicate<Dependency> hasClasses =
+          dependency ->
+              resolved
+                  .getOrDefault(dependency, dependency)
+                  .getRelatedClasses()
+                  .iterator()
+                  .hasNext();
+      final Map<Dependency, AggregatorUsage> found = new HashMap<>();
+      for (Dependency dependency : dependencyGraph.allDependencies()) {
+        if (!hasClasses.test(dependency)) {
+          final Set<Dependency> brought = descendantsOf(dependency);
+          if (!brought.isEmpty()) {
+            final Set<Dependency> withClasses =
+                brought.stream().filter(hasClasses).collect(Collectors.toSet());
+            final long used = withClasses.stream().filter(this::isUsed).count();
+            found.put(dependency, new AggregatorUsage(withClasses.size(), (int) used));
+          }
+        }
+      }
+      aggregators = ImmutableMap.copyOf(found);
+    }
+    return aggregators;
+  }
+
+  private Set<Dependency> descendantsOf(Dependency dependency) {
+    final Set<Dependency> descendants = new HashSet<>();
+    final Deque<Dependency> pending =
+        new ArrayDeque<>(dependencyGraph.getDependenciesForParent(dependency));
+    while (!pending.isEmpty()) {
+      final Dependency current = pending.pop();
+      if (!current.equals(dependency) && descendants.add(current)) {
+        pending.addAll(dependencyGraph.getDependenciesForParent(current));
+      }
+    }
+    return descendants;
+  }
+
+  private boolean isUsed(Dependency dependency) {
+    return usedDirectDependencies.contains(dependency)
+        || usedTransitiveDependencies.contains(dependency)
+        || usedInheritedDirectDependencies.contains(dependency)
+        || usedInheritedTransitiveDependencies.contains(dependency);
   }
 
   public boolean hasUsedTransitiveDependencies() {
@@ -302,6 +410,7 @@ public final class ProjectDependencyAnalysis {
           "Used only by the tests, can be declared with the test scope",
           dependenciesUsedOnlyByTests);
     }
+    printDeclaredAggregators();
 
     if (!ignoredDependencies.isEmpty()) {
       printString(SEPARATOR);
@@ -339,7 +448,10 @@ public final class ProjectDependencyAnalysis {
         getType(dependency),
         dependency.getSize(),
         toValue(dependencyTypes.getAllTypes()),
-        toValue(dependencyTypes.getUsedTypes()));
+        toValue(dependencyTypes.getUsedTypes()),
+        dependencyUsages.get(dependency),
+        getAggregators().get(dependency),
+        dependenciesUsedOnlyByTests.contains(dependency));
   }
 
   /**
@@ -414,6 +526,30 @@ public final class ProjectDependencyAnalysis {
               || unusedTransitiveDependencies.contains(coordinates))
           ? "transitive"
           : "unknown";
+    }
+  }
+
+  /**
+   * Prints the declared aggregators with how much of what they bring is used. The nested ones are
+   * left out: what they bring is counted in the declared aggregator that brings them.
+   */
+  private void printDeclaredAggregators() {
+    final Map<Dependency, AggregatorUsage> declared =
+        new TreeMap<>(Comparator.comparing(Dependency::toString));
+    getAggregators()
+        .forEach((dependency, usage) -> {
+          if (dependencyGraph.directDependencies().contains(dependency)
+              || dependencyGraph.inheritedDirectDependencies().contains(dependency)) {
+            declared.put(dependency, usage);
+          }
+        });
+    if (!declared.isEmpty()) {
+      printString(SEPARATOR);
+      printString(
+          "AGGREGATORS, DECLARED DEPENDENCIES WITHOUT CLASSES OF THEIR OWN ["
+              + declared.size()
+              + "]: ");
+      declared.forEach((dependency, usage) -> printString("\t" + dependency + ": " + usage));
     }
   }
 

@@ -246,7 +246,10 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
 
   @Override
   public String getTreeAsJson(
-      ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv) {
+      ProjectDependencyAnalysis analysis,
+      File classUsageFile,
+      boolean createCallGraphCsv,
+      boolean includeTypeLists) {
     // Appends below the header that DepCleanManager writes when it (re)creates the file.
     try (Writer callGraphWriter =
         createCallGraphCsv
@@ -256,7 +259,8 @@ public class MavenDependencyManager implements DependencyManagerWrapper {
                 StandardOpenOption.CREATE,
                 StandardOpenOption.APPEND)
             : null) {
-      return new DependencyTreeJsonWriter(analysis, callGraphWriter).write(resolveRootNode());
+      return new DependencyTreeJsonWriter(analysis, callGraphWriter, includeTypeLists)
+          .write(resolveRootNode());
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }

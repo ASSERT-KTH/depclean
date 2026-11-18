@@ -114,8 +114,13 @@ public interface DependencyManagerWrapper {
    * @param analysis the depclean analysis result
    * @param classUsageFile the class usage file
    * @param createCallGraphCsv whether to write the call graph of usages down
+   * @param includeTypeLists whether to list the classes, and the used classes, of every dependency
+   *     instead of only counting them
    * @return the JSON tree
    */
   String getTreeAsJson(
-      ProjectDependencyAnalysis analysis, File classUsageFile, boolean createCallGraphCsv);
+      ProjectDependencyAnalysis analysis,
+      File classUsageFile,
+      boolean createCallGraphCsv,
+      boolean includeTypeLists);
 }

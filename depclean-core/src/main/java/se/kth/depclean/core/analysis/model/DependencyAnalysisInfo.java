@@ -13,6 +13,9 @@ public final class DependencyAnalysisInfo {
   private final Long size;
   private final SortedSet<String> allTypes;
   private final SortedSet<String> usedTypes;
+  @Nullable private final DependencyUsage usage;
+  @Nullable private final AggregatorUsage aggregator;
+  private final boolean usedOnlyByTests;
 
   /** Creates the analysis info for a dependency. */
   public DependencyAnalysisInfo(
@@ -21,11 +24,41 @@ public final class DependencyAnalysisInfo {
       Long size,
       SortedSet<String> allTypes,
       SortedSet<String> usedTypes) {
+    this(status, type, size, allTypes, usedTypes, null, null, false);
+  }
+
+  /**
+   * Creates the analysis info for a dependency.
+   *
+   * @param status used, bloated or unknown
+   * @param type direct, transitive, inherited or unknown
+   * @param size the size of the dependency file, in bytes
+   * @param allTypes the classes of the dependency
+   * @param usedTypes the classes of the dependency that the project uses
+   * @param usage why the dependency is used, null if it is not
+   * @param aggregator how much of what the dependency brings is used, null if it is not an
+   *     aggregator
+   * @param usedOnlyByTests whether the dependency is declared with a packaged scope although only
+   *     the tests use it
+   */
+  @SuppressWarnings("java:S107") // the parameters mirror the reported facts one-to-one
+  public DependencyAnalysisInfo(
+      String status,
+      String type,
+      Long size,
+      SortedSet<String> allTypes,
+      SortedSet<String> usedTypes,
+      @Nullable DependencyUsage usage,
+      @Nullable AggregatorUsage aggregator,
+      boolean usedOnlyByTests) {
     this.status = status;
     this.type = type;
     this.size = size;
     this.allTypes = allTypes;
     this.usedTypes = usedTypes;
+    this.usage = usage;
+    this.aggregator = aggregator;
+    this.usedOnlyByTests = usedOnlyByTests;
   }
 
   public String status() {
@@ -48,6 +81,23 @@ public final class DependencyAnalysisInfo {
     return usedTypes;
   }
 
+  /** Why the dependency is used, null if it is not used. */
+  @Nullable
+  public DependencyUsage usage() {
+    return usage;
+  }
+
+  /** How much of what the dependency brings is used, null if it is not an aggregator. */
+  @Nullable
+  public AggregatorUsage aggregator() {
+    return aggregator;
+  }
+
+  /** Whether the dependency is declared with a packaged scope although only the tests use it. */
+  public boolean usedOnlyByTests() {
+    return usedOnlyByTests;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
@@ -61,12 +111,16 @@ public final class DependencyAnalysisInfo {
         && Objects.equals(type, that.type)
         && Objects.equals(size, that.size)
         && Objects.equals(allTypes, that.allTypes)
-        && Objects.equals(usedTypes, that.usedTypes);
+        && Objects.equals(usedTypes, that.usedTypes)
+        && Objects.equals(usage, that.usage)
+        && Objects.equals(aggregator, that.aggregator)
+        && usedOnlyByTests == that.usedOnlyByTests;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(status, type, size, allTypes, usedTypes);
+    return Objects.hash(
+        status, type, size, allTypes, usedTypes, usage, aggregator, usedOnlyByTests);
   }
 
   @Override
@@ -81,6 +135,12 @@ public final class DependencyAnalysisInfo {
         + allTypes
         + ", usedTypes="
         + usedTypes
+        + ", usage="
+        + usage
+        + ", aggregator="
+        + aggregator
+        + ", usedOnlyByTests="
+        + usedOnlyByTests
         + "]";
   }
 }

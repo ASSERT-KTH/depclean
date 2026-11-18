@@ -77,6 +77,17 @@ public final class ClassUsageGraph {
   }
 
   /**
+   * The classes the main code starts from: its own classes, and the classes it uses without
+   * referencing them in the bytecode. The classes of the project that are not in this set are its
+   * tests.
+   *
+   * @return the fully qualified names of the entry points of the main code
+   */
+  public Set<String> getMainEntryPoints() {
+    return mainEntryPoints;
+  }
+
+  /**
    * The references between classes. Only classes that the project can reach are analyzed, so only
    * those have an entry. The implementations of a service count as references of the service type.
    *

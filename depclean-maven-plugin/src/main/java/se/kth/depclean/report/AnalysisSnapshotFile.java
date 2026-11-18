@@ -60,8 +60,9 @@ public final class AnalysisSnapshotFile {
   }
 
   /**
-   * Returns the stored snapshot if it can still be trusted: it exists, was produced with the same
-   * settings, and from the same POM and compiled classes (see {@link AnalysisInputs}).
+   * Returns the stored snapshot if it can still be trusted: it exists, has the current format, was
+   * produced with the same settings, and from the same POM and compiled classes (see {@link
+   * AnalysisInputs}).
    *
    * @param settings the settings the caller would analyze with
    * @param inputsFingerprint the fingerprint of the inputs the caller would analyze
@@ -73,6 +74,7 @@ public final class AnalysisSnapshotFile {
     }
     AnalysisSnapshot snapshot = read();
     if (snapshot == null
+        || snapshot.getFormatVersion() != AnalysisSnapshot.FORMAT_VERSION
         || !settings.equals(snapshot.getSettings())
         || !inputsFingerprint.equals(snapshot.getInputsFingerprint())) {
       return Optional.empty();

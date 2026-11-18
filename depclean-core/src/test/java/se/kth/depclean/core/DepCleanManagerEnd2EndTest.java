@@ -16,6 +16,7 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import se.kth.depclean.core.analysis.AnalysisFailureException;
+import se.kth.depclean.core.analysis.model.DependencyUsage;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.fake.depmanager.AllDependenciesUsedDependencyManager;
 import se.kth.depclean.core.fake.depmanager.EmptyProjectDependencyManager;
@@ -217,6 +218,13 @@ class DepCleanManagerEnd2EndTest {
     assertThat(analysis.getUnusedDirectDependencies()).isNotNull().isEmpty();
     assertThat(analysis.getUnusedInheritedDirectDependencies()).isNotNull().isEmpty();
     assertThat(analysis.getUnusedTransitiveDependencies()).isNotNull().hasSize(1);
+    // and the reason is kept: the classes named in the XML resources, nothing else
+    final Dependency usedDirect = analysis.getUsedDirectDependencies().iterator().next();
+    final DependencyUsage usage = analysis.getDependencyUsages().get(usedDirect);
+    assertThat(usage).isNotNull();
+    assertThat(usage.getXmlResourceClasses()).isNotEmpty();
+    assertThat(usage.getMainClasses()).isEmpty();
+    assertThat(usage.getDependencies()).isEmpty();
   }
 
   @Test
