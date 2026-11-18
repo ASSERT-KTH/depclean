@@ -322,18 +322,63 @@ public class DepCleanMojoIT {
             normalizedPom(new File("src/test/resources/DepCleanMojoResources/pom-debloated.xml")));
   }
 
+  @MavenTest
+  void debloated_pom_excludes_unused_transitive(MavenExecutionResult result)
+      throws IOException, XmlPullParserException {
+    log.trace(
+        "Test that pom-debloated.xml excludes the unused transitive dependencies of a used direct"
+            + " dependency (issue #589)");
+    File generatedPomDebloated =
+        new File(
+            "target/maven-it/se/kth/depclean/DepCleanMojoIT/debloated_pom_excludes_unused_transitive"
+                + "/project/pom-debloated.xml");
+    assertThatStdout(result)
+        .contains(
+            "USED DIRECT DEPENDENCIES [1]: ",
+            "\torg.apache.commons:commons-compress:1.28.0:compile (1 MB)",
+            "USED TRANSITIVE DEPENDENCIES [0]: ",
+            "POTENTIALLY UNUSED TRANSITIVE DEPENDENCIES [3]: ",
+            "[INFO] Starting debloating POM file...",
+            "[INFO] Excluding 3 unused transitive dependencies one-by-one.",
+            "[INFO] Adding org.apache.commons:commons-compress:1.28.0:compile",
+            "[INFO] Excluding commons-io:commons-io from org.apache.commons:commons-compress:1.28.0",
+            "[INFO] Excluding org.apache.commons:commons-lang3"
+                + " from org.apache.commons:commons-compress:1.28.0",
+            "[INFO] Excluding commons-codec:commons-codec"
+                + " from org.apache.commons:commons-compress:1.28.0",
+            "[INFO] POM debloated successfully");
+    // The exclusions come from a set, so their order in the pom is not specified.
+    assertThat(readPom(generatedPomDebloated).getDependencies())
+        .singleElement()
+        .satisfies(dependency -> {
+          assertThat(dependency.getGroupId()).isEqualTo("org.apache.commons");
+          assertThat(dependency.getArtifactId()).isEqualTo("commons-compress");
+          assertThat(dependency.getVersion()).isEqualTo("1.28.0");
+          assertThat(dependency.getScope()).isEqualTo("compile");
+          assertThat(dependency.getExclusions())
+              .extracting(exclusion -> exclusion.getGroupId() + ":" + exclusion.getArtifactId())
+              .containsExactlyInAnyOrder(
+                  "commons-io:commons-io",
+                  "org.apache.commons:commons-lang3",
+                  "commons-codec:commons-codec");
+        });
+  }
+
+  private static Model readPom(File pom) throws IOException, XmlPullParserException {
+    try (InputStream in = Files.newInputStream(pom.toPath())) {
+      return new MavenXpp3Reader().read(in);
+    }
+  }
+
   /**
    * Re-serializes a pom with the model writer on the test classpath. Maven 3 and Maven 4 format the
    * written pom differently (attribute order, property order), so the raw text cannot be compared
    * across the Maven versions the ITs run on, whereas the model content can.
    */
   private static String normalizedPom(File pom) throws IOException, XmlPullParserException {
-    try (InputStream in = Files.newInputStream(pom.toPath())) {
-      Model model = new MavenXpp3Reader().read(in);
-      StringWriter out = new StringWriter();
-      new MavenXpp3Writer().write(out, model);
-      return out.toString();
-    }
+    StringWriter out = new StringWriter();
+    new MavenXpp3Writer().write(out, readPom(pom));
+    return out.toString();
   }
 
   @MavenTest
