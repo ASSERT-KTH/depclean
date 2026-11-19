@@ -54,6 +54,44 @@ class AnalysisSnapshotFileTest {
         .extracting(AnalysisSnapshot.Entry::getScope)
         .containsExactly((String) null);
     assertThat(snapshot.getIgnored()).isEmpty();
+    assertThat(snapshot.getFormatVersion()).isEqualTo(AnalysisSnapshot.FORMAT_VERSION);
+  }
+
+  @Test
+  void roundTripPreservesWhyDependenciesAreUsedAggregatorsAndTestOnlyDependencies()
+      throws IOException {
+    snapshotFile.write(snapshot(settings));
+    AnalysisSnapshot snapshot = snapshotFile.readIfFresh(settings, FINGERPRINT).orElseThrow();
+
+    AnalysisSnapshot.Usage usage = snapshot.getUsedDirect().get(0).getUsage();
+    assertThat(usage).isNotNull();
+    assertThat(usage.getMainClasses()).containsExactly("org.foo.App");
+    assertThat(usage.getTestClasses()).containsExactly("org.foo.AppTest");
+    assertThat(usage.getServices()).isEmpty();
+    assertThat(usage.isIgnored()).isFalse();
+    AnalysisSnapshot.Aggregator aggregator = snapshot.getUnusedDirect().get(0).getAggregator();
+    assertThat(aggregator).isNotNull();
+    assertThat(aggregator.getDependencies()).isEqualTo(24);
+    assertThat(aggregator.getUsedDependencies()).isEqualTo(21);
+    assertThat(snapshot.getUsedOnlyByTests())
+        .extracting(AnalysisSnapshot.Entry::coordinate)
+        .containsExactly("commons-io:commons-io:2.22.0");
+  }
+
+  @Test
+  void isNotReusableWhenWrittenWithAnotherFormat() throws IOException {
+    // what an older plugin wrote: everything matches, but there is no format version
+    Files.write(
+        snapshotFile.getPath(),
+        ("{\"settings\":{\"ignoreTests\":false,\"ignoreScopes\":[],\"ignoreDependencies\":[]},"
+                + "\"inputsFingerprint\":\""
+                + FINGERPRINT
+                + "\"}")
+            .getBytes(StandardCharsets.UTF_8));
+
+    AnalysisSnapshot.Settings plain =
+        new AnalysisSnapshot.Settings(false, Collections.emptySet(), Collections.emptySet());
+    assertThat(snapshotFile.readIfFresh(plain, FINGERPRINT)).isEmpty();
   }
 
   @Test
@@ -105,7 +143,28 @@ class AnalysisSnapshotFileTest {
             "compile",
             608_000L,
             300,
-            Arrays.asList("org.apache.commons.io.IOUtils", "org.apache.commons.io.FileUtils"));
+            Arrays.asList("org.apache.commons.io.IOUtils", "org.apache.commons.io.FileUtils"),
+            new AnalysisSnapshot.Usage(
+                Collections.singletonList("org.foo.App"),
+                Collections.singletonList("org.foo.AppTest"),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                false),
+            null);
+    AnalysisSnapshot.Entry starter =
+        new AnalysisSnapshot.Entry(
+            "org.springframework.boot",
+            "spring-boot-starter-web",
+            "3.3.13",
+            "compile",
+            4_000L,
+            0,
+            Collections.emptyList(),
+            null,
+            new AnalysisSnapshot.Aggregator(24, 21));
     AnalysisSnapshot.Entry unused =
         new AnalysisSnapshot.Entry(
             "commons-codec",
@@ -122,10 +181,11 @@ class AnalysisSnapshotFileTest {
         Collections.emptyList(),
         Collections.emptyList(),
         Collections.emptyList(),
-        Collections.emptyList(),
+        Collections.singletonList(starter),
         Collections.singletonList(unused),
         Collections.emptyList(),
         Collections.emptyList(),
-        Collections.emptyList());
+        Collections.emptyList(),
+        Collections.singletonList(used));
   }
 }

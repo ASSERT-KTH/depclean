@@ -28,6 +28,8 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import se.kth.depclean.core.analysis.DependencyTypes;
+import se.kth.depclean.core.analysis.model.AggregatorUsage;
+import se.kth.depclean.core.analysis.model.DependencyUsage;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
@@ -40,6 +42,14 @@ import se.kth.depclean.core.model.Dependency;
 @SuppressWarnings("java:S6206") // records are Java 16+, the plugin is built with --release 8
 public final class AnalysisSnapshot {
 
+  /**
+   * The version of the file format. A snapshot written with another version, e.g. by an older
+   * plugin, misses information and is not reused.
+   */
+  public static final int FORMAT_VERSION = 2;
+
+  // Assigned in the constructor, not inline, so that it is read from the file and not inlined
+  private final int formatVersion;
   private final Settings settings;
   private final String inputsFingerprint;
   private final List<Entry> usedDirect;
@@ -51,6 +61,7 @@ public final class AnalysisSnapshot {
   private final List<Entry> unusedInheritedDirect;
   private final List<Entry> unusedInheritedTransitive;
   private final List<Entry> ignored;
+  private final List<Entry> usedOnlyByTests;
 
   /**
    * Creates a snapshot from already categorized entries.
@@ -70,6 +81,43 @@ public final class AnalysisSnapshot {
       List<Entry> unusedInheritedDirect,
       List<Entry> unusedInheritedTransitive,
       List<Entry> ignored) {
+    this(
+        settings,
+        inputsFingerprint,
+        usedDirect,
+        usedTransitive,
+        usedInheritedDirect,
+        usedInheritedTransitive,
+        unusedDirect,
+        unusedTransitive,
+        unusedInheritedDirect,
+        unusedInheritedTransitive,
+        ignored,
+        Collections.emptyList());
+  }
+
+  /**
+   * Creates a snapshot from already categorized entries.
+   *
+   * @param inputsFingerprint the {@link AnalysisInputs#fingerprint} of what was analysed
+   * @param usedOnlyByTests the declared dependencies with a packaged scope that only the tests use;
+   *     they are also in one of the used categories
+   */
+  @SuppressWarnings("java:S107") // the parameters mirror the analysis categories one-to-one
+  public AnalysisSnapshot(
+      Settings settings,
+      String inputsFingerprint,
+      List<Entry> usedDirect,
+      List<Entry> usedTransitive,
+      List<Entry> usedInheritedDirect,
+      List<Entry> usedInheritedTransitive,
+      List<Entry> unusedDirect,
+      List<Entry> unusedTransitive,
+      List<Entry> unusedInheritedDirect,
+      List<Entry> unusedInheritedTransitive,
+      List<Entry> ignored,
+      List<Entry> usedOnlyByTests) {
+    this.formatVersion = FORMAT_VERSION;
     this.settings = settings;
     this.inputsFingerprint = inputsFingerprint;
     this.usedDirect = sorted(usedDirect);
@@ -81,6 +129,7 @@ public final class AnalysisSnapshot {
     this.unusedInheritedDirect = sorted(unusedInheritedDirect);
     this.unusedInheritedTransitive = sorted(unusedInheritedTransitive);
     this.ignored = sorted(ignored);
+    this.usedOnlyByTests = sorted(usedOnlyByTests);
   }
 
   /**
@@ -100,7 +149,8 @@ public final class AnalysisSnapshot {
         entries(analysis, analysis.getUnusedTransitiveDependencies()),
         entries(analysis, analysis.getUnusedInheritedDirectDependencies()),
         entries(analysis, analysis.getUnusedInheritedTransitiveDependencies()),
-        entries(analysis, analysis.getIgnoredDependencies()));
+        entries(analysis, analysis.getIgnoredDependencies()),
+        entries(analysis, analysis.getDependenciesUsedOnlyByTests()));
   }
 
   @SuppressWarnings("java:S6204") // Stream.toList() is Java 16+, the plugin targets Java 8
@@ -108,7 +158,11 @@ public final class AnalysisSnapshot {
       ProjectDependencyAnalysis analysis, Collection<Dependency> dependencies) {
     return dependencies.stream()
         .map(dependency ->
-            Entry.from(dependency, analysis.getDependencyClassesMap().get(dependency)))
+            Entry.from(
+                dependency,
+                analysis.getDependencyClassesMap().get(dependency),
+                analysis.getDependencyUsages().get(dependency),
+                analysis.getAggregators().get(dependency)))
         .collect(Collectors.toList());
   }
 
@@ -116,6 +170,16 @@ public final class AnalysisSnapshot {
     List<Entry> copy = new ArrayList<>(entries);
     copy.sort(Comparator.comparing(Entry::coordinate));
     return Collections.unmodifiableList(copy);
+  }
+
+  /**
+   * The version of the format the snapshot was written with.
+   *
+   * @return {@link #FORMAT_VERSION} for a snapshot created by this plugin, 0 for one read from a
+   *     file written before the format had a version
+   */
+  public int getFormatVersion() {
+    return formatVersion;
   }
 
   public Settings getSettings() {
@@ -160,6 +224,14 @@ public final class AnalysisSnapshot {
 
   public List<Entry> getIgnored() {
     return ignored;
+  }
+
+  /**
+   * The declared dependencies with a packaged scope (compile, runtime) that only the tests use:
+   * they can be declared with the test scope.
+   */
+  public List<Entry> getUsedOnlyByTests() {
+    return usedOnlyByTests;
   }
 
   /** The analysis settings that influence the result; a snapshot is only reusable if they match. */
@@ -223,8 +295,10 @@ public final class AnalysisSnapshot {
     private final long sizeBytes;
     private final int totalClasses;
     private final List<String> usedClasses;
+    @Nullable private final Usage usage;
+    @Nullable private final Aggregator aggregator;
 
-    /** Creates an entry. */
+    /** Creates an entry for a dependency that is neither explained nor an aggregator. */
     public Entry(
         String groupId,
         String artifactId,
@@ -233,6 +307,29 @@ public final class AnalysisSnapshot {
         long sizeBytes,
         int totalClasses,
         Collection<String> usedClasses) {
+      this(groupId, artifactId, version, scope, sizeBytes, totalClasses, usedClasses, null, null);
+    }
+
+    /**
+     * Creates an entry.
+     *
+     * @param usage why the dependency is used, null if it is not
+     * @param aggregator how much of what the dependency brings is used, null if it is not an
+     *     aggregator
+     */
+    @SuppressWarnings("java:S107") // the parameters mirror the reported facts one-to-one
+    public Entry(
+        String groupId,
+        String artifactId,
+        String version,
+        @Nullable String scope,
+        long sizeBytes,
+        int totalClasses,
+        Collection<String> usedClasses,
+        @Nullable Usage usage,
+        @Nullable Aggregator aggregator) {
+      this.usage = usage;
+      this.aggregator = aggregator;
       this.groupId = groupId;
       this.artifactId = artifactId;
       this.version = version;
@@ -243,7 +340,11 @@ public final class AnalysisSnapshot {
     }
 
     @SuppressWarnings("java:S6204") // Stream.toList() is Java 16+, the plugin targets Java 8
-    static Entry from(Dependency dependency, @Nullable DependencyTypes types) {
+    static Entry from(
+        Dependency dependency,
+        @Nullable DependencyTypes types,
+        @Nullable DependencyUsage usage,
+        @Nullable AggregatorUsage aggregator) {
       int totalClasses = 0;
       for (ClassName ignored : dependency.getRelatedClasses()) {
         totalClasses++;
@@ -259,7 +360,11 @@ public final class AnalysisSnapshot {
           dependency.getScope(),
           dependency.getSize(),
           totalClasses,
-          usedClasses);
+          usedClasses,
+          usage == null ? null : Usage.from(usage),
+          aggregator == null
+              ? null
+              : new Aggregator(aggregator.getDependencies(), aggregator.getUsedDependencies()));
     }
 
     public String getGroupId() {
@@ -291,9 +396,128 @@ public final class AnalysisSnapshot {
       return usedClasses;
     }
 
+    /** Why the dependency is used, null if it is not. */
+    @Nullable
+    public Usage getUsage() {
+      return usage;
+    }
+
+    /** How much of what the dependency brings is used, null if it is not an aggregator. */
+    @Nullable
+    public Aggregator getAggregator() {
+      return aggregator;
+    }
+
     /** The {@code groupId:artifactId:version} coordinate. */
     public String coordinate() {
       return groupId + ":" + artifactId + ":" + version;
+    }
+  }
+
+  /** Why a dependency is used; see {@link DependencyUsage} for the meaning of each list. */
+  @SuppressWarnings("java:S6206") // records are Java 16+, the plugin is built with --release 8
+  public static final class Usage {
+
+    private final List<String> mainClasses;
+    private final List<String> testClasses;
+    private final List<String> dependencies;
+    private final List<String> services;
+    private final List<String> xmlResources;
+    private final List<String> imports;
+    private final List<String> annotationProcessors;
+    private final boolean ignored;
+
+    /** Creates the usage of a dependency; the lists are copied and sorted. */
+    @SuppressWarnings("java:S107") // the parameters mirror the kinds of evidence one-to-one
+    public Usage(
+        Collection<String> mainClasses,
+        Collection<String> testClasses,
+        Collection<String> dependencies,
+        Collection<String> services,
+        Collection<String> xmlResources,
+        Collection<String> imports,
+        Collection<String> annotationProcessors,
+        boolean ignored) {
+      this.mainClasses = sortedCopy(mainClasses);
+      this.testClasses = sortedCopy(testClasses);
+      this.dependencies = sortedCopy(dependencies);
+      this.services = sortedCopy(services);
+      this.xmlResources = sortedCopy(xmlResources);
+      this.imports = sortedCopy(imports);
+      this.annotationProcessors = sortedCopy(annotationProcessors);
+      this.ignored = ignored;
+    }
+
+    static Usage from(DependencyUsage usage) {
+      return new Usage(
+          usage.getMainClasses(),
+          usage.getTestClasses(),
+          usage.getDependencies(),
+          usage.getServices(),
+          usage.getXmlResourceClasses(),
+          usage.getImportedClasses(),
+          usage.getAnnotationProcessors(),
+          usage.isIgnored());
+    }
+
+    private static List<String> sortedCopy(Collection<String> values) {
+      return Collections.unmodifiableList(new ArrayList<>(new TreeSet<>(values)));
+    }
+
+    public List<String> getMainClasses() {
+      return mainClasses;
+    }
+
+    public List<String> getTestClasses() {
+      return testClasses;
+    }
+
+    public List<String> getDependencies() {
+      return dependencies;
+    }
+
+    public List<String> getServices() {
+      return services;
+    }
+
+    public List<String> getXmlResources() {
+      return xmlResources;
+    }
+
+    public List<String> getImports() {
+      return imports;
+    }
+
+    public List<String> getAnnotationProcessors() {
+      return annotationProcessors;
+    }
+
+    public boolean isIgnored() {
+      return ignored;
+    }
+  }
+
+  /** How much of what an aggregator brings is used; see {@link AggregatorUsage}. */
+  @SuppressWarnings("java:S6206") // records are Java 16+, the plugin is built with --release 8
+  public static final class Aggregator {
+
+    private final int dependencies;
+    private final int usedDependencies;
+
+    /** Creates the usage of an aggregator. */
+    public Aggregator(int dependencies, int usedDependencies) {
+      this.dependencies = dependencies;
+      this.usedDependencies = usedDependencies;
+    }
+
+    /** The dependencies with classes that the aggregator brings. */
+    public int getDependencies() {
+      return dependencies;
+    }
+
+    /** How many of the dependencies the aggregator brings are used. */
+    public int getUsedDependencies() {
+      return usedDependencies;
     }
   }
 }

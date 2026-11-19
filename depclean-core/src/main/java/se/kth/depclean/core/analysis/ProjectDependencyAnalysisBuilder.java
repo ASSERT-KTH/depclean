@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.kth.depclean.core.analysis.graph.ClassUsageGraph;
+import se.kth.depclean.core.analysis.model.DependencyUsage;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
@@ -118,6 +119,14 @@ public class ProjectDependencyAnalysisBuilder {
     // computed before the ignored dependencies and scopes are moved to the used sets
     final Set<Dependency> dependenciesUsedOnlyByTests = getDependenciesUsedOnlyByTests();
 
+    final Set<Dependency> allUsedDependencies = newHashSet(usedDirectDependencies);
+    allUsedDependencies.addAll(usedTransitiveDependencies);
+    allUsedDependencies.addAll(usedInheritedDirectDependencies);
+    allUsedDependencies.addAll(usedInheritedTransitiveDependencies);
+    final Map<Dependency, DependencyUsage> dependencyUsages =
+        DependencyUsageExplainer.explain(
+            context, classUsageGraph, allUsedDependencies, getDependenciesIgnoredByTheUser());
+
     return new ProjectDependencyAnalysis(
             usedDirectDependencies,
             usedTransitiveDependencies,
@@ -131,7 +140,19 @@ public class ProjectDependencyAnalysisBuilder {
             dependencyClassesMap,
             context.getDependencyGraph(),
             classUsageGraph)
-        .withDependenciesUsedOnlyByTests(dependenciesUsedOnlyByTests);
+        .withDependenciesUsedOnlyByTests(dependenciesUsedOnlyByTests)
+        .withDependencyUsages(dependencyUsages);
+  }
+
+  /** The dependencies the user asked to consider used, by their coordinates or their scope. */
+  private Set<Dependency> getDependenciesIgnoredByTheUser() {
+    final Set<String> ignoredScopes =
+        context.getIgnoredScopes().stream().map(Scope::value).collect(Collectors.toSet());
+    final Set<Dependency> ignored = newHashSet(context.getIgnoredDependencies());
+    context.getDependencyGraph().allDependencies().stream()
+        .filter(dependency -> ignoredScopes.contains(dependency.getScope()))
+        .forEach(ignored::add);
+    return ignored;
   }
 
   /**

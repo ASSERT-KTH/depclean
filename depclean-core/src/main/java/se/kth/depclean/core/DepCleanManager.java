@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -20,6 +23,7 @@ import se.kth.depclean.core.analysis.src.ImportsAnalyzer;
 import se.kth.depclean.core.analysis.src.XmlClassesAnalyzer;
 import se.kth.depclean.core.model.ClassName;
 import se.kth.depclean.core.model.Dependency;
+import se.kth.depclean.core.model.ExtraClassSource;
 import se.kth.depclean.core.model.ProjectContext;
 import se.kth.depclean.core.model.Scope;
 import se.kth.depclean.core.wrapper.DependencyManagerWrapper;
@@ -42,8 +46,9 @@ public class DepCleanManager {
   private final boolean createPomDebloated;
   private final boolean createResultJson;
   private final boolean createCallGraphCsv;
+  private final boolean includeTypeLists;
 
-  /** Creates the DepClean manager. */
+  /** Creates the DepClean manager, whose JSON result counts the classes of each dependency. */
   @SuppressWarnings(
       "java:S107") // the parameters mirror the reported analysis dimensions one-to-one
   public DepCleanManager(
@@ -59,6 +64,44 @@ public class DepCleanManager {
       boolean createPomDebloated,
       boolean createResultJson,
       boolean createCallGraphCsv) {
+    this(
+        dependencyManager,
+        skipDepClean,
+        ignoreTests,
+        ignoreScopes,
+        ignoreDependencies,
+        failIfUnusedDirect,
+        failIfUnusedTransitive,
+        failIfUnusedInheritedDirect,
+        failIfUnusedInheritedTransitive,
+        createPomDebloated,
+        createResultJson,
+        createCallGraphCsv,
+        false);
+  }
+
+  /**
+   * Creates the DepClean manager.
+   *
+   * @param includeTypeLists whether the JSON result lists the classes, and the used classes, of
+   *     every dependency instead of only counting them
+   */
+  @SuppressWarnings(
+      "java:S107") // the parameters mirror the reported analysis dimensions one-to-one
+  public DepCleanManager(
+      DependencyManagerWrapper dependencyManager,
+      boolean skipDepClean,
+      boolean ignoreTests,
+      Set<String> ignoreScopes,
+      Set<String> ignoreDependencies,
+      boolean failIfUnusedDirect,
+      boolean failIfUnusedTransitive,
+      boolean failIfUnusedInheritedDirect,
+      boolean failIfUnusedInheritedTransitive,
+      boolean createPomDebloated,
+      boolean createResultJson,
+      boolean createCallGraphCsv,
+      boolean includeTypeLists) {
     this.dependencyManager = dependencyManager;
     this.skipDepClean = skipDepClean;
     this.ignoreTests = ignoreTests;
@@ -72,6 +115,7 @@ public class DepCleanManager {
     this.createPomDebloated = createPomDebloated;
     this.createResultJson = createResultJson;
     this.createCallGraphCsv = createCallGraphCsv;
+    this.includeTypeLists = includeTypeLists;
   }
 
   /** Execute the depClean manager. */
@@ -160,7 +204,8 @@ public class DepCleanManager {
         getLog().error("Error writing the CSV header.");
       }
     }
-    String treeAsJson = dependencyManager.getTreeAsJson(analysis, csvFile, createCallGraphCsv);
+    String treeAsJson =
+        dependencyManager.getTreeAsJson(analysis, csvFile, createCallGraphCsv, includeTypeLists);
 
     try {
       FileUtils.write(jsonFile, treeAsJson, StandardCharsets.UTF_8);
@@ -186,19 +231,40 @@ public class DepCleanManager {
     // processors of the build, the imports of the sources (which also cover what the compiler
     // inlines or erases, such as constants and source-retention annotations) and the classes
     // named in XML resources (e.g. Spring XML configurations, web.xml, persistence.xml)
+    // Where each of them was found is kept to explain why the dependencies are used
+    final Map<ClassName, Set<ExtraClassSource>> extraClassSources = new HashMap<>();
     final Set<ClassName> extraClasses = new HashSet<>();
-    dependencyManager.collectUsedClassesFromProcessors().stream()
-        .map(ClassName::new)
-        .forEach(extraClasses::add);
-    extraClasses.addAll(importedClasses(dependencyManager.getSourceDirectory()));
-    extraClasses.addAll(xmlReferencedClasses(dependencyManager.getResourcesDirectories()));
+    addExtraClasses(
+        dependencyManager.collectUsedClassesFromProcessors().stream()
+            .map(ClassName::new)
+            .collect(Collectors.toSet()),
+        ExtraClassSource.ANNOTATION_PROCESSOR,
+        extraClasses,
+        extraClassSources);
+    addExtraClasses(
+        importedClasses(dependencyManager.getSourceDirectory()),
+        ExtraClassSource.IMPORT,
+        extraClasses,
+        extraClassSources);
+    addExtraClasses(
+        xmlReferencedClasses(dependencyManager.getResourcesDirectories()),
+        ExtraClassSource.XML_RESOURCE,
+        extraClasses,
+        extraClassSources);
 
     // The same for the tests
-    final Set<ClassName> extraTestClasses =
-        new HashSet<>(importedClasses(dependencyManager.getTestDirectory()));
+    final Set<ClassName> extraTestClasses = new HashSet<>();
+    addExtraClasses(
+        importedClasses(dependencyManager.getTestDirectory()),
+        ExtraClassSource.IMPORT,
+        extraTestClasses,
+        extraClassSources);
     if (!ignoreTests) {
-      extraTestClasses.addAll(
-          xmlReferencedClasses(dependencyManager.getTestResourcesDirectories()));
+      addExtraClasses(
+          xmlReferencedClasses(dependencyManager.getTestResourcesDirectories()),
+          ExtraClassSource.XML_RESOURCE,
+          extraTestClasses,
+          extraClassSources);
     }
 
     return new ProjectContext(
@@ -211,7 +277,21 @@ public class DepCleanManager {
             .flatMap(Set::stream)
             .collect(Collectors.toSet()),
         extraClasses,
-        extraTestClasses);
+        extraTestClasses,
+        extraClassSources);
+  }
+
+  private static void addExtraClasses(
+      Set<ClassName> found,
+      ExtraClassSource source,
+      Set<ClassName> extraClasses,
+      Map<ClassName, Set<ExtraClassSource>> extraClassSources) {
+    extraClasses.addAll(found);
+    for (ClassName className : found) {
+      extraClassSources
+          .computeIfAbsent(className, k -> EnumSet.noneOf(ExtraClassSource.class))
+          .add(source);
+    }
   }
 
   private static Set<ClassName> importedClasses(Path sourceDirectory) {

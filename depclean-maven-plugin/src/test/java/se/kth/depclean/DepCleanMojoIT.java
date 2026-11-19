@@ -2,6 +2,9 @@ package se.kth.depclean;
 
 import static com.soebes.itf.extension.assertj.MavenITAssertions.assertThat;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.soebes.itf.jupiter.extension.MavenJupiterExtension;
 import com.soebes.itf.jupiter.extension.MavenTest;
 import com.soebes.itf.jupiter.maven.MavenExecutionResult;
@@ -12,6 +15,7 @@ import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Model;
@@ -286,6 +290,99 @@ public class DepCleanMojoIT {
     assertThat(result).isSuccessful();
     String actualJsonContent = FileUtils.readFileToString(actualJsonFile, StandardCharsets.UTF_8);
     Assertions.assertEquals(normalize(expectedJsonContent), normalize(actualJsonContent));
+  }
+
+  @MavenTest
+  void test_only_and_aggregator_reported(MavenExecutionResult result) throws IOException {
+    log.trace(
+        "Test that DepClean reports the dependencies only the tests use, the aggregators, and why"
+            + " each dependency is used (issue #586)");
+    assertThatStdout(result)
+        .contains(
+            "USED DIRECT DEPENDENCIES [1]: ",
+            "\tcommons-io:commons-io:2.22.0:compile (594 KB)",
+            // junit-jupiter has no classes of its own: it keeps its classification...
+            "POTENTIALLY UNUSED DIRECT DEPENDENCIES [1]: ",
+            "USED ONLY BY THE TESTS, CAN BE DECLARED WITH THE TEST SCOPE [1]: ",
+            // ...and is reported as an aggregator, with how much of what it brings is used
+            "AGGREGATORS, DECLARED DEPENDENCIES WITHOUT CLASSES OF THEIR OWN [1]: ",
+            "\torg.junit.jupiter:junit-jupiter:6.0.3:test: 7 of 8 dependencies it brings are used");
+
+    JsonObject root =
+        JsonParser.parseString(
+                FileUtils.readFileToString(
+                    new File(
+                        "target/maven-it/se/kth/depclean/DepCleanMojoIT"
+                            + "/test_only_and_aggregator_reported/project/target"
+                            + "/depclean-results.json"),
+                    StandardCharsets.UTF_8))
+            .getAsJsonObject();
+
+    JsonObject commonsIo = node(root, "commons-io");
+    // the classes are counted, not listed
+    assertThat(commonsIo.has("allTypes")).isFalse();
+    assertThat(commonsIo.has("usedTypes")).isFalse();
+    assertThat(commonsIo.get("typeCount").getAsInt()).isPositive();
+    assertThat(commonsIo.get("usedOnlyByTests").getAsBoolean()).isTrue();
+    assertThat(strings(commonsIo.getAsJsonObject("usage"), "testClasses"))
+        .containsExactly("MainTest");
+    assertThat(strings(commonsIo.getAsJsonObject("usage"), "mainClasses")).isEmpty();
+
+    JsonObject junitJupiter = node(root, "junit-jupiter");
+    assertThat(junitJupiter.get("status").getAsString()).isEqualTo("bloated");
+    assertThat(junitJupiter.getAsJsonObject("aggregator").get("dependencies").getAsInt())
+        .isEqualTo(8);
+    // all but junit-jupiter-params
+    assertThat(junitJupiter.getAsJsonObject("aggregator").get("usedDependencies").getAsInt())
+        .isEqualTo(7);
+
+    // the API is referenced by the test, the engine is the provider of a service
+    assertThat(strings(node(root, "junit-jupiter-api").getAsJsonObject("usage"), "testClasses"))
+        .containsExactly("MainTest");
+    assertThat(strings(node(root, "junit-jupiter-engine").getAsJsonObject("usage"), "services"))
+        .containsExactly("org.junit.platform.engine.TestEngine");
+  }
+
+  @MavenTest
+  void json_with_type_lists(MavenExecutionResult result) throws IOException {
+    log.trace("Test that includeTypeLists lists the classes in depclean-results.json (issue #586)");
+    assertThat(result).isSuccessful();
+    JsonObject commonsIo =
+        node(
+            JsonParser.parseString(
+                    FileUtils.readFileToString(
+                        new File(
+                            "target/maven-it/se/kth/depclean/DepCleanMojoIT/json_with_type_lists"
+                                + "/project/target/depclean-results.json"),
+                        StandardCharsets.UTF_8))
+                .getAsJsonObject(),
+            "commons-io");
+
+    assertThat(commonsIo.getAsJsonArray("allTypes")).hasSize(commonsIo.get("typeCount").getAsInt());
+    assertThat(strings(commonsIo, "usedTypes"))
+        .hasSize(commonsIo.get("usedTypeCount").getAsInt())
+        .contains("org.apache.commons.io.IOUtils");
+  }
+
+  /** The first node of the JSON tree, depth first, with the given artifactId. */
+  private static JsonObject node(JsonObject tree, String artifactId) {
+    if (artifactId.equals(tree.get("artifactId").getAsString())) {
+      return tree;
+    }
+    for (JsonElement child : tree.getAsJsonArray("children")) {
+      try {
+        return node(child.getAsJsonObject(), artifactId);
+      } catch (IllegalArgumentException notThere) {
+        // keep looking in the next child
+      }
+    }
+    throw new IllegalArgumentException(artifactId + " is not in the tree");
+  }
+
+  private static List<String> strings(JsonObject object, String name) {
+    List<String> values = new ArrayList<>();
+    object.getAsJsonArray(name).forEach(value -> values.add(value.getAsString()));
+    return values;
   }
 
   /**

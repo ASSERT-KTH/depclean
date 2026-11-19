@@ -13,7 +13,9 @@ import java.util.TreeSet;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.jspecify.annotations.Nullable;
+import se.kth.depclean.core.analysis.model.AggregatorUsage;
 import se.kth.depclean.core.analysis.model.DependencyAnalysisInfo;
+import se.kth.depclean.core.analysis.model.DependencyUsage;
 import se.kth.depclean.core.analysis.model.ProjectDependencyAnalysis;
 
 /**
@@ -25,6 +27,7 @@ public final class DependencyTreeJsonWriter {
 
   private final ProjectDependencyAnalysis analysis;
   @Nullable private final Writer callGraphWriter;
+  private final boolean includeTypeLists;
   private final Set<String> callGraphDependenciesWritten = new HashSet<>();
   @Nullable private Map<String, Set<String>> originsByTarget;
 
@@ -37,8 +40,26 @@ public final class DependencyTreeJsonWriter {
    */
   public DependencyTreeJsonWriter(
       ProjectDependencyAnalysis analysis, @Nullable Writer callGraphWriter) {
+    this(analysis, callGraphWriter, false);
+  }
+
+  /**
+   * Creates a writer.
+   *
+   * @param analysis the results of the analysis
+   * @param callGraphWriter where the edges of the class usage graph are appended as CSV lines
+   *     ({@code OriginClass,TargetClass,TargetDependency}), or null to not write them
+   * @param includeTypeLists whether to list the classes ({@code allTypes}) and the used classes
+   *     ({@code usedTypes}) of every dependency; they are always counted, but listing them makes
+   *     the file several megabytes big on a typical project
+   */
+  public DependencyTreeJsonWriter(
+      ProjectDependencyAnalysis analysis,
+      @Nullable Writer callGraphWriter,
+      boolean includeTypeLists) {
     this.analysis = analysis;
     this.callGraphWriter = callGraphWriter;
+    this.includeTypeLists = includeTypeLists;
   }
 
   /**
@@ -99,26 +120,62 @@ public final class DependencyTreeJsonWriter {
         .value(info.status())
         .name("parent")
         .value(parent == null ? "unknown" : parentForm(parent.getArtifact()));
-    json.name("allTypes").beginArray();
-    for (String type : info.allTypes()) {
-      json.value(type);
-    }
-    json.endArray();
-    json.name("usedTypes").beginArray();
-    for (String type : info.usedTypes()) {
-      json.value(type);
-    }
-    json.endArray();
-    json.name("usageRatio")
+    json.name("typeCount")
+        .value(info.allTypes().size())
+        .name("usedTypeCount")
+        .value(info.usedTypes().size())
+        .name("usageRatio")
         .value(
             info.allTypes().isEmpty()
                 ? 0.0
                 : (double) info.usedTypes().size() / info.allTypes().size());
+    if (includeTypeLists) {
+      writeStrings(json, "allTypes", info.allTypes());
+      writeStrings(json, "usedTypes", info.usedTypes());
+    }
+    json.name("usedOnlyByTests").value(info.usedOnlyByTests());
+    DependencyUsage usage = info.usage();
+    if (usage != null) {
+      writeUsage(json, usage);
+    }
+    AggregatorUsage aggregator = info.aggregator();
+    if (aggregator != null) {
+      json.name("aggregator")
+          .beginObject()
+          .name("dependencies")
+          .value(aggregator.getDependencies())
+          .name("usedDependencies")
+          .value(aggregator.getUsedDependencies())
+          .endObject();
+    }
     json.name("children").beginArray();
     for (DependencyNode child : node.getChildren()) {
       writeNode(json, child, node);
     }
     json.endArray().endObject();
+  }
+
+  /** Why a dependency is used; see {@link DependencyUsage} for the meaning of each list. */
+  private static void writeUsage(JsonWriter json, DependencyUsage usage) throws IOException {
+    json.name("usage").beginObject();
+    writeStrings(json, "mainClasses", usage.getMainClasses());
+    writeStrings(json, "testClasses", usage.getTestClasses());
+    writeStrings(json, "dependencies", usage.getDependencies());
+    writeStrings(json, "services", usage.getServices());
+    writeStrings(json, "xmlResources", usage.getXmlResourceClasses());
+    writeStrings(json, "imports", usage.getImportedClasses());
+    writeStrings(json, "annotationProcessors", usage.getAnnotationProcessors());
+    json.name("ignored").value(usage.isIgnored());
+    json.endObject();
+  }
+
+  private static void writeStrings(JsonWriter json, String name, Iterable<String> values)
+      throws IOException {
+    json.name(name).beginArray();
+    for (String value : values) {
+      json.value(value);
+    }
+    json.endArray();
   }
 
   @Nullable

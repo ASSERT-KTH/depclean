@@ -92,6 +92,15 @@ public class DepCleanMojo extends AbstractMojo {
   private boolean createCallGraphCsv;
 
   /**
+   * If this is true, the JSON file created with {@code createResultJson} lists every class of each
+   * dependency ({@code allTypes}) and every class the project uses ({@code usedTypes}). By default
+   * they are only counted ({@code typeCount}, {@code usedTypeCount}), because the lists make the
+   * file several megabytes big on a typical project.
+   */
+  @Parameter(property = "includeTypeLists", defaultValue = "false")
+  private boolean includeTypeLists;
+
+  /**
    * Add a list of regular expressions matching dependencies to be ignored by DepClean during the
    * analysis and considered as used dependencies. Useful to override incomplete result caused by
    * bytecode-level analysis. Each pattern is matched (case-insensitively) against the whole <code>
@@ -173,7 +182,8 @@ public class DepCleanMojo extends AbstractMojo {
                   failIfUnusedInheritedTransitive,
                   createPomDebloated,
                   createResultJson,
-                  createCallGraphCsv)
+                  createCallGraphCsv,
+                  includeTypeLists)
               .execute();
       if (analysis != null) {
         writeSnapshot(analysis);
