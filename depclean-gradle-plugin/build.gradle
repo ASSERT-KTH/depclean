@@ -35,10 +35,10 @@ repositories {
 
 ext {
     depcleanVersion = '2.3.1-SNAPSHOT'
-    errorProneCoreVersion = '2.52.0'
+    errorProneCoreVersion = '2.53.0'
     gsonVersion = '2.15.0'
     jspecifyVersion = '1.0.1'
-    nullawayVersion = '0.14.3'
+    nullawayVersion = '0.14.4'
     slf4jVersion = '2.0.20'
     spockVersion = '2.5-groovy-4.0'
     spotbugsAnnotationsVersion = '4.10.5'
